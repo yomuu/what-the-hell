@@ -11,19 +11,20 @@ object MotionZones {
     const val CELLS = COLUMNS * ROWS
 
     /**
-     * Index of the cell that contains a camera-image point ([u], [v] in 0..1, as
-     * the sensor delivers it), after rotating the image by [rotationDegrees]
-     * clockwise to how it appears on screen.
+     * Where a camera-image point ([u], [v] in 0..1, as the sensor delivers it)
+     * appears on screen, after rotating the image by [rotationDegrees] clockwise.
+     * Returns (x, y) in 0..1.
      */
+    fun toScreen(u: Float, v: Float, rotationDegrees: Int): Pair<Float, Float> = when (rotationDegrees) {
+        90 -> (1f - v) to u
+        180 -> (1f - u) to (1f - v)
+        270 -> v to (1f - u)
+        else -> u to v
+    }
+
+    /** Index of the cell that contains a camera-image point; see [toScreen]. */
     fun cellAt(u: Float, v: Float, rotationDegrees: Int): Int {
-        val x: Float
-        val y: Float
-        when (rotationDegrees) {
-            90 -> { x = 1f - v; y = u }
-            180 -> { x = 1f - u; y = 1f - v }
-            270 -> { x = v; y = 1f - u }
-            else -> { x = u; y = v }
-        }
+        val (x, y) = toScreen(u, v, rotationDegrees)
         val col = (x * COLUMNS).toInt().coerceIn(0, COLUMNS - 1)
         val row = (y * ROWS).toInt().coerceIn(0, ROWS - 1)
         return row * COLUMNS + col

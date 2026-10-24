@@ -7,10 +7,13 @@ something moves it saves a clip to **Movies/MotionCam** in the gallery.
 ## How it works
 
 - **Motion detection** (`MotionDetector.kt`): every camera frame is shrunk to
-  an 80×60 brightness grid and compared with the previous frame. If more than
-  the threshold fraction of the grid changed, the frame counts as motion. Each
-  frame is normalised by its average brightness, so auto-exposure and slow
-  light changes aren't treated as motion.
+  an 80×60 brightness grid and compared with a background that averages the
+  last few seconds, so slow movement is caught too. If more than the threshold
+  fraction of the grid differs from the background, the frame counts as
+  motion, and a red box on the preview shows where. Each frame is normalised by
+  its average brightness, so auto-exposure and slow light changes aren't
+  treated as motion; something that stops moving fades into the background
+  after a few seconds.
 - **Triggering** (`MainActivity.kt`): 3 motion frames in a row start a clip,
   so single noisy frames don't. The **Sensitivity** slider moves the threshold
   between 10% of the frame (low) and 0.2% (high).

@@ -28,6 +28,14 @@ class ZoneOverlayView @JvmOverloads constructor(
             invalidate()
         }
 
+    /** Where motion was last seen, in 0..1 picture coordinates; drawn as a red box. */
+    var motionBox: RectF? = null
+        set(value) {
+            if (field == value) return
+            field = value
+            invalidate()
+        }
+
     var editing = false
         set(value) {
             field = value
@@ -46,7 +54,13 @@ class ZoneOverlayView @JvmOverloads constructor(
         color = Color.argb(200, 255, 255, 255)
         strokeWidth = resources.displayMetrics.density
     }
+    private val boxPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.RED
+        style = Paint.Style.STROKE
+        strokeWidth = 3f * resources.displayMetrics.density
+    }
     private val picture = RectF()
+    private val boxRect = RectF()
     private var paintValue = true
     private var lastCell = -1
 
@@ -63,6 +77,15 @@ class ZoneOverlayView @JvmOverloads constructor(
                 canvas.drawLine(left, top, left + cellW, top + cellH, crossPaint)
                 canvas.drawLine(left + cellW, top, left, top + cellH, crossPaint)
             }
+        }
+        motionBox?.let { box ->
+            boxRect.set(
+                picture.left + box.left * picture.width(),
+                picture.top + box.top * picture.height(),
+                picture.left + box.right * picture.width(),
+                picture.top + box.bottom * picture.height(),
+            )
+            canvas.drawRect(boxRect, boxPaint)
         }
         if (!editing) return
         for (c in 0..MotionZones.COLUMNS) {

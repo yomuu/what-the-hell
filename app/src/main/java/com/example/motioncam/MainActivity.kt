@@ -176,6 +176,7 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
 
     override fun onStop() {
         visible = false
+        zoneOverlay.motionBox = null
         // The service keeps recording; it just stops drawing into this screen.
         disconnectFromService()
         super.onStop()
@@ -195,6 +196,7 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
 
     override fun onDisarmed() {
         armRequested = false
+        zoneOverlay.motionBox = null
         disconnectFromService()
         armButton.setText(R.string.arm)
         statusText.setText(R.string.status_disarmed)
@@ -204,6 +206,7 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
 
     override fun onStateChanged(state: MotionCameraService.State) {
         showClips(state.clipsSaved)
+        zoneOverlay.motionBox = state.motionBox
         val night = if (state.nightBoost) getString(R.string.night_on_suffix) else ""
         when {
             state.recording -> {

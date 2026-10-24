@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.graphics.RectF
 import android.net.Uri
 import android.os.Binder
 import android.os.Build
@@ -56,6 +57,8 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         /** Wall-clock time of the last motion that started a clip, or 0. */
         val lastMotionAt: Long = 0,
         val nightBoost: Boolean = false,
+        /** Where motion is in the latest frame, in 0..1 screen coordinates, or null. */
+        val motionBox: RectF? = null,
     )
 
     interface Listener {
@@ -71,8 +74,8 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
     private val handler = Handler(Looper.getMainLooper())
     private val analysisExecutor = Executors.newSingleThreadExecutor()
     private val liveFrames = LiveFrameEncoder()
-    private val detector = MotionDetector { score, motion, brightness ->
-        handler.post { onFrameAnalyzed(score, motion, brightness) }
+    private val detector = MotionDetector { score, motion, brightness, box ->
+        handler.post { onFrameAnalyzed(score, motion, brightness, box) }
     }.also { it.frameSink = liveFrames::offer }
 
     private lateinit var settings: Settings
@@ -262,7 +265,7 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun onFrameAnalyzed(score: Float, motion: Boolean, frameBrightness: Int) {
+    private fun onFrameAnalyzed(score: Float, motion: Boolean, frameBrightness: Int, box: RectF?) {
         val rec = recorder ?: return
         brightness = if (brightness < 0) {
             frameBrightness.toFloat()
@@ -274,7 +277,7 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         if (consecutiveMotionFrames >= MOTION_FRAMES_TO_TRIGGER) {
             rec.onMotion(SystemClock.elapsedRealtime())
         }
-        state = state.copy(score = score)
+        state = state.copy(score = score, motionBox = box)
         listener?.onStateChanged(state)
     }
 
@@ -299,6 +302,8 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         val exposure = cam.cameraInfo.exposureState
         if (!exposure.isExposureCompensationSupported) return
         cam.cameraControl.setExposureCompensationIndex(if (on) exposure.exposureCompensationRange.upper else 0)
+        // The whole picture changes brightness; learn the scene again instead of calling it motion.
+        detector.resetBackground()
         nightChangedAt = SystemClock.elapsedRealtime()
         updateState(state.copy(nightBoost = on))
     }
