@@ -58,17 +58,3 @@ running the camera all night uses a lot of battery.
 - Alerts appear on the camera phone itself. On another device, keep the viewer
   page open to get its alert banner and sound.
 - The app is locked to portrait so the zone grid lines up with the picture.
-
-## Studying another app for ideas
-
-To have its design analyzed, pull the APK from your phone with
-[adb](https://developer.android.com/tools/adb):
-
-```bash
-adb shell pm list packages | grep -i <part-of-app-name>
-adb shell pm path <package.name>      # may print several split APKs
-adb pull <path-from-above> app-to-study.apk
-```
-
-APK files are ignored by git (see `.gitignore`), so they aren't committed by
-accident.
