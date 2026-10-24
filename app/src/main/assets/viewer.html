@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MotionCam</title>
+<style>
+  :root { --bg: #111; --panel: #1c1c1c; --text: #eee; --muted: #9a9a9a; --accent: #e53935; --line: #333; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  h1 { font-size: 20px; margin: 0; }
+  h2 { font-size: 16px; margin: 0 0 8px; }
+  .pill { padding: 4px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; }
+  .pill.rec { background: var(--accent); border-color: var(--accent); }
+  .alert { background: var(--accent); padding: 12px 14px; border-radius: 10px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .live { position: relative; width: 100%; aspect-ratio: 3 / 4; background: #000; border-radius: 10px; overflow: hidden; }
+  .live img { position: absolute; top: 50%; left: 50%; transform-origin: center; }
+  .live .off { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  button { font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+  .alert button { background: rgba(0,0,0,.25); border-color: transparent; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  li button { width: 100%; text-align: left; display: flex; justify-content: space-between; gap: 8px; }
+  li .meta { color: var(--muted); font-size: 14px; white-space: nowrap; }
+  video { width: 100%; border-radius: 10px; background: #000; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>MotionCam</h1>
+    <span class="pill" id="state">Connecting…</span>
+  </header>
+
+  <div class="alert" id="alert" role="alert" hidden>
+    <span id="alertText">Motion detected</span>
+    <button id="dismiss" type="button">Dismiss</button>
+  </div>
+
+  <section>
+    <div class="live" id="liveWrap">
+      <img id="live" alt="Live camera view">
+      <div class="off" id="liveOff" hidden>Live view paused</div>
+    </div>
+    <div class="controls" style="margin-top: 8px">
+      <button id="toggleLive" type="button">Pause live view</button>
+      <button id="sound" type="button">Turn on alert sound</button>
+    </div>
+  </section>
+
+  <section id="playerSection" hidden>
+    <h2 id="playerTitle"></h2>
+    <video id="player" controls playsinline></video>
+  </section>
+
+  <section>
+    <h2>Recorded clips</h2>
+    <ul id="clips"><li class="muted">Loading…</li></ul>
+  </section>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let rotation = 0;
+  let liveOn = true;
+  let soundOn = false;
+  let audio = null;
+  let lastMotionSeen = null;
+  let clipsSaved = null;
+
+  // ---- Live view -------------------------------------------------------------
+  // Frames arrive in sensor orientation; rotate them so they look like the phone's screen.
+  function layoutLive() {
+    const img = $('live');
+    const w = img.naturalWidth || 640, h = img.naturalHeight || 480;
+    const sideways = rotation % 180 !== 0;
+    const dispW = sideways ? h : w, dispH = sideways ? w : h;
+    $('liveWrap').style.aspectRatio = dispW + ' / ' + dispH;
+    img.style.width = (w / dispW * 100) + '%';
+    img.style.height = (h / dispH * 100) + '%';
+    img.style.transform = 'translate(-50%, -50%) rotate(' + rotation + 'deg)';
+  }
+  $('live').addEventListener('load', layoutLive);
+
+  function setLive(on) {
+    liveOn = on;
+    $('live').src = on ? '/live.mjpg?t=' + Date.now() : '';
+    $('live').hidden = !on;
+    $('liveOff').hidden = on;
+    $('toggleLive').textContent = on ? 'Pause live view' : 'Resume live view';
+  }
+  $('toggleLive').addEventListener('click', () => setLive(!liveOn));
+
+  // ---- Alerts ----------------------------------------------------------------
+  $('sound').addEventListener('click', () => {
+    soundOn = !soundOn;
+    if (soundOn && !audio) audio = new (window.AudioContext || window.webkitAudioContext)();
+    $('sound').textContent = soundOn ? 'Turn off alert sound' : 'Turn on alert sound';
+  });
+
+  function beep() {
+    if (!soundOn || !audio) return;
+    for (let i = 0; i < 3; i++) {
+      const osc = audio.createOscillator(), gain = audio.createGain();
+      osc.frequency.value = 880;
+      gain.gain.value = 0.2;
+      osc.connect(gain).connect(audio.destination);
+      const t = audio.currentTime + i * 0.3;
+      osc.start(t);
+      osc.stop(t + 0.15);
+    }
+  }
+
+  function showAlert(at) {
+    $('alertText').textContent = 'Motion detected at ' + new Date(at).toLocaleTimeString();
+    $('alert').hidden = false;
+    document.title = '(!) MotionCam';
+    beep();
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  }
+  $('dismiss').addEventListener('click', () => {
+    $('alert').hidden = true;
+    document.title = 'MotionCam';
+  });
+
+  // ---- Status ----------------------------------------------------------------
+  async function pollStatus() {
+    try {
+      const res = await fetch('/api/status', { cache: 'no-store' });
+      if (res.status === 401) { location.reload(); return; }
+      const s = await res.json();
+      const pill = $('state');
+      pill.textContent = !s.armed ? 'Disarmed' : s.recording ? '● Recording' : 'Watching';
+      pill.classList.toggle('rec', s.recording);
+      if (s.rotation !== rotation) { rotation = s.rotation; layoutLive(); }
+      // The first poll only learns the current state; alert on motion after that.
+      if (lastMotionSeen !== null && s.lastMotionAt > lastMotionSeen) showAlert(s.lastMotionAt);
+      lastMotionSeen = s.lastMotionAt;
+      if (s.clipsSaved !== clipsSaved) { clipsSaved = s.clipsSaved; loadClips(); }
+    } catch (e) {
+      $('state').textContent = 'Camera unreachable';
+      $('state').classList.remove('rec');
+    }
+  }
+
+  // ---- Clips -----------------------------------------------------------------
+  function formatDuration(ms) {
+    const s = Math.round(ms / 1000);
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  async function loadClips() {
+    const res = await fetch('/api/clips', { cache: 'no-store' });
+    if (!res.ok) return;
+    const { clips } = await res.json();
+    const list = $('clips');
+    list.replaceChildren();
+    if (clips.length === 0) {
+      const li = document.createElement('li');
+      li.className = 'muted';
+      li.textContent = 'No clips yet.';
+      list.append(li);
+      return;
+    }
+    for (const clip of clips) {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const name = document.createElement('span');
+      name.textContent = new Date(clip.addedAt).toLocaleString();
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = formatDuration(clip.durationMs) + ' · ' + (clip.bytes / 1e6).toFixed(1) + ' MB';
+      btn.append(name, meta);
+      btn.addEventListener('click', () => play(clip, name.textContent));
+      li.append(btn);
+      list.append(li);
+    }
+  }
+
+  function play(clip, title) {
+    $('playerSection').hidden = false;
+    $('playerTitle').textContent = title;
+    $('player').src = '/clips/' + clip.id;
+    $('player').play().catch(() => {});
+    $('playerSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  setLive(true);
+  pollStatus();
+  setInterval(pollStatus, 2000);
+</script>
+</body>
+</html>

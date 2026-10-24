@@ -22,6 +22,20 @@ something moves it saves a clip to **Movies/MotionCam** in the gallery.
   watching. A notification shows the status and the clip count, and has a
   **Disarm** button. While disarmed, the app shows its own preview so you can
   aim the phone.
+- **Motion alerts**: each new clip posts a "Motion detected" notification.
+  When the clip is saved, the notification gets a **Play clip** button.
+- **Motion zones** (`ZoneOverlayView.kt`): tap **Zones**, then tap or drag
+  across the 6×8 grid to ignore areas such as a tree, a TV or a busy street.
+  Ignored cells are shaded; tap **Done** to finish.
+- **Night mode**: once the picture has been dark for a while, the camera's
+  exposure is raised to its maximum and the detector needs smaller brightness
+  changes to count as motion. It switches back when it's bright again.
+- **Wi-Fi viewer** (`ViewerServer.kt`, `assets/viewer.html`): turn on
+  **View from another device on Wi-Fi**, arm the camera, then open the address
+  shown in the app on any phone or computer on the same Wi-Fi and enter the
+  access code. You get the live picture (about 5 frames a second), the clip
+  list with playback, and a banner with optional sound and vibration whenever
+  motion starts.
 
 ## Build and install
 
@@ -38,7 +52,12 @@ running the camera all night uses a lot of battery.
 
 ## Current limits
 
-- No motion alerts or remote viewing yet. Clips stay on the phone.
+- The viewer only works on the same Wi-Fi, not over the internet; that would
+  need a cloud service. It uses plain HTTP, so only use it on a network you
+  trust. **New access code** locks out every browser that had the old one.
+- Alerts appear on the camera phone itself. On another device, keep the viewer
+  page open to get its alert banner and sound.
+- The app is locked to portrait so the zone grid lines up with the picture.
 
 ## Studying another app for ideas
 

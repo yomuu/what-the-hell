@@ -16,9 +16,11 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import android.util.Size
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -31,12 +33,18 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
+import org.json.JSONObject
+import java.text.DateFormat
+import java.util.Date
 import java.util.concurrent.Executors
 
 /**
  * Owns the camera while the app is armed, so motion detection and recording keep
  * running with the screen off. Runs as a camera foreground service, which Android
  * only allows to start while the app is on screen.
+ *
+ * Also posts motion alerts, brightens the camera in the dark (night mode) and,
+ * if enabled, serves the Wi-Fi viewer.
  */
 class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
 
@@ -45,6 +53,9 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         val score: Float = 0f,
         val clipsSaved: Int = 0,
         val error: String? = null,
+        /** Wall-clock time of the last motion that started a clip, or 0. */
+        val lastMotionAt: Long = 0,
+        val nightBoost: Boolean = false,
     )
 
     interface Listener {
@@ -59,34 +70,55 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
     private val binder = LocalBinder()
     private val handler = Handler(Looper.getMainLooper())
     private val analysisExecutor = Executors.newSingleThreadExecutor()
-    private val detector = MotionDetector { score, motion ->
-        handler.post { onFrameAnalyzed(score, motion) }
-    }
+    private val liveFrames = LiveFrameEncoder()
+    private val detector = MotionDetector { score, motion, brightness ->
+        handler.post { onFrameAnalyzed(score, motion, brightness) }
+    }.also { it.frameSink = liveFrames::offer }
 
+    private lateinit var settings: Settings
     private var cameraProvider: ProcessCameraProvider? = null
+    private var camera: Camera? = null
     private var preview: Preview? = null
     private var surfaceProvider: Preview.SurfaceProvider? = null
     private var recorder: MotionRecorder? = null
+    private var viewerServer: ViewerServer? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private var listener: Listener? = null
     private var consecutiveMotionFrames = 0
+    private var brightness = -1f
+    private var nightChangedAt = 0L
+    private var alertsEnabled = true
+
+    @Volatile
     private var state = State()
 
     private val ticker = object : Runnable {
         override fun run() {
-            recorder?.tick(SystemClock.elapsedRealtime())
+            val now = SystemClock.elapsedRealtime()
+            recorder?.tick(now)
+            updateNightBoost(now)
             handler.postDelayed(this, TICK_MS)
         }
     }
 
     override fun onCreate() {
         super.onCreate()
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            getString(R.string.notification_channel),
-            NotificationManager.IMPORTANCE_LOW,
+        settings = Settings(this)
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_MONITORING,
+                getString(R.string.notification_channel),
+                NotificationManager.IMPORTANCE_LOW,
+            )
         )
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_ALERTS,
+                getString(R.string.alert_channel),
+                NotificationManager.IMPORTANCE_HIGH,
+            )
+        )
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -100,7 +132,6 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
             disarm()
             return START_NOT_STICKY
         }
-        intent?.let { detector.threshold = it.getFloatExtra(EXTRA_THRESHOLD, detector.threshold) }
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
@@ -111,6 +142,7 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
 
         if (!isRunning) {
             isRunning = true
+            applySettings()
             acquireWakeLock()
             handler.post(ticker)
             startCamera()
@@ -121,6 +153,7 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+        stopViewer()
         analysisExecutor.shutdown()
         releaseWakeLock()
         isRunning = false
@@ -138,16 +171,24 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         value?.onStateChanged(state)
     }
 
-    fun setThreshold(value: Float) {
-        detector.threshold = value
+    /** Re-read [Settings] after the user changes something while armed. */
+    fun applySettings() {
+        detector.threshold = settings.threshold()
+        detector.ignoredZones = settings.ignoredZones
+        detector.nightMode = settings.nightModeEnabled
+        alertsEnabled = settings.alertsEnabled
+        if (!settings.nightModeEnabled && state.nightBoost) setNightBoost(false)
+        if (settings.remoteViewingEnabled) startViewer() else stopViewer()
     }
 
     fun disarm() {
         recorder?.stop()
         cameraProvider?.unbindAll()
         cameraProvider = null
+        camera = null
         recorder = null
         preview = null
+        stopViewer()
         handler.removeCallbacks(ticker)
         releaseWakeLock()
         isRunning = false
@@ -164,14 +205,21 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
             if (!isRunning) return@addListener
             val provider = providerFuture.get()
 
-            val preview = Preview.Builder().build().also {
-                it.setSurfaceProvider(surfaceProvider)
-            }
+            // 4:3 everywhere, so the preview, the zone grid and the analysed image line up.
+            val preview = Preview.Builder()
+                .setResolutionSelector(
+                    ResolutionSelector.Builder()
+                        .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
+                        .build()
+                )
+                .build()
+                .also { it.setSurfaceProvider(surfaceProvider) }
 
             // Motion detection only needs a small image.
             val analysis = ImageAnalysis.Builder()
                 .setResolutionSelector(
                     ResolutionSelector.Builder()
+                        .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
                         .setResolutionStrategy(
                             ResolutionStrategy(
                                 Size(640, 480),
@@ -197,7 +245,7 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
 
             try {
                 provider.unbindAll()
-                provider.bindToLifecycle(
+                camera = provider.bindToLifecycle(
                     this,
                     CameraSelector.DEFAULT_BACK_CAMERA,
                     preview,
@@ -214,8 +262,13 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun onFrameAnalyzed(score: Float, motion: Boolean) {
+    private fun onFrameAnalyzed(score: Float, motion: Boolean, frameBrightness: Int) {
         val rec = recorder ?: return
+        brightness = if (brightness < 0) {
+            frameBrightness.toFloat()
+        } else {
+            brightness * 0.95f + frameBrightness * 0.05f
+        }
         // Require a few motion frames in a row so sensor noise doesn't trigger clips.
         consecutiveMotionFrames = if (motion) consecutiveMotionFrames + 1 else 0
         if (consecutiveMotionFrames >= MOTION_FRAMES_TO_TRIGGER) {
@@ -225,13 +278,42 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         listener?.onStateChanged(state)
     }
 
+    /**
+     * Night mode: when the scene stays dark, raise exposure compensation to its
+     * maximum so both detection and the recorded video can see more. The boost
+     * itself brightens the picture, so it is only turned off once the scene is
+     * bright even with it, and changes are spaced out to avoid flicker.
+     */
+    private fun updateNightBoost(now: Long) {
+        if (!settings.nightModeEnabled || brightness < 0) return
+        if (now - nightChangedAt < NIGHT_MIN_DWELL_MS) return
+        if (!state.nightBoost && brightness < DARK_BRIGHTNESS) {
+            setNightBoost(true)
+        } else if (state.nightBoost && brightness > BRIGHT_WITH_BOOST) {
+            setNightBoost(false)
+        }
+    }
+
+    private fun setNightBoost(on: Boolean) {
+        val cam = camera ?: return
+        val exposure = cam.cameraInfo.exposureState
+        if (!exposure.isExposureCompensationSupported) return
+        cam.cameraControl.setExposureCompensationIndex(if (on) exposure.exposureCompensationRange.upper else 0)
+        nightChangedAt = SystemClock.elapsedRealtime()
+        updateState(state.copy(nightBoost = on))
+    }
+
     override fun onRecordingStarted() {
-        updateState(state.copy(recording = true, error = null))
+        val now = System.currentTimeMillis()
+        updateState(state.copy(recording = true, error = null, lastMotionAt = now))
+        if (alertsEnabled) postAlert(now, null)
     }
 
     override fun onRecordingSaved(uri: Uri) {
         Log.i(TAG, "Saved clip $uri")
         updateState(state.copy(recording = false, clipsSaved = state.clipsSaved + 1))
+        // Add a "Play clip" button to the alert for this event.
+        if (alertsEnabled && state.lastMotionAt != 0L) postAlert(state.lastMotionAt, uri)
     }
 
     override fun onRecordingFailed(error: Int) {
@@ -239,6 +321,62 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         updateState(
             state.copy(recording = false, error = getString(R.string.status_recording_error, error))
         )
+    }
+
+    private fun postAlert(at: Long, clip: Uri?) {
+        if (!isRunning) return
+        val time = DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(at))
+        val builder = NotificationCompat.Builder(this, CHANNEL_ALERTS)
+            .setSmallIcon(android.R.drawable.ic_menu_camera)
+            .setContentTitle(getString(R.string.alert_title))
+            .setContentText(getString(R.string.alert_text, time))
+            .setWhen(at)
+            .setShowWhen(true)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(openAppIntent())
+        if (clip != null) {
+            // Updating the same alert once the clip is saved shouldn't ring again.
+            builder.setOnlyAlertOnce(true)
+            val play = Intent(Intent.ACTION_VIEW)
+                .setDataAndType(clip, "video/mp4")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            builder.addAction(
+                0,
+                getString(R.string.alert_play),
+                PendingIntent.getActivity(this, 2, play, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT),
+            )
+        }
+        getSystemService(NotificationManager::class.java).notify(ALERT_ID, builder.build())
+    }
+
+    private fun startViewer() {
+        if (viewerServer != null) return
+        val server = ViewerServer(this, settings.accessCode, liveFrames) { statusJson() }
+        try {
+            server.startServer()
+            viewerServer = server
+        } catch (e: Exception) {
+            Log.e(TAG, "Could not start viewer", e)
+            updateState(state.copy(error = getString(R.string.viewer_error, e.message)))
+        }
+    }
+
+    private fun stopViewer() {
+        viewerServer?.stop()
+        viewerServer = null
+    }
+
+    private fun statusJson(): JSONObject {
+        val s = state
+        return JSONObject()
+            .put("armed", isRunning)
+            .put("recording", s.recording)
+            .put("lastMotionAt", s.lastMotionAt)
+            .put("clipsSaved", s.clipsSaved)
+            .put("nightBoost", s.nightBoost)
+            .put("rotation", liveFrames.rotationDegrees)
     }
 
     private fun updateState(value: State) {
@@ -250,7 +388,11 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         }
     }
 
-    private fun buildNotification() = NotificationCompat.Builder(this, CHANNEL_ID)
+    private fun openAppIntent() = PendingIntent.getActivity(
+        this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
+    )
+
+    private fun buildNotification() = NotificationCompat.Builder(this, CHANNEL_MONITORING)
         .setSmallIcon(android.R.drawable.ic_menu_camera)
         .setContentTitle(
             getString(if (state.recording) R.string.status_recording else R.string.status_watching)
@@ -258,11 +400,7 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         .setContentText(
             resources.getQuantityString(R.plurals.clips_saved, state.clipsSaved, state.clipsSaved)
         )
-        .setContentIntent(
-            PendingIntent.getActivity(
-                this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE,
-            )
-        )
+        .setContentIntent(openAppIntent())
         .addAction(
             0,
             getString(R.string.disarm),
@@ -296,19 +434,22 @@ class MotionCameraService : LifecycleService(), MotionRecorder.Listener {
         var isRunning = false
             private set
 
-        const val EXTRA_THRESHOLD = "threshold"
         private const val ACTION_DISARM = "com.example.motioncam.DISARM"
-        private const val CHANNEL_ID = "monitoring"
+        private const val CHANNEL_MONITORING = "monitoring"
+        private const val CHANNEL_ALERTS = "alerts"
         private const val NOTIFICATION_ID = 1
+        private const val ALERT_ID = 2
         private const val TAG = "MotionCam"
         private const val TICK_MS = 500L
         private const val MOTION_FRAMES_TO_TRIGGER = 3
+        /** Average brightness (0..255) below which night mode turns on. */
+        private const val DARK_BRIGHTNESS = 50f
+        /** Night mode turns off only if the boosted picture is this bright. */
+        private const val BRIGHT_WITH_BOOST = 170f
+        private const val NIGHT_MIN_DWELL_MS = 30_000L
 
-        fun arm(context: Context, threshold: Float) {
-            ContextCompat.startForegroundService(
-                context,
-                Intent(context, MotionCameraService::class.java).putExtra(EXTRA_THRESHOLD, threshold),
-            )
+        fun arm(context: Context) {
+            ContextCompat.startForegroundService(context, Intent(context, MotionCameraService::class.java))
         }
     }
 }

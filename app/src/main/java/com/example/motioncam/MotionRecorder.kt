@@ -70,7 +70,7 @@ class MotionRecorder(
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-            put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/MotionCam")
+            put(MediaStore.Video.Media.RELATIVE_PATH, RELATIVE_PATH)
         }
         val options = MediaStoreOutputOptions.Builder(
             context.contentResolver,
@@ -97,10 +97,13 @@ class MotionRecorder(
             }
     }
 
-    private companion object {
+    companion object {
+        /** Folder in shared storage that clips are saved to. */
+        const val RELATIVE_PATH = "Movies/MotionCam"
+
         /** Keep recording this long after the last motion. */
-        const val POST_MOTION_MS = 10_000L
+        private const val POST_MOTION_MS = 10_000L
         /** Split long events into clips of at most this length. */
-        const val MAX_CLIP_MS = 5 * 60_000L
+        private const val MAX_CLIP_MS = 5 * 60_000L
     }
 }

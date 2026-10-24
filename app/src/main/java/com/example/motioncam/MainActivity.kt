@@ -11,29 +11,41 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 
 /**
- * Shows the camera and the arm switch. While disarmed the activity runs its own
- * preview so you can aim the phone; once armed, [MotionCameraService] owns the
- * camera and this screen just displays its picture and status.
+ * Shows the camera, the arm switch and the settings. While disarmed the activity
+ * runs its own preview so you can aim the phone; once armed, [MotionCameraService]
+ * owns the camera and this screen just displays its picture and status.
  */
 class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
 
+    private lateinit var settings: Settings
     private lateinit var previewView: PreviewView
+    private lateinit var zoneOverlay: ZoneOverlayView
     private lateinit var statusText: TextView
     private lateinit var clipsText: TextView
+    private lateinit var viewerText: TextView
     private lateinit var armButton: Button
+    private lateinit var zonesButton: Button
+    private lateinit var newCodeButton: Button
     private lateinit var sensitivityBar: SeekBar
+    private lateinit var alertsSwitch: SwitchCompat
+    private lateinit var nightSwitch: SwitchCompat
+    private lateinit var viewerSwitch: SwitchCompat
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var ownPreview: Preview? = null
@@ -56,7 +68,7 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
         override fun onServiceConnected(name: ComponentName, binder: IBinder) {
             val s = (binder as MotionCameraService.LocalBinder).service
             service = s
-            s.setThreshold(thresholdFor(sensitivityBar.progress))
+            s.applySettings()
             s.attachPreview(previewView.surfaceProvider)
             s.setListener(this@MainActivity)
             armButton.setText(R.string.disarm)
@@ -70,25 +82,75 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        settings = Settings(this)
 
         previewView = findViewById(R.id.preview)
+        zoneOverlay = findViewById(R.id.zone_overlay)
         statusText = findViewById(R.id.status)
         clipsText = findViewById(R.id.clips)
+        viewerText = findViewById(R.id.viewer_info)
         armButton = findViewById(R.id.arm_button)
+        zonesButton = findViewById(R.id.zones_button)
+        newCodeButton = findViewById(R.id.new_code_button)
         sensitivityBar = findViewById(R.id.sensitivity)
+        alertsSwitch = findViewById(R.id.alerts_switch)
+        nightSwitch = findViewById(R.id.night_switch)
+        viewerSwitch = findViewById(R.id.viewer_switch)
 
+        sensitivityBar.progress = settings.sensitivity
         sensitivityBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(bar: SeekBar, progress: Int, fromUser: Boolean) {
-                service?.setThreshold(thresholdFor(progress))
+                if (!fromUser) return
+                settings.sensitivity = progress
+                service?.applySettings()
             }
             override fun onStartTrackingTouch(bar: SeekBar) = Unit
             override fun onStopTrackingTouch(bar: SeekBar) = Unit
         })
 
+        alertsSwitch.isChecked = settings.alertsEnabled
+        alertsSwitch.setOnCheckedChangeListener { _, checked ->
+            settings.alertsEnabled = checked
+            service?.applySettings()
+        }
+        nightSwitch.isChecked = settings.nightModeEnabled
+        nightSwitch.setOnCheckedChangeListener { _, checked ->
+            settings.nightModeEnabled = checked
+            service?.applySettings()
+        }
+        viewerSwitch.isChecked = settings.remoteViewingEnabled
+        viewerSwitch.setOnCheckedChangeListener { _, checked ->
+            settings.remoteViewingEnabled = checked
+            service?.applySettings()
+            showViewerInfo()
+        }
+        newCodeButton.setOnClickListener {
+            settings.newAccessCode()
+            // The running viewer keeps the code it started with; restart it with the new one.
+            if (settings.remoteViewingEnabled) {
+                settings.remoteViewingEnabled = false
+                service?.applySettings()
+                settings.remoteViewingEnabled = true
+                service?.applySettings()
+            }
+            showViewerInfo()
+        }
+
+        zoneOverlay.ignored = settings.ignoredZones
+        zoneOverlay.onChanged = { zones ->
+            settings.ignoredZones = zones
+            service?.applySettings()
+        }
+        zonesButton.setOnClickListener {
+            zoneOverlay.editing = !zoneOverlay.editing
+            zonesButton.setText(if (zoneOverlay.editing) R.string.zones_done else R.string.zones_edit)
+        }
+
         armButton.setOnClickListener {
             if (armRequested) service?.disarm() else arm()
         }
         showClips(0)
+        showViewerInfo()
 
         val needed = buildList {
             if (!hasCameraPermission()) add(Manifest.permission.CAMERA)
@@ -106,6 +168,8 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
         super.onStart()
         visible = true
         armRequested = MotionCameraService.isRunning
+        // The Wi-Fi address may have changed while we were away.
+        showViewerInfo()
         if (!hasCameraPermission()) return
         if (armRequested) connectToService() else startOwnPreview()
     }
@@ -125,7 +189,7 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
         armRequested = true
         // Hand the camera over to the service.
         ownPreview?.let { cameraProvider?.unbind(it) }
-        MotionCameraService.arm(this, thresholdFor(sensitivityBar.progress))
+        MotionCameraService.arm(this)
         connectToService()
     }
 
@@ -140,9 +204,10 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
 
     override fun onStateChanged(state: MotionCameraService.State) {
         showClips(state.clipsSaved)
+        val night = if (state.nightBoost) getString(R.string.night_on_suffix) else ""
         when {
             state.recording -> {
-                statusText.setText(R.string.status_recording)
+                statusText.text = getString(R.string.status_recording) + night
                 statusText.setTextColor(Color.RED)
             }
             state.error != null -> {
@@ -150,9 +215,26 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
                 statusText.setTextColor(Color.WHITE)
             }
             else -> {
-                statusText.text = getString(R.string.status_watching_score, state.score * 100)
+                statusText.text = getString(R.string.status_watching_score, state.score * 100) + night
                 statusText.setTextColor(Color.WHITE)
             }
+        }
+    }
+
+    private fun showViewerInfo() {
+        if (!settings.remoteViewingEnabled) {
+            viewerText.visibility = View.GONE
+            newCodeButton.visibility = View.GONE
+            return
+        }
+        viewerText.visibility = View.VISIBLE
+        newCodeButton.visibility = View.VISIBLE
+        val address = ViewerServer.localAddress()
+        val code = settings.accessCode.chunked(4).joinToString("-")
+        viewerText.text = if (address == null) {
+            getString(R.string.viewer_no_wifi)
+        } else {
+            getString(R.string.viewer_info, "http://$address:${ViewerServer.PORT}", code)
         }
     }
 
@@ -175,14 +257,21 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
         }
     }
 
-    /** Preview used while disarmed, so the phone can be aimed. */
+    /** Preview used while disarmed, so the phone can be aimed and zones drawn. */
     private fun startOwnPreview() {
         val providerFuture = ProcessCameraProvider.getInstance(this)
         providerFuture.addListener({
             if (!visible || armRequested) return@addListener
             val provider = providerFuture.get()
             cameraProvider = provider
-            val preview = ownPreview ?: Preview.Builder().build().also { ownPreview = it }
+            val preview = ownPreview ?: Preview.Builder()
+                .setResolutionSelector(
+                    ResolutionSelector.Builder()
+                        .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
+                        .build()
+                )
+                .build()
+                .also { ownPreview = it }
             preview.setSurfaceProvider(previewView.surfaceProvider)
             try {
                 if (!provider.isBound(preview)) {
@@ -207,8 +296,5 @@ class MainActivity : AppCompatActivity(), MotionCameraService.Listener {
 
     private companion object {
         const val TAG = "MotionCam"
-
-        /** Sensitivity 0..100 -> changed-area threshold from 10% down to 0.2% of the frame. */
-        fun thresholdFor(sensitivity: Int): Float = 0.002f + 0.098f * (1f - sensitivity / 100f)
     }
 }
