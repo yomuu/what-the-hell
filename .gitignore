@@ -1,0 +1,14 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Apps pulled from a phone for analysis stay out of git
+*.apk
+*.apks
+*.xapk
