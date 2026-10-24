@@ -17,6 +17,11 @@ something moves it saves a clip to **Movies/MotionCam** in the gallery.
 - **Recording** (`MotionRecorder.kt`): CameraX records 720p video (or the
   closest quality available). Recording stops 10 s after the last motion, and
   clips are split every 5 minutes.
+- **Screen off** (`MotionCameraService.kt`): tapping **Arm** hands the camera
+  to a foreground service, so you can lock the phone or switch apps and it keeps
+  watching. A notification shows the status and the clip count, and has a
+  **Disarm** button. While disarmed, the app shows its own preview so you can
+  aim the phone.
 
 ## Build and install
 
@@ -24,14 +29,16 @@ something moves it saves a clip to **Movies/MotionCam** in the gallery.
 2. Plug in your phone with USB debugging on and press **Run**, or run
    `./gradlew installDebug`.
 
-Requires Android 10 (API 29) or newer. Only the camera permission is needed.
-Audio is not recorded.
+Requires Android 10 (API 29) or newer. It asks for camera access and, on
+Android 13+, permission to show its status notification. Audio is not recorded.
+
+Arm it while the app is open: Android only lets apps start using the camera
+in the background if they start while on screen. Keep the phone charging, since
+running the camera all night uses a lot of battery.
 
 ## Current limits
 
-- Only records while the app is on screen. The screen stays on while it runs.
-  Recording with the screen off would need a foreground service.
-- No notifications or remote viewing yet. Clips stay on the phone.
+- No motion alerts or remote viewing yet. Clips stay on the phone.
 
 ## Studying another app for ideas
 

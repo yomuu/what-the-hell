@@ -11,6 +11,7 @@
     <string name="status_recording">● Recording</string>
     <string name="status_no_permission">Camera permission is needed to watch for motion.</string>
     <string name="status_camera_error">Camera error: %s</string>
+    <string name="notification_channel">Motion monitoring</string>
     <string name="status_recording_error">Recording ended with error %d</string>
     <plurals name="clips_saved">
         <item quantity="one">%d clip saved to Movies/MotionCam</item>
