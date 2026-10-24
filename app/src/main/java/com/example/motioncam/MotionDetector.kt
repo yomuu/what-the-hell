@@ -10,7 +10,7 @@ import kotlin.math.exp
 /**
  * Background-subtraction motion detector.
  *
- * Samples the luminance (Y) plane on a coarse grid and compares each frame with a
+ * Averages the luminance (Y) plane down to a coarse grid and compares each frame with a
  * background: a running average of recent frames that adapts over a few seconds.
  * Comparing against the background rather than just the previous frame also
  * catches slow movement. Every frame is normalised by its mean brightness so
@@ -50,6 +50,7 @@ class MotionDetector(
     private var background: FloatArray? = null
     private var backgroundSince = 0L
     private var lastFrameAt = 0L
+    private val sampler = LumaSampler(STEP)
     private var watchedMask: BooleanArray? = null
     private var maskKey: Any? = null
 
@@ -153,22 +154,12 @@ class MotionDetector(
 
     private fun sampleLuma(image: ImageProxy, cols: Int, rows: Int): IntArray {
         val plane = image.planes[0]
-        val buffer = plane.buffer
-        val rowStride = plane.rowStride
-        val pixelStride = plane.pixelStride
-        val out = IntArray(cols * rows)
-        for (r in 0 until rows) {
-            val rowOffset = r * STEP * rowStride
-            for (c in 0 until cols) {
-                out[r * cols + c] = buffer.get(rowOffset + c * STEP * pixelStride).toInt() and 0xFF
-            }
-        }
-        return out
+        return sampler.sample(plane.buffer, plane.rowStride, plane.pixelStride, cols, rows)
     }
 
     private companion object {
-        /** Sample every STEP-th pixel in each direction (640x480 -> 80x60 grid). */
-        const val STEP = 8
+        /** Average STEP×STEP blocks (640x480 -> 160x120 grid). */
+        const val STEP = 4
         /** Luminance change (0..255) from the background for a grid point to count as changed. */
         const val PIXEL_DELTA = 25
         const val MIN_PIXEL_DELTA = 8

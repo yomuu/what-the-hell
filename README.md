@@ -7,7 +7,8 @@ something moves it saves a clip to **Movies/MotionCam** in the gallery.
 ## How it works
 
 - **Motion detection** (`MotionDetector.kt`): every camera frame is shrunk to
-  an 80×60 brightness grid and compared with a background that averages the
+  a 160×120 brightness grid (each cell the average of a
+  4×4 pixel block) and compared with a background that averages the
   last few seconds, so slow movement is caught too. If more than the threshold
   fraction of the grid differs from the background, the frame counts as
   motion, and a red box on the preview shows where. Each frame is normalised by
