@@ -22,7 +22,7 @@
   --w2:#3ec7e0;
   --w3:#a78bfa;
   --w4:#ff7a59;
-  --w5:#38bdf8;
+  --w5:#a3e635;
   --t-study:#ffb020;
   --t-feed:#f472b6;
   --t-py:#5b9dff;
@@ -31,7 +31,7 @@
   --k-triage:#2dd4bf;
   --k-int:#e2e8f0;
   --k-cloud:#93c5fd;
-  --k-kql:#22d3ee;
+  --k-kql:#e879f9;
   --tab-h:58px;
   --display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -98,6 +98,9 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .recall input:focus-visible{outline:2px solid var(--c);outline-offset:2px}
 .recall .row .btn{align-self:auto}
 .slip{color:var(--bad);border-color:var(--bad)}
+.x.slip,.tag .slip{border-color:var(--bad)}
+.conf button:disabled{opacity:.5;cursor:default}
+#cvText{width:100%;min-height:120px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px}
 .why{display:none;font-size:16px;line-height:1.5;color:var(--muted);max-width:440px;border-top:1px solid var(--line);padding-top:12px}
 .why strong{color:var(--text)}
 .why.show{display:block}
@@ -1256,15 +1259,15 @@ VirtualBox internal network. Kali 10.10.10.10, Windows 10.10.10.20.
   ["What it is","Microsoft Entra ID is Microsoft's cloud identity service, called Azure Active Directory until 2023. It holds the users, groups, devices and apps for Microsoft 365 and Azure, and handles their sign-ins."],
   ["Not AD in the cloud","On-premises Active Directory uses Kerberos, NTLM and LDAP, with OUs and Group Policy. Entra ID uses web protocols such as OAuth 2.0, OpenID Connect and SAML. Many organisations run both and sync accounts with Microsoft Entra Connect."],
   ["Roles","Admin rights come from roles. Global Administrator can change almost anything, so Microsoft recommends fewer than five of them. Narrower roles, such as User Administrator, Helpdesk Administrator and Security Reader, cover most day-to-day work."],
-  ["Just-in-time admin","Privileged Identity Management (PIM) lets people activate an admin role only when they need it, for a few hours, with approval and MFA. Nobody holds standing admin rights that an attacker could steal."],
+  ["Just-in-time admin","Privileged Identity Management (PIM) lets people activate an admin role only when they need it, for a few hours, with MFA and optionally approval. Few people then hold standing admin rights an attacker could steal. PIM needs Entra ID P2 or Entra ID Governance licences."],
   ["Apps are identities too","Enterprise applications and service principals sign in and get permissions too. An app granted broad access to mail or files is as valuable to an attacker as an admin account, so review app permissions as well as people."]
  ],
  real:["Midnight Blizzard and Microsoft, 2024","In January 2024 Microsoft disclosed that a Russian state group had password-sprayed a legacy test tenant account with no MFA. The attackers then abused an old test OAuth app with elevated access to reach email belonging to senior leaders and security staff."],
  myth:["Entra ID is just Active Directory in the cloud.","It's a different system with different protocols, no OUs and no Group Policy. Many skills transfer, but cloud identity has its own attacks, like consent phishing and token theft."],
  tryit:{h:"List your tenant's admins", where:"Your own test tenant, PowerShell",
-  p:"Use Microsoft Graph PowerShell in a tenant you own, such as a free trial. This lists roles that have members, then the members of one role. Fewer is better.",
+  p:"Use Microsoft Graph PowerShell in a tenant you own, such as a free trial. This lists the roles switched on in your tenant, then who actively holds one. People only eligible through PIM won't appear.",
   code:String.raw`Install-Module Microsoft.Graph -Scope CurrentUser
-Connect-MgGraph -Scopes "Directory.Read.All"
+Connect-MgGraph -Scopes "RoleManagement.Read.Directory"
 Get-MgDirectoryRole | Select-Object DisplayName, Id
 Get-MgDirectoryRoleMember -DirectoryRoleId <role-id>`},
  quiz:[
@@ -1273,7 +1276,7 @@ Get-MgDirectoryRoleMember -DirectoryRoleId <role-id>`},
   {d:2, q:"How many Global Administrators does Microsoft recommend?", o:["Fewer than five","At least ten, for cover","One per department"], k:0,
    w:"Global Administrator can change almost anything. Keep it to a few people and give everyone else narrower roles."},
   {d:2, q:"What does Privileged Identity Management (PIM) add?", o:["Admin roles that are activated only when needed, for a limited time","A second copy of every user account","Encryption for Entra ID"], k:0,
-   w:"Just-in-time access means there are no permanent admin rights waiting to be stolen."},
+   w:"Just-in-time access means far fewer permanent admin rights waiting to be stolen."},
   {d:3, q:"How did the attackers first get into Microsoft in the 2024 Midnight Blizzard incident?", o:["Password spraying a legacy test account that had no MFA","A zero-day in Windows","A stolen laptop"], k:0,
    w:"A forgotten, low-value test account without MFA became the way in. Old accounts and apps need the same controls as new ones."}
  ],
@@ -1282,23 +1285,23 @@ Get-MgDirectoryRoleMember -DirectoryRoleId <role-id>`},
 {t:"Conditional Access",
  sub:"If this sign-in looks like that, then require this.",
  learn:[
-  ["If, then","Conditional Access policies are if-then rules for sign-ins. If the user, app, location, device or risk matches, then block, allow, or require something extra such as MFA or a compliant device."],
+  ["If, then","Conditional Access policies are if-then rules for sign-ins. If the user, app, location, device or risk matches, then block, allow, or require something extra such as MFA or a compliant device. Risk-based conditions need Entra ID P2."],
   ["When it runs","Conditional Access is checked after the first sign-in step, when Entra ID knows who is signing in. It needs Entra ID P1 licences; tenants without them can turn on security defaults, which require MFA in a simpler, all-or-nothing way."],
   ["Test before you enforce","Every new policy can run in report-only mode first. Sign-in logs then show what would have happened, so you can catch a policy that would lock out a whole team before it does."],
   ["Block legacy authentication","Old protocols, like basic authentication for email, can't do MFA, so password sprays target them. A policy that blocks legacy authentication closes that gap."],
-  ["Emergency access accounts","Keep at least two cloud-only break-glass accounts excluded from Conditional Access, with very strong credentials, kept offline. Alert on every use. They save you if a bad policy locks everyone else out."]
+  ["Emergency access accounts","Keep at least two cloud-only break-glass accounts excluded from your Conditional Access policies, protected by phishing-resistant MFA such as FIDO2 keys kept somewhere safe. Alert on every use. They save you if a bad policy locks everyone else out."]
  ],
  real:["One setting, huge effect","In 2019 Microsoft reported that MFA would block over 99.9% of automated attacks on accounts. Conditional Access is how most organisations require it in the right places, and block the legacy protocols that can't use it."],
  myth:["Conditional Access replaces MFA.","It decides when to require MFA and what else to check. Without MFA or a phishing-resistant method behind it, there's nothing strong to require."],
  tryit:{h:"Build a policy safely", where:"Entra admin portal, test tenant",
-  p:"In your own test tenant, go to Protection, then Conditional Access. Create a policy that requires MFA for a test user, set it to report-only, sign in as that user, then check the sign-in log's Conditional Access details. Exclude your emergency account from every policy."},
+  p:"In your own test tenant, open Conditional Access (under Entra ID or Protection, depending on your portal version). Create a policy that requires MFA for a test user, set it to report-only, sign in as that user, then check the sign-in log's Conditional Access details. Exclude your emergency account from every policy."},
  quiz:[
   {d:1, q:"What's the best way to test a new Conditional Access policy?", o:["Report-only mode, then check the sign-in logs","Turn it on for everyone and wait for complaints","Test it on the Global Administrator first"], k:0,
    w:"Report-only shows what would happen without blocking anyone."},
   {d:2, q:"Why block legacy authentication?", o:["It can't do MFA, so password sprays target it","It's too slow","It only works on Linux"], k:0,
    w:"An MFA policy doesn't help if attackers can sign in through a protocol that never asks for MFA."},
   {d:2, q:"What are emergency access (break-glass) accounts for?", o:["Getting back in if a policy or outage locks everyone out","Everyday admin work","Sharing with contractors"], k:0,
-   w:"They're excluded from Conditional Access, protected strongly and monitored, so their use is always a big deal."},
+   w:"They're excluded from Conditional Access policies but still protected with phishing-resistant MFA and monitored, so any use is a big deal."},
   {d:3, q:"A small business has no Entra ID P1 licences. What's the simplest way to require MFA?", o:["Turn on security defaults","Write a Conditional Access policy anyway","Ask staff to opt in"], k:0,
    w:"Conditional Access needs P1. Security defaults give free, baseline MFA for everyone."}
  ],
@@ -1309,7 +1312,7 @@ Get-MgDirectoryRoleMember -DirectoryRoleId <role-id>`},
  learn:[
   ["Two systems","Entra roles control the directory: users, groups, apps and tenant settings. Azure role-based access control (RBAC) controls Azure resources, like virtual machines, storage and networks. Being powerful in one doesn't automatically make you powerful in the other."],
   ["Scopes","Azure RBAC is assigned at a scope: management group, subscription, resource group or a single resource. Assignments flow down, so Owner on a subscription means Owner on everything inside it."],
-  ["The built-in roles","Owner can do everything, including granting access. Contributor can create and change resources but can't grant access. Reader can only look. User Access Administrator can manage who has access."],
+  ["The built-in roles","Owner can manage everything, including granting access. Contributor can create and change resources but can't grant access. Reader can only look. These manage resources, not the data inside: reading blobs needs a data role such as Storage Blob Data Reader."],
   ["An assignment has three parts","A role assignment links a security principal (a user, group or app), a role definition, and a scope. Assign roles to groups, not individuals, at the narrowest scope that works."],
   ["Global Admin and Azure","A Global Administrator doesn't control Azure subscriptions by default, but can elevate themselves to User Access Administrator over all of them. That switch is logged and should alert."]
  ],
@@ -1335,7 +1338,7 @@ az role definition list --name Contributor --output json`},
 {t:"Defender for Endpoint",
  sub:"What an EDR sees, and what it lets you do.",
  learn:[
-  ["EDR, not just antivirus","Antivirus blocks known bad files. Endpoint detection and response (EDR) records what processes, files, network connections and logons do, so you can spot suspicious behaviour and investigate it. Microsoft Defender for Endpoint is a common example."],
+  ["EDR, not just antivirus","Antivirus blocks known bad files. Endpoint detection and response (EDR) records what processes, files, network connections and logons do, so you can spot suspicious behaviour and investigate it. Microsoft Defender for Endpoint is a common example. Its attack surface reduction rules, like blocking Office apps from creating child processes, stop common attack steps outright."],
   ["Alerts become incidents","Defender groups related alerts into incidents in the Microsoft Defender portal. One incident might combine a phishing email, a malicious document and a PowerShell download across several devices."],
   ["The device timeline","Each device has a timeline and process tree. You can follow exactly what happened: Word started PowerShell, which connected to an IP, which downloaded a file."],
   ["Response actions","From the portal you can isolate a device from the network, run an antivirus scan, collect an investigation package or use live response. Isolation keeps the device connected to Defender, so you can keep investigating."],
@@ -1365,16 +1368,16 @@ az role definition list --name Contributor --output json`},
 {t:"Microsoft Sentinel incidents",
  sub:"From log to alert to closed incident.",
  learn:[
-  ["What Sentinel is","Microsoft Sentinel is a cloud SIEM and SOAR built on a Log Analytics workspace. It's also part of the unified security operations experience in the Defender portal."],
+  ["What Sentinel is","Microsoft Sentinel is a cloud SIEM and SOAR built on a Log Analytics workspace. It's moving fully into the Microsoft Defender portal: Sentinel in the Azure portal is due to retire on 31 March 2027."],
   ["How alerts are made","Data connectors bring in logs from Entra ID, Defender, firewalls and more. Analytics rules, usually scheduled KQL queries, look for suspicious patterns and raise alerts, which are grouped into incidents."],
   ["Entities","Alerts map entities such as accounts, hosts and IP addresses. Clicking an entity shows everything Sentinel knows about it, which makes linking related activity much faster."],
-  ["Working an incident","Assign yourself, set it to Active, check the severity, investigate the entities and evidence, then close it with a classification: true positive, benign positive or false positive. Good notes help the next analyst."],
+  ["Working an incident","Assign yourself, set it to Active, check the severity, investigate the entities and evidence, then close it with a classification: true positive, benign positive, false positive or undetermined. Good notes help the next analyst."],
   ["Automation","Automation rules can assign, tag or close incidents. Playbooks, built on Azure Logic Apps, can take actions like disabling a user or posting to Teams. Automate the repetitive steps; keep people for judgement."]
  ],
  real:["Tuning the noise","A new SOC turns on dozens of analytics rules and gets hundreds of incidents a day, most benign. Analysts start skimming. Tuning the noisiest rules with exclusions and thresholds is what lets the real incidents stand out."],
  myth:["More analytics rules always means better detection.","Untuned rules create alert fatigue, and real attacks get missed in the noise. Fewer, well-tuned rules beat many noisy ones."],
  tryit:{h:"Practise the query side", where:"Microsoft's Log Analytics demo",
-  p:"Open Microsoft's free Log Analytics demo environment and try a summary query. If this table isn't there, pick another from the list on the left and adapt it.",
+  p:"Open Microsoft's free Log Analytics demo environment (it may ask you to sign in) and try a summary query. If this table is empty or missing, pick another from the list on the left and adapt it.",
   code:String.raw`SecurityEvent
 | where TimeGenerated > ago(1d)
 | summarize events = count() by EventID
@@ -1395,12 +1398,12 @@ az role definition list --name Contributor --output json`},
  sub:"Which of ten thousand findings do you fix first?",
  learn:[
   ["CVEs","A CVE ID, like CVE-2021-44228, names one publicly known vulnerability. Scanners match the software and versions you run against CVEs, and often return thousands of findings."],
-  ["CVSS: how bad","The Common Vulnerability Scoring System rates severity from 0 to 10. Under CVSS v3, 9.0 and above is critical, 7.0 to 8.9 high, 4.0 to 6.9 medium and below that low. CVSS v4.0 came out in 2023."],
+  ["CVSS: how bad","The Common Vulnerability Scoring System rates severity from 0 to 10. Under CVSS v3, 9.0 and above is critical, 7.0 to 8.9 high, 4.0 to 6.9 medium, 0.1 to 3.9 low and 0.0 none. CVSS v4.0 came out in 2023."],
   ["EPSS: how likely","The Exploit Prediction Scoring System, from FIRST, estimates the probability that a vulnerability will be exploited in the next 30 days. A medium CVSS flaw with a high EPSS can matter more than a critical one nobody exploits."],
   ["KEV: already happening","CISA's Known Exploited Vulnerabilities catalogue lists flaws attackers are using in the wild. If something you run is on it, especially if it's internet-facing, it goes to the top of the list."],
   ["Putting it together","Fix internet-facing systems with known or likely exploitation first. The Essential Eight asks for internet-facing services to be patched within 48 hours when the vendor rates a flaw critical or a working exploit exists, and within two weeks otherwise."]
  ],
- real:["Citrix Bleed, 2023","In October 2023 attackers mass-exploited CVE-2023-4966 in Citrix NetScaler, which leaked session tokens. Patching stopped new leaks, but stolen sessions kept working, so Citrix told customers to kill all active sessions too. Ransomware groups used it against large organisations."],
+ real:["Citrix Bleed, 2023","CVE-2023-4966 in Citrix NetScaler leaked session tokens. It was exploited as a zero-day from late August 2023, before the October patch. Patching stopped new leaks, but stolen sessions kept working, so Citrix told customers to kill all active sessions too. Ransomware groups used it against large organisations."],
  myth:["Always patch the highest CVSS score first.","Severity isn't likelihood. Exposure, exploitation in the wild (KEV) and probability (EPSS) often matter more than the raw score."],
  tryit:{h:"Check a CVE's real-world risk", where:"Your host machine (needs internet)",
   p:"Ask FIRST's free EPSS API for a CVE's exploitation probability, then count the entries in CISA's KEV catalogue.",
@@ -1423,7 +1426,7 @@ curl -s https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabi
 {t:"Week 5 review",
  sub:"Microsoft and cloud identity, pulled together.",
  learn:[
-  ["How to review","Answer each review heading out loud before you read it. Then do the quiz without scrolling back. These are the topics junior SOC and cloud interviews in Australia and New Zealand ask about most."]
+  ["How to review","Answer each review heading out loud before you read it. Then do the quiz without scrolling back. These topics come up often in junior SOC and cloud interviews."]
  ],
  real:["Putting the week together","An alert in Sentinel shows a sign-in to a contractor account from a new country without MFA. Conditional Access should have required MFA, the account had Owner on a subscription, and Defender shows a new process on a server. Every topic this week touches that one incident."],
  myth:["Cloud security is a completely different field from what you've learned.","It's the same ideas: identity, least privilege, logging, detection and patching. The names and tools change: Entra roles, RBAC, Conditional Access, Sentinel and Defender."],
@@ -1438,7 +1441,7 @@ curl -s https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabi
  ],
  quiz:[
   {d:2, q:"Which Microsoft feature can require MFA only for risky or external sign-ins?", o:["Conditional Access","Azure RBAC","Defender for Endpoint"], k:0,
-   w:"Conditional Access applies conditions like location and risk before deciding what to require."},
+   w:"Conditional Access applies conditions like location and risk (risk needs P2) before deciding what to require."},
   {d:2, q:"A user can create VMs but can't give anyone else access. Which Azure role fits?", o:["Contributor","Owner","Global Administrator"], k:0,
    w:"Contributor manages resources without managing access."},
   {d:2, q:"Which Sentinel component turns a scheduled KQL query into alerts?", o:["Analytics rule","Data connector","Workbook"], k:0,
@@ -1448,7 +1451,7 @@ curl -s https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabi
   {d:3, q:"Two flaws: CVSS 9.1 with no known exploitation on an internal server, and CVSS 7.5 in KEV on your internet-facing VPN. Which first?", o:["The VPN flaw in KEV","The 9.1 internal flaw","Whichever is older"], k:0,
    w:"Exposure and active exploitation beat raw severity."},
   {d:2, q:"Why keep emergency access accounts outside Conditional Access?", o:["So a broken policy can't lock every admin out","So they can skip MFA forever unnoticed","Because Conditional Access can't apply to admins"], k:0,
-   w:"They're your way back in, so protect them with very strong credentials and alert on every use."},
+   w:"They're your way back in, so protect them with phishing-resistant MFA and alert on every use."},
   {d:3, q:"What did Midnight Blizzard abuse after its first foothold at Microsoft in 2024?", o:["An old test OAuth app with elevated access","A misconfigured firewall","A USB drive"], k:0,
    w:"Apps are identities too. Unused apps with broad permissions are a quiet route to sensitive data."}
  ],
@@ -1560,7 +1563,7 @@ const FEED_DECKS = [
  q:{q:"What was the single missing control at Change Healthcare's entry point?", o:["MFA on the Citrix portal","Encryption of the claims database","An antivirus update"], k:0,
    w:"The attackers didn't need an exploit. Valid credentials and no second factor were enough."}},
 
-{id:"inc-medibank", attack:["T1555.003 Credentials from Web Browsers", "T1133 External Remote Services"], kind:"incident", tag:"2022", title:"Medibank",
+{id:"inc-medibank", attack:["T1555.003 Credentials from Password Stores: Credentials from Web Browsers", "T1133 External Remote Services"], kind:"incident", tag:"2022", title:"Medibank",
  cards:[
   ["What happened","In October 2022 Australian health insurer Medibank found attackers had stolen data on about 9.7 million current and former customers, including health claims information."],
   ["How they got in","Malware on an IT service desk contractor's personal computer stole credentials the contractor had saved in their browser. The attackers used them to log in to Medibank's VPN, which didn't require MFA."],
@@ -1615,7 +1618,7 @@ const FEED_DECKS = [
  q:{q:"Why was Log4Shell so hard for many organisations to respond to?", o:["They didn't know which systems contained Log4j","The patch was never released","It only affected Windows"], k:0,
    w:"Log4j was often a dependency of a dependency. Without an inventory, teams had to hunt for it system by system."}},
 
-{id:"inc-xz", attack:["T1195.001 Compromise Software Dependencies and Development Tools"], kind:"incident", tag:"2024", title:"The xz utils backdoor",
+{id:"inc-xz", attack:["T1195.001 Supply Chain Compromise: Compromise Software Dependencies and Development Tools"], kind:"incident", tag:"2024", title:"The xz utils backdoor",
  cards:[
   ["What happened","In March 2024 Microsoft engineer Andres Freund noticed SSH logins on a test system using more CPU and taking about half a second longer. He traced it to a backdoor in xz utils versions 5.6.0 and 5.6.1."],
   ["How it got in","A contributor known as “Jia Tan” spent around two years building trust in the project and became a maintainer. The malicious code was hidden in test files and build scripts, not in the visible source."],
@@ -1637,7 +1640,7 @@ const FEED_DECKS = [
  q:{q:"Which OWASP Top 10:2025 category best fits the CrowdStrike crash?", o:["A10 Mishandling of Exceptional Conditions","A05 Injection","A07 Authentication Failures"], k:0,
    w:"Unexpected input caused an unhandled error. A10 is about handling exceptional conditions safely."}},
 
-{id:"inc-uber", attack:["T1621 Multi-Factor Authentication Request Generation", "T1552.001 Credentials In Files"], kind:"incident", tag:"2022", title:"Uber",
+{id:"inc-uber", attack:["T1621 Multi-Factor Authentication Request Generation", "T1552.001 Unsecured Credentials: Credentials In Files"], kind:"incident", tag:"2022", title:"Uber",
  cards:[
   ["What happened","In September 2022 an attacker got broad access to Uber's internal systems, including chat, cloud consoles and security tools, and announced it in Uber's own Slack."],
   ["How they got in","They had a contractor's password and spammed MFA push requests. Then they contacted the contractor on WhatsApp, posing as Uber IT, until the contractor approved one."],
@@ -1648,7 +1651,7 @@ const FEED_DECKS = [
  q:{q:"What turned one approved MFA prompt into broad access at Uber?", o:["Admin credentials hard-coded in a script on a network share","A zero-day in Slack","An unpatched VPN"], k:0,
    w:"Secrets left in plain text let the attacker escalate quickly. Secrets belong in a vault, not in scripts."}},
 
-{id:"inc-capitalone", attack:["T1552.005 Cloud Instance Metadata API"], kind:"incident", tag:"2019", title:"Capital One",
+{id:"inc-capitalone", attack:["T1552.005 Unsecured Credentials: Cloud Instance Metadata API"], kind:"incident", tag:"2019", title:"Capital One",
  cards:[
   ["What happened","In 2019 a former Amazon Web Services engineer copied data on about 100 million people in the US and 6 million in Canada from Capital One's AWS environment."],
   ["How they got in","A misconfigured web application firewall was vulnerable to server-side request forgery (SSRF). The attacker made it request the cloud metadata service, which returned temporary credentials."],
@@ -1794,12 +1797,12 @@ const FEED_DECKS = [
 /* ---------------- FEED: triage scenarios ---------------- */
 {id:"tri-attack", kind:"triage", tag:"Triage", title:"MITRE ATT&CK in two minutes",
  cards:[
-  ["Tactics are the why","MITRE ATT&CK is a free catalogue of real attacker behaviour. Tactics are the attacker's goals, such as Initial Access, Execution, Persistence, Credential Access, Lateral Movement and Exfiltration."],
-  ["Techniques are the how","Each tactic holds techniques with IDs, like T1110 Brute Force. Sub-techniques add a number: T1110.003 is Password Spraying. SOC tickets, threat reports and detection rules use these IDs as a shared language."]
+  ["Tactics are the why","MITRE ATT&CK is a free catalogue of real attacker behaviour. Tactics are the attacker's goals. The Enterprise matrix has 14, including Initial Access, Execution, Persistence, Privilege Escalation, Credential Access, Lateral Movement and Exfiltration."],
+  ["Techniques are the how","Each tactic holds techniques with IDs, like T1110 Brute Force. Sub-techniques add a number: T1110.003 is Password Spraying. One technique can sit under several tactics. SOC tickets, threat reports and detection rules use these IDs as a shared language."]
  ],
  q:{d:1, q:"In ATT&CK, what does T1110.003 identify?", o:["A specific technique: password spraying","A software vulnerability, like a CVE","A Windows event ID"], k:0,
    w:"T numbers are techniques. The .003 marks a sub-technique of T1110 Brute Force."}},
-{id:"tri-spray", attack:["T1110.003 Password Spraying"], kind:"triage", tag:"Triage", title:"Many users, one source",
+{id:"tri-spray", attack:["T1110.003 Brute Force: Password Spraying"], kind:"triage", tag:"Triage", title:"Many users, one source",
  cards:[["The evidence","A Windows server's Security log over two minutes, all network logons. Forty different users each have one failed logon from the same public address. Then one success.",
   String.raw`4625 asmith  203.0.113.50
 4625 bjones  203.0.113.50
@@ -1816,7 +1819,7 @@ const FEED_DECKS = [
 | where EventID == 4625
 | summarize users = dcount(TargetUserName) by IpAddress, bin(TimeGenerated, 10m)
 | where users > 10`]]},
-{id:"tri-ssh", attack:["T1110.001 Password Guessing"], kind:"triage", tag:"Triage", title:"A noisy SSH server",
+{id:"tri-ssh", attack:["T1110.001 Brute Force: Password Guessing"], kind:"triage", tag:"Triage", title:"A noisy SSH server",
  cards:[["The evidence","A Linux server's SSH log, simplified. About 300 failures in five minutes from one address. No successful logins appear.",
   String.raw`Failed password  root
   from 198.51.100.23
@@ -1832,7 +1835,7 @@ Failed password  admin (invalid)
    w:"Confirm the attacker never got in. Then harden: key-only logins, no root login, and rate limiting or fail2ban."}],
  after:[["How to hunt it","On the server, look for any successful login from the attacking address. On Red Hat or Fedora the unit is sshd, not ssh.",
   String.raw`sudo journalctl -u ssh | grep "Accepted" | grep 198.51.100.23`]]},
-{id:"tri-phish", attack:["T1566.002 Spearphishing Link"], kind:"triage", tag:"Triage", title:"A reported email",
+{id:"tri-phish", attack:["T1566.002 Phishing: Spearphishing Link"], kind:"triage", tag:"Triage", title:"A reported email",
  cards:[["The evidence","A user reports this email. They haven't clicked the link.",
   String.raw`From: "Microsoft 365"
   no-reply@micros0ft-support.example
@@ -1859,7 +1862,7 @@ ConsoleLogin: Success`]],
   {d:3, q:"What's the best first response?", o:["Treat it as a compromise: secure root, enable MFA and review every action since","Wait to see if it happens again","Delete the CloudTrail event"], k:0,
    w:"Rotate the root password, add MFA, then hunt for new users, access keys and changed permissions."}],
  after:[["How to prevent it","Put phishing-resistant MFA on the root user, remove any root access keys, and alert on every root sign-in. Day-to-day work should use roles, never root."]]},
-{id:"tri-macro", attack:["T1204.002 User Execution: Malicious File", "T1059.001 PowerShell"], kind:"triage", tag:"Triage", title:"Word starts PowerShell",
+{id:"tri-macro", attack:["T1204.002 User Execution: Malicious File", "T1059.001 Command and Scripting Interpreter: PowerShell"], kind:"triage", tag:"Triage", title:"Word starts PowerShell",
  cards:[["The evidence","An endpoint alert from a finance laptop, paths shortened.",
   String.raw`Parent:  …\Office16\WINWORD.EXE
 Process: …\powershell.exe
@@ -1921,7 +1924,9 @@ Command: powershell -nop -w hidden
 | project TimeGenerated, Account, IpAddress, Computer`],
   ["Filter, then choose columns","`where` keeps only the rows that match. `project` picks the columns you want to see. Filter as early as you can: smaller tables are faster and cheaper. Practise free in Microsoft's Log Analytics demo (aka.ms/LADemo)."]
  ],
- q:{d:1, q:"In the query above, which line keeps only failed logons?", o:["| where EventID == 4625","| project TimeGenerated, Account, IpAddress, Computer","SecurityEvent"], k:0,
+ q:{d:1, q:"In this query, which line keeps only failed logons?", code:String.raw`SecurityEvent
+| where EventID == 4625
+| project TimeGenerated, Account, IpAddress, Computer`, o:["`| where EventID == 4625`","`| project TimeGenerated, Account, IpAddress, Computer`","`SecurityEvent`"], k:0,
    w:"`where` filters rows. 4625 is a failed logon; `project` only chooses columns."}},
 {id:"kql-summarize", kind:"kql", tag:"KQL", title:"Counting with summarize",
  cards:[
@@ -1932,7 +1937,7 @@ Command: powershell -nop -w hidden
 | top 10 by count_`],
   ["The count_ column","`count()` makes a column named `count_`. Use `top 10 by count_` or `sort by count_ desc` to see the biggest first. In Splunk, roughly: `index=wineventlog EventCode=4625 | stats count by src_ip`."]
  ],
- q:{d:2, q:"You want failed logons per source IP, biggest first. Which line goes after the where?", o:["| summarize count() by IpAddress | sort by count_ desc","| project IpAddress","| where IpAddress == count()"], k:0,
+ q:{d:2, q:"You want failed logons per source IP, biggest first. Which line goes after `where EventID == 4625`?", o:["`| summarize count() by IpAddress | sort by count_ desc`","`| project IpAddress`","`| where IpAddress == count()`"], k:0,
    w:"`summarize` does the grouping and counting; sorting by `count_` puts the noisiest first."}},
 {id:"kql-time", kind:"kql", tag:"KQL", title:"Time windows: ago and bin",
  cards:[
@@ -1947,7 +1952,7 @@ Command: powershell -nop -w hidden
    w:"Bucketing by time turns a list of events into a pattern you can spot, like a spike of failures."}},
 {id:"kql-has", kind:"kql", tag:"KQL", title:"has versus contains",
  cards:[
-  ["Whole terms","`has` matches a whole term, and it's fast because Log Analytics indexes terms. `CommandLine has \"-enc\"` finds the switch as a separate term.",
+  ["Whole terms","`has` matches a whole term, and it's fast because Log Analytics indexes terms. `ProcessCommandLine has \"-enc\"` finds the switch as a separate term. Attackers vary it (`-e`, `-EncodedCommand`), so real hunts check several.",
    String.raw`DeviceProcessEvents
 | where FileName =~ "powershell.exe"
 | where ProcessCommandLine has "-enc"`],
@@ -1961,9 +1966,9 @@ Command: powershell -nop -w hidden
    String.raw`SigninLogs
 | where TimeGenerated > ago(1d)
 | where ResultType == "50126"
-| summarize failures = count() by UserPrincipalName, IPAddress
-| where failures > 10`],
-  ["Why it matters","Cloud accounts are attacked from anywhere, all day. Many failures from one IP across many users is a password spray; many failures on one user from many IPs is a targeted attack."]
+| summarize users = dcount(UserPrincipalName), failures = count() by IPAddress
+| where users > 10`],
+  ["Why it matters","The query counts distinct users failing from each IP: many users from one IP is a password spray. Many failures on one user from many IPs is a targeted attack. Background sign-ins by apps are in a separate table, AADNonInteractiveUserSignInLogs."]
  ],
  q:{d:2, q:"In SigninLogs, what does ResultType \"0\" mean?", o:["A successful sign-in","A failed password","A blocked country"], k:0,
    w:"Zero means no error. Anything else is a failure or interruption, with the code telling you why."}},
@@ -1974,15 +1979,15 @@ Command: powershell -nop -w hidden
 | where EventID == 4688
 | where CommandLine has "-enc"
 | project TimeGenerated, Computer, Account, ParentProcessName, CommandLine`],
-  ["Turn it on first","Command lines aren't logged by default. They need the Group Policy setting “Include command line in process creation events”. Defender for Endpoint records them in DeviceProcessEvents without that step."]
+  ["Turn it on first","4688 needs the “Audit Process Creation” policy turned on, and command lines also need the Group Policy setting “Include command line in process creation events”. Defender for Endpoint records them in DeviceProcessEvents without that step."]
  ],
  q:{d:2, q:"Your 4688 events have an empty CommandLine column. What's the likely cause?", o:["Command-line auditing isn't turned on","The process never ran","KQL can't read command lines"], k:0,
    w:"4688 records the process, but the command line only appears once the audit policy setting is enabled."}},
 {id:"kql-roles", kind:"kql", tag:"KQL", title:"Role changes in AuditLogs",
  cards:[
-  ["The table","Changes to Microsoft Entra ID, such as new users, group changes and role assignments, land in `AuditLogs`. Someone being added to a powerful role is one of the most important things to alert on.",
+  ["The table","Changes to Microsoft Entra ID, such as new users, group changes and role assignments, land in `AuditLogs`. Someone being added to a powerful role is one of the most important things to alert on. Matching “member to role” also catches PIM activations and eligible assignments.",
    String.raw`AuditLogs
-| where OperationName == "Add member to role"
+| where OperationName has "member to role"
 | extend Actor = tostring(InitiatedBy.user.userPrincipalName)
 | project TimeGenerated, Actor, TargetResources`],
   ["Reading nested data","Some columns hold JSON, like InitiatedBy. Reach into them with dots, then wrap the value in `tostring()` so you can filter or project it."]
@@ -2000,9 +2005,9 @@ fails
 | join kind=inner (
     SecurityEvent | where EventID == 4624 | distinct IpAddress
   ) on IpAddress`],
-  ["let and inner joins","`let` names a result so you can reuse it. `kind=inner` keeps only rows found in both sides, so you see just the sources that failed a lot and then got in."]
+  ["let and inner joins","`let` names a result so you can reuse it. `kind=inner` keeps only rows found in both sides, so you see just the sources that failed a lot and also logged on successfully at some point. It doesn't check the order."]
  ],
- q:{d:3, q:"What does `join kind=inner ... on IpAddress` return here?", o:["IPs that appear in both the failures list and the successes","Every IP from both tables","Only IPs that never succeeded"], k:0,
+ q:{d:3, q:"A query joins a list of IPs with many failed logons to a list of IPs with a successful logon, using `join kind=inner ... on IpAddress`. What does it return?", o:["IPs that appear in both the failures list and the successes","Every IP from both tables","Only IPs that never succeeded"], k:0,
    w:"An inner join keeps matches from both sides: many failures and at least one success, the shape of a guessed password."}}
 ];
 
@@ -2625,7 +2630,10 @@ function srsItem(key){
   const pre = key.slice(0, 2), rest = key.slice(2);
   if (pre === "f:"){
     const [id, n] = rest.split("#"), d = FEED_DECKS.find(x => x.id === id), q = d && d.qs && d.qs[+n || 0];
-    return q ? {q, src:d.kind === "owasp" ? "OWASP " + d.tag : d.title, deck:d} : null;
+    if (!q) return null;
+    // Triage questions only make sense next to their evidence, so review shows the log with them.
+    const withEvidence = d.kind === "triage" && !q.code && d.cards[0] && d.cards[0][2] ? Object.assign({}, q, {code:d.cards[0][2]}) : q;
+    return {q:withEvidence, src:d.kind === "owasp" ? "OWASP " + d.tag : d.title, deck:d};
   }
   if (pre === "i:"){ const d = FEED_DECKS.find(x => x.id === rest && x.kind === "interview"); return d ? {interview:d, src:"Interview"} : null; }
   const [dn, qi] = rest.split(".").map(Number);
@@ -2639,12 +2647,15 @@ function dueKeys(){
   return Object.keys(srs).filter(k => srs[k].due <= t && srsItem(k))
     .sort((a, b) => (srs[b].flag ? 1 : 0) - (srs[a].flag ? 1 : 0) || srs[a].due - srs[b].due || srs[a].box - srs[b].box);
 }
+// Missed on three different days and still not mastered.
+const isSlipping = e => !!e && (e.lapses || 0) >= 3 && e.box <= 2;
 function srsRecord(key, correct, sure){
   if (sure === undefined) sure = true;
   const t = dayNum(), e = srs[key] || {box:1, due:t, last:0, n:0};
   if (!correct){
     // A miss drops to box 1. Being sure and wrong is a "surprise": those come back first.
-    e.box = 1; e.lapses = (e.lapses || 0) + 1;
+    if (e.last !== t) e.lapses = (e.lapses || 0) + 1;
+    e.box = 1;
     if (sure) e.flag = "surprise"; else delete e.flag;
   } else if (sure){
     // At most one step up per day, so retrying a question straight away can't fast-track it.
@@ -2771,9 +2782,9 @@ function buildQuiz(card, q, persist, onChange){
     const check = recall.querySelector(".checkTyped");
     if (check) {
       const run = () => {
-        if (!input.value.trim()) return;
+        if (!input.value.trim()){ msg.textContent = "Type an answer, or tap Show options."; return; }
         if (answers.includes(normAns(input.value))){ showOpts(); setSure(true); btns.find(b => +b.dataset.j === q.k).click(); }
-        else { forcedGuess = true; showOpts(); msg.textContent = ""; why.innerHTML = "<strong>Not quite.</strong> Pick from the options. This one will count as a guess."; why.classList.add("show"); }
+        else { forcedGuess = true; showOpts(); setSure(false); confBtns.forEach(x => x.disabled = true); msg.textContent = ""; why.innerHTML = "<strong>Not quite.</strong> Pick from the options. This one will count as a guess."; why.classList.add("show"); }
       };
       check.addEventListener("click", run);
       input.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); run(); } });
@@ -2809,7 +2820,8 @@ function buildQuiz(card, q, persist, onChange){
     btns[0].focus({preventScroll:true});
     card.scrollTo({top:0, behavior: reduceMotion() ? "auto" : "smooth"});
   });
-  if (persist && Number.isInteger(persist.obj[persist.key])){ reveal(persist.obj[persist.key], false); confBtns.forEach(x => x.disabled = true); }
+  // A saved answer doesn't record how sure you were, so neither button shows as chosen.
+  if (persist && Number.isInteger(persist.obj[persist.key])){ reveal(persist.obj[persist.key], false); confBtns.forEach(x => { x.disabled = true; x.setAttribute("aria-pressed", "false"); }); }
   return () => { clear(); confBtns.forEach(x => x.disabled = false); setSure(true); };
 }
 function quizHtml(q, tagHtml, withRetry, seed, recall){
@@ -2821,7 +2833,7 @@ function quizHtml(q, tagHtml, withRetry, seed, recall){
     ${q.code ? codeBlock(q.code, "", false) : ""}
     ${recall ? `<div class="recall">
       <p class="small">${typed ? "Type the answer from memory, or think it through first." : "Think of the answer before you look at the options."}</p>
-      ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">Check</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
+      ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"${typed.every(a => /^[0-9.]+$/.test(a)) ? ' inputmode="decimal"' : ""} aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">Check</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
       <p class="small recallMsg" aria-live="polite"></p></div>` : ""}
     <div class="conf" role="group" aria-label="How sure are you?"${recall ? " hidden" : ""}>How sure? <button type="button" aria-pressed="true">Sure</button><button type="button" aria-pressed="false">Guessing</button></div>
     <div class="opts${q.code ? " out" : ""}" role="group" aria-label="Answers"${recall ? " hidden" : ""}>${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
@@ -2972,7 +2984,9 @@ function renderStories(){
   document.querySelectorAll(".storyCount").forEach(x => x.textContent = `${stories.length} interview stor${stories.length === 1 ? "y" : "ies"} ready`);
 }
 const storySheet = document.getElementById("storySheet");
-let editing = -1, storyOpener = null, deleteArmed = false;
+let editing = -1, storyOpener = null, deleteArmed = false, storySnap = "", discardArmed = false;
+const storyFields = () => ["stTitle", "stS", "stA", "stR"].map(id => document.getElementById(id).value).join("\u0001") + [...document.querySelectorAll("#stLinks input:checked")].map(x => x.value).join(",");
+const storyDirty = () => storySheet.classList.contains("open") && storyFields() !== storySnap;
 function openStory(i, e){
   editing = i; deleteArmed = false; storyOpener = (e && e.currentTarget) || document.activeElement;
   const st = i >= 0 ? stories[i] : {title:"", s:"", a:"", r:"", links:[]};
@@ -2982,10 +2996,13 @@ function openStory(i, e){
     `<li><label><input type="checkbox" value="${d.id}"${(st.links || []).includes(d.id) ? " checked" : ""}>${esc(d.title)}</label></li>`).join("");
   document.getElementById("stDelete").hidden = i < 0; document.getElementById("stDelete").textContent = "Delete";
   document.getElementById("stMsg").textContent = "";
+  storySnap = storyFields(); discardArmed = false;
   storySheet.classList.add("open");
   Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true;
   history.pushState({story:1}, "");
-  document.getElementById("stTitle").focus();
+  // New story: start typing straight away. Existing story: don't pop the keyboard over it.
+  if (i < 0) document.getElementById("stTitle").focus();
+  else { const h = document.getElementById("storyTitle"); h.tabIndex = -1; h.focus(); }
 }
 function hideStory(){
   storySheet.classList.remove("open");
@@ -2993,21 +3010,28 @@ function hideStory(){
   if (storyOpener && storyOpener.isConnected) storyOpener.focus({preventScroll:true});
   renderStories();
 }
-function closeStory(){ if (history.state && history.state.story) history.back(); else hideStory(); }
+function closeStory(force){
+  if (!force && storyDirty() && !discardArmed){
+    discardArmed = true; document.getElementById("stMsg").textContent = "You have unsaved changes. Save, or tap Close again to discard them."; return;
+  }
+  storySnap = storyFields();
+  if (history.state && history.state.story) history.back(); else hideStory();
+}
 document.getElementById("storyAdd").addEventListener("click", e => openStory(-1, e));
-document.getElementById("storyClose").addEventListener("click", closeStory);
-storySheet.addEventListener("click", e => { if (e.target === storySheet) closeStory(); });
+document.getElementById("storyClose").addEventListener("click", () => closeStory());
+// A stray tap outside the sheet never throws work away.
+storySheet.addEventListener("click", e => { if (e.target === storySheet && !storyDirty()) closeStory(); });
 document.getElementById("stSave").addEventListener("click", () => {
   const st = {title:document.getElementById("stTitle").value.trim(), s:document.getElementById("stS").value.trim(),
     a:document.getElementById("stA").value.trim(), r:document.getElementById("stR").value.trim(),
     links:[...document.querySelectorAll("#stLinks input:checked")].map(x => x.value)};
   if (!st.title){ document.getElementById("stMsg").textContent = "Give the story a short title first."; document.getElementById("stTitle").focus(); return; }
   if (editing >= 0) stories[editing] = st; else stories.push(st);
-  saveStories(); toast("Story saved"); closeStory();
+  saveStories(); toast("Story saved"); closeStory(true);
 });
 document.getElementById("stDelete").addEventListener("click", () => {
   if (!deleteArmed){ deleteArmed = true; document.getElementById("stDelete").textContent = "Tap again to delete"; return; }
-  stories.splice(editing, 1); saveStories(); toast("Story deleted"); closeStory();
+  stories.splice(editing, 1); saveStories(); toast("Story deleted"); closeStory(true);
 });
 document.getElementById("studyCount").textContent = `${DAYS.length} days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stages 1 and 2 complete</div><h1>That's all ${DAYS.length} days</h1>
@@ -3123,13 +3147,14 @@ function appendDeck(forced, at){
     const after = d.after || [];
     const total = d.cards.length + show.length + after.length;
     const tag = (i, extra) => `<div class="tag"><span>${esc(badge)}</span>${esc(d.title)} · ${extra || (i+1) + " of " + total}</div>`;
-    const card = ([h, p, code], i, last) => {
+    const card = ([h, p, code], i, last, chips) => {
       const evidence = d.kind === "triage" && i === 0;
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0},
-        html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, evidence ? "Log" : "", !evidence) : ""}${last && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}${last && d.attack ? `<div class="chip"><b>ATT&amp;CK</b>${d.attack.map(fmt).join("<br>")}</div>` : ""}`});
+        html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, evidence ? "Log" : "", !evidence) : ""}${chips && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}${chips && d.attack ? `<div class="chip"><b>ATT&amp;CK</b>${d.attack.map(fmt).join("<br>")}</div>` : ""}`});
       if (code && !evidence) wireCopy(s, code);
     };
-    d.cards.forEach((x, i) => card(x, i, i === d.cards.length - 1));
+    // Labels that would give an answer away go after the questions on decks that ask about them.
+    d.cards.forEach((x, i) => card(x, i, i === d.cards.length - 1, !d.all && i === d.cards.length - 1));
     show.forEach((n, j) => {
       const q = d.qs[n], key = checkKey(d, n);
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:d.cards.length + j, total},
@@ -3144,7 +3169,7 @@ function appendDeck(forced, at){
         saveFeed(); updateScore("feed", true);
       });
     });
-    after.forEach((x, i) => card(x, d.cards.length + show.length + i, false));
+    after.forEach((x, i) => card(x, d.cards.length + show.length + i, false, d.all && i === 0));
   }
   // A natural pause every five decks, so the Feed isn't a bottomless scroll.
   if (at === undefined && ++decksAppended % 5 === 0){
@@ -3152,7 +3177,9 @@ function appendDeck(forced, at){
       <div class="tag"><span>Pause</span>${decksAppended} decks in this session</div>
       <h2>Nice run</h2>
       <p class="runScore"></p>
+      <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
       <div class="row"><button class="btn keep" type="button">Keep going</button><button class="btn ghost toStudy" type="button">Switch to Study</button></div>`});
+    wireTarget(pause);
     pause.querySelector(".keep").addEventListener("click", () => go("feed", F.cards.findIndex(c => c.el === pause) + 1));
     pause.querySelector(".toStudy").addEventListener("click", () => userSwitch("study"));
   }
@@ -3173,7 +3200,7 @@ function appendReview(at){
     <h2>Time to review</h2>
     <p>Questions you've answered before. Get one right and it comes back later; miss it and it comes back tomorrow.</p>`});
   keys.forEach((k, i) => {
-    const slipping = (srs[k].lapses || 0) >= 3;
+    const slipping = isSlipping(srs[k]);
     const it = srsItem(k), tagHtml = `<div class="tag"><span>Review</span>${esc(it.src)} · ${i + 1} of ${keys.length}${slipping ? ` · <span class="slip">Keeps slipping</span>` : ""}</div>`;
     if (it.interview){
       const s = put({c, label:"Review · Interview", group:serial, extra:{review:true, rkey:k, pos:i + 1, total}, html: interviewHtml(it.interview, tagHtml)});
@@ -3185,7 +3212,7 @@ function appendReview(at){
       html: quizHtml(it.q, tagHtml, false, Math.random() * 4294967296 >>> 0, true) + `<button class="linkbtn reread" type="button" hidden>${rereadText} →</button>`});
     const reread = s.querySelector(".reread");
     reread.addEventListener("click", () => {
-      if (it.tab) navigateTo(it.tab, it.dn);
+      if (it.tab) navigateTo(it.tab, it.dn, true);
       else { const j = F.cards.findIndex(x => x.el === s); let e = j; while (F.cards[e+1] && F.cards[e+1].group === F.cards[j].group) e++; appendDeck(it.deck, e + 1); go("feed", e + 1); }
     });
     buildQuiz(s, it.q, null, (pick, sure) => {
@@ -3217,14 +3244,17 @@ addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, ht
   <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
   <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["KQL","--k-kql"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
-document.querySelectorAll(".target button").forEach(b => {
-  b.setAttribute("aria-pressed", b.dataset.t === target ? "true" : "false");
-  b.addEventListener("click", () => {
-    target = b.dataset.t; store.set("cr2-target", target);
-    document.querySelectorAll(".target button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
-    toast(target === "mixed" ? "Feed set to a mix of everything" : `Feed now leans towards ${target === "soc" ? "SOC analyst" : "cloud security"} topics`);
+function wireTarget(root){
+  root.querySelectorAll(".target button").forEach(b => {
+    b.setAttribute("aria-pressed", b.dataset.t === target ? "true" : "false");
+    b.addEventListener("click", () => {
+      target = b.dataset.t; store.set("cr2-target", target);
+      document.querySelectorAll(".target button").forEach(x => x.setAttribute("aria-pressed", x.dataset.t === target ? "true" : "false"));
+      toast(target === "mixed" ? "From the next few decks: a mix of everything" : `From the next few decks: more ${target === "soc" ? "SOC analyst" : "cloud security"} topics`);
+    });
   });
-});
+}
+wireTarget(F.el);
 for (let i = 0; i < 3; i++) appendNext();
 
 // Keep the DOM small on long sessions: drop whole decks well above the reader,
@@ -3236,14 +3266,15 @@ function trimFeed(){
   trimTimer = null;
   if (F.cards.length < 90 || F.current < 50) return;
   // Decks are contiguous, so everything before the deck holding keepFrom is whole decks.
+  // The start card (index 0) always stays, so the goal toggle is never lost.
   const keepFrom = F.current - 25, g = F.cards[keepFrom].group;
   const cut = F.cards.findIndex(c => c.group === g);
-  if (cut <= 0) return;
-  const removed = F.cards.splice(0, cut);
+  if (cut <= 1) return;
+  const removed = F.cards.splice(1, cut - 1);
   const h = removed.reduce((sum, c) => sum + c.el.offsetHeight, 0);
   removed.forEach(c => { F.io.unobserve(c.el); c.el.remove(); });
   F.el.scrollTop -= h;
-  F.current -= cut;
+  F.current -= cut - 1;
 }
 
 /* ---------- Streak, due count and toasts ---------- */
@@ -3267,7 +3298,7 @@ function refreshDaily(){
   if (bkLast) bkLast.textContent = last ? `Last backup: ${age === 0 ? "today" : age === 1 ? "yesterday" : age + " days ago"}.` : "Last backup: never.";
   const nudge = document.getElementById("bkNudge");
   if (nudge) nudge.hidden = !store.ok || Object.keys(srs).length < 10 || (last && age < 7);
-  if (typeof renderReady === "function" && document.getElementById("skillList")) renderReady();
+  if (typeof renderReady === "function" && document.getElementById("skillList") && S.cards[S.current] && S.cards[S.current].el.id === "ready") renderReady();
 }
 document.querySelectorAll(".reviewNow").forEach(b => b.addEventListener("click", reviewNow));
 
@@ -3288,8 +3319,8 @@ function setCurrent(tab, idx){
     if (idx >= T.cards.length - 4){ appendNext(); appendNext(); }
     if (c.first) scheduleTrim();
   } else if (c.group >= 0){
-    store.set(tab === "study" ? "cr2-pos" : "cr2-py-pos", c.el.id);
-    updateResume(tab);
+    if (c.el.id === "ready") renderReady();
+    if (!T.detour){ store.set(tab === "study" ? "cr2-pos" : "cr2-py-pos", c.el.id); updateResume(tab); }
   }
   if (tab === active) render();
 }
@@ -3390,8 +3421,12 @@ function switchTab(tab, focusView){
   if (focusView) TABS[tab].el.focus({preventScroll:true});
 }
 // Jump to a day or lesson in another tab. Going back to Study restores its old card from history first, so jump after that.
-function navigateTo(tab, n){
+function navigateTo(tab, n, detour){
   const there = () => goGroup(tab, n - 1);
+  if (detour){
+    history.pushState({tab:1}, "", location.hash);
+    TABS[tab].detour = true; switchTab(tab); there(); return;
+  }
   if (tab === "study" && active !== "study" && history.state && history.state.tab){ pendingNav = there; userSwitch("study"); }
   else { userSwitch(tab); there(); }
 }
@@ -3441,18 +3476,27 @@ function renderSheet(){
   document.getElementById("score").innerHTML = `<div>Mastered means right on two separate days.</div>${t.done} of ${t.total} questions answered · ${t.right} correct${tab === "study" ? ` · portfolio ${pfScore()} of ${PORTFOLIO.length}` : ""}` +
     (weakest.length ? `<div class="weak">${weakest.map(n => `<button class="x weakBtn" type="button" data-n="${n}">Needs work: ${T.cfg.word} ${n}</button>`).join("")}</div>` : "");
   const mine = Object.keys(srs).filter(k => k.startsWith(pre));
-  const surprises = mine.filter(k => srs[k].flag).length, slipping = mine.filter(k => (srs[k].lapses || 0) >= 3);
+  const surprises = mine.filter(k => srs[k].flag).length, slipping = mine.filter(k => isSlipping(srs[k]));
   if (surprises || slipping.length) document.getElementById("score").insertAdjacentHTML("beforeend",
     `<div>${surprises} surprise${surprises === 1 ? "" : "s"} (sure but wrong) · ${slipping.length} keep${slipping.length === 1 ? "s" : ""} slipping</div>` +
+    (surprises ? `<div class="weak"><button class="x" type="button" id="reviewSurprises">Review surprises now</button></div>` : "") +
     (slipping.length ? `<div class="weak">${[...new Set(slipping.map(k => +k.slice(2).split(".")[0]))].slice(0, 4).map(n => `<button class="x weakBtn slip" type="button" data-n="${n}">Keeps slipping: ${T.cfg.word} ${n}</button>`).join("")}</div>` : ""));
-  document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
+  const slipDays = new Set(slipping.map(k => k.slice(2).split(".")[0]));
+  document.querySelectorAll(".weakBtn:not(.slip)").forEach(b => { if (slipDays.has(b.dataset.n)) b.remove(); });
+  const rs = document.getElementById("reviewSurprises");
+  if (rs) rs.addEventListener("click", () => closeSheet(() => reviewNow()));
+  document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { S.detour = false; goGroup(tab, n - 1); }); }));
+  // 4. quick links to the cards after the last day
+  if (tab === "study") document.getElementById("score").insertAdjacentHTML("beforeend",
+    `<div class="weak">${[["portfolio","Portfolio"],["stories","Stories"],["ready","Readiness"]].map(([id, t]) => `<button class="x jump" type="button" data-id="${id}">${t}</button>`).join("")}</div>`);
+  document.querySelectorAll(".jump").forEach(b => b.addEventListener("click", () => closeSheet(() => go("study", S.cards.findIndex(c => c.el.id === b.dataset.id)))));
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
       const st = s.done === 0 ? "" : s.right < s.done ? "miss" : s.done === s.total ? "ok" : "part";
       const label = s.done ? "first try " + s.right + "/" + s.total + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions";
       return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
   }</div>`).join("");
-  dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
+  dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { T.detour = false; goGroup(tab, n - 1); }); }));
 }
 function openSheet(e){
   if (active === "feed") return;
@@ -3484,7 +3528,11 @@ function closeSheet(then){
   } else hideSheet();
 }
 window.addEventListener("popstate", e => {
-  if (storySheet.classList.contains("open")){ hideStory(); return; }
+  if (storySheet.classList.contains("open")){
+    // Back with unsaved changes: stay open once and warn; a second Back discards.
+    if (storyDirty() && !discardArmed){ discardArmed = true; history.pushState({story:1}, ""); document.getElementById("stMsg").textContent = "You have unsaved changes. Save, or go back again to discard them."; return; }
+    hideStory(); return;
+  }
   if (sheet.classList.contains("open")){ ignoreHash = true; hideSheet(); setTimeout(() => { ignoreHash = false; }, 100); return; }
   // Back (or any history move) shows whatever the restored address points to; Study's entry holds a Study card.
   ignoreHash = true;
@@ -3567,6 +3615,7 @@ function wireResume(tab, btnId, posKey, word){
   resumeLabels[tab] = {btn, posKey, word}; updateResume(tab);
   btn.addEventListener("click", () => {
     const i = T.cards.findIndex(c => c.el.id === store.get(posKey, ""));
+    T.detour = false;
     if (i > 0 && T.cards[i].group >= 0) go(tab, i); else goGroup(tab, 0);
   });
 }
@@ -3605,22 +3654,28 @@ renderStories();
    Mastered = share of the skill's questions answered right on two separate days (box 3+).
    A CV line unlocks at 30% mastered, or once a linked lab is ticked in the portfolio. */
 const SKILLS = [
-  {name:"SIEM and log analysis", s:[22,23,24,25,33], p:[7,8,14], kinds:["triage","kql"], pf:["logons","scan-watch","wireshark"],
-   line:"Analysed Windows, Linux and firewall logs in a home lab, and detected brute-force and port-scan activity with KQL queries and a Python script."},
-  {name:"Identity and access", s:[3,4,29,30,31], decks:["cloud-iam","e8-admin","e8-mfa","owasp-a01","owasp-a07"], pf:["perm-proof"],
-   line:"Understand authentication, MFA strength, least privilege and role-based access across Windows, Linux and Microsoft Entra ID."},
-  {name:"Incident response", s:[6,7,26,27,32], kinds:["incident"], pf:["playbook"],
-   line:"Wrote a phishing incident playbook and studied real incidents such as Medibank and Change Healthcare against NIST SP 800-61."},
-  {name:"Networking", s:[8,9,10,11,12,13,14], pf:["lab-ips","fw-rule","nmap"],
-   line:"Built a segmented VirtualBox lab with static addressing and host firewall rules, then scanned it with Nmap and inspected traffic in Wireshark."},
-  {name:"Cloud security", p:[13], s:[29,30,31], kinds:["cloud"], pf:["py-s3"],
-   line:"Wrote a Python (boto3) script to flag S3 buckets without public access blocks, and understand cloud shared responsibility and logging."},
+  {name:"SIEM and log analysis", s:[22,23,24,25,33], p:[7,8,14], kinds:["triage","kql"], pf:["logons","scan-watch","wireshark"], need:["logons","scan-watch"],
+   did:"Investigated failed logons and a port scan in Windows Security and firewall logs in a home lab, and practised KQL in Microsoft's Log Analytics demo.",
+   know:"Understand SIEM triage, Windows logon events and KQL for Microsoft Sentinel and Defender."},
+  {name:"Identity and access", s:[3,4,29,30,31], decks:["cloud-iam","e8-admin","e8-mfa","owasp-a01","owasp-a07"], pf:["perm-proof"], need:["perm-proof"],
+   did:"Tested Linux file permissions and least privilege with separate user accounts in a home lab.",
+   know:"Understand authentication, MFA strength, least privilege, Conditional Access and role-based access in Microsoft Entra ID and Azure."},
+  {name:"Incident response", s:[6,7,26,27,32], kinds:["incident"], pf:["playbook"], need:["playbook"],
+   did:"Wrote a phishing incident playbook aligned to NIST SP 800-61 Rev. 3.",
+   know:"Understand incident response under NIST SP 800-61 Rev. 3, using lessons from incidents such as Medibank and Change Healthcare."},
+  {name:"Networking", s:[8,9,10,11,12,13,14], pf:["lab-ips","fw-rule","nmap"], need:["lab-ips","nmap"],
+   did:"Built an isolated VirtualBox lab with static addressing and scanned it with Nmap.",
+   know:"Understand TCP/IP, subnetting, DNS, DHCP, TLS and firewall rules."},
+  {name:"Cloud security", p:[13], s:[29,30,31], kinds:["cloud"], pf:["py-s3"], need:["py-s3"],
+   did:"Wrote a Python (boto3) script that flags S3 buckets without a bucket-level public access block.",
+   know:"Understand the cloud shared responsibility model, identity-based access and cloud logging in AWS and Azure."},
   {name:"Vulnerability management", s:[2,5,11,22,34], decks:["owasp-a03","e8-patch-apps","e8-patch-os"], pf:["nmap"],
-   line:"Prioritise patching by exposure and exploitability (CVSS, EPSS, CISA KEV) against the Essential Eight patching timeframes."},
-  {name:"Scripting", p:[1,2,3,4,5,6,7,8,9,10,11,12,13,14], pf:["py-detector","py-s3"],
-   line:"Write Python tools for security work: log parsing with regex, hashing, port checks and a brute-force detector."},
+   know:"Understand vulnerability prioritisation with CVSS, EPSS and CISA KEV, and the Essential Eight patching timeframes."},
+  {name:"Scripting", p:[1,2,3,4,5,6,7,8,9,10,11,12,13,14], pf:["py-detector","py-s3"], need:["py-detector"],
+   did:"Wrote a Python tool that finds brute-force sources in SSH logs using regex, Counter and argparse.",
+   know:"Write Python for security tasks such as log parsing, regex, hashing and port checks."},
   {name:"Frameworks and compliance", kinds:["e8","law","owasp"], pf:[],
-   line:"Familiar with the Essential Eight, OWASP Top 10:2025, NIST CSF 2.0 and Australian and NZ breach notification duties."}
+   know:"Understand the Essential Eight, OWASP Top 10:2025, NIST CSF 2.0 and Australian and NZ breach notification duties."}
 ];
 function skillKeys(sk){
   const keys = [];
@@ -3633,25 +3688,29 @@ function skillScore(sk){
   const keys = skillKeys(sk), n = keys.length || 1;
   const mastered = keys.filter(k => srs[k] && srs[k].box >= 3).length, answered = keys.filter(k => srs[k]).length;
   const labs = sk.pf.filter(id => portfolio[id]).length;
-  return {pct:Math.round(mastered / n * 100), answered:Math.round(answered / n * 100), labs, ready:mastered / n >= .3 || labs > 0};
+  // A "did" line needs its labs ticked; a "know" line needs 30% mastered. Nothing claims work you haven't ticked.
+  const did = !!sk.did && (sk.need || []).every(id => portfolio[id]);
+  return {pct:Math.round(mastered / n * 100), answered:Math.round(answered / n * 100), labs, line: did ? sk.did : mastered / n >= .3 ? sk.know : null};
 }
-const readyCard = addCard("study", {c:"var(--w2)", id:"ready", label:"Readiness", group:-3, html:`
+const readyCard = addCard("study", {c:"var(--w2)", id:"ready", label:"Readiness", group:-3, at:S.cards.findIndex(c => c.el.id === "finish"), html:`
   <div class="tag"><span>Job-ad readiness</span>Skills entry-level ads ask for</div>
   <h2>How ready are you?</h2>
   <ul class="skills" id="skillList"></ul>
   <div class="row"><button class="btn" id="cvCopy" type="button">Copy CV lines</button></div>
+  <textarea id="cvText" readonly hidden aria-label="CV lines"></textarea>
   <p class="small" id="cvMsg" aria-live="polite">Bars show the share of each skill's questions you've got right on two separate days.</p>`});
 function renderReady(){
   document.getElementById("skillList").innerHTML = SKILLS.map(sk => { const r = skillScore(sk);
     return `<li><span>${esc(sk.name)}</span><span class="pct">${r.pct}%${r.labs ? ` · ${r.labs} lab${r.labs === 1 ? "" : "s"}` : ""}</span><span class="meter" role="img" aria-label="${r.pct}% mastered"><i style="width:${Math.max(r.pct, 2)}%"></i></span></li>`; }).join("");
 }
 document.getElementById("cvCopy").addEventListener("click", () => {
-  const lines = SKILLS.filter(sk => skillScore(sk).ready).map(sk => "• " + sk.line);
+  const lines = SKILLS.map(sk => skillScore(sk).line).filter(Boolean).map(l => "• " + l);
   const msg = document.getElementById("cvMsg");
-  if (!lines.length){ msg.textContent = "Nothing ready yet. A line unlocks when a skill reaches 30% mastered, or when you tick one of its labs in the portfolio."; return; }
+  if (!lines.length){ msg.textContent = "Nothing ready yet. An “understand” line unlocks at 30% mastered; a hands-on line unlocks when you tick its labs in the portfolio."; return; }
   const text = lines.join("\n");
   const done = () => { msg.textContent = `Copied ${lines.length} line${lines.length === 1 ? "" : "s"}. Edit them into your own words before you use them.`; };
-  try { navigator.clipboard.writeText(text).then(done, () => { msg.textContent = text; }); } catch(e){ msg.textContent = text; }
+  const show = () => { const t = document.getElementById("cvText"); t.hidden = false; t.value = text; t.select(); msg.textContent = "Copying isn't allowed here, so the lines are selected above. Long-press to copy."; };
+  try { navigator.clipboard.writeText(text).then(done, show); } catch(e){ show(); }
 });
 renderReady();
 // A link to a card or tab wins; otherwise reopen the last tab used.
