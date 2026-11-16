@@ -2,12 +2,11 @@
 <html lang="en-AU">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0e1216">
 <title>Cyber Scroll</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root{
   /* One visual world: dark, full-screen vertical feeds. Weeks and tabs each have their own signal colour. */
@@ -41,7 +40,8 @@
 [hidden]{display:none!important}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit}
-button:focus-visible,a:focus-visible,.why:focus-visible{outline:2px solid var(--accent,var(--w1));outline-offset:3px}
+.why:focus{outline:none}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent,var(--w1));outline-offset:3px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .top{position:fixed;inset:0 0 auto 0;z-index:5;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:linear-gradient(var(--bg) 55%,transparent);pointer-events:none}
@@ -61,6 +61,7 @@ button:focus-visible,a:focus-visible,.why:focus-visible{outline:2px solid var(--
 .card::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
 /* margin:auto centres short cards and lets tall ones scroll from the top instead of clipping */
 .in{margin:auto 0;display:flex;flex-direction:column;gap:18px;min-width:0}
+.in:has(> .opts),.in:has(> .rate){margin:0 0 auto}
 .tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .tag span{border:1px solid var(--c);border-radius:999px;padding:3px 9px}
 h1,h2{font-family:var(--display);font-weight:800;margin:0;text-wrap:balance;line-height:1.05;overflow-wrap:break-word;hyphens:auto}
@@ -104,7 +105,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 
 .code{background:var(--sunk);border:1px solid var(--line);border-radius:12px;max-width:540px;overflow:hidden}
 .ch{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 4px 4px 14px;border-bottom:1px solid var(--line)}
-.ch .where{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);min-width:0}
+.ch .where{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);min-width:0}
 .cp{flex:none;min-height:44px;min-width:72px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text);cursor:pointer}
 .cp:hover{border-color:var(--c)}
 .code pre{margin:0;padding:12px 14px;font-family:var(--mono);font-size:13px;line-height:1.5;color:#d6e2ea}
@@ -112,7 +113,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .code pre span{display:block;white-space:pre-wrap;overflow-wrap:anywhere;padding-left:calc((var(--i,0) + 2) * 1ch);text-indent:calc((var(--i,0) + 2) * -1ch);min-height:1.5em}
 .code pre span.c{color:var(--muted)}
 .card .code code{background:none;border:0;padding:0;font-size:inherit;border-radius:0}
-.where{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.where{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
 
 .recap{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-width:440px}
 .recap li{position:relative;padding-left:26px;font-size:17px;line-height:1.45}
@@ -126,7 +127,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .rail{position:fixed;right:10px;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 16px);z-index:6;display:flex;flex-direction:column;gap:14px;align-items:center}
 .rb{width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer}
 .rb svg{width:22px;height:22px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.rl{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+.rl{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
 
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:7;display:grid;grid-template-columns:repeat(3,1fr);height:calc(var(--tab-h) + env(safe-area-inset-bottom));padding:0 max(0px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0px,env(safe-area-inset-left));background:var(--surface);border-top:1px solid var(--line)}
 .tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:0;color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
@@ -136,7 +137,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .tab[aria-selected="true"] svg{color:var(--tc);background:color-mix(in srgb,var(--tc) 20%,transparent)}
 .tab[aria-selected="true"]::before{opacity:1}
 .tab:focus-visible{outline:2px solid var(--tc);outline-offset:-4px}
-.badge{position:absolute;top:4px;left:calc(50% + 12px);min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--w3);color:#0e1216;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0;display:grid;place-items:center}
+.badge{position:absolute;top:4px;left:calc(50% + 12px);min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--w3);color:#0e1216;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0;display:grid;place-items:center}
 .badge[hidden]{display:none}
 .stats{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;max-width:440px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--muted)}
 .stats b{color:var(--text);font-weight:500}
@@ -159,6 +160,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 
 .btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px}
 .weeks div{font-size:14px;line-height:1.35;color:var(--muted);border-left:3px solid var(--wc);padding:4px 10px}
@@ -177,7 +179,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .day{display:flex;gap:10px;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:48px;cursor:pointer;font-size:14px;line-height:1.25}
 .day[aria-current="true"]{border-color:var(--dc);box-shadow:0 0 0 1px var(--dc)}
 .day .n{flex:none;font-family:var(--mono);font-size:12px;min-width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--dc);color:var(--dc)}
-.day small{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
+.day small{display:block;font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:3px}
 .day.part .n{background:color-mix(in srgb,var(--dc) 22%,transparent)}
 .day.ok .n{background:var(--good);border-color:var(--good);color:#0e1216}
 .day.miss .n{background:var(--bad);border-color:var(--bad);color:#0e1216}
@@ -186,14 +188,16 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 @media (prefers-reduced-motion:reduce){.bar i,.opt,.more,.tab::before,.toast{transition:none}.view{scroll-behavior:auto}}
 @media (min-width:700px){.card{padding-right:96px}}
 @media (max-height:640px){.in{gap:14px}h1{font-size:clamp(32px,9.5vw,52px)}.card p{font-size:17px}}
-@media (pointer:coarse){.kb{display:none}}
+.hpick{display:none;position:relative;flex:none;pointer-events:auto;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.hpick::after{content:"";position:absolute;inset:-9px -4px}
+@media (pointer:coarse){.kb{display:none}.rail{display:none}.hpick{display:inline-block}.card{padding-right:22px}}
 @media (max-width:400px){.card{padding-left:16px}.code pre{padding:10px}}
 </style>
 </head>
 <body>
-<div class="top" aria-hidden="true">
-  <div class="bar"><i id="prog"></i></div>
-  <div class="meta"><span id="where">Cyber Scroll</span><span id="count"></span></div>
+<div class="top">
+  <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+  <div class="meta"><span id="where">Cyber Scroll</span><span id="count"></span><button class="hpick" id="hdrPick" type="button" aria-label="Choose a day">Days</button></div>
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
 <div class="toast" id="toast" role="status"></div>
@@ -223,6 +227,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
     <div id="dayList"></div>
     <section class="backup" aria-labelledby="bkTitle">
       <div class="wk" id="bkTitle">Back up your progress</div>
+      <p id="bkLast"></p>
       <p id="bkIntro">Your answers, reviews and streak live only in this browser. Copy a backup and keep it somewhere safe, or paste one here to restore it on a new phone.</p>
       <div class="row"><button class="btn ghost" id="bkCopy" type="button">Copy backup</button><button class="btn ghost" id="bkPaste" type="button">Restore a backup</button></div>
       <textarea id="bkText" hidden aria-label="Backup text" spellcheck="false"></textarea>
@@ -2227,6 +2232,10 @@ for ip, n in counts.most_common():
    APP
    ========================================================================== */
 const initialHash = location.hash; // read before any tab renders and rewrites it
+// Load the fonts without blocking the first paint; system fonts show until they arrive (or if offline).
+(() => { const l = document.createElement("link"); l.rel = "stylesheet";
+  l.href = "https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap";
+  document.head.appendChild(l); })();
 const store = {
   ok: (() => { try { localStorage.setItem("cr2-test", "1"); localStorage.removeItem("cr2-test"); return true; } catch(e){ return false; } })(),
   get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
@@ -2508,6 +2517,7 @@ addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <p>One idea per card: short lessons, a real incident, a lab task and a quiz each day. Swipe up ↑<span class="kb"> or press the down arrow</span>.</p>
   <div class="stats streakLine"></div>
   <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
+  <button class="linkbtn" id="bkNudge" type="button" hidden>Back up your progress →</button>
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
   <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
 makeTrack("study", DAYS, {
@@ -2548,7 +2558,7 @@ pfCards.forEach(pf => pf.querySelectorAll("input").forEach(cb => cb.addEventList
 pfScore();
 document.getElementById("studyCount").textContent = `28 days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
-  <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears every Study answer on this device.</p>
+  <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears your Study quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
 /* ---------- Python tab ---------- */
@@ -2569,7 +2579,7 @@ makeTrack("py", PY_LESSONS, {
   groupOf:i => { const l = PY_LEVELS.find(l => i >= l.from && i < l.to); return {c:"var(--t-py)", label:`Python · ${l.name}`}; }
 });
 addCard("py", {c:"var(--t-py)", id:"py-finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Python track complete</div><h1>You can script it</h1>
-  <p class="endScore"></p><p class="small">Turn the capstone into a GitHub project with a README and sample output. Reset clears every Python answer on this device.</p>
+  <p class="endScore"></p><p class="small">Turn the capstone into a GitHub project with a README and sample output. Reset clears your Python quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
 /* ---------- Feed tab: endless, shuffled decks ---------- */
@@ -2604,12 +2614,16 @@ function wireInterview(card, d, onRated){
     model.tabIndex = -1; model.focus({preventScroll:true});
     model.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
   });
+  const key = "i:" + d.id;
+  let before; // the schedule as it was before this card's first rating
   rate.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
     rate.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
-    const nailed = b.dataset.r === "nailed";
-    srsRecord("i:" + d.id, nailed);
+    if (before === undefined) before = srs[key] ? Object.assign({}, srs[key]) : null;
+    else { if (before) srs[key] = Object.assign({}, before); else delete srs[key]; }
+    srsRecord(key, b.dataset.r === "nailed");
     if (onRated) onRated();
-    rated.textContent = nailed ? "Great. This one comes back in a few days." : "No problem. This one comes back tomorrow for another go.";
+    const days = srs[key].due - dayNum();
+    rated.textContent = days <= 1 ? "No problem. This one comes back tomorrow for another go." : `Great. This one comes back in ${days} days.`;
   }));
 }
 function pickDeck(){
@@ -2753,6 +2767,12 @@ function refreshDaily(){
   document.querySelectorAll(".streakLine").forEach(l => l.innerHTML =
     `<span>Streak <b>${streak} day${streak === 1 ? "" : "s"}</b></span><span>Best <b>${daily.best}</b></span><span>Today <b>${Math.min(d.qs, DAILY_GOAL)}/${DAILY_GOAL}</b></span><span>Due <b>${due}</b></span>`);
   document.querySelectorAll(".reviewNow").forEach(b => { b.hidden = due === 0; b.textContent = `Review ${due} due`; });
+  // Backup reminder: once there's real progress and no backup in the last 7 days.
+  const last = +store.get("cr2-lastbackup", 0), age = last ? Math.floor((Date.now() - last) / 864e5) : null;
+  const bkLast = document.getElementById("bkLast");
+  if (bkLast) bkLast.textContent = last ? `Last backup: ${age === 0 ? "today" : age === 1 ? "yesterday" : age + " days ago"}.` : "Last backup: never.";
+  const nudge = document.getElementById("bkNudge");
+  if (nudge) nudge.hidden = !store.ok || Object.keys(srs).length < 10 || (last && age < 7);
 }
 document.querySelectorAll(".reviewNow").forEach(b => b.addEventListener("click", reviewNow));
 
@@ -2774,6 +2794,7 @@ function setCurrent(tab, idx){
     if (c.first) scheduleTrim();
   } else if (c.group >= 0){
     store.set(tab === "study" ? "cr2-pos" : "cr2-py-pos", c.el.id);
+    updateResume(tab);
   }
   if (tab === active) render();
 }
@@ -2795,7 +2816,7 @@ function render(){
       if (location.hash !== "#" + c.el.id) history.replaceState(history.state, "", "#" + c.el.id);
     } else {
       where.textContent = c.group === -1 ? (active === "study" ? "Cyber Scroll" : "Python") : c.label;
-      const h = active === "study" ? "#study" : "#python";
+      const h = c.group === -1 ? (active === "study" ? "#study" : "#python") : "#" + c.el.id;
       if (location.hash !== h) history.replaceState(history.state, "", h);
     }
   }
@@ -2866,6 +2887,9 @@ function switchTab(tab, focusView){
   const pickWrap = document.getElementById("pickWrap");
   pickWrap.hidden = tab === "feed";
   document.getElementById("pickLabel").textContent = tab === "py" ? "Lessons" : "Days";
+  const hp = document.getElementById("hdrPick");
+  hp.hidden = tab === "feed"; hp.textContent = tab === "py" ? "Lessons" : "Days";
+  hp.setAttribute("aria-label", tab === "py" ? "Choose a lesson" : "Choose a day");
   document.getElementById("openDays").setAttribute("aria-label", tab === "py" ? "Choose a lesson" : "Choose a day");
   render();
   if (focusView) TABS[tab].el.focus({preventScroll:true});
@@ -2906,20 +2930,20 @@ function renderSheet(){
     : PY_LEVELS.map(l => ({title:l.name, c:"var(--t-py)", from:l.from, to:l.to}));
   document.getElementById("sheetTitle").textContent = tab === "py" ? "Jump to a lesson" : "Jump to a day";
   const t = trackTotals(tab);
-  // Mastery: average spaced-repetition box across a day's questions (unanswered count as zero).
+  // Mastery: share of a day's questions answered right on at least two separate days (box 3 or higher).
   const pre = tab === "study" ? "s:" : "p:";
   // Mastered = answered right on at least two separate days (box 3 or higher).
   const mastery = n => { const qs = T.items[n-1].quiz; return Math.round(qs.filter((q, qi) => ((srs[pre + n + "." + qi] || {}).box || 0) >= 3).length / qs.length * 100); };
   const missed = n => T.items[n-1].quiz.some((q, qi) => (srs[pre + n + "." + qi] || {}).box === 1);
   const started = T.items.map((d, i) => i + 1).filter(n => T.items[n-1].quiz.some((q, qi) => srs[pre + n + "." + qi]));
   const weakest = started.filter(missed).sort((a, b) => mastery(a) - mastery(b)).slice(0, 3);
-  document.getElementById("score").innerHTML = `${t.done} of ${t.total} questions answered · ${t.right} correct${tab === "study" ? ` · portfolio ${pfScore()} of ${PORTFOLIO.length}` : ""}` +
+  document.getElementById("score").innerHTML = `<div>Mastered means right on two separate days.</div>${t.done} of ${t.total} questions answered · ${t.right} correct${tab === "study" ? ` · portfolio ${pfScore()} of ${PORTFOLIO.length}` : ""}` +
     (weakest.length ? `<div class="weak">${weakest.map(n => `<button class="x weakBtn" type="button" data-n="${n}">Needs work: ${T.cfg.word} ${n}</button>`).join("")}</div>` : "");
   document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
       const st = s.done === 0 ? "" : s.right < s.done ? "miss" : s.done === s.total ? "ok" : "part";
-      const label = s.done ? s.right + "/" + s.total + " right" + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions";
+      const label = s.done ? "first try " + s.right + "/" + s.total + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions";
       return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
   }</div>`).join("");
   dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
@@ -3007,7 +3031,10 @@ document.getElementById("bkApply").addEventListener("click", () => {
   setTimeout(() => location.reload(), 400);
 });
 document.getElementById("openDays").addEventListener("click", openSheet);
-document.querySelectorAll(".pick").forEach(b => b.addEventListener("click", openSheet));
+document.getElementById("hdrPick").addEventListener("click", openSheet);
+document.getElementById("bkNudge").addEventListener("click", e => { openSheet(e); document.getElementById("bkTitle").scrollIntoView({block:"start"}); });
+// The date may have changed while the app sat in the background.
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refreshDaily(); });
 document.getElementById("closeDays").addEventListener("click", () => closeSheet());
 sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
 document.getElementById("nextBtn").addEventListener("click", next);
@@ -3022,10 +3049,15 @@ document.getElementById("nextBtn").addEventListener("click", next);
 });
 
 /* ---------- Resume buttons ---------- */
+const resumeLabels = {};
+function updateResume(tab){
+  const r = resumeLabels[tab]; if (!r) return;
+  const T = TABS[tab], idx = T.cards.findIndex(c => c.el.id === store.get(r.posKey, ""));
+  r.btn.textContent = idx > 0 && T.cards[idx].group >= 0 ? `Continue ${r.word} ${T.cards[idx].group + 1}` : `Start ${r.word} 1`;
+}
 function wireResume(tab, btnId, posKey, word){
   const T = TABS[tab], btn = document.getElementById(btnId);
-  const idx = T.cards.findIndex(c => c.el.id === store.get(posKey, ""));
-  if (idx > 0 && T.cards[idx].group >= 0) btn.textContent = `Continue ${word} ${T.cards[idx].group + 1}`;
+  resumeLabels[tab] = {btn, posKey, word}; updateResume(tab);
   btn.addEventListener("click", () => {
     const i = T.cards.findIndex(c => c.el.id === store.get(posKey, ""));
     if (i > 0 && T.cards[i].group >= 0) go(tab, i); else goGroup(tab, 0);
@@ -3046,7 +3078,11 @@ document.addEventListener("keydown", e => {
    #study and #python open a tab at its current card. */
 function fromHash(hash){
   const id = (hash || location.hash).slice(1);
-  if (id === "feed" || id === "study" || id === "python"){ switchTab(id === "python" ? "py" : id); return true; }
+  if (id === "feed" || id === "study" || id === "python"){
+    switchTab(id === "python" ? "py" : id);
+    if (id === "feed" && F.current === 0) requestAnimationFrame(() => go("feed", 1));
+    return true;
+  }
   for (const tab of ["study","py"]){
     const idx = TABS[tab].cards.findIndex(c => c.el.id === id);
     if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish|portfolio|portfolio-2)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
