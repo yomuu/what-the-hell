@@ -130,6 +130,12 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .tab[aria-selected="true"] svg{color:var(--tc);background:color-mix(in srgb,var(--tc) 20%,transparent)}
 .tab[aria-selected="true"]::before{opacity:1}
 .tab:focus-visible{outline:2px solid var(--tc);outline-offset:-4px}
+.badge{position:absolute;top:4px;left:calc(50% + 12px);min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--w3);color:#0e1216;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0;display:grid;place-items:center}
+.badge[hidden]{display:none}
+.stats{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;max-width:440px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--muted)}
+.stats b{color:var(--text);font-weight:500}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 48px);transform:translate(-50%,-8px);z-index:9;max-width:calc(100% - 32px);background:var(--surface);border:1px solid var(--w3);border-radius:999px;padding:8px 16px;font-family:var(--mono);font-size:13px;letter-spacing:.03em;color:var(--text);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 
 .btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
@@ -157,7 +163,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .day.miss .n{background:var(--bad);border-color:var(--bad);color:#0e1216}
 .x{background:none;border:1px solid var(--line);border-radius:999px;padding:10px 16px;min-height:44px;cursor:pointer;font-size:14px}
 
-@media (prefers-reduced-motion:reduce){.bar i,.opt,.more,.tab::before{transition:none}.view{scroll-behavior:auto}}
+@media (prefers-reduced-motion:reduce){.bar i,.opt,.more,.tab::before,.toast{transition:none}.view{scroll-behavior:auto}}
 @media (min-width:700px){.card{padding-right:96px}}
 @media (max-height:640px){.in{gap:14px}h1{font-size:clamp(32px,9.5vw,52px)}.card p{font-size:17px}}
 @media (pointer:coarse){.kb{display:none}}
@@ -170,6 +176,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
   <div class="meta"><span id="where">Cyber Scroll</span><span id="count"></span></div>
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
+<div class="toast" id="toast" role="status"></div>
 
 <main>
   <div class="view" id="v-study" role="tabpanel" aria-labelledby="tab-study" tabindex="-1"></div>
@@ -185,7 +192,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 
 <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
   <button class="tab" role="tab" id="tab-study" data-tab="study" aria-controls="v-study" style="--tc:var(--t-study)"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Study</button>
-  <button class="tab" role="tab" id="tab-feed" data-tab="feed" aria-controls="v-feed" style="--tc:var(--t-feed)"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 10l3-3 3 3M12 7v10"/></svg>Feed</button>
+  <button class="tab" role="tab" id="tab-feed" data-tab="feed" aria-controls="v-feed" style="--tc:var(--t-feed)"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 10l3-3 3 3M12 7v10"/></svg>Feed<span class="badge" id="dueBadge" hidden></span></button>
   <button class="tab" role="tab" id="tab-py" data-tab="py" aria-controls="v-py" style="--tc:var(--t-py)"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Python</button>
 </nav>
 
@@ -1910,6 +1917,61 @@ const store = {
 };
 const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
 
+/* ---------- Spaced repetition and the daily streak ----------
+   Every answered question gets a Leitner box. Right moves it up a box (back in 3, 7, 16, then 35 days);
+   wrong drops it to box 1 (back tomorrow). Due questions come back as Review decks in the Feed.
+   Answering DAILY_GOAL questions in a day, in any tab, keeps the streak going. */
+const DAILY_GOAL = 5;
+const INTERVALS = [1, 3, 7, 16, 35];
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)"};
+function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
+const srs = asObj(store.get("cr2-srs", {}));
+const saveSrs = () => store.set("cr2-srs", srs);
+const daily = (() => { const s = asObj(store.get("cr2-daily", {})); return {day:+s.day || 0, qs:+s.qs || 0, streak:+s.streak || 0, best:+s.best || 0, lastDone:+s.lastDone || 0}; })();
+const saveDaily = () => store.set("cr2-daily", daily);
+function today(){ const t = dayNum(); if (daily.day !== t){ daily.day = t; daily.qs = 0; } return daily; }
+function currentStreak(){ return daily.lastDone >= dayNum() - 1 ? daily.streak : 0; }
+function srsItem(key){
+  const pre = key.slice(0, 2), rest = key.slice(2);
+  if (pre === "f:"){ const d = FEED_DECKS.find(x => x.id === rest); return d ? {q:d.q, src:d.kind === "owasp" ? "OWASP " + d.tag : d.title} : null; }
+  const [dn, qi] = rest.split(".").map(Number);
+  const list = pre === "s:" ? DAYS : pre === "p:" ? PY_LESSONS : null;
+  const q = list && list[dn-1] && list[dn-1].quiz[qi];
+  return q ? {q, src:(pre === "s:" ? "Day " : "Lesson ") + dn} : null;
+}
+function dueKeys(){
+  const t = dayNum();
+  return Object.keys(srs).filter(k => srs[k].due <= t && srsItem(k))
+    .sort((a, b) => srs[a].due - srs[b].due || srs[a].box - srs[b].box);
+}
+function srsRecord(key, correct){
+  const t = dayNum(), e = srs[key] || {box:1, due:t, last:0, n:0};
+  // At most one step up per day, so retrying a question straight away can't fast-track it.
+  if (!correct) e.box = 1;
+  else if (e.last !== t) e.box = Math.min(5, e.box + 1);
+  e.due = t + INTERVALS[e.box - 1]; e.last = t; e.n = (e.n || 0) + 1;
+  srs[key] = e; saveSrs();
+  const d = today(); d.qs++;
+  if (d.qs === DAILY_GOAL){
+    daily.streak = daily.lastDone === t - 1 ? daily.streak + 1 : daily.lastDone === t ? daily.streak : 1;
+    daily.lastDone = t; daily.best = Math.max(daily.best, daily.streak);
+    toast(`Daily goal done · ${daily.streak}-day streak`);
+  }
+  saveDaily(); refreshDaily();
+}
+// Questions answered before this feature existed: wrong ones are due now, right ones in 3 days.
+if (!store.get("cr2-srs-seeded", false)){
+  const t = dayNum();
+  [["s:", "cr2-answers"], ["p:", "cr2-py-answers"]].forEach(([pre, key]) => {
+    Object.entries(asObj(store.get(key, {}))).forEach(([k, pick]) => {
+      const it = srsItem(pre + k);
+      if (!it || srs[pre + k] || !Number.isInteger(pick)) return;
+      srs[pre + k] = it.q.k === pick ? {box:2, due:t + 3, last:0, n:1} : {box:1, due:t, last:0, n:1};
+    });
+  });
+  saveSrs(); store.set("cr2-srs-seeded", true);
+}
+
 const LEVEL = {1:"Easy", 2:"Medium", 3:"Hard"};
 const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function el(tag, cls, html){ const e = document.createElement(tag); if(cls) e.className = cls; if(html !== undefined) e.innerHTML = html; return e; }
@@ -1961,15 +2023,17 @@ const TABS = {
 };
 let active = "study";
 
-function addCard(tab, {c, id, label, group, html, extra}){
+function addCard(tab, {c, id, label, group, html, extra, at}){
   const T = TABS[tab];
   const s = el("section","card");
   s.style.setProperty("--c", c);
   if (id) s.id = id;
   s.innerHTML = `<div class="in">${html}</div>`;
-  T.el.appendChild(s);
   const card = Object.assign({el:s, label, group, tab}, extra || {});
-  T.cards.push(card);
+  if (at !== undefined && at < T.cards.length){
+    T.el.insertBefore(s, T.cards[at].el); T.cards.splice(at, 0, card);
+    if (at <= T.current) T.current++;
+  } else { T.el.appendChild(s); T.cards.push(card); }
   s.addEventListener("scroll", () => { if (tab === active && T.cards[T.current] === card) updateMore(); }, {passive:true});
   if (T.io) T.io.observe(s);
   return s;
@@ -2063,7 +2127,10 @@ function makeTrack(tab, items, cfg){
     T.resetters[dn] = [];
     d.quiz.forEach((q, qi) => {
       const s = make("Quiz " + (qi+1) + "/" + d.quiz.length, quizHtml(q, tag("Quiz", (qi+1) + " of " + d.quiz.length), true));
-      T.resetters[dn].push(buildQuiz(s, q, {obj:answers, key:dn + "." + qi, save}, pick => updateScore(tab, pick !== null)));
+      T.resetters[dn].push(buildQuiz(s, q, {obj:answers, key:dn + "." + qi, save}, pick => {
+        if (pick !== null) srsRecord((tab === "study" ? "s:" : "p:") + dn + "." + qi, pick === q.k);
+        updateScore(tab, pick !== null);
+      }));
     });
 
     const last = dn === items.length;
@@ -2099,10 +2166,11 @@ const studyIntroCount = () => DAYS.reduce((s, d) => s + S.cardCount(d), 0);
 addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="tag"><span>Stage 1</span><i id="studyCount" style="font-style:normal"></i></div>
   <h1>Cyber Scroll</h1>
-  <p>Swipe up through one idea at a time. Each day mixes short lessons, a real incident, a lab task and a quiz. Swipe up ↑<span class="kb"> or press the down arrow</span>.</p>
+  <p>One idea per card: short lessons, a real incident, a lab task and a quiz each day. Swipe up ↑<span class="kb"> or press the down arrow</span>.</p>
+  <div class="stats streakLine"></div>
   <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
-  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost pick" type="button">Choose a day</button></div>`});
+  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost pick" type="button">Choose a day</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
 makeTrack("study", DAYS, {
   answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 1, wrapped",
   id:(dn, n) => n === 0 ? "day-" + dn : "d" + dn + "-" + n,
@@ -2118,10 +2186,10 @@ const P = TABS.py;
 addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
   <div class="tag"><span>Python</span>${PY_LESSONS.length} lessons · ${PY_LESSONS.reduce((s,d)=>s+d.quiz.length,0)} questions</div>
   <h1>Python for security</h1>
-  <p>Short lessons that build up to real tools: log parsing, regex, hashing, port checks and a cloud audit script.</p>
+  <p>Short lessons that build up to real tools: log parsing, regex, hashing, port checks and a cloud audit script. Run the examples in Kali as you go.</p>
   <div class="weeks">${PY_LEVELS.map(l=>`<div style="--wc:var(--t-py)"><b>${esc(l.name)}</b>Lessons ${l.from+1} to ${l.to}</div>`).join("")}</div>
-  <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost pick" type="button">Choose a lesson</button></div>
-  <div class="hint">Run the examples in your Kali VM as you go</div>`});
+  <div class="stats streakLine"></div>
+  <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost pick" type="button">Choose a lesson</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
 makeTrack("py", PY_LESSONS, {
   answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Python track, wrapped", codeLabel:"Python",
   id:(dn, n) => n === 0 ? "py-" + dn : "p" + dn + "-" + n,
@@ -2138,7 +2206,6 @@ const feedState = (() => {
   return {seen:asObj(s.seen), scored:asObj(s.scored), recent:Array.isArray(s.recent) ? s.recent : [], decks:+s.decks || 0, answered:+s.answered || 0, right:+s.right || 0};
 })();
 const saveFeed = () => store.set("cr2-feed", feedState);
-const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)"};
 let feedSerial = 0, lastKind = null, decksAppended = 0;
 function pickDeck(){
   // Skip recently shown decks, alternate OWASP and incident decks, and favour the least-seen ones.
@@ -2165,6 +2232,7 @@ function appendDeck(){
   const s = addCard("feed", {c, label:"Check · " + name, group:serial, extra:{deck:d.id, pos:d.cards.length, total}, html: quizHtml(d.q, tag(0, "Check"), false, Math.random() * 4294967296 >>> 0)});
   buildQuiz(s, d.q, null, pick => {
     if (pick === null) return;
+    srsRecord("f:" + d.id, pick === d.q.k);
     // Count each deck's check once per day, so repeats don't inflate the score.
     const today = new Date().toLocaleDateString("en-CA");
     if (feedState.scored[d.id] === today) return;
@@ -2182,13 +2250,49 @@ function appendDeck(){
     pause.querySelector(".toStudy").addEventListener("click", () => userSwitch("study"));
   }
 }
+// A Review deck: up to five due questions from any tab. Inserted at `at`, or appended.
+const reviewQueued = new Set();
+let decksSinceReview = 99;
+function appendReview(at){
+  const keys = dueKeys().filter(k => !reviewQueued.has(k)).slice(0, 5);
+  if (!keys.length) return false;
+  keys.forEach(k => reviewQueued.add(k));
+  decksSinceReview = 0;
+  const c = DECK_COLOUR.review, serial = ++feedSerial, total = keys.length + 1;
+  let pos = at;
+  const put = o => addCard("feed", Object.assign(o, pos === undefined ? {} : {at:pos++}));
+  put({c, label:"Review", group:serial, extra:{review:true, reviewStart:true, pos:0, total}, html:`
+    <div class="tag"><span>Review</span>${keys.length} due</div>
+    <h2>Time to review</h2>
+    <p>Questions you've answered before. Get one right and it comes back later; miss it and it comes back tomorrow.</p>`});
+  keys.forEach((k, i) => {
+    const it = srsItem(k);
+    const s = put({c, label:"Review · " + it.src, group:serial, extra:{review:true, pos:i + 1, total},
+      html: quizHtml(it.q, `<div class="tag"><span>Review</span>${esc(it.src)} · ${i + 1} of ${keys.length}</div>`, false, Math.random() * 4294967296 >>> 0)});
+    buildQuiz(s, it.q, null, pick => { if (pick !== null) srsRecord(k, pick === it.q.k); });
+  });
+  return true;
+}
+// Each new stretch of feed: a Review deck when questions are due (at most every third deck), otherwise a fresh deck.
+function appendNext(){
+  if (decksSinceReview >= 3 && appendReview()) return;
+  appendDeck(); decksSinceReview++;
+}
+function reviewNow(){
+  if (active !== "feed") userSwitch("feed");
+  let i = F.current; const g = F.cards[i].group;
+  while (F.cards[i+1] && F.cards[i+1].group === g) i++;
+  if (appendReview(i + 1)){ requestAnimationFrame(() => go("feed", i + 1)); return; }
+  const queued = F.cards.findIndex((c, j) => j > F.current && c.reviewStart);
+  if (queued > 0) go("feed", queued); else toast("Nothing due for review right now");
+}
 addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, html:`
   <div class="tag"><span>Feed</span>Never ends</div>
   <h1>Keep scrolling</h1>
-  <p>OWASP Top 10:2025 categories and real incidents, mixed and shuffled. Each deck ends with a quick check.</p>
-  <p class="small"><b style="color:var(--t-feed)">Pink</b> decks are OWASP categories. <b style="color:var(--w4)">Orange</b> decks are real incidents.</p>
-  <div class="hint">${FEED_DECKS.length} decks · swipe up ↑</div>`});
-for (let i = 0; i < 3; i++) appendDeck();
+  <p>OWASP Top 10:2025 categories and real incidents, mixed and shuffled, with your due reviews mixed in.</p>
+  <p class="small"><b style="color:var(--t-feed)">Pink</b> decks are OWASP categories, <b style="color:var(--w4)">orange</b> are real incidents and <b style="color:var(--w3)">purple</b> are reviews.</p>
+  <div class="stats streakLine"></div>`});
+for (let i = 0; i < 3; i++) appendNext();
 
 // Keep the DOM small on long sessions: drop whole decks well above the reader,
 // but only once scrolling has settled, so a fling isn't interrupted.
@@ -2209,6 +2313,24 @@ function trimFeed(){
   F.current -= cut;
 }
 
+/* ---------- Streak, due count and toasts ---------- */
+let toastTimer = null;
+function toast(msg){
+  const t = document.getElementById("toast");
+  clearTimeout(toastTimer); t.textContent = msg; t.classList.add("show");
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+function refreshDaily(){
+  const d = today(), streak = currentStreak(), due = dueKeys().length;
+  count.textContent = d.qs >= DAILY_GOAL ? `Streak ${streak} · done today` : `Streak ${streak} · ${d.qs}/${DAILY_GOAL} today`;
+  const badge = document.getElementById("dueBadge");
+  badge.hidden = due === 0; badge.innerHTML = `${due > 99 ? "99+" : due}<span class="sr"> reviews due</span>`;
+  document.querySelectorAll(".streakLine").forEach(l => l.innerHTML =
+    `<span>Streak <b>${streak} day${streak === 1 ? "" : "s"}</b></span><span>Best <b>${daily.best}</b></span><span>Today <b>${Math.min(d.qs, DAILY_GOAL)}/${DAILY_GOAL}</b></span><span>Due <b>${due}</b></span>`);
+  document.querySelectorAll(".reviewNow").forEach(b => { b.hidden = due === 0; b.textContent = `Review ${due} due`; });
+}
+document.querySelectorAll(".reviewNow").forEach(b => b.addEventListener("click", reviewNow));
+
 /* ---------- Header, progress and the "more below" hint ---------- */
 const prog = document.getElementById("prog"), where = document.getElementById("where"), count = document.getElementById("count");
 const more = document.getElementById("more"), live = document.getElementById("live");
@@ -2223,7 +2345,7 @@ function setCurrent(tab, idx){
   const c = T.cards[idx];
   if (tab === "feed"){
     if (c.first && !c.counted){ c.counted = true; feedState.seen[c.deck] = (feedState.seen[c.deck] || 0) + 1; feedState.decks++; saveFeed(); }
-    if (idx >= T.cards.length - 4){ appendDeck(); appendDeck(); }
+    if (idx >= T.cards.length - 4){ appendNext(); appendNext(); }
     if (c.first) scheduleTrim();
   } else if (c.group >= 0){
     store.set(tab === "study" ? "cr2-pos" : "cr2-py-pos", c.el.id);
@@ -2259,8 +2381,7 @@ function render(){
 function updateScore(tab, announce){
   if (tab === "feed"){
     if (active === "feed"){
-      const c = F.cards[F.current];
-      count.textContent = c && c.group < 0 ? `${feedState.decks} decks seen` : feedState.answered ? `${feedState.right}/${feedState.answered} right` : "No checks yet";
+      refreshDaily();
     }
     F.el.querySelectorAll(".runScore").forEach(r => r.textContent = feedState.answered ? `You've got ${feedState.right} of ${feedState.answered} checks right so far. Keep going, or switch to your Study plan.` : "Keep going, or switch to your Study plan.");
     if (announce) live.textContent = `${feedState.right} of ${feedState.answered} feed checks right`;
@@ -2272,7 +2393,7 @@ function updateScore(tab, announce){
     if (r) r.innerHTML = s.done ? `Quiz: <b>${s.right} of ${s.total}</b> right${s.done < s.total ? ` · ${s.total - s.done} unanswered` : ""}` : `Quiz: not answered yet`;
   });
   const t = trackTotals(tab);
-  if (tab === active) count.textContent = `${t.right}/${t.done} correct`;
+  if (tab === active) refreshDaily();
   if (announce) live.textContent = `${t.right} of ${t.done} correct so far`;
   const es = T.el.querySelector(".endScore");
   if (es) es.textContent = t.done ? `You got ${t.right} of ${t.done} questions right${t.done < t.total ? `, with ${t.total - t.done} still to do` : ""}.` : "You haven't answered any questions yet.";
