@@ -30,6 +30,7 @@
   --k-triage:#2dd4bf;
   --k-int:#e2e8f0;
   --k-cloud:#93c5fd;
+  --k-kql:#22d3ee;
   --tab-h:58px;
   --display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -1670,7 +1671,101 @@ Command: powershell -nop -w hidden
 {id:"int-why", kind:"interview", tag:"Interview", title:"Why do you want to move from IT support into security?",
  answer:"Answer in your own words. Link your support work to security: you already handle account lockouts, phishing reports, patching and access requests. Say what you've done to build skills, like your diploma, home lab and write-ups, and what draws you to the role."},
 {id:"int-logs", kind:"interview", tag:"Interview", title:"Why do logging and alerting matter, if you already have a firewall?",
- answer:"Prevention eventually fails, so you need to detect what gets through. Logs show who did what and when, and alerts make sure someone notices in time. OWASP 2025 lists Security Logging and Alerting Failures as A09. At Target in 2013, alerts fired but weren't acted on."}
+ answer:"Prevention eventually fails, so you need to detect what gets through. Logs show who did what and when, and alerts make sure someone notices in time. OWASP 2025 lists Security Logging and Alerting Failures as A09. At Target in 2013, alerts fired but weren't acted on."},
+/* ---------------- FEED: Microsoft Sentinel and KQL ----------------
+   Practise free in Microsoft's Log Analytics demo environment (search "Log Analytics demo",
+   or aka.ms/LADemo). Splunk SPL equivalents are rough sketches: field names depend on your data. */
+{id:"kql-where", kind:"kql", tag:"KQL", title:"where and project",
+ cards:[
+  ["Reading a query","Kusto Query Language (KQL) runs in Microsoft Sentinel, Defender and Log Analytics. A query starts with a table, and each `|` passes the rows on to the next step, top to bottom.",
+   String.raw`SecurityEvent
+| where EventID == 4625
+| project TimeGenerated, Account, IpAddress, Computer`],
+  ["Filter, then choose columns","`where` keeps only the rows that match. `project` picks the columns you want to see. Filter as early as you can: smaller tables are faster and cheaper. Practise free in Microsoft's Log Analytics demo (aka.ms/LADemo)."]
+ ],
+ q:{d:1, q:"In the query above, which line keeps only failed logons?", o:["| where EventID == 4625","| project TimeGenerated, Account, IpAddress, Computer","SecurityEvent"], k:0,
+   w:"`where` filters rows. 4625 is a failed logon; `project` only chooses columns."}},
+{id:"kql-summarize", kind:"kql", tag:"KQL", title:"Counting with summarize",
+ cards:[
+  ["Group and count","`summarize count() by X` groups rows by X and counts each group. It's how you find top talkers, top targets and noisy sources.",
+   String.raw`SecurityEvent
+| where EventID == 4625
+| summarize count() by IpAddress
+| top 10 by count_`],
+  ["The count_ column","`count()` makes a column named `count_`. Use `top 10 by count_` or `sort by count_ desc` to see the biggest first. In Splunk, roughly: `index=wineventlog EventCode=4625 | stats count by src_ip`."]
+ ],
+ q:{d:2, q:"You want failed logons per source IP, biggest first. Which line goes after the where?", o:["| summarize count() by IpAddress | sort by count_ desc","| project IpAddress","| where IpAddress == count()"], k:0,
+   w:"`summarize` does the grouping and counting; sorting by `count_` puts the noisiest first."}},
+{id:"kql-time", kind:"kql", tag:"KQL", title:"Time windows: ago and bin",
+ cards:[
+  ["Recent only","`ago(1h)` means one hour before now. Put `where TimeGenerated > ago(1h)` near the top of a query to search only recent data.",
+   String.raw`SecurityEvent
+| where TimeGenerated > ago(1h)
+| where EventID == 4625
+| summarize count() by bin(TimeGenerated, 5m)`],
+  ["Buckets of time","`bin(TimeGenerated, 5m)` rounds each timestamp down into 5-minute buckets, so a burst stands out. Add `| render timechart` in Log Analytics to see it as a chart."]
+ ],
+ q:{d:2, q:"What does `bin(TimeGenerated, 5m)` do?", o:["Groups events into 5-minute buckets","Deletes events older than 5 minutes","Waits 5 minutes before running"], k:0,
+   w:"Bucketing by time turns a list of events into a pattern you can spot, like a spike of failures."}},
+{id:"kql-has", kind:"kql", tag:"KQL", title:"has versus contains",
+ cards:[
+  ["Whole terms","`has` matches a whole term, and it's fast because Log Analytics indexes terms. `CommandLine has \"-enc\"` finds the switch as a separate term.",
+   String.raw`DeviceProcessEvents
+| where FileName =~ "powershell.exe"
+| where ProcessCommandLine has "-enc"`],
+  ["Any substring","`contains` matches any part of the text, so it's slower. Both are case-insensitive; `has_cs` and `contains_cs` are the case-sensitive versions. `=~` is a case-insensitive equals."]
+ ],
+ q:{d:3, q:"Does `\"powershell.exe -nop\" has \"power\"` return true?", o:["No, because power isn't a whole term there","Yes, because has matches any substring","Yes, but only in upper case"], k:0,
+   w:"`has` looks for whole terms. `contains \"power\"` would match, because it checks substrings."}},
+{id:"kql-signin", kind:"kql", tag:"KQL", title:"Sign-ins in SigninLogs",
+ cards:[
+  ["The table","Microsoft Entra sign-ins land in `SigninLogs`. Useful columns: UserPrincipalName, IPAddress, Location, AppDisplayName and ResultType. ResultType \"0\" means success; other codes are failures, such as 50126 for a bad username or password.",
+   String.raw`SigninLogs
+| where TimeGenerated > ago(1d)
+| where ResultType == "50126"
+| summarize failures = count() by UserPrincipalName, IPAddress
+| where failures > 10`],
+  ["Why it matters","Cloud accounts are attacked from anywhere, all day. Many failures from one IP across many users is a password spray; many failures on one user from many IPs is a targeted attack."]
+ ],
+ q:{d:2, q:"In SigninLogs, what does ResultType \"0\" mean?", o:["A successful sign-in","A failed password","A blocked country"], k:0,
+   w:"Zero means no error. Anything else is a failure or interruption, with the code telling you why."}},
+{id:"kql-process", kind:"kql", tag:"KQL", title:"Process creation (4688)",
+ cards:[
+  ["The event","Windows Event ID 4688 records a new process. With command-line auditing turned on, it includes the full command line, which is where attackers' encoded PowerShell shows up.",
+   String.raw`SecurityEvent
+| where EventID == 4688
+| where CommandLine has "-enc"
+| project TimeGenerated, Computer, Account, ParentProcessName, CommandLine`],
+  ["Turn it on first","Command lines aren't logged by default. They need the Group Policy setting “Include command line in process creation events”. Defender for Endpoint records them in DeviceProcessEvents without that step."]
+ ],
+ q:{d:2, q:"Your 4688 events have an empty CommandLine column. What's the likely cause?", o:["Command-line auditing isn't turned on","The process never ran","KQL can't read command lines"], k:0,
+   w:"4688 records the process, but the command line only appears once the audit policy setting is enabled."}},
+{id:"kql-roles", kind:"kql", tag:"KQL", title:"Role changes in AuditLogs",
+ cards:[
+  ["The table","Changes to Microsoft Entra ID, such as new users, group changes and role assignments, land in `AuditLogs`. Someone being added to a powerful role is one of the most important things to alert on.",
+   String.raw`AuditLogs
+| where OperationName == "Add member to role"
+| extend Actor = tostring(InitiatedBy.user.userPrincipalName)
+| project TimeGenerated, Actor, TargetResources`],
+  ["Reading nested data","Some columns hold JSON, like InitiatedBy. Reach into them with dots, then wrap the value in `tostring()` so you can filter or project it."]
+ ],
+ q:{d:2, q:"Why alert when someone is added to Global Administrator?", o:["It's a common attacker step to keep control of a tenant","It happens thousands of times a day","Global Administrator has no real power"], k:0,
+   w:"New admin role members are rare and powerful, which makes them a high-value, low-noise alert."}},
+{id:"kql-join", kind:"kql", tag:"KQL", title:"Joining two results",
+ cards:[
+  ["Failures then a success","`join` combines two result sets on a shared column. Here: sources with many failed logons that also had a successful logon.",
+   String.raw`let fails = SecurityEvent
+  | where EventID == 4625
+  | summarize failures = count() by IpAddress
+  | where failures > 20;
+fails
+| join kind=inner (
+    SecurityEvent | where EventID == 4624 | distinct IpAddress
+  ) on IpAddress`],
+  ["let and inner joins","`let` names a result so you can reuse it. `kind=inner` keeps only rows found in both sides, so you see just the sources that failed a lot and then got in."]
+ ],
+ q:{d:3, q:"What does `join kind=inner ... on IpAddress` return here?", o:["IPs that appear in both the failures list and the successes","Every IP from both tables","Only IPs that never succeeded"], k:0,
+   w:"An inner join keeps matches from both sides: many failures and at least one success, the shape of a guessed password."}}
 ];
 
 const FEED_EXTRA_Q = {
@@ -2275,11 +2370,11 @@ const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
    Answering DAILY_GOAL questions in a day, in any tab, keeps the streak going. */
 const DAILY_GOAL = 5;
 const INTERVALS = [1, 3, 7, 16, 35];
-const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)"};
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", kql:"var(--k-kql)"};
 // Each deck gets a list of checks: its main one plus any extras. Interview decks have none.
 FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = (d.qs || [d.q]).concat(FEED_EXTRA_Q[d.id] || []); });
 const checkKey = (d, n) => n ? `f:${d.id}#${n}` : `f:${d.id}`;
-function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag, e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview"}[d.kind] || d.tag; }
+function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag, e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview", kql:"KQL"}[d.kind] || d.tag; }
 function deckName(d){ return d.kind === "owasp" ? d.tag + " " + d.title : d.kind === "incident" ? d.title + " " + d.tag : d.kind === "interview" ? "Interview practice" : d.title; }
 function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
 const srs = asObj(store.get("cr2-srs", {}));
@@ -2824,7 +2919,7 @@ addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, ht
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
   <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
-  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
+  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["KQL","--k-kql"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
 document.querySelectorAll(".target button").forEach(b => {
   b.setAttribute("aria-pressed", b.dataset.t === target ? "true" : "false");
