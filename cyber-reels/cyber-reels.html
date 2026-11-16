@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0e1216">
-<title>Cyber Reels</title>
+<title>Cyber Scroll</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -147,7 +147,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 <body>
 <div class="top" aria-hidden="true">
   <div class="bar"><i id="prog"></i></div>
-  <div class="meta"><span id="where">Cyber Reels</span><span id="count"></span></div>
+  <div class="meta"><span id="where">Cyber Scroll</span><span id="count"></span></div>
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
 
@@ -1179,7 +1179,7 @@ intro.style.setProperty("--c","var(--w1)");
 intro.id = "start";
 intro.innerHTML = `<div class="in">
   <div class="tag"><span>Stage 1</span>28 days · ${DAYS.reduce((s, d) => s + cardCount(d), 0)} cards · ${TOTAL_Q} questions</div>
-  <h1>Cyber Reels</h1>
+  <h1>Cyber Scroll</h1>
   <p>Swipe up through one idea at a time. Each day mixes short lessons, a real incident, a lab task and a quiz.</p>
   <div class="legend"><span>Learn</span><span>Real world</span><span>Myth vs fact</span><span>Try it</span><span>Quiz</span><span>Recap</span></div>
   <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
@@ -1334,7 +1334,7 @@ function setHeader(idx){
     if (location.hash !== "#" + c.el.id) history.replaceState(history.state, "", "#" + c.el.id);
   } else {
     document.documentElement.style.setProperty("--accent", c.day === -1 ? "var(--w1)" : "var(--w4)");
-    where.textContent = c.day === -1 ? "Cyber Reels" : "Finished";
+    where.textContent = c.day === -1 ? "Cyber Scroll" : "Finished";
   }
   updateMore();
 }
