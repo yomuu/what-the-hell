@@ -17,7 +17,9 @@ Progress, reviews, streaks and stories are saved in the browser. Use **Days → 
 | `content/study.json`, `feed.json`, `python.json` | All the cards. Edit these to change content |
 | `content/version.json` | The content version and date |
 | `sw.js` | The service worker: caches everything for offline use and offers updates |
-| `manifest.webmanifest`, `icon.svg` | Lets you add it to your home screen as an app |
+| `manifest.webmanifest`, `icon*.png`, `icon.svg` | Lets you add it to your home screen as an app |
+| `.github/workflows/pages.yml` | Publishes only the app files to GitHub Pages when `main` changes |
+| `.github/workflows/check.yml` | Runs `tools/check.js` on every pull request |
 | `tools/check.js` | Checks the JSON, dashes, scripts and versions |
 | `tools/bump-version.js` | Raises the content version after any change |
 | `cyber-reels-handoff.md` | Accuracy and style rules for all content |
@@ -26,7 +28,7 @@ Progress, reviews, streaks and stories are saved in the browser. Use **Days → 
 
 Every content change needs a new version: run `node tools/bump-version.js "What changed"`, then `node tools/check.js`.
 
-The version is also written into `sw.js`. Each time the app opens, the browser checks for a newer `sw.js`. If there is one, it downloads the new files in the background and the app shows **New content this week, tap to refresh**. Tapping it switches to the new version. Until then, and when offline, the app uses the cached copy.
+The version is also written into `sw.js`. Each time the app opens, the browser checks for a newer `sw.js`. If there is one, it downloads the new files in the background and the app shows **New content this week, tap to refresh**. Tapping it switches to the new version. Until then, and when offline, the app uses the cached copy. A version whose content fails its check is never installed, so a bad update can't break the app on your phone.
 
 ## Weekly content
 

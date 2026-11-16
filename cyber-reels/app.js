@@ -1,11 +1,12 @@
 /* Cyber Scroll app engine. index.html loads the content JSON into globals, then this file. */
 document.getElementById("v-study").innerHTML = "";
+document.body.classList.remove("booting");
 /* ==========================================================================
    APP
    ========================================================================== */
 const initialHash = location.hash; // read before any tab renders and rewrites it
 // Load the fonts without blocking the first paint; system fonts show until they arrive (or if offline).
-(() => { const l = document.createElement("link"); l.rel = "stylesheet";
+(() => { const l = document.createElement("link"); l.rel = "stylesheet"; l.crossOrigin = "anonymous";
   l.href = "https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap";
   document.head.appendChild(l); })();
 const store = {
@@ -1131,36 +1132,19 @@ if (initialHash) requestAnimationFrame(() => setTimeout(() => fromHash(initialHa
 else if (active === "feed") requestAnimationFrame(() => go("feed", 1));
 
 
-/* ---------- Offline and updates (service worker) ----------
-   sw.js caches the app and its content. Each time the app opens it checks for a newer sw.js,
-   whose version changes whenever the content does. When the new version has downloaded,
-   a banner offers to refresh; tapping it switches over and reloads. */
-(function(){
-  const bar = document.getElementById("updateBar");
-  const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-  if (!("serviceWorker" in navigator) || !(location.protocol === "https:" || local)) return;
-  // Reload only after you've tapped the banner. The first install also takes control of the page,
-  // and that must not reload it (it would lose the card you opened).
-  let wantReload = false;
-  navigator.serviceWorker.addEventListener("controllerchange", () => { if (!wantReload) return; wantReload = false; location.reload(); });
-  const offer = worker => {
-    bar.hidden = false;
-    bar.onclick = () => { bar.textContent = "Updating…"; wantReload = true; worker.postMessage({type:"SKIP_WAITING"}); };
-  };
-  navigator.serviceWorker.register("sw.js").then(reg => {
-    if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
-    reg.addEventListener("updatefound", () => {
-      const w = reg.installing;
-      if (w) w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) offer(w); });
-    });
-    // Check for new content every time the app is opened or brought back to the front.
-    reg.update().catch(() => {});
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
-  }).catch(() => {});
-})();
-
 // Content version, shown in the Days sheet.
 (function(){
   const v = window.CONTENT_VERSION, el = document.getElementById("bkLast");
   if (v && el) el.insertAdjacentHTML("afterend", `<p class="small">Content version ${esc(String(v.version))}${v.date ? " · " + esc(v.date) : ""}</p>`);
+})();
+
+// After an update: say what changed, once. Also ask the browser to keep this app's data (Android can clear it otherwise).
+(function(){
+  const v = window.CONTENT_VERSION;
+  if (v && v.version){
+    const seen = +store.get("cr2-seen-version", 0);
+    if (seen && seen < v.version) setTimeout(() => toast(`Updated to content version ${v.version}${v.note ? ": " + v.note : ""}`), 800);
+    store.set("cr2-seen-version", v.version);
+  }
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
 })();

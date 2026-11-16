@@ -7,7 +7,7 @@
 <title>Cyber Scroll</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
@@ -229,22 +229,28 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 @media (pointer:coarse){.kb{display:none}.rail{display:none}.hpick{display:inline-block}.card{padding-right:22px}}
 @media (max-width:400px){.card{padding-left:16px}.code pre{padding:10px}}
 /* Update banner: shown when the service worker has downloaded new content */
-.update{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 44px);transform:translateX(-50%);z-index:8;max-width:calc(100% - 32px);min-height:44px;padding:10px 18px;border-radius:999px;border:0;background:var(--good);color:#0e1216;font-weight:600;font-size:15px;box-shadow:0 6px 24px rgba(0,0,0,.45);cursor:pointer}
-.update:focus-visible{outline:2px solid var(--text);outline-offset:3px}
+.update{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 12px);z-index:8;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 24px);padding:4px;border-radius:16px;background:var(--good);box-shadow:0 6px 24px rgba(0,0,0,.45)}
+.update button{min-height:44px;border:0;cursor:pointer;color:#0e1216}
+#updateGo{padding:8px 12px;background:transparent;font-weight:600;font-size:14px;line-height:1.25;text-align:left}
+#updateLater{flex:none;min-width:44px;padding:8px 12px;border-radius:12px;background:rgba(14,18,22,.16);font-size:13px}
+.update button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+body.has-update .more{display:none}
+/* Until the app has started, the tabs and the Days button can't do anything */
+body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
 .loading .in{gap:12px}
 </style>
 </head>
-<body>
+<body class="booting">
 <div class="top">
   <div class="bar" aria-hidden="true"><i id="prog"></i></div>
   <div class="meta"><span id="where">Cyber Scroll</span><span id="count"></span><button class="hpick" id="hdrPick" type="button" aria-label="Choose a day">Days</button></div>
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
 <div class="toast" id="toast" role="status"></div>
-<button class="update" id="updateBar" type="button" hidden>New content this week, tap to refresh</button>
+<div class="update" id="updateBar" role="region" aria-label="Update ready" hidden><button id="updateGo" type="button">New content this week, tap to refresh</button><button id="updateLater" type="button">Later</button></div>
 
 <main>
-  <div class="view" id="v-study" role="tabpanel" aria-labelledby="tab-study" tabindex="-1"><section class="card loading" style="--c:var(--w1)"><div class="in"><div class="tag"><span>Cyber Scroll</span></div><h2 id="loadMsg">Loading your cards…</h2><p class="small" id="loadDetail"></p></div></section></div>
+  <div class="view" id="v-study" role="tabpanel" aria-labelledby="tab-study" tabindex="-1"><section class="card loading" style="--c:var(--w1)"><div class="in"><div class="tag"><span>Cyber Scroll</span></div><h2 id="loadMsg" role="status">Loading your cards…</h2><p class="small" id="loadDetail"></p><button class="btn" id="loadRetry" type="button" hidden>Try again</button></div></section></div>
   <div class="view off" id="v-feed" role="tabpanel" aria-labelledby="tab-feed" tabindex="-1"></div>
   <div class="view off" id="v-py" role="tabpanel" aria-labelledby="tab-py" tabindex="-1"></div>
 </main>
@@ -294,23 +300,88 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 
 <script>
 /* Loads the study, feed and Python content from content/*.json, then starts the app (app.js).
-   The service worker (sw.js) keeps these files cached, so this works offline after the first visit. */
+   It also runs the service worker (sw.js): offline caching and the "New content" banner. That lives
+   here rather than in app.js so updates still arrive even if a content file ever fails to load. */
 (function(){
   var files = ["study", "feed", "python", "version"];
-  Promise.all(files.map(function(n){
-    return fetch("content/" + n + ".json").then(function(r){ if (!r.ok) throw new Error(n + ".json: HTTP " + r.status); return r.json(); });
-  })).then(function(res){
-    window.WEEKS = res[0].weeks; window.DAYS = res[0].days;
-    window.FEED_DECKS = res[1].decks; window.FEED_EXTRA_Q = res[1].extraQuestions || {};
-    window.PY_LEVELS = res[2].levels; window.PY_LESSONS = res[2].lessons;
-    window.CONTENT_VERSION = res[3];
-    var s = document.createElement("script"); s.src = "app.js"; document.body.appendChild(s);
-  }).catch(function(err){
-    document.getElementById("loadMsg").textContent = "Couldn't load the cards";
-    document.getElementById("loadDetail").textContent = (location.protocol === "file:")
-      ? "Open the app from its web address, not as a file, so it can load its content."
-      : "Check your connection and reopen the app. Once it has loaded online, it also works offline. (" + err.message + ")";
+  var msg = document.getElementById("loadMsg"), detail = document.getElementById("loadDetail"), retry = document.getElementById("loadRetry");
+  var started = false, failed = false, reg = null, wantReload = false;
+
+  function fetchJson(name){
+    var ctl = new AbortController(), timer = setTimeout(function(){ ctl.abort(); }, 20000);
+    return fetch("content/" + name + ".json", {signal: ctl.signal}).then(function(r){
+      clearTimeout(timer);
+      if (!r.ok) throw new Error(name + ".json: HTTP " + r.status);
+      return r.json();
+    }, function(e){ clearTimeout(timer); throw e.name === "AbortError" ? new Error("timed out after 20 seconds") : e; });
+  }
+  function load(){
+    failed = false; retry.hidden = true;
+    msg.textContent = "Loading your cards…"; detail.textContent = "";
+    var done = 0;
+    Promise.all(files.map(function(n){ return fetchJson(n).then(function(j){ done++; detail.textContent = done + " of " + files.length + " files loaded"; return j; }); }))
+    .then(function(res){
+      if (started) return;
+      started = true;
+      window.WEEKS = res[0].weeks; window.DAYS = res[0].days;
+      window.FEED_DECKS = res[1].decks; window.FEED_EXTRA_Q = res[1].extraQuestions || {};
+      window.PY_LEVELS = res[2].levels; window.PY_LESSONS = res[2].lessons;
+      window.CONTENT_VERSION = res[3];
+      var s = document.createElement("script"); s.src = "app.js"; document.body.appendChild(s);
+    }).catch(function(err){
+      failed = true;
+      msg.textContent = "Couldn't load the cards";
+      detail.textContent = (location.protocol === "file:")
+        ? "Open the app from its web address, not as a file, so it can load its content."
+        : "Check your connection, then try again. Once it has loaded online, it also works offline. (" + err.message + ")";
+      retry.hidden = location.protocol === "file:";
+    });
+  }
+  // Try again: switch to a waiting update if there is one, otherwise check for one and reload.
+  retry.addEventListener("click", function(){
+    retry.disabled = true; msg.textContent = "Trying again…";
+    if (reg && reg.waiting){ wantReload = true; reg.waiting.postMessage({type: "SKIP_WAITING"}); setTimeout(function(){ location.reload(); }, 3000); return; }
+    var next = function(){ location.reload(); };
+    if (reg) reg.update().then(next, next); else next();
   });
+  window.addEventListener("online", function(){ if (failed) load(); });
+  load();
+
+  // ---------- Service worker: offline copy and update banner ----------
+  var local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  if (!("serviceWorker" in navigator) || !(location.protocol === "https:" || local)) return;
+  var bar = document.getElementById("updateBar"), go = document.getElementById("updateGo"), later = document.getElementById("updateLater");
+  var waiting = null;
+  function say(text){ var live = document.getElementById("live"); if (live) live.textContent = text; }
+  function show(worker){
+    waiting = worker; bar.hidden = false; document.body.classList.add("has-update");
+    go.disabled = false; go.textContent = "New content this week, tap to refresh";
+    say("New content is ready. The refresh button is at the bottom of the screen.");
+  }
+  function hide(){ bar.hidden = true; document.body.classList.remove("has-update"); }
+  go.addEventListener("click", function(){
+    go.textContent = "Updating…"; go.disabled = true; wantReload = true;
+    if (waiting) waiting.postMessage({type: "SKIP_WAITING"});
+    setTimeout(function(){ location.reload(); }, 3000);   // in case the switch already happened elsewhere
+  });
+  later.addEventListener("click", function(){ hide(); say("Update postponed until you next open the app."); });
+  // Reload only for an update you asked for. If another open copy of the app switched versions,
+  // a tap on this banner just reloads. The very first install must not reload (it would lose your card).
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if (wantReload){ wantReload = false; location.reload(); return; }
+    if (!bar.hidden) waiting = null;
+  });
+  navigator.serviceWorker.register("sw.js").then(function(r){
+    reg = r;
+    if (r.waiting && navigator.serviceWorker.controller) show(r.waiting);
+    r.addEventListener("updatefound", function(){
+      var w = r.installing;
+      if (w) w.addEventListener("statechange", function(){ if (w.state === "installed" && navigator.serviceWorker.controller) show(w); });
+    });
+    // Check for new content every time the app is opened or brought back to the front.
+    r.update().catch(function(){});
+    document.addEventListener("visibilitychange", function(){ if (!document.hidden) r.update().catch(function(){}); });
+  }).catch(function(){});
 })();
 </script>
 </body>
