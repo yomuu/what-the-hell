@@ -32,6 +32,7 @@
   --k-int:#e2e8f0;
   --k-cloud:#93c5fd;
   --k-kql:#e879f9;
+  --k-quick:#fb923c;
   --tab-h:58px;
   --display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -71,7 +72,7 @@ h1{font-size:clamp(36px,10.5vw,64px)}
 h2{font-size:clamp(26px,7.4vw,40px)}
 .card p{font-size:clamp(18px,4.8vw,21px);line-height:1.5;margin:0;max-width:34ch;overflow-wrap:anywhere}
 .card p.small{font-size:16px;color:var(--muted);max-width:40ch}
-.card code{font-family:var(--mono);font-size:.84em;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+.card code{font-family:var(--mono);font-size:.84em;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .hint{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
 .warn{font-size:15px;line-height:1.45;color:var(--bad);max-width:40ch}
 .chip{align-self:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--text);border:1px solid var(--c);border-radius:8px;padding:6px 10px;max-width:440px;line-height:1.4}
@@ -99,6 +100,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .recall .row .btn{align-self:auto}
 .slip{color:var(--bad);border-color:var(--bad)}
 .x.slip,.tag .slip{border-color:var(--bad)}
+.tag .new{border-color:var(--good);color:var(--good)}
 .conf button:disabled{opacity:.5;cursor:default}
 #cvText{width:100%;min-height:120px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px}
 .why{display:none;font-size:16px;line-height:1.5;color:var(--muted);max-width:440px;border-top:1px solid var(--line);padding-top:12px}
@@ -302,7 +304,12 @@ h2{font-size:clamp(26px,7.4vw,40px)}
    recap  [point, ...]
    Text supports `inline code` with backticks. Keep it plain: no HTML.
 
-   FEED_DECKS: {id, kind:"owasp"|"incident", tag, title, cards:[[h, p]...], maps?, q}
+   FEED_DECKS: {id, kind, tag, title, added?, region?, attack?, cards:[[h, p]...], maps?, q}
+                kind is one of owasp, incident, e8, cloud, law, triage, interview, kql, quick.
+                added:"YYYY-MM-DD" shows "New this week" for 7 days and shows the deck more often.
+                region:"NZ/AU" adds a region badge to incident decks.
+                kind:"quick" is a one-card deck; q is optional. Give its card a heading
+                that differs from the deck title, which is already shown above it.
    PY_LESSONS: same shape as a Study day.
    ========================================================================== */
 const WEEKS = [
@@ -1913,6 +1920,67 @@ Command: powershell -nop -w hidden
  answer:"Answer in your own words. Link your support work to security: you already handle account lockouts, phishing reports, patching and access requests. Say what you've done to build skills, like your diploma, home lab and write-ups, and what draws you to the role."},
 {id:"int-logs", kind:"interview", tag:"Interview", title:"Why do logging and alerting matter, if you already have a firewall?",
  answer:"Prevention eventually fails, so you need to detect what gets through. Logs show who did what and when, and alerts make sure someone notices in time. OWASP 2025 lists Security Logging and Alerting Failures as A09. At Target in 2013, alerts fired but weren't acted on."},
+/* ---------------- FEED: weekly content 2026-11-16 ---------------- */
+{id:"inc-qubole", attack:["T1199 Trusted Relationship", "T1078.004 Valid Accounts: Cloud Accounts", "T1530 Data from Cloud Storage"], kind:"incident", tag:"2026", title:"Qubole cross-account trust abuse", added:"2026-11-16",
+ cards:[
+  ["What happened","From 14 to 26 October 2026, an attacker used credentials tied to a Qubole AWS account to get into the AWS accounts of many Qubole customers. Wiz published the findings on 9 November 2026, working with Sentra and Mandiant."],
+  ["How they got in","Customers had created IAM roles that trusted Qubole's AWS account, so Qubole's data platform could reach their data. The attacker took over two Qubole IAM users and assumed those roles. In many cases the roles were left over from integrations the customer no longer used."],
+  ["Impact","The attacker read secrets from Secrets Manager, SSM Parameter Store and Lambda environment variables, then tested the keys it found. It also copied S3 data, sometimes whole buckets. SecurityWeek reports more than a dozen organisations were hit. Some victims had no S3 data events or access logs, so they couldn't tell which files were read."],
+  ["Lessons","Remove vendor roles you no longer use. Trust the vendor's exact IAM role, not their whole account (`:root`), and limit it to the vendor's published IP addresses. Turn on S3 data events for sensitive buckets. Don't treat the External ID as a secret."]
+ ],
+ maps:"A01 Broken Access Control · A09 Security Logging and Alerting Failures · CSF GV.SC supply chain",
+ q:{d:2, q:"Why did the attacker's requests into customer AWS accounts succeed?", o:["The customers' roles still trusted Qubole's AWS account","The customers' S3 buckets were set to allow public reads","AWS had an unpatched flaw in its IAM service"], k:0,
+   w:"No AWS flaw was needed. Stale trust policies let anyone holding Qubole-side credentials assume the roles."}},
+{id:"inc-sshole", attack:["T1133 External Remote Services", "T1190 Exploit Public-Facing Application"], kind:"incident", tag:"2026", title:"SSHole: OpenSSH password bypass", added:"2026-11-16",
+ cards:[
+  ["What happened","On 5 November 2026 OpenSSH released 10.6p2 to fix CVE-2026-123158, nicknamed \"SSHole\". On 9 November CISA added it to its Known Exploited Vulnerabilities (KEV) catalogue."],
+  ["How they got in","On Linux systems that use the musl C library and an OpenSSH built without PAM, a very long password could get through SSH password login. Alpine Linux is the main example. Distros built on glibc, like Debian, Ubuntu, Red Hat and SUSE, aren't affected."],
+  ["Impact","Exploitation started fast. SANS ISC honeypots saw the first exploit attempts on 5 November, the same day a proof of concept appeared. BleepingComputer and GreyNoise report successful break-ins within days. The CVE has a CVSS 3.1 score of 8.1 (High)."],
+  ["Lessons","Patch internet-facing SSH fast once a flaw hits the KEV list. Use key-based logins and set `PasswordAuthentication no`. Know which of your hosts and containers run Alpine, because that decides whether you're exposed."]
+ ],
+ maps:"A07 Authentication Failures · CSF ID.RA and PR.PS patching",
+ q:{d:2, q:"Which servers were exposed to SSHole?", o:["Alpine and other musl builds without PAM that allow password logins","Ubuntu and Debian servers that allow password logins","Any server that uses SSH keys only"], k:0,
+   w:"The bug needs musl, an OpenSSH built without PAM, and password logins turned on. glibc distros like Ubuntu and Debian weren't affected, and key-only logins block the bypass."}},
+{id:"inc-amadeus", attack:["T1199 Trusted Relationship"], kind:"incident", tag:"2026", title:"Amadeus airline booking data breach", added:"2026-11-16",
+ cards:[
+  ["What happened","In late October 2026 Cathay Pacific said travel technology provider Amadeus had told it about unauthorised access to booking data. In early November Qantas said Amadeus had told it the same. Cathay says the access ran from August 2023 to September 2026."],
+  ["How they got in","Amadeus says a vulnerability in a booking-display environment made certain booking data accessible. Cathay Pacific says Amadeus told it that the attacker used login credentials assigned to a system account. Neither company has published full technical details."],
+  ["Impact","Cathay Pacific says about 53,000 bookings were affected. Qantas says its own systems weren't affected and it doesn't yet know which of its customers, if any, had data accessed. Amadeus says it has no evidence that payment or financial data was accessed."],
+  ["Lessons","Your customers' data is only as safe as your supplier's systems. Service and system accounts need the same care as human ones: strong secrets, rotation, monitoring and least privilege. Access that lasted about three years before it was found points to a monitoring gap."]
+ ],
+ maps:"CSF GV.SC supply chain · CSF DE.CM continuous monitoring",
+ q:{d:2, q:"Qantas says its own systems weren't touched. Why might its customers still be affected?", o:["Their booking data was held in a supplier's system","Qantas staff reused passwords on the booking portal","Customers clicked a phishing link sent by the attackers"], k:0,
+   w:"Third-party risk means your data can leak from someone else's network. Only the Amadeus side has been reported as accessed."}},
+{id:"inc-maersk-lfl", kind:"incident", tag:"2026", title:"Maersk legacy system breach", added:"2026-11-16",
+ cards:[
+  ["What happened","On 11 November 2026, shipping company Maersk confirmed that someone accessed a local legacy system it inherited through an earlier acquisition and took data from it. Separately, the WhiteArmor ransomware gang listed Maersk on its leak site. Maersk hasn't linked the two."],
+  ["How they got in","Not disclosed. Maersk hasn't said how the attackers got in or when the intrusion began. Some reporting links the data to LF Logistics, which Maersk bought in 2022, but Maersk hasn't confirmed this."],
+  ["Impact","WhiteArmor says it holds about 100 GB of data and wants US$5 million. Maersk says the incident is isolated, its early findings suggest no sensitive data was disclosed, and it found no sign that other systems or shipping operations were affected."],
+  ["Lessons","When you acquire a company, you acquire its old servers and its risk. Put inherited systems in your asset inventory, then patch, isolate or retire them. A system you forgot about is one you aren't monitoring."]
+ ],
+ maps:"CSF ID.AM asset management · CSF GV.SC supply chain",
+ q:{d:2, q:"Why are systems like the one breached at Maersk often higher risk?", o:["They often miss normal patching and monitoring","They always run in a less secure public cloud","They are usually the company's newest systems"], k:0,
+   w:"Inherited legacy systems often sit outside your normal patching, monitoring and inventory, which makes them easy to forget."}},
+{id:"inc-fakejob-android", attack:["T1660 Phishing (Mobile)", "T1453 Abuse Accessibility Features"], kind:"incident", tag:"2026", region:"NZ/AU", title:"Fake job app malware (NCSC NZ warning)", added:"2026-11-16",
+ cards:[
+  ["What happened","On 4 November 2026 NCSC New Zealand warned that malicious actors are spreading Android malware disguised as a job-seeking app. It can also be disguised as a banking app."],
+  ["How they got in","Fake jobs are advertised on social media, then the chat moves to a messaging app and a link to download another app. Victims sideload it, meaning they install it from outside the Play Store. It shows a fake Google Play update page and asks for settings, especially Accessibility access."],
+  ["Impact","NCSC hasn't named the app or said how many New Zealanders were affected. It warns that uninstalling the app may not fully remove the malware, because it can install more. A factory reset is more likely to work."],
+  ["Lessons","Never enable installs from unknown sources. A real employer won't need you to install an app from a link. Be very wary of any app asking for Accessibility access, because that permission can let it read and control your screen."]
+ ],
+ maps:"CSF PR.AT awareness and training · CSF PR.PS device settings",
+ q:{d:1, q:"A recruiter on social media asks you to install their \"jobs app\" from a link. What's the safest move?", o:["Decline and check the company through its official website","Install it, but deny any permission it asks for","Install it, then uninstall it if anything looks odd"], k:0,
+   w:"NCSC warns that uninstalling may not remove the malware. The safe move is not to sideload it at all."}},
+{id:"qf-sshd-t", kind:"quick", tag:"Quick-fire", title:"SSH quick check", added:"2026-11-16",
+ cards:[["Check your SSH login setting","Run `sudo sshd -T | grep -i passwordauthentication` to see the setting sshd is actually using. `passwordauthentication no` blocks SSHole-style password bypasses. Check any Match blocks too, because they can turn passwords back on for some users."]]},
+{id:"qf-trust-root", kind:"quick", tag:"Quick-fire", title:"AWS trust policies", added:"2026-11-16",
+ cards:[["Spot the mistake: a trust policy","A role trusts `arn:aws:iam::111122223333:root` (a vendor's account) with no conditions. The mistake is that it trusts the vendor's whole account. Name the vendor's exact role, limit it to the vendor's IP addresses, and delete the role once you stop using the vendor."]]},
+{id:"qf-s3-data-events", kind:"quick", tag:"Quick-fire", title:"CloudTrail logging", added:"2026-11-16",
+ cards:[["S3 reads aren't logged by default","CloudTrail records management events by default, but S3 object reads are \"data events\" you must turn on. In the Qubole attack, some victims couldn't tell which files were taken."]]},
+{id:"qf-nz-numbers", kind:"quick", tag:"Quick-fire", title:"NCSC NZ threat report", added:"2026-11-16",
+ cards:[["NZ by the numbers (2025/26)","NCSC NZ logged 4,673 reports in 2025/26. It flagged 369 incidents of potential national significance, up from 331, and recorded 4 \"highly significant\" C2 incidents. That's as many as in the previous ten years combined."]]},
+{id:"qf-kev", kind:"quick", tag:"Quick-fire", title:"CISA KEV", added:"2026-11-16",
+ cards:[["KEV means \"it's being used now\"","CISA's KEV catalogue lists flaws with evidence of real-world exploitation. US federal civilian agencies get fixed deadlines, and SSHole's was 12 November, just 3 days after it was added. Everyone else should treat KEV as a \"patch first\" list."]]},
 /* ---------------- FEED: Microsoft Sentinel and KQL ----------------
    Practise free in Microsoft's Log Analytics demo environment (search "Log Analytics demo",
    or aka.ms/LADemo). Splunk SPL equivalents are rough sketches: field names depend on your data. */
@@ -2613,11 +2681,13 @@ const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
    Answering DAILY_GOAL questions in a day, in any tab, keeps the streak going. */
 const DAILY_GOAL = 5;
 const INTERVALS = [1, 3, 7, 16, 35];
-const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", kql:"var(--k-kql)"};
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", kql:"var(--k-kql)", quick:"var(--k-quick)"};
 // Each deck gets a list of checks: its main one plus any extras. Interview decks have none.
-FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = (d.qs || [d.q]).concat(FEED_EXTRA_Q[d.id] || []); });
+FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = (d.qs || (d.q ? [d.q] : [])).concat(FEED_EXTRA_Q[d.id] || []); });
+// Decks added by the weekly content run carry added:"YYYY-MM-DD" and count as new for seven days.
+const isNew = d => !!d.added && dayNum() - dayNum(new Date(d.added + "T00:00:00")) < 7;
 const checkKey = (d, n) => n ? `f:${d.id}#${n}` : `f:${d.id}`;
-function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag, e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview", kql:"KQL"}[d.kind] || d.tag; }
+function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag + (d.region ? " · " + d.region : ""), quick:"Quick-fire", e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview", kql:"KQL"}[d.kind] || d.tag; }
 function deckName(d){ return d.kind === "owasp" ? d.tag + " " + d.title : d.kind === "incident" ? d.title + " " + d.tag : d.kind === "interview" ? "Interview practice" : d.title; }
 function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
 const srs = asObj(store.get("cr2-srs", {}));
@@ -3125,7 +3195,7 @@ function pickDeck(){
   const weak = {}, boost = TARGETS[target];
   const weights = pool.map(d => {
     if (!(d.kind in weak)) weak[d.kind] = weakShare(d.kind);
-    return (1 + (boost[d.kind] || 0)) * (1 + weak[d.kind]) / (1 + (feedState.seen[d.id] || 0));
+    return (1 + (boost[d.kind] || 0)) * (1 + weak[d.kind]) * (isNew(d) ? 3 : 1) / (1 + (feedState.seen[d.id] || 0));
   });
   let r = Math.random() * weights.reduce((a, b) => a + b, 0);
   for (let i = 0; i < pool.length; i++){ r -= weights[i]; if (r <= 0) return pool[i]; }
@@ -3143,10 +3213,10 @@ function appendDeck(forced, at){
     wireInterview(s, d);
   } else {
     // Which checks to show: triage decks show all; others show one, the most useful right now.
-    const show = d.all ? d.qs.map((q, n) => n) : [pickCheck(d)];
+    const show = d.all ? d.qs.map((q, n) => n) : d.qs.length ? [pickCheck(d)] : [];
     const after = d.after || [];
     const total = d.cards.length + show.length + after.length;
-    const tag = (i, extra) => `<div class="tag"><span>${esc(badge)}</span>${esc(d.title)} · ${extra || (i+1) + " of " + total}</div>`;
+    const tag = (i, extra) => `<div class="tag"><span>${esc(badge)}</span>${isNew(d) ? `<span class="new">New this week</span>` : ""}${esc(d.title)} · ${extra || (i+1) + " of " + total}</div>`;
     const card = ([h, p, code], i, last, chips) => {
       const evidence = d.kind === "triage" && i === 0;
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0},
@@ -3242,7 +3312,7 @@ addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, ht
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
   <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
-  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["KQL","--k-kql"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
+  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["KQL","--k-kql"],["Quick-fire","--k-quick"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
 function wireTarget(root){
   root.querySelectorAll(".target button").forEach(b => {

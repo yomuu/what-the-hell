@@ -39,6 +39,12 @@ $Allowed = @(
   "PowerShell(node cyber-reels/tools/check.js)"
 ) -join ","
 
+# Back up the app before Claude touches it (step 3 of the workflow), so a rollback copy always exists.
+$BackupDir = Join-Path $Project "cyber-reels\backups"
+New-Item -ItemType Directory -Force -Path $BackupDir | Out-Null
+$Backup = Join-Path $BackupDir ("cyber-reels-" + (Get-Date -Format "yyyy-MM-dd") + ".html")
+if (-not (Test-Path $Backup)) { Copy-Item (Join-Path $Project "cyber-reels\cyber-reels.html") $Backup }
+
 $start = Get-Date
 & $Claude -p "/weekly-content" `
   --permission-mode dontAsk `
@@ -46,6 +52,13 @@ $start = Get-Date
   --max-turns 120 `
   --output-format json 1> $JsonLog 2> $ErrLog
 $code = $LASTEXITCODE
+
+# Check the app afterwards whatever Claude did (step 6), so a broken file is always caught.
+try {
+  $Check = (& node (Join-Path $Project "cyber-reels\tools\check.js") 2>&1 | Out-String).Trim()
+  $checkCode = $LASTEXITCODE
+} catch { $Check = "Skipped: Node.js isn't installed or not on PATH."; $checkCode = 0 }
+if ($checkCode -ne 0 -and $code -eq 0) { $code = 4 }
 $mins = [math]::Round(((Get-Date) - $start).TotalMinutes, 1)
 
 # Turn the JSON result into a short, readable summary next to it.
@@ -55,7 +68,9 @@ try {
   Write-Summary @"
 Cyber Scroll weekly content run: $(Get-Date -Format "dddd d MMMM yyyy, h:mm tt")
 Exit code: $code   Result: $($r.subtype)   Minutes: $mins   Estimated cost (USD, not your bill): $cost
-Session id: $($r.session_id)
+Session id: $($r.session_id)   Permission denials: $(@($r.permission_denials).Count)
+Backup: $Backup
+App check: $Check
 
 $($r.result)
 "@

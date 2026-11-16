@@ -31,7 +31,7 @@ Each run writes three files to `cyber-reels\content\logs\`, named by date and ti
 
 | File | What's in it |
 |---|---|
-| `YYYY-MM-DD_HHmm.summary.txt` | Start here: exit code, minutes taken, and Claude's summary of what was added and what to double-check |
+| `YYYY-MM-DD_HHmm.summary.txt` | Start here: exit code, minutes taken, the backup path, the app check result, and Claude's summary of what was added and what to double-check |
 | `YYYY-MM-DD_HHmm.json` | The full result, including `permission_denials` (anything it tried but wasn't allowed to do) |
 | `YYYY-MM-DD_HHmm.err.log` | Errors, if any |
 
@@ -62,6 +62,7 @@ In the Task Scheduler app, the task is under Task Scheduler Library as "Cyber Sc
 
 ## If something goes wrong
 
+- **Last result 4:** Claude finished but `check.js` found a problem in the app. The summary lists it; restore the backup or ask Claude to fix it.
 - **Last result 2 or 3, or a summary saying it isn't logged in:** run `claude` in PowerShell once and log in. For a run that doesn't depend on your Windows login, create a token with `claude setup-token` and set it as a user environment variable named `CLAUDE_CODE_OAUTH_TOKEN`.
 - **New decks look wrong:** restore the backup over `cyber-reels\cyber-reels.html`, or run `git checkout -- cyber-reels/cyber-reels.html`.
 - **Your published claude.ai link doesn't change:** the task updates the file on your PC only. Ask Claude to republish it, or commit and push the change.
