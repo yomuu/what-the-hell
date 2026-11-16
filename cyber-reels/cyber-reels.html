@@ -1310,7 +1310,7 @@ const FEED_DECKS = [
    w:"When a security check can't complete, the safe default is to deny. Failing open turns an outage into a breach."}},
 
 /* ---------------- FEED: incident decks ---------------- */
-{id:"inc-change", kind:"incident", tag:"2024", title:"Change Healthcare",
+{id:"inc-change", attack:["T1133 External Remote Services", "T1078 Valid Accounts"], kind:"incident", tag:"2024", title:"Change Healthcare",
  cards:[
   ["What happened","In February 2024 the ALPHV/BlackCat ransomware gang hit Change Healthcare, which processes a huge share of US medical claims. Systems went offline and pharmacies and providers struggled to process claims and payments for weeks."],
   ["How they got in","Attackers logged in to a Citrix remote access portal with stolen credentials. The portal didn't require MFA. From there they moved through the network, stole data and deployed ransomware."],
@@ -1321,7 +1321,7 @@ const FEED_DECKS = [
  q:{q:"What was the single missing control at Change Healthcare's entry point?", o:["MFA on the Citrix portal","Encryption of the claims database","An antivirus update"], k:0,
    w:"The attackers didn't need an exploit. Valid credentials and no second factor were enough."}},
 
-{id:"inc-medibank", kind:"incident", tag:"2022", title:"Medibank",
+{id:"inc-medibank", attack:["T1555.003 Credentials from Web Browsers", "T1133 External Remote Services"], kind:"incident", tag:"2022", title:"Medibank",
  cards:[
   ["What happened","In October 2022 Australian health insurer Medibank found attackers had stolen data on about 9.7 million current and former customers, including health claims information."],
   ["How they got in","Malware on an IT service desk contractor's personal computer stole credentials the contractor had saved in their browser. The attackers used them to log in to Medibank's VPN, which didn't require MFA."],
@@ -1332,7 +1332,7 @@ const FEED_DECKS = [
  q:{q:"How did the attackers first get Medibank credentials?", o:["Malware on a contractor's personal computer","A SQL injection flaw","A stolen backup tape"], k:0,
    w:"An infostealer harvested saved browser credentials. The VPN's lack of MFA turned that into a breach."}},
 
-{id:"inc-waikato", kind:"incident", tag:"2021", title:"Waikato DHB",
+{id:"inc-waikato", attack:["T1486 Data Encrypted for Impact"], kind:"incident", tag:"2021", title:"Waikato DHB",
  cards:[
   ["What happened","In May 2021 ransomware caused a full IT outage across Waikato District Health Board's hospitals in New Zealand (the DHB is now part of Te Whatu Ora). Staff went back to pen and paper, and many clinics and procedures were postponed."],
   ["How they got in","The full initial access details weren't published. The attackers had access long enough to steal data before encrypting systems, which shows the intrusion went unnoticed for a while."],
@@ -1343,7 +1343,7 @@ const FEED_DECKS = [
  q:{q:"Waikato DHB confirmed data was stolen. What does that mean for recovery from backups?", o:["Backups restore systems but can't undo the data theft","Backups also recover the stolen data from the attackers","Backups make the leak impossible"], k:0,
    w:"Double extortion hits confidentiality. Restoring brings systems back, but leaked data stays leaked."}},
 
-{id:"inc-latitude", kind:"incident", tag:"2023", title:"Latitude Financial",
+{id:"inc-latitude", attack:["T1199 Trusted Relationship", "T1078 Valid Accounts"], kind:"incident", tag:"2023", title:"Latitude Financial",
  cards:[
   ["What happened","In March 2023 Australian and New Zealand lender Latitude Financial disclosed a cyberattack. About 14 million customer records were stolen, including around 7.9 million driver licence numbers."],
   ["How they got in","The attack came in through a major vendor and gave the attackers a Latitude employee's login credentials. They used those to reach customer data held by two service providers."],
@@ -1354,7 +1354,7 @@ const FEED_DECKS = [
  q:{q:"Which lesson does Latitude show most clearly?", o:["Don't keep customer data longer than you need it","Always pay the ransom","Third parties never cause breaches"], k:0,
    w:"Millions of affected records belonged to former customers whose data could have been deleted."}},
 
-{id:"inc-moveit", kind:"incident", tag:"2023", title:"MOVEit Transfer",
+{id:"inc-moveit", attack:["T1190 Exploit Public-Facing Application"], kind:"incident", tag:"2023", title:"MOVEit Transfer",
  cards:[
   ["What happened","In May 2023 the Cl0p ransomware gang mass-exploited MOVEit Transfer, a file-transfer product used by governments, banks and universities. They stole files rather than encrypting systems."],
   ["How they got in","A SQL injection zero-day (CVE-2023-34362) in the MOVEit web application let them run their own code and plant a web shell on internet-facing servers."],
@@ -1365,7 +1365,7 @@ const FEED_DECKS = [
  q:{q:"What type of flaw did Cl0p exploit in MOVEit Transfer?", o:["SQL injection","A weak password","A misconfigured firewall"], k:0,
    w:"It was a SQL injection zero-day in the web application, so no patch existed when the attacks began."}},
 
-{id:"inc-log4shell", kind:"incident", tag:"2021", title:"Log4Shell",
+{id:"inc-log4shell", attack:["T1190 Exploit Public-Facing Application"], kind:"incident", tag:"2021", title:"Log4Shell",
  cards:[
   ["What happened","In December 2021 a critical flaw (CVE-2021-44228) was disclosed in Log4j, a logging library inside a huge number of Java applications. It scored the maximum 10.0 severity."],
   ["How it worked","If an app logged a string an attacker controlled, such as a username or browser header, Log4j could follow a lookup in that string and load remote code. Simply getting text into a log was enough."],
@@ -1376,7 +1376,7 @@ const FEED_DECKS = [
  q:{q:"Why was Log4Shell so hard for many organisations to respond to?", o:["They didn't know which systems contained Log4j","The patch was never released","It only affected Windows"], k:0,
    w:"Log4j was often a dependency of a dependency. Without an inventory, teams had to hunt for it system by system."}},
 
-{id:"inc-xz", kind:"incident", tag:"2024", title:"The xz utils backdoor",
+{id:"inc-xz", attack:["T1195.001 Compromise Software Dependencies and Development Tools"], kind:"incident", tag:"2024", title:"The xz utils backdoor",
  cards:[
   ["What happened","In March 2024 Microsoft engineer Andres Freund noticed SSH logins on a test system using more CPU and taking about half a second longer. He traced it to a backdoor in xz utils versions 5.6.0 and 5.6.1."],
   ["How it got in","A contributor known as “Jia Tan” spent around two years building trust in the project and became a maintainer. The malicious code was hidden in test files and build scripts, not in the visible source."],
@@ -1398,7 +1398,7 @@ const FEED_DECKS = [
  q:{q:"Which OWASP Top 10:2025 category best fits the CrowdStrike crash?", o:["A10 Mishandling of Exceptional Conditions","A05 Injection","A07 Authentication Failures"], k:0,
    w:"Unexpected input caused an unhandled error. A10 is about handling exceptional conditions safely."}},
 
-{id:"inc-uber", kind:"incident", tag:"2022", title:"Uber",
+{id:"inc-uber", attack:["T1621 Multi-Factor Authentication Request Generation", "T1552.001 Credentials In Files"], kind:"incident", tag:"2022", title:"Uber",
  cards:[
   ["What happened","In September 2022 an attacker got broad access to Uber's internal systems, including chat, cloud consoles and security tools, and announced it in Uber's own Slack."],
   ["How they got in","They had a contractor's password and spammed MFA push requests. Then they contacted the contractor on WhatsApp, posing as Uber IT, until the contractor approved one."],
@@ -1409,7 +1409,7 @@ const FEED_DECKS = [
  q:{q:"What turned one approved MFA prompt into broad access at Uber?", o:["Admin credentials hard-coded in a script on a network share","A zero-day in Slack","An unpatched VPN"], k:0,
    w:"Secrets left in plain text let the attacker escalate quickly. Secrets belong in a vault, not in scripts."}},
 
-{id:"inc-capitalone", kind:"incident", tag:"2019", title:"Capital One",
+{id:"inc-capitalone", attack:["T1552.005 Cloud Instance Metadata API"], kind:"incident", tag:"2019", title:"Capital One",
  cards:[
   ["What happened","In 2019 a former Amazon Web Services engineer copied data on about 100 million people in the US and 6 million in Canada from Capital One's AWS environment."],
   ["How they got in","A misconfigured web application firewall was vulnerable to server-side request forgery (SSRF). The attacker made it request the cloud metadata service, which returned temporary credentials."],
@@ -1553,7 +1553,14 @@ const FEED_DECKS = [
    w:"CERT NZ has been merged into the NCSC, a process that began in 2023. Privacy breaches still go to the Privacy Commissioner."}},
 
 /* ---------------- FEED: triage scenarios ---------------- */
-{id:"tri-spray", kind:"triage", tag:"Triage", title:"Many users, one source",
+{id:"tri-attack", kind:"triage", tag:"Triage", title:"MITRE ATT&CK in two minutes",
+ cards:[
+  ["Tactics are the why","MITRE ATT&CK is a free catalogue of real attacker behaviour. Tactics are the attacker's goals, such as Initial Access, Execution, Persistence, Credential Access, Lateral Movement and Exfiltration."],
+  ["Techniques are the how","Each tactic holds techniques with IDs, like T1110 Brute Force. Sub-techniques add a number: T1110.003 is Password Spraying. SOC tickets, threat reports and detection rules use these IDs as a shared language."]
+ ],
+ q:{d:1, q:"In ATT&CK, what does T1110.003 identify?", o:["A specific technique: password spraying","A software vulnerability, like a CVE","A Windows event ID"], k:0,
+   w:"T numbers are techniques. The .003 marks a sub-technique of T1110 Brute Force."}},
+{id:"tri-spray", attack:["T1110.003 Password Spraying"], kind:"triage", tag:"Triage", title:"Many users, one source",
  cards:[["The evidence","A Windows server's Security log over two minutes, all network logons. Forty different users each have one failed logon from the same public address. Then one success.",
   String.raw`4625 asmith  203.0.113.50
 4625 bjones  203.0.113.50
@@ -1570,7 +1577,7 @@ const FEED_DECKS = [
 | where EventID == 4625
 | summarize users = dcount(TargetUserName) by IpAddress, bin(TimeGenerated, 10m)
 | where users > 10`]]},
-{id:"tri-ssh", kind:"triage", tag:"Triage", title:"A noisy SSH server",
+{id:"tri-ssh", attack:["T1110.001 Password Guessing"], kind:"triage", tag:"Triage", title:"A noisy SSH server",
  cards:[["The evidence","A Linux server's SSH log, simplified. About 300 failures in five minutes from one address. No successful logins appear.",
   String.raw`Failed password  root
   from 198.51.100.23
@@ -1586,7 +1593,7 @@ Failed password  admin (invalid)
    w:"Confirm the attacker never got in. Then harden: key-only logins, no root login, and rate limiting or fail2ban."}],
  after:[["How to hunt it","On the server, look for any successful login from the attacking address. On Red Hat or Fedora the unit is sshd, not ssh.",
   String.raw`sudo journalctl -u ssh | grep "Accepted" | grep 198.51.100.23`]]},
-{id:"tri-phish", kind:"triage", tag:"Triage", title:"A reported email",
+{id:"tri-phish", attack:["T1566.002 Spearphishing Link"], kind:"triage", tag:"Triage", title:"A reported email",
  cards:[["The evidence","A user reports this email. They haven't clicked the link.",
   String.raw`From: "Microsoft 365"
   no-reply@micros0ft-support.example
@@ -1600,7 +1607,7 @@ Link: login.micros0ft-support.example`]],
   {d:2, q:"What's the best next step?", o:["Find and remove matching emails, block the domain and check who clicked","Reply to the sender to complain","Forward it to all staff as a warning, link included"], k:0,
    w:"Others probably got it too. Purge, block, then check proxy or sign-in logs for anyone who clicked or entered a password."}],
  after:[["Thank the reporter","The user did exactly the right thing. A quick thank-you makes them more likely to report the next one, which is how many phishing campaigns get caught early."]]},
-{id:"tri-cloudtrail", kind:"triage", tag:"Triage", title:"A root sign-in",
+{id:"tri-cloudtrail", attack:["T1078.004 Valid Accounts: Cloud Accounts"], kind:"triage", tag:"Triage", title:"A root sign-in",
  cards:[["The evidence","Key fields from an AWS CloudTrail event at 3am. Nobody on the team uses the root user.",
   String.raw`eventName: ConsoleLogin
 userIdentity.type: Root
@@ -1613,7 +1620,7 @@ ConsoleLogin: Success`]],
   {d:3, q:"What's the best first response?", o:["Treat it as a compromise: secure root, enable MFA and review every action since","Wait to see if it happens again","Delete the CloudTrail event"], k:0,
    w:"Rotate the root password, add MFA, then hunt for new users, access keys and changed permissions."}],
  after:[["How to prevent it","Put phishing-resistant MFA on the root user, remove any root access keys, and alert on every root sign-in. Day-to-day work should use roles, never root."]]},
-{id:"tri-macro", kind:"triage", tag:"Triage", title:"Word starts PowerShell",
+{id:"tri-macro", attack:["T1204.002 User Execution: Malicious File", "T1059.001 PowerShell"], kind:"triage", tag:"Triage", title:"Word starts PowerShell",
  cards:[["The evidence","An endpoint alert from a finance laptop, paths shortened.",
   String.raw`Parent:  …\Office16\WINWORD.EXE
 Process: …\powershell.exe
@@ -1707,6 +1714,16 @@ const FEED_EXTRA_Q = {
    w:"A machine stuck at a blue screen can't run remote management. Recovery keys and staged rollouts matter."}],
 "inc-uber":[{d:2, q:"How did the attacker get the contractor to approve an MFA prompt?", o:["Spamming push requests, then posing as IT on WhatsApp","A zero-day in the MFA app","Stealing the contractor's phone"], k:0,
    w:"MFA fatigue plus social engineering. Number matching or phishing-resistant MFA would have helped."}],
+"tri-spray":[{d:2, q:"Password spraying (T1110.003) sits under which ATT&CK tactic?", o:["Credential Access","Initial Access","Exfiltration"], k:0,
+   w:"Brute force and its sub-techniques are ways of getting credentials, so they sit under Credential Access."}],
+"tri-ssh":[{d:1, q:"An analyst tags this alert T1110.001. What are they telling the team?", o:["It's an ATT&CK technique: brute force by password guessing","It's a CVE that needs patching","It's an internal ticket number"], k:0,
+   w:"Using ATT&CK IDs gives everyone the same name for the behaviour, whatever tool raised the alert."}],
+"tri-phish":[{d:1, q:"Phishing (T1566) belongs to which ATT&CK tactic?", o:["Initial Access","Exfiltration","Impact"], k:0,
+   w:"Phishing is how attackers first get in, so it's an Initial Access technique."}],
+"tri-macro":[{d:2, q:"A user opening a malicious document (T1204.002) maps to which ATT&CK tactic?", o:["Execution","Persistence","Exfiltration"], k:0,
+   w:"User Execution covers tricking someone into running the attacker's code."}],
+"tri-cloudtrail":[{d:3, q:"Logging in with stolen valid cloud credentials (T1078.004) is listed under several ATT&CK tactics. Which is one of them?", o:["Initial Access","Exfiltration","Impact"], k:0,
+   w:"Valid Accounts appears under Initial Access, Persistence, Privilege Escalation and Defense Evasion."}],
 "inc-capitalone":[{d:2, q:"Besides SSRF, what made the Capital One breach so large?", o:["The cloud role had broad access to many storage buckets","The data was stored on paper","The firewall was switched off"], k:0,
    w:"Least privilege on cloud roles limits what stolen credentials can reach."}]
 };
@@ -2260,7 +2277,7 @@ const DAILY_GOAL = 5;
 const INTERVALS = [1, 3, 7, 16, 35];
 const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)"};
 // Each deck gets a list of checks: its main one plus any extras. Interview decks have none.
-FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = d.qs || [d.q].concat(FEED_EXTRA_Q[d.id] || []); });
+FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = (d.qs || [d.q]).concat(FEED_EXTRA_Q[d.id] || []); });
 const checkKey = (d, n) => n ? `f:${d.id}#${n}` : `f:${d.id}`;
 function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag, e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview"}[d.kind] || d.tag; }
 function deckName(d){ return d.kind === "owasp" ? d.tag + " " + d.title : d.kind === "incident" ? d.title + " " + d.tag : d.kind === "interview" ? "Interview practice" : d.title; }
@@ -2675,15 +2692,29 @@ function wireInterview(card, d, onRated){
     rated.textContent = days <= 1 ? "No problem. This one comes back tomorrow for another go." : `Great. This one comes back in ${days} days.`;
   }));
 }
+// Your goal tilts the Feed: SOC leans towards triage, queries and incidents; Cloud towards cloud and app security.
+const TARGETS = {mixed:{}, soc:{triage:1.5, kql:1.5, incident:0.75, interview:0.5}, cloud:{cloud:2, owasp:0.75, e8:0.5, kql:0.5}};
+let target = TARGETS[store.get("cr2-target", "mixed")] ? store.get("cr2-target", "mixed") : "mixed";
+// Share of a kind's answered checks that are still weak (box 1 or 2). Weak kinds come up more often.
+function weakShare(kind){
+  const keys = Object.keys(srs).filter(k => k.startsWith("f:") && (FEED_DECKS.find(d => d.id === k.slice(2).split("#")[0]) || {}).kind === kind);
+  return keys.length ? keys.filter(k => srs[k].box <= 2).length / keys.length : 0;
+}
 function pickDeck(){
-  // Skip recently shown decks, alternate OWASP and incident decks, and favour the least-seen ones.
+  // Skip recently shown decks and the last kind, then pick at random, weighted by your goal,
+  // by how weak you are on that kind, and towards decks you've seen least.
   const avoid = feedState.recent.slice(-Math.min(6, FEED_DECKS.length - 1));
   let pool = FEED_DECKS.filter(d => !avoid.includes(d.id));
   const other = pool.filter(d => d.kind !== lastKind);
   if (other.length) pool = other;
-  const min = Math.min(...pool.map(d => feedState.seen[d.id] || 0));
-  const least = pool.filter(d => (feedState.seen[d.id] || 0) === min);
-  return least[Math.floor(Math.random() * least.length)];
+  const weak = {}, boost = TARGETS[target];
+  const weights = pool.map(d => {
+    if (!(d.kind in weak)) weak[d.kind] = weakShare(d.kind);
+    return (1 + (boost[d.kind] || 0)) * (1 + weak[d.kind]) / (1 + (feedState.seen[d.id] || 0));
+  });
+  let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++){ r -= weights[i]; if (r <= 0) return pool[i]; }
+  return pool[pool.length - 1];
 }
 function appendDeck(forced, at){
   const d = forced || pickDeck(); lastKind = d.kind;
@@ -2704,7 +2735,7 @@ function appendDeck(forced, at){
     const card = ([h, p, code], i, last) => {
       const evidence = d.kind === "triage" && i === 0;
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0},
-        html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, evidence ? "Log" : "", !evidence) : ""}${last && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}`});
+        html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, evidence ? "Log" : "", !evidence) : ""}${last && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}${last && d.attack ? `<div class="chip"><b>ATT&amp;CK</b>${d.attack.map(fmt).join("<br>")}</div>` : ""}`});
       if (code && !evidence) wireCopy(s, code);
     };
     d.cards.forEach((x, i) => card(x, i, i === d.cards.length - 1));
@@ -2792,8 +2823,17 @@ addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, ht
   <div class="tag"><span>Feed</span>Never ends</div>
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
+  <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
   <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
+document.querySelectorAll(".target button").forEach(b => {
+  b.setAttribute("aria-pressed", b.dataset.t === target ? "true" : "false");
+  b.addEventListener("click", () => {
+    target = b.dataset.t; store.set("cr2-target", target);
+    document.querySelectorAll(".target button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+    toast(target === "mixed" ? "Feed set to a mix of everything" : `Feed now leans towards ${target === "soc" ? "SOC analyst" : "cloud security"} topics`);
+  });
+});
 for (let i = 0; i < 3; i++) appendNext();
 
 // Keep the DOM small on long sessions: drop whole decks well above the reader,
