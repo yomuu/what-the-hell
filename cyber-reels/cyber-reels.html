@@ -178,6 +178,11 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .stories small{display:block;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:2px}
 .yours{display:none;font-size:16px;line-height:1.5;max-width:440px;border-left:3px solid var(--good);padding:4px 0 4px 14px}
 .yours.show{display:block}
+.skills{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-width:460px}
+.skills li{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:15px;line-height:1.3}
+.skills .pct{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;align-self:end}
+.skills .meter{grid-column:1 / -1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.skills .meter i{display:block;height:100%;background:var(--c);border-radius:3px}
 .yours b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--good);margin-bottom:4px}
 
 .btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
@@ -3056,6 +3061,7 @@ function refreshDaily(){
   if (bkLast) bkLast.textContent = last ? `Last backup: ${age === 0 ? "today" : age === 1 ? "yesterday" : age + " days ago"}.` : "Last backup: never.";
   const nudge = document.getElementById("bkNudge");
   if (nudge) nudge.hidden = !store.ok || Object.keys(srs).length < 10 || (last && age < 7);
+  if (typeof renderReady === "function" && document.getElementById("skillList")) renderReady();
 }
 document.querySelectorAll(".reviewNow").forEach(b => b.addEventListener("click", reviewNow));
 
@@ -3382,13 +3388,66 @@ function fromHash(hash){
   }
   for (const tab of ["study","py"]){
     const idx = TABS[tab].cards.findIndex(c => c.el.id === id);
-    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish|portfolio|portfolio-2|stories)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
+    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish|portfolio|portfolio-2|stories|ready)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
   }
   return false;
 }
 window.addEventListener("hashchange", () => { if (ignoreHash){ ignoreHash = false; return; } fromHash(); });
 
 renderStories();
+/* ---------- Job-ad readiness: progress per skill that entry-level ads ask for ----------
+   Mastered = share of the skill's questions answered right on two separate days (box 3+).
+   A CV line unlocks at 30% mastered, or once a linked lab is ticked in the portfolio. */
+const SKILLS = [
+  {name:"SIEM and log analysis", s:[22,23,24,25,33], p:[7,8,14], kinds:["triage","kql"], pf:["logons","scan-watch","wireshark"],
+   line:"Analysed Windows, Linux and firewall logs in a home lab, and detected brute-force and port-scan activity with KQL queries and a Python script."},
+  {name:"Identity and access", s:[3,4,29,30,31], decks:["cloud-iam","e8-admin","e8-mfa","owasp-a01","owasp-a07"], pf:["perm-proof"],
+   line:"Understand authentication, MFA strength, least privilege and role-based access across Windows, Linux and Microsoft Entra ID."},
+  {name:"Incident response", s:[6,7,26,27,32], kinds:["incident"], pf:["playbook"],
+   line:"Wrote a phishing incident playbook and studied real incidents such as Medibank and Change Healthcare against NIST SP 800-61."},
+  {name:"Networking", s:[8,9,10,11,12,13,14], pf:["lab-ips","fw-rule","nmap"],
+   line:"Built a segmented VirtualBox lab with static addressing and host firewall rules, then scanned it with Nmap and inspected traffic in Wireshark."},
+  {name:"Cloud security", p:[13], s:[29,30,31], kinds:["cloud"], pf:["py-s3"],
+   line:"Wrote a Python (boto3) script to flag S3 buckets without public access blocks, and understand cloud shared responsibility and logging."},
+  {name:"Vulnerability management", s:[2,5,11,22,34], decks:["owasp-a03","e8-patch-apps","e8-patch-os"], pf:["nmap"],
+   line:"Prioritise patching by exposure and exploitability (CVSS, EPSS, CISA KEV) against the Essential Eight patching timeframes."},
+  {name:"Scripting", p:[1,2,3,4,5,6,7,8,9,10,11,12,13,14], pf:["py-detector","py-s3"],
+   line:"Write Python tools for security work: log parsing with regex, hashing, port checks and a brute-force detector."},
+  {name:"Frameworks and compliance", kinds:["e8","law","owasp"], pf:[],
+   line:"Familiar with the Essential Eight, OWASP Top 10:2025, NIST CSF 2.0 and Australian and NZ breach notification duties."}
+];
+function skillKeys(sk){
+  const keys = [];
+  (sk.s || []).forEach(n => DAYS[n-1] && DAYS[n-1].quiz.forEach((q, i) => keys.push(`s:${n}.${i}`)));
+  (sk.p || []).forEach(n => PY_LESSONS[n-1] && PY_LESSONS[n-1].quiz.forEach((q, i) => keys.push(`p:${n}.${i}`)));
+  FEED_DECKS.filter(d => d.qs && ((sk.kinds || []).includes(d.kind) || (sk.decks || []).includes(d.id))).forEach(d => d.qs.forEach((q, n) => keys.push(checkKey(d, n))));
+  return keys;
+}
+function skillScore(sk){
+  const keys = skillKeys(sk), n = keys.length || 1;
+  const mastered = keys.filter(k => srs[k] && srs[k].box >= 3).length, answered = keys.filter(k => srs[k]).length;
+  const labs = sk.pf.filter(id => portfolio[id]).length;
+  return {pct:Math.round(mastered / n * 100), answered:Math.round(answered / n * 100), labs, ready:mastered / n >= .3 || labs > 0};
+}
+const readyCard = addCard("study", {c:"var(--w2)", id:"ready", label:"Readiness", group:-3, html:`
+  <div class="tag"><span>Job-ad readiness</span>Skills entry-level ads ask for</div>
+  <h2>How ready are you?</h2>
+  <ul class="skills" id="skillList"></ul>
+  <div class="row"><button class="btn" id="cvCopy" type="button">Copy CV lines</button></div>
+  <p class="small" id="cvMsg" aria-live="polite">Bars show the share of each skill's questions you've got right on two separate days.</p>`});
+function renderReady(){
+  document.getElementById("skillList").innerHTML = SKILLS.map(sk => { const r = skillScore(sk);
+    return `<li><span>${esc(sk.name)}</span><span class="pct">${r.pct}%${r.labs ? ` · ${r.labs} lab${r.labs === 1 ? "" : "s"}` : ""}</span><span class="meter" role="img" aria-label="${r.pct}% mastered"><i style="width:${Math.max(r.pct, 2)}%"></i></span></li>`; }).join("");
+}
+document.getElementById("cvCopy").addEventListener("click", () => {
+  const lines = SKILLS.filter(sk => skillScore(sk).ready).map(sk => "• " + sk.line);
+  const msg = document.getElementById("cvMsg");
+  if (!lines.length){ msg.textContent = "Nothing ready yet. A line unlocks when a skill reaches 30% mastered, or when you tick one of its labs in the portfolio."; return; }
+  const text = lines.join("\n");
+  const done = () => { msg.textContent = `Copied ${lines.length} line${lines.length === 1 ? "" : "s"}. Edit them into your own words before you use them.`; };
+  try { navigator.clipboard.writeText(text).then(done, () => { msg.textContent = text; }); } catch(e){ msg.textContent = text; }
+});
+renderReady();
 // A link to a card or tab wins; otherwise reopen the last tab used.
 const savedTab = store.get("cr2-tab", "study");
 switchTab(TABS[savedTab] ? savedTab : "study");
