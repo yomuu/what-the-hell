@@ -166,6 +166,19 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .backup p{margin:0;font-size:14px;line-height:1.45;color:var(--muted)}
 .backup textarea{width:100%;min-height:96px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-family:var(--mono);font-size:12px}
 .weak{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.form{--c:var(--good);display:flex;flex-direction:column;gap:14px;margin-top:8px}
+.form label{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+.form input[type=text],.form textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:var(--body);font-size:16px}
+.form textarea{min-height:84px;resize:vertical}
+.form fieldset{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:0}
+.form legend{font-size:14px;color:var(--muted);padding:0 4px}
+.form .checks label{flex-direction:row;color:var(--text)}
+.stories{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:460px}
+.stories button{width:100%;text-align:left;min-height:48px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:16px;line-height:1.35;cursor:pointer}
+.stories small{display:block;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:2px}
+.yours{display:none;font-size:16px;line-height:1.5;max-width:440px;border-left:3px solid var(--good);padding:4px 0 4px 14px}
+.yours.show{display:block}
+.yours b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--good);margin-bottom:4px}
 
 .btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
@@ -229,6 +242,20 @@ h2{font-size:clamp(26px,7.4vw,40px)}
   <button class="tab" role="tab" id="tab-py" data-tab="py" aria-controls="v-py" style="--tc:var(--t-py)"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Python</button>
 </nav>
 
+<div class="sheet" id="storySheet" role="dialog" aria-modal="true" aria-labelledby="storyTitle">
+  <div class="panel">
+    <header><h3 id="storyTitle">Your story</h3><button class="x" id="storyClose" type="button">Close</button></header>
+    <div class="form">
+      <label>Short title<input type="text" id="stTitle" maxlength="80" placeholder="Locked-out finance manager at month end"></label>
+      <label>Situation and task<textarea id="stS" placeholder="Where were you, what was the problem and what did you need to do?"></textarea></label>
+      <label>Action<textarea id="stA" placeholder="What did you do, step by step? Say “I”, not “we”."></textarea></label>
+      <label>Result<textarea id="stR" placeholder="What changed? Numbers help: time saved, tickets closed, risk removed."></textarea></label>
+      <fieldset><legend>Interview questions it answers</legend><ul class="checks" id="stLinks"></ul></fieldset>
+      <div class="row"><button class="btn" id="stSave" type="button" style="--c:var(--good)">Save story</button><button class="btn ghost" id="stDelete" type="button">Delete</button></div>
+      <p class="small" id="stMsg" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
   <div class="panel">
     <header><h3 id="sheetTitle">Jump to a day</h3><button class="x" id="closeDays">Close</button></header>
@@ -2712,11 +2739,65 @@ const pfCards = [
   addCard("study", {c:"var(--w4)", id:"portfolio-2", label:"Portfolio", group:-3, html:`
     <div class="tag"><span>Portfolio</span>2 of 2 · projects</div>
     <h2>Projects to show</h2>${checkList(PORTFOLIO.slice(8))}<div class="dscore pfScore"></div>
-    <p class="small">Each ticked item is a story you can tell in an interview.</p>`})
+    <p class="small">Each ticked item is a story you can tell in an interview. <b class="storyCount"></b></p>`})
 ];
 const pfScore = () => { const n = PORTFOLIO.filter(([id]) => portfolio[id]).length; pfCards.forEach(c => c.querySelector(".pfScore").innerHTML = `<b>${n} of ${PORTFOLIO.length}</b> done`); return n; };
 pfCards.forEach(pf => pf.querySelectorAll("input").forEach(cb => cb.addEventListener("change", () => { if (cb.checked) portfolio[cb.dataset.id] = true; else delete portfolio[cb.dataset.id]; store.set("cr2-portfolio", portfolio); pfScore(); })));
 pfScore();
+/* ---------- Interview story bank (STAR: situation, task, action, result) ---------- */
+let stories = (() => { const v = store.get("cr2-stories", []); return Array.isArray(v) ? v.filter(x => x && typeof x === "object") : []; })();
+const saveStories = () => store.set("cr2-stories", stories);
+const storyCard = addCard("study", {c:"var(--good)", id:"stories", label:"Stories", group:-3, html:`
+  <div class="tag"><span>Interview stories</span>STAR: situation, task, action, result</div>
+  <h2>Your stories</h2>
+  <p class="small">Interviewers want your examples, not textbook answers. Turn tickets and lab work into short stories, and link each one to the interview questions it answers.</p>
+  <ul class="stories" id="storyList"></ul>
+  <button class="btn" id="storyAdd" type="button">Add a story</button>`});
+function renderStories(){
+  const list = document.getElementById("storyList");
+  list.innerHTML = stories.length ? stories.map((st, i) => `<li><button type="button" data-i="${i}">${esc(st.title || "Untitled story")}<small>${(st.links || []).length} interview question${(st.links || []).length === 1 ? "" : "s"} · tap to edit</small></button></li>`).join("")
+    : `<li class="small">No stories yet. Start with a help desk ticket you're proud of.</li>`;
+  list.querySelectorAll("button").forEach(b => b.addEventListener("click", e => openStory(+b.dataset.i, e)));
+  document.querySelectorAll(".storyCount").forEach(x => x.textContent = `${stories.length} interview stor${stories.length === 1 ? "y" : "ies"} ready`);
+}
+const storySheet = document.getElementById("storySheet");
+let editing = -1, storyOpener = null, deleteArmed = false;
+function openStory(i, e){
+  editing = i; deleteArmed = false; storyOpener = (e && e.currentTarget) || document.activeElement;
+  const st = i >= 0 ? stories[i] : {title:"", s:"", a:"", r:"", links:[]};
+  document.getElementById("stTitle").value = st.title || "";
+  document.getElementById("stS").value = st.s || ""; document.getElementById("stA").value = st.a || ""; document.getElementById("stR").value = st.r || "";
+  document.getElementById("stLinks").innerHTML = FEED_DECKS.filter(d => d.kind === "interview").map(d =>
+    `<li><label><input type="checkbox" value="${d.id}"${(st.links || []).includes(d.id) ? " checked" : ""}>${esc(d.title)}</label></li>`).join("");
+  document.getElementById("stDelete").hidden = i < 0; document.getElementById("stDelete").textContent = "Delete";
+  document.getElementById("stMsg").textContent = "";
+  storySheet.classList.add("open");
+  Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true;
+  history.pushState({story:1}, "");
+  document.getElementById("stTitle").focus();
+}
+function hideStory(){
+  storySheet.classList.remove("open");
+  Object.entries(TABS).forEach(([k, T]) => T.el.inert = k !== active); rail.inert = false; tabsBar.inert = false;
+  if (storyOpener && storyOpener.isConnected) storyOpener.focus({preventScroll:true});
+  renderStories();
+}
+function closeStory(){ if (history.state && history.state.story) history.back(); else hideStory(); }
+document.getElementById("storyAdd").addEventListener("click", e => openStory(-1, e));
+document.getElementById("storyClose").addEventListener("click", closeStory);
+storySheet.addEventListener("click", e => { if (e.target === storySheet) closeStory(); });
+document.getElementById("stSave").addEventListener("click", () => {
+  const st = {title:document.getElementById("stTitle").value.trim(), s:document.getElementById("stS").value.trim(),
+    a:document.getElementById("stA").value.trim(), r:document.getElementById("stR").value.trim(),
+    links:[...document.querySelectorAll("#stLinks input:checked")].map(x => x.value)};
+  if (!st.title){ document.getElementById("stMsg").textContent = "Give the story a short title first."; document.getElementById("stTitle").focus(); return; }
+  if (editing >= 0) stories[editing] = st; else stories.push(st);
+  saveStories(); toast("Story saved"); closeStory();
+});
+document.getElementById("stDelete").addEventListener("click", () => {
+  if (!deleteArmed){ deleteArmed = true; document.getElementById("stDelete").textContent = "Tap again to delete"; return; }
+  stories.splice(editing, 1); saveStories(); toast("Story deleted"); closeStory();
+});
 document.getElementById("studyCount").textContent = `28 days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
   <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears your Study quiz answers. Your review schedule and streak are kept.</p>
@@ -2765,6 +2846,7 @@ function interviewHtml(d, tagHtml){
     <p class="small">Answer out loud in about 30 seconds, as if you're in the interview. Then compare.</p>
     <button class="btn reveal" type="button">Reveal a model answer</button>
     <div class="model">${fmt(d.answer)}</div>
+    <div class="yours"></div>
     <div class="rate" role="group" aria-label="How did you go?"><button type="button" data-r="nailed">Nailed it</button><button type="button" data-r="shaky">Shaky</button><button type="button" data-r="missed">Missed it</button></div>
     <p class="small rated" aria-live="polite"></p>`;
 }
@@ -2772,6 +2854,9 @@ function wireInterview(card, d, onRated){
   const model = card.querySelector(".model"), rate = card.querySelector(".rate"), rated = card.querySelector(".rated");
   card.querySelector(".reveal").addEventListener("click", e => {
     model.classList.add("show"); rate.classList.add("show"); e.currentTarget.hidden = true;
+    const mine = stories.filter(st => (st.links || []).includes(d.id));
+    const yours = card.querySelector(".yours");
+    if (mine.length){ yours.innerHTML = `<b>Your story</b>${mine.map(st => `<strong>${esc(st.title)}</strong>. ${fmt(st.r || st.a || "")}`).join("<br>")}`; yours.classList.add("show"); }
     model.tabIndex = -1; model.focus({preventScroll:true});
     model.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
   });
@@ -3187,6 +3272,7 @@ function closeSheet(then){
   } else hideSheet();
 }
 window.addEventListener("popstate", e => {
+  if (storySheet.classList.contains("open")){ hideStory(); return; }
   if (sheet.classList.contains("open")){ ignoreHash = true; hideSheet(); setTimeout(() => { ignoreHash = false; }, 100); return; }
   // Back (or any history move) shows whatever the restored address points to; Study's entry holds a Study card.
   ignoreHash = true;
@@ -3276,6 +3362,8 @@ wireResume("study", "resume", "cr2-pos", "Day");
 wireResume("py", "pyResume", "cr2-py-pos", "Lesson");
 
 document.addEventListener("keydown", e => {
+  if (storySheet.classList.contains("open")){ if (e.key === "Escape") closeStory(); return; }
+  if (e.target.closest && e.target.closest("input, textarea")) return;
   if (sheet.classList.contains("open")){ if (e.key === "Escape") closeSheet(); return; }
   if (e.target.closest && e.target.closest("button") && (e.key === " " || e.key === "Enter")) return;
   if (["ArrowDown","PageDown","j"," "].includes(e.key)){ e.preventDefault(); next(); }
@@ -3294,12 +3382,13 @@ function fromHash(hash){
   }
   for (const tab of ["study","py"]){
     const idx = TABS[tab].cards.findIndex(c => c.el.id === id);
-    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish|portfolio|portfolio-2)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
+    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish|portfolio|portfolio-2|stories)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
   }
   return false;
 }
 window.addEventListener("hashchange", () => { if (ignoreHash){ ignoreHash = false; return; } fromHash(); });
 
+renderStories();
 // A link to a card or tab wins; otherwise reopen the last tab used.
 const savedTab = store.get("cr2-tab", "study");
 switchTab(TABS[savedTab] ? savedTab : "study");
