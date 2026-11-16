@@ -29,7 +29,8 @@
   --k-e8:#ffd166;
   --k-law:#a3e635;
   --k-triage:#2dd4bf;
-  --k-int:#fda4af;
+  --k-int:#e2e8f0;
+  --k-cloud:#93c5fd;
   --tab-h:58px;
   --display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -148,9 +149,9 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .rate button{min-height:44px;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px;cursor:pointer}
 .rate button[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--surface))}
 .checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-width:460px}
-.checks label{display:flex;gap:12px;align-items:center;min-height:44px;font-size:16px;line-height:1.35;cursor:pointer}
+.checks label{display:flex;gap:12px;align-items:center;min-height:44px;font-size:15px;line-height:1.3;cursor:pointer}
 .checks input{width:22px;height:22px;flex:none;accent-color:var(--c)}
-.linkbtn{align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:999px;border:1px dashed var(--c);background:transparent;color:var(--text);font-size:15px;cursor:pointer}
+.linkbtn{align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:12px;text-align:left;border:1px dashed var(--c);background:transparent;color:var(--text);font-size:15px;cursor:pointer}
 .backup{margin-top:20px;border-top:1px solid var(--line);padding-top:6px;display:flex;flex-direction:column;gap:10px;--c:var(--accent)}
 .backup p{margin:0;font-size:14px;line-height:1.45;color:var(--muted)}
 .backup textarea{width:100%;min-height:96px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-family:var(--mono);font-size:12px}
@@ -222,7 +223,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
     <div id="dayList"></div>
     <section class="backup" aria-labelledby="bkTitle">
       <div class="wk" id="bkTitle">Back up your progress</div>
-      <p>Your answers, reviews and streak live only in this browser. Copy a backup and keep it somewhere safe, or paste one here to restore it on a new phone.</p>
+      <p id="bkIntro">Your answers, reviews and streak live only in this browser. Copy a backup and keep it somewhere safe, or paste one here to restore it on a new phone.</p>
       <div class="row"><button class="btn ghost" id="bkCopy" type="button">Copy backup</button><button class="btn ghost" id="bkPaste" type="button">Restore a backup</button></div>
       <textarea id="bkText" hidden aria-label="Backup text" spellcheck="false"></textarea>
       <div class="row" id="bkApplyRow" hidden><button class="btn" id="bkApply" type="button">Restore this backup</button></div>
@@ -1540,12 +1541,12 @@ const FEED_DECKS = [
 
 /* ---------------- FEED: triage scenarios ---------------- */
 {id:"tri-spray", kind:"triage", tag:"Triage", title:"Many users, one source",
- cards:[["The evidence","A Windows server's Security log over two minutes. Forty different users each have one failed logon, all from the same public address. Then one success.",
-  String.raw`4625  user=asmith   src=203.0.113.50  type=3
-4625  user=bjones   src=203.0.113.50  type=3
-4625  user=cwilson  src=203.0.113.50  type=3
-...   (37 more users, one attempt each)
-4624  user=dlee     src=203.0.113.50  type=3`]],
+ cards:[["The evidence","A Windows server's Security log over two minutes, all network logons. Forty different users each have one failed logon from the same public address. Then one success.",
+  String.raw`4625 asmith  203.0.113.50
+4625 bjones  203.0.113.50
+4625 cwilson 203.0.113.50
+...  37 more users, 1 try each
+4624 dlee    203.0.113.50`]],
  all:true,
  qs:[{d:2, q:"What's the most likely activity?", o:["Password spraying that succeeded for dlee","A user who forgot their password","A normal backup job"], k:0,
    w:"One attempt per user from one source avoids lockouts. The 4624 at the end means a guess worked. A public address reaching this server directly is a finding too."},
@@ -1557,11 +1558,14 @@ const FEED_DECKS = [
 | summarize users = dcount(TargetUserName) by IpAddress, bin(TimeGenerated, 10m)
 | where users > 10`]]},
 {id:"tri-ssh", kind:"triage", tag:"Triage", title:"A noisy SSH server",
- cards:[["The evidence","Lines from a Linux server's SSH log. About 300 failures in five minutes from one address. No successful logins appear.",
-  String.raw`Failed password for root from 198.51.100.23 port 51022 ssh2
-Failed password for root from 198.51.100.23 port 51040 ssh2
-Failed password for invalid user admin from 198.51.100.23 port 51102 ssh2
-...   (about 300 lines in 5 minutes)`]],
+ cards:[["The evidence","A Linux server's SSH log, simplified. About 300 failures in five minutes from one address. No successful logins appear.",
+  String.raw`Failed password  root
+  from 198.51.100.23
+Failed password  root
+  from 198.51.100.23
+Failed password  admin (invalid)
+  from 198.51.100.23
+...  about 300 in 5 minutes`]],
  all:true,
  qs:[{d:1, q:"What's the most likely activity?", o:["An SSH brute-force attempt with no success seen","A successful compromise","A software update"], k:0,
    w:"Many failures, one source, common usernames. Nothing shows it worked, but you still check."},
@@ -1571,11 +1575,12 @@ Failed password for invalid user admin from 198.51.100.23 port 51102 ssh2
   String.raw`sudo journalctl -u ssh | grep "Accepted" | grep 198.51.100.23`]]},
 {id:"tri-phish", kind:"triage", tag:"Triage", title:"A reported email",
  cards:[["The evidence","A user reports this email. They haven't clicked the link.",
-  String.raw`From: "Microsoft 365" <no-reply@micros0ft-support.example>
+  String.raw`From: "Microsoft 365"
+  no-reply@micros0ft-support.example
 Reply-To: helpdesk@freemail.example
 Subject: Your password expires today
-Authentication-Results: spf=fail; dkim=none; dmarc=fail
-Link: https://login.micros0ft-support.example/reset`]],
+SPF fail · DKIM none · DMARC fail
+Link: login.micros0ft-support.example`]],
  all:true,
  qs:[{d:1, q:"What is it?", o:["Credential phishing","A real Microsoft notice","A delivery receipt"], k:0,
    w:"Look-alike domain, failed SPF and DMARC, urgency and a login link: classic credential phishing."},
@@ -1583,12 +1588,12 @@ Link: https://login.micros0ft-support.example/reset`]],
    w:"Others probably got it too. Purge, block, then check proxy or sign-in logs for anyone who clicked or entered a password."}],
  after:[["Thank the reporter","The user did exactly the right thing. A quick thank-you makes them more likely to report the next one, which is how many phishing campaigns get caught early."]]},
 {id:"tri-cloudtrail", kind:"triage", tag:"Triage", title:"A root sign-in",
- cards:[["The evidence","An AWS CloudTrail event from 3am. Nobody on the team uses the root user.",
-  String.raw`"eventName": "ConsoleLogin",
-"userIdentity": {"type": "Root"},
-"sourceIPAddress": "192.0.2.77",
-"additionalEventData": {"MFAUsed": "No"},
-"responseElements": {"ConsoleLogin": "Success"}`]],
+ cards:[["The evidence","Key fields from an AWS CloudTrail event at 3am. Nobody on the team uses the root user.",
+  String.raw`eventName: ConsoleLogin
+userIdentity.type: Root
+sourceIPAddress: 192.0.2.77
+MFAUsed: No
+ConsoleLogin: Success`]],
  all:true,
  qs:[{d:2, q:"What does this show?", o:["A successful root sign-in without MFA from an unknown address","A failed login attempt","A routine automated backup"], k:0,
    w:"ConsoleLogin Success, Root, MFAUsed No. That combination should never happen unannounced."},
@@ -1596,10 +1601,11 @@ Link: https://login.micros0ft-support.example/reset`]],
    w:"Rotate the root password, add MFA, then hunt for new users, access keys and changed permissions."}],
  after:[["How to prevent it","Put phishing-resistant MFA on the root user, remove any root access keys, and alert on every root sign-in. Day-to-day work should use roles, never root."]]},
 {id:"tri-macro", kind:"triage", tag:"Triage", title:"Word starts PowerShell",
- cards:[["The evidence","An endpoint alert from a finance laptop.",
-  String.raw`ParentImage: C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE
-Image: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
-CommandLine: powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBi...`]],
+ cards:[["The evidence","An endpoint alert from a finance laptop, paths shortened.",
+  String.raw`Parent:  …\Office16\WINWORD.EXE
+Process: …\powershell.exe
+Command: powershell -nop -w hidden
+  -enc SQBFAFgAIAAoAE4AZQB3AC0A…`]],
  all:true,
  qs:[{d:2, q:"What's most likely happening?", o:["A malicious document ran hidden, encoded PowerShell","Word is checking for updates","The user is writing a script"], k:0,
    w:"Word as the parent, a hidden window and an encoded command are classic signs of a malicious macro."},
@@ -2235,7 +2241,7 @@ const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
    Answering DAILY_GOAL questions in a day, in any tab, keeps the streak going. */
 const DAILY_GOAL = 5;
 const INTERVALS = [1, 3, 7, 16, 35];
-const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--w2)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)"};
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)"};
 // Each deck gets a list of checks: its main one plus any extras. Interview decks have none.
 FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = d.qs || [d.q].concat(FEED_EXTRA_Q[d.id] || []); });
 const checkKey = (d, n) => n ? `f:${d.id}#${n}` : `f:${d.id}`;
@@ -2244,9 +2250,9 @@ function deckName(d){ return d.kind === "owasp" ? d.tag + " " + d.title : d.kind
 function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
 const srs = asObj(store.get("cr2-srs", {}));
 const saveSrs = () => store.set("cr2-srs", srs);
-const daily = (() => { const s = asObj(store.get("cr2-daily", {})); return {day:+s.day || 0, qs:+s.qs || 0, streak:+s.streak || 0, best:+s.best || 0, lastDone:+s.lastDone || 0}; })();
+const daily = (() => { const s = asObj(store.get("cr2-daily", {})); return {day:+s.day || 0, qs:+s.qs || 0, keys:Array.isArray(s.keys) ? s.keys : [], streak:+s.streak || 0, best:+s.best || 0, lastDone:+s.lastDone || 0}; })();
 const saveDaily = () => store.set("cr2-daily", daily);
-function today(){ const t = dayNum(); if (daily.day !== t){ daily.day = t; daily.qs = 0; } return daily; }
+function today(){ const t = dayNum(); if (daily.day !== t){ daily.day = t; daily.qs = 0; daily.keys = []; } return daily; }
 function currentStreak(){ return daily.lastDone >= dayNum() - 1 ? daily.streak : 0; }
 function srsItem(key){
   const pre = key.slice(0, 2), rest = key.slice(2);
@@ -2273,7 +2279,10 @@ function srsRecord(key, correct){
   e.due = t + INTERVALS[e.box - 1]; e.last = t; e.n = (e.n || 0) + 1;
   srs[key] = e; saveSrs();
   if (!srsRecord.asked && navigator.storage && navigator.storage.persist){ srsRecord.asked = true; navigator.storage.persist().catch(() => {}); }
-  const d = today(); d.qs++;
+  // Each question counts once a day towards the goal, so retrying one can't fill it.
+  const d = today();
+  if (d.keys.includes(key)){ saveDaily(); refreshDaily(); return; }
+  d.keys.push(key); d.qs++;
   if (d.qs === DAILY_GOAL){
     daily.streak = daily.lastDone === t - 1 ? daily.streak + 1 : daily.lastDone === t ? daily.streak : 1;
     daily.lastDone = t; daily.best = Math.max(daily.best, daily.streak);
@@ -2463,8 +2472,13 @@ function makeTrack(tab, items, cfg){
       ${cfg.links && cfg.links[dn] ? `<button class="linkbtn" type="button">${esc(cfg.links[dn].text)} →</button>` : ""}`);
     T.recapScores[dn] = rc.querySelector(".dscore");
     const lb = rc.querySelector(".linkbtn");
-    if (lb) lb.addEventListener("click", () => { const L = cfg.links[dn]; userSwitch(L.tab); goGroup(L.tab, L.n - 1); });
-    rc.querySelector(".nx").addEventListener("click", () => last ? go(tab, T.cards.length-1) : goGroup(tab, dn));
+    if (lb) lb.addEventListener("click", () => {
+      const L = cfg.links[dn], there = () => goGroup(L.tab, L.n - 1);
+      // Going back to Study restores its old card from history first, so jump only after that.
+      if (L.tab === "study" && history.state && history.state.tab){ pendingNav = there; userSwitch("study"); }
+      else { userSwitch(L.tab); there(); }
+    });
+    rc.querySelector(".nx").addEventListener("click", () => last ? go(tab, Math.max(T.cards.findIndex(c => c.group <= -2), 0) || T.cards.length-1) : goGroup(tab, dn));
     rc.querySelector(".redo").addEventListener("click", () => {
       d.quiz.forEach((q, qi) => delete answers[dn + "." + qi]);
       save();
@@ -2495,13 +2509,13 @@ addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="stats streakLine"></div>
   <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
-  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost pick" type="button">Choose a day</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
+  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
 makeTrack("study", DAYS, {
   answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 1, wrapped",
-  links:{9:{tab:"py", n:11, text:"Subnet with Python: Lesson 11"}, 11:{tab:"py", n:10, text:"Check ports with Python: Lesson 10"},
-         18:{tab:"py", n:7, text:"Read logs with Python: Lesson 7"}, 19:{tab:"py", n:9, text:"Hash with Python: Lesson 9"},
-         22:{tab:"py", n:10, text:"Write a port checker: Lesson 10"}, 24:{tab:"py", n:14, text:"Build a brute-force detector: Lesson 14"},
-         28:{tab:"py", n:14, text:"Portfolio project: Python Lesson 14"}},
+  links:{9:{tab:"py", n:11, text:"Python Lesson 11: IPs and JSON"}, 11:{tab:"py", n:10, text:"Python Lesson 10: port checks"},
+         18:{tab:"py", n:7, text:"Python Lesson 7: reading logs"}, 19:{tab:"py", n:9, text:"Python Lesson 9: hashing"},
+         22:{tab:"py", n:10, text:"Python Lesson 10: port checker"}, 24:{tab:"py", n:14, text:"Python Lesson 14: detector"},
+         28:{tab:"py", n:14, text:"Python Lesson 14: capstone"}},
   id:(dn, n) => n === 0 ? "day-" + dn : "d" + dn + "-" + n,
   groupOf:i => { const w = WEEKS[Math.floor(i/7)]; return {c:w.c, label:`Week ${w.n} · ${w.name}`}; }
 });
@@ -2519,13 +2533,18 @@ const PORTFOLIO = [
   ["py-s3", "Python S3 audit script (Python 13)"]
 ];
 const portfolio = asObj(store.get("cr2-portfolio", {}));
-const pf = addCard("study", {c:"var(--w4)", id:"portfolio", label:"Portfolio", group:-3, html:`
-  <div class="tag"><span>Portfolio</span>Tick off each lab you've written up</div>
-  <h2>Your portfolio</h2>
-  <ul class="checks">${PORTFOLIO.map(([id, t]) => `<li><label><input type="checkbox" data-id="${id}"${portfolio[id] ? " checked" : ""}>${esc(t)}</label></li>`).join("")}</ul>
-  <div class="dscore pfScore"></div>`});
-const pfScore = () => { const n = PORTFOLIO.filter(([id]) => portfolio[id]).length; pf.querySelector(".pfScore").innerHTML = `<b>${n} of ${PORTFOLIO.length}</b> done. Each one is an interview story.`; return n; };
-pf.querySelectorAll("input").forEach(cb => cb.addEventListener("change", () => { if (cb.checked) portfolio[cb.dataset.id] = true; else delete portfolio[cb.dataset.id]; store.set("cr2-portfolio", portfolio); pfScore(); }));
+const checkList = items => `<ul class="checks">${items.map(([id, t]) => `<li><label><input type="checkbox" data-id="${id}"${portfolio[id] ? " checked" : ""}>${esc(t)}</label></li>`).join("")}</ul>`;
+const pfCards = [
+  addCard("study", {c:"var(--w4)", id:"portfolio", label:"Portfolio", group:-3, html:`
+    <div class="tag"><span>Portfolio</span>1 of 2 · lab write-ups</div>
+    <h2>Labs you've written up</h2>${checkList(PORTFOLIO.slice(0, 8))}<div class="dscore pfScore"></div>`}),
+  addCard("study", {c:"var(--w4)", id:"portfolio-2", label:"Portfolio", group:-3, html:`
+    <div class="tag"><span>Portfolio</span>2 of 2 · projects</div>
+    <h2>Projects to show</h2>${checkList(PORTFOLIO.slice(8))}<div class="dscore pfScore"></div>
+    <p class="small">Each ticked item is a story you can tell in an interview.</p>`})
+];
+const pfScore = () => { const n = PORTFOLIO.filter(([id]) => portfolio[id]).length; pfCards.forEach(c => c.querySelector(".pfScore").innerHTML = `<b>${n} of ${PORTFOLIO.length}</b> done`); return n; };
+pfCards.forEach(pf => pf.querySelectorAll("input").forEach(cb => cb.addEventListener("change", () => { if (cb.checked) portfolio[cb.dataset.id] = true; else delete portfolio[cb.dataset.id]; store.set("cr2-portfolio", portfolio); pfScore(); })));
 pfScore();
 document.getElementById("studyCount").textContent = `28 days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
@@ -2540,7 +2559,7 @@ addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
   <p>Short lessons that build up to real tools: log parsing, regex, hashing, port checks and a cloud audit script. Run the examples in Kali as you go.</p>
   <div class="weeks">${PY_LEVELS.map(l=>`<div style="--wc:var(--t-py)"><b>${esc(l.name)}</b>Lessons ${l.from+1} to ${l.to}</div>`).join("")}</div>
   <div class="stats streakLine"></div>
-  <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost pick" type="button">Choose a lesson</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
+  <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
 makeTrack("py", PY_LESSONS, {
   answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Python track, wrapped", codeLabel:"Python",
   links:{7:{tab:"study", n:18, text:"Background: Study Day 18"}, 8:{tab:"study", n:24, text:"Background: Study Day 24"},
@@ -2578,18 +2597,18 @@ function interviewHtml(d, tagHtml){
     <div class="rate" role="group" aria-label="How did you go?"><button type="button" data-r="nailed">Nailed it</button><button type="button" data-r="shaky">Shaky</button><button type="button" data-r="missed">Missed it</button></div>
     <p class="small rated" aria-live="polite"></p>`;
 }
-function wireInterview(card, d){
+function wireInterview(card, d, onRated){
   const model = card.querySelector(".model"), rate = card.querySelector(".rate"), rated = card.querySelector(".rated");
   card.querySelector(".reveal").addEventListener("click", e => {
     model.classList.add("show"); rate.classList.add("show"); e.currentTarget.hidden = true;
+    model.tabIndex = -1; model.focus({preventScroll:true});
     model.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
   });
   rate.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
-    if (rate.dataset.done) return;
-    rate.dataset.done = 1;
     rate.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
     const nailed = b.dataset.r === "nailed";
     srsRecord("i:" + d.id, nailed);
+    if (onRated) onRated();
     rated.textContent = nailed ? "Great. This one comes back in a few days." : "No problem. This one comes back tomorrow for another go.";
   }));
 }
@@ -2618,14 +2637,15 @@ function appendDeck(){
     const total = d.cards.length + show.length + after.length;
     const tag = (i, extra) => `<div class="tag"><span>${esc(badge)}</span>${esc(d.title)} · ${extra || (i+1) + " of " + total}</div>`;
     const card = ([h, p, code], i, last) => {
+      const evidence = d.kind === "triage" && i === 0;
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0},
-        html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, "", true) : ""}${last && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}`});
-      if (code) wireCopy(s, code);
+        html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, evidence ? "Log" : "", !evidence) : ""}${last && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}`});
+      if (code && !evidence) wireCopy(s, code);
     };
     d.cards.forEach((x, i) => card(x, i, i === d.cards.length - 1));
     show.forEach((n, j) => {
       const q = d.qs[n], key = checkKey(d, n);
-      const s = addCard("feed", {c, label:"Check · " + name, group:serial, extra:{deck:d.id, pos:d.cards.length + j, total},
+      const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:d.cards.length + j, total},
         html: quizHtml(q, tag(d.cards.length + j, show.length > 1 ? "Check " + (j+1) + " of " + show.length : "Check"), false, Math.random() * 4294967296 >>> 0)});
       buildQuiz(s, q, null, pick => {
         if (pick === null) return;
@@ -2651,12 +2671,12 @@ function appendDeck(){
   }
 }
 // A Review deck: up to five due questions from any tab. Inserted at `at`, or appended.
-const reviewQueued = new Set();
 let decksSinceReview = 99;
+// A due question is "waiting" if an unanswered review card for it is still ahead of the reader.
+const waitingAhead = k => F.cards.some((c, j) => j > F.current && c.rkey === k && !c.answered);
 function appendReview(at){
-  const keys = dueKeys().filter(k => !reviewQueued.has(k)).slice(0, 5);
+  const keys = dueKeys().filter(k => !waitingAhead(k)).slice(0, 5);
   if (!keys.length) return false;
-  keys.forEach(k => reviewQueued.add(k));
   decksSinceReview = 0;
   const c = DECK_COLOUR.review, serial = ++feedSerial, total = keys.length + 1;
   let pos = at;
@@ -2668,13 +2688,13 @@ function appendReview(at){
   keys.forEach((k, i) => {
     const it = srsItem(k), tagHtml = `<div class="tag"><span>Review</span>${esc(it.src)} · ${i + 1} of ${keys.length}</div>`;
     if (it.interview){
-      const s = put({c, label:"Review · Interview", group:serial, extra:{review:true, pos:i + 1, total}, html: interviewHtml(it.interview, tagHtml)});
-      wireInterview(s, it.interview);
+      const s = put({c, label:"Review · Interview", group:serial, extra:{review:true, rkey:k, pos:i + 1, total}, html: interviewHtml(it.interview, tagHtml)});
+      wireInterview(s, it.interview, () => { F.cards.find(x => x.el === s).answered = true; });
       return;
     }
-    const s = put({c, label:"Review · " + it.src, group:serial, extra:{review:true, pos:i + 1, total},
+    const s = put({c, label:"Review · " + it.src, group:serial, extra:{review:true, rkey:k, pos:i + 1, total},
       html: quizHtml(it.q, tagHtml, false, Math.random() * 4294967296 >>> 0)});
-    buildQuiz(s, it.q, null, pick => { if (pick !== null) srsRecord(k, pick === it.q.k); });
+    buildQuiz(s, it.q, null, pick => { if (pick === null) return; F.cards.find(x => x.el === s).answered = true; srsRecord(k, pick === it.q.k); });
   });
   return true;
 }
@@ -2695,7 +2715,7 @@ addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, ht
   <div class="tag"><span>Feed</span>Never ends</div>
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
-  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--w2"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
+  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
 for (let i = 0; i < 3; i++) appendNext();
 
@@ -2727,7 +2747,7 @@ function toast(msg){
 }
 function refreshDaily(){
   const d = today(), streak = currentStreak(), due = dueKeys().length;
-  count.textContent = d.qs >= DAILY_GOAL ? `Streak ${streak} · done today` : `Streak ${streak} · ${d.qs}/${DAILY_GOAL} today`;
+  count.textContent = d.qs >= DAILY_GOAL ? `Streak ${streak} · done` : `Streak ${streak} · ${d.qs}/${DAILY_GOAL}`;
   const badge = document.getElementById("dueBadge");
   badge.hidden = due === 0; badge.innerHTML = `${due > 99 ? "99+" : due}<span class="sr"> reviews due</span>`;
   document.querySelectorAll(".streakLine").forEach(l => l.innerHTML =
@@ -2877,7 +2897,7 @@ document.querySelectorAll(".tab").forEach(b => {
 
 /* ---------- Day and lesson picker. Opening it adds a history entry, so Back closes it. ---------- */
 const dayList = document.getElementById("dayList"), rail = document.getElementById("rail"), tabsBar = document.getElementById("tabs");
-let opener = null, afterClose = null, ignoreHash = false;
+let opener = null, afterClose = null, ignoreHash = false, pendingNav = null;
 function renderSheet(){
   const tab = active === "py" ? "py" : "study", T = TABS[tab];
   const cur = T.cards[T.current] ? T.cards[T.current].group + 1 : 0;
@@ -2888,11 +2908,13 @@ function renderSheet(){
   const t = trackTotals(tab);
   // Mastery: average spaced-repetition box across a day's questions (unanswered count as zero).
   const pre = tab === "study" ? "s:" : "p:";
-  const mastery = n => { const qs = T.items[n-1].quiz; const sum = qs.reduce((a, q, qi) => a + ((srs[pre + n + "." + qi] || {}).box || 0), 0); return Math.round(sum / (qs.length * 5) * 100); };
+  // Mastered = answered right on at least two separate days (box 3 or higher).
+  const mastery = n => { const qs = T.items[n-1].quiz; return Math.round(qs.filter((q, qi) => ((srs[pre + n + "." + qi] || {}).box || 0) >= 3).length / qs.length * 100); };
+  const missed = n => T.items[n-1].quiz.some((q, qi) => (srs[pre + n + "." + qi] || {}).box === 1);
   const started = T.items.map((d, i) => i + 1).filter(n => T.items[n-1].quiz.some((q, qi) => srs[pre + n + "." + qi]));
-  const weakest = started.sort((a, b) => mastery(a) - mastery(b)).slice(0, 3);
+  const weakest = started.filter(missed).sort((a, b) => mastery(a) - mastery(b)).slice(0, 3);
   document.getElementById("score").innerHTML = `${t.done} of ${t.total} questions answered · ${t.right} correct${tab === "study" ? ` · portfolio ${pfScore()} of ${PORTFOLIO.length}` : ""}` +
-    (weakest.length ? `<div class="weak">${weakest.map(n => `<button class="x weakBtn" type="button" data-n="${n}">Weakest: ${T.cfg.word} ${n} · ${mastery(n)}%</button>`).join("")}</div>` : "");
+    (weakest.length ? `<div class="weak">${weakest.map(n => `<button class="x weakBtn" type="button" data-n="${n}">Needs work: ${T.cfg.word} ${n}</button>`).join("")}</div>` : "");
   document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
@@ -2936,6 +2958,7 @@ window.addEventListener("popstate", e => {
   // Back (or any history move) shows whatever the restored address points to; Study's entry holds a Study card.
   ignoreHash = true;
   if (!fromHash()) switchTab("study");
+  if (pendingNav){ const f = pendingNav; pendingNav = null; requestAnimationFrame(f); }
   setTimeout(() => { ignoreHash = false; }, 100);
 });
 /* ---------- Backup and restore (copy and paste, since pages can't save files everywhere) ---------- */
@@ -2945,6 +2968,10 @@ function backupText(){
   return JSON.stringify({app:"cyber-scroll", v:1, at:new Date().toISOString(), data});
 }
 const bkText = document.getElementById("bkText"), bkMsg = document.getElementById("bkMsg"), bkApplyRow = document.getElementById("bkApplyRow");
+if (!store.ok){
+  document.getElementById("bkIntro").textContent = "This browser is blocking storage, so nothing is being saved and there's nothing to back up or restore here.";
+  document.getElementById("bkCopy").disabled = true; document.getElementById("bkPaste").disabled = true;
+}
 document.getElementById("bkCopy").addEventListener("click", () => {
   const text = backupText();
   const shown = () => { bkText.hidden = false; bkText.value = text; bkText.select(); bkApplyRow.hidden = true; bkMsg.textContent = "Copying isn't allowed here, so the backup is selected above. Long-press to copy it."; };
@@ -2956,10 +2983,21 @@ document.getElementById("bkPaste").addEventListener("click", () => {
   bkMsg.textContent = "Paste your backup above, then tap Restore this backup. It replaces the progress on this device.";
   bkText.focus();
 });
+// Restoring replaces this device's progress, so it needs a second tap after a summary.
+let bkArmed = null;
+bkText.addEventListener("input", () => { bkArmed = null; document.getElementById("bkApply").textContent = "Restore this backup"; });
 document.getElementById("bkApply").addEventListener("click", () => {
   let b; try { b = JSON.parse(bkText.value.trim()); } catch(e){ b = null; }
   if (!b || b.app !== "cyber-scroll" || !b.data || typeof b.data !== "object"){ bkMsg.textContent = "That doesn't look like a Cyber Scroll backup. Copy the whole text, including the curly brackets."; return; }
+  if (!Object.keys(b.data).length){ bkMsg.textContent = "That backup is empty, so restoring it would only erase this device's progress."; return; }
   if (!store.ok){ bkMsg.textContent = "This browser is blocking storage, so a backup can't be restored here."; return; }
+  if (bkArmed !== bkText.value){
+    const n = ["cr2-answers", "cr2-py-answers"].reduce((a, k) => { try { return a + Object.keys(JSON.parse(b.data[k] || "{}")).length; } catch(e){ return a; } }, 0);
+    const when = b.at ? new Date(b.at).toLocaleDateString("en-AU", {day:"numeric", month:"short", year:"numeric"}) : "an unknown date";
+    bkMsg.textContent = `This backup is from ${when} with ${n} answers. Restoring replaces everything on this device. Tap again to restore.`;
+    document.getElementById("bkApply").textContent = "Tap again to restore";
+    bkArmed = bkText.value; return;
+  }
   try {
     Object.keys(localStorage).filter(k => k.startsWith("cr2-")).forEach(k => localStorage.removeItem(k));
     Object.entries(b.data).forEach(([k, v]) => { if (k.startsWith("cr2-") && typeof v === "string") localStorage.setItem(k, v); });
@@ -3011,7 +3049,7 @@ function fromHash(hash){
   if (id === "feed" || id === "study" || id === "python"){ switchTab(id === "python" ? "py" : id); return true; }
   for (const tab of ["study","py"]){
     const idx = TABS[tab].cards.findIndex(c => c.el.id === id);
-    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
+    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish|portfolio|portfolio-2)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
   }
   return false;
 }
