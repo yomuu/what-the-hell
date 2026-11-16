@@ -26,6 +26,10 @@
   --t-study:#ffb020;
   --t-feed:#f472b6;
   --t-py:#5b9dff;
+  --k-e8:#ffd166;
+  --k-law:#a3e635;
+  --k-triage:#2dd4bf;
+  --k-int:#fda4af;
   --tab-h:58px;
   --display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -33,6 +37,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit}
 button:focus-visible,a:focus-visible,.why:focus-visible{outline:2px solid var(--accent,var(--w1));outline-offset:3px}
@@ -136,6 +141,20 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .stats b{color:var(--text);font-weight:500}
 .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 48px);transform:translate(-50%,-8px);z-index:9;max-width:calc(100% - 32px);background:var(--surface);border:1px solid var(--w3);border-radius:999px;padding:8px 16px;font-family:var(--mono);font-size:13px;letter-spacing:.03em;color:var(--text);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+.model{display:none;font-size:17px;line-height:1.5;max-width:440px;border-left:3px solid var(--c);padding:4px 0 4px 14px}
+.model.show{display:block}
+.rate{display:none;gap:8px;flex-wrap:wrap}
+.rate.show{display:flex}
+.rate button{min-height:44px;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px;cursor:pointer}
+.rate button[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--surface))}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-width:460px}
+.checks label{display:flex;gap:12px;align-items:center;min-height:44px;font-size:16px;line-height:1.35;cursor:pointer}
+.checks input{width:22px;height:22px;flex:none;accent-color:var(--c)}
+.linkbtn{align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:999px;border:1px dashed var(--c);background:transparent;color:var(--text);font-size:15px;cursor:pointer}
+.backup{margin-top:20px;border-top:1px solid var(--line);padding-top:6px;display:flex;flex-direction:column;gap:10px;--c:var(--accent)}
+.backup p{margin:0;font-size:14px;line-height:1.45;color:var(--muted)}
+.backup textarea{width:100%;min-height:96px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-family:var(--mono);font-size:12px}
+.weak{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 
 .btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
@@ -201,6 +220,14 @@ h2{font-size:clamp(26px,7.4vw,40px)}
     <header><h3 id="sheetTitle">Jump to a day</h3><button class="x" id="closeDays">Close</button></header>
     <div class="score" id="score"></div>
     <div id="dayList"></div>
+    <section class="backup" aria-labelledby="bkTitle">
+      <div class="wk" id="bkTitle">Back up your progress</div>
+      <p>Your answers, reviews and streak live only in this browser. Copy a backup and keep it somewhere safe, or paste one here to restore it on a new phone.</p>
+      <div class="row"><button class="btn ghost" id="bkCopy" type="button">Copy backup</button><button class="btn ghost" id="bkPaste" type="button">Restore a backup</button></div>
+      <textarea id="bkText" hidden aria-label="Backup text" spellcheck="false"></textarea>
+      <div class="row" id="bkApplyRow" hidden><button class="btn" id="bkApply" type="button">Restore this backup</button></div>
+      <p id="bkMsg" aria-live="polite"></p>
+    </section>
   </div>
 </div>
 
@@ -1377,8 +1404,293 @@ const FEED_DECKS = [
  ],
  maps:"A01 Broken Access Control (SSRF) · least privilege",
  q:{q:"What did the SSRF flaw let the attacker obtain at Capital One?", o:["Temporary cloud credentials from the metadata service","The CEO's password","A copy of the firewall's source code"], k:0,
-   w:"The server fetched its own credentials on the attacker's behalf. Over-broad permissions did the rest."}}
+   w:"The server fetched its own credentials on the attacker's behalf. Over-broad permissions did the rest."}},
+/* ---------------- FEED: Essential Eight ---------------- */
+{id:"e8-patch-apps", kind:"e8", tag:"E8", title:"Patch applications",
+ cards:[
+  ["What it is","Keep applications such as browsers, Office, PDF readers and internet-facing services patched, and remove ones the vendor no longer supports. It's one of the eight mitigation strategies in the Australian Signals Directorate's Essential Eight."],
+  ["Why it matters","Attackers routinely exploit known flaws, often within days of a fix being released. For internet-facing services, the Essential Eight sets 48 hours when a flaw is critical or already being exploited."]
+ ],
+ q:{d:1, q:"Which application should be removed rather than patched?", o:["One the vendor no longer supports","A browser with a pending update","An Office version released this year"], k:0,
+   w:"Unsupported software gets no fixes. Remove or replace it."}},
+{id:"e8-patch-os", kind:"e8", tag:"E8", title:"Patch operating systems",
+ cards:[
+  ["What it is","Keep the operating systems on workstations, servers and network devices patched, and replace operating systems that are out of support. Patching the OS closes holes that let malware spread and escalate."],
+  ["Real world","Windows 10 reached end of support in October 2025, so it no longer gets regular security updates. WannaCry in 2017 spread through unpatched Windows machines months after the fix was out."]
+ ],
+ q:{d:2, q:"A clinic still runs Windows 10 PCs with no extended support. What does the Essential Eight say?", o:["Replace or upgrade the unsupported operating system","Keep using it if antivirus is installed","Only patch it once a year"], k:0,
+   w:"Out-of-support systems stop getting fixes. Upgrading them is part of patching operating systems."}},
+{id:"e8-mfa", kind:"e8", tag:"E8", title:"Multi-factor authentication",
+ cards:[
+  ["What it is","Require MFA for remote access, for privileged users and for online services that hold important data. It stops a stolen password being enough on its own."],
+  ["Maturity matters","Higher Essential Eight maturity levels expect phishing-resistant MFA, such as passkeys or FIDO2 security keys, rather than SMS or app codes that can be relayed by a fake login page."]
+ ],
+ q:{d:2, q:"Which incidents in this app would MFA on remote access most directly have stopped?", o:["Medibank and Change Healthcare","Log4Shell and the CrowdStrike outage","xz utils and MOVEit"], k:0,
+   w:"Both started with stolen credentials on remote access with no second factor."}},
+{id:"e8-admin", kind:"e8", tag:"E8", title:"Restrict administrative privileges",
+ cards:[
+  ["What it is","Give admin rights only to people who need them, review those rights regularly and use separate admin accounts. Privileged accounts shouldn't browse the web or read email."],
+  ["Why it matters","Attackers hunt for admin credentials because they unlock everything. If admins read email with a standard account, one phishing click doesn't hand over the domain."]
+ ],
+ q:{d:2, q:"An IT admin reads email and browses the web while logged in with their domain admin account. What's the fix?", o:["A separate standard account for email and browsing","A longer admin password","Turning off the firewall for admins"], k:0,
+   w:"Keep privileged accounts away from the internet and email, where most attacks start."}},
+{id:"e8-appcontrol", kind:"e8", tag:"E8", title:"Application control",
+ cards:[
+  ["What it is","Only approved programs, scripts and installers can run. Everything else is blocked by default. It's allow-listing for software."],
+  ["Where to start","Block programs from running in places users can write to, such as Downloads, the Desktop and temporary folders. That's where malicious attachments and downloads land."]
+ ],
+ q:{d:2, q:"A user downloads `invoice.exe` to their Downloads folder and double-clicks it. With application control, what happens?", o:["It's blocked because it isn't on the approved list","It runs, because the user chose to open it","It runs with admin rights"], k:0,
+   w:"Allow-listing blocks anything that isn't approved, however convincing the file name is."}},
+{id:"e8-macros", kind:"e8", tag:"E8", title:"Restrict Microsoft Office macros",
+ cards:[
+  ["What it is","Turn off Office macros for users who don't need them, and block macros in files that came from the internet. Macro-enabled documents are a classic way to deliver malware."],
+  ["Real world","For years, emailed Word and Excel files asked users to “enable content”, which ran a macro that downloaded malware. Microsoft now blocks macros in internet files by default, but settings still need checking."]
+ ],
+ q:{d:1, q:"Which macros should be blocked first?", o:["Macros in files that came from the internet","Macros written by your own finance team and signed","All Office features"], k:0,
+   w:"Internet-sourced macros are the delivery route attackers use. Trusted, signed business macros can be allowed."}},
+{id:"e8-hardening", kind:"e8", tag:"E8", title:"User application hardening",
+ cards:[
+  ["What it is","Lock down everyday apps so they can't easily be abused: browsers block web ads and Java from the internet, and old software such as Internet Explorer 11 is disabled or removed."],
+  ["Why it matters","Attackers abuse features, not just bugs. Stopping Office from launching child processes, for example, breaks the pattern where a document starts PowerShell."]
+ ],
+ q:{d:2, q:"Which is an example of user application hardening?", o:["Stopping Office apps from creating child processes","Buying a faster PC","Moving files to a USB drive"], k:0,
+   w:"Removing risky features from everyday apps shrinks what an attacker can use."}},
+{id:"e8-backups", kind:"e8", tag:"E8", title:"Regular backups",
+ cards:[
+  ["What it is","Back up important data, software and settings regularly, keep backups for as long as the business needs, and test restoring them. Standard users shouldn't be able to change or delete backups."],
+  ["Remember","Backups restore encrypted data and get you running again. They do nothing about data that has already been stolen, so they're one layer, not the whole answer to ransomware."]
+ ],
+ q:{d:2, q:"Why should ordinary user accounts be unable to delete backups?", o:["Ransomware running as that user could delete them too","It saves disk space","Backups are too large to delete"], k:0,
+   w:"Malware acts with the user's rights. Backups it can't reach are backups that survive."}},
+{id:"e8-maturity", kind:"e8", tag:"E8", title:"Maturity levels",
+ cards:[
+  ["What they are","The Essential Eight has maturity levels from zero to three. Each level is designed to resist more capable attackers, from opportunistic ones at Level One to adaptive, targeted ones at Level Three."],
+  ["How to use them","Aim for the same maturity level across all eight strategies before moving up. A strong score on one strategy doesn't make up for a gap in another."],
+  ["In job ads","Australian security roles often ask for Essential Eight experience. Being able to explain the eight strategies and how an assessment works is a good interview answer."]
+ ],
+ q:{d:2, q:"What's the recommended way to improve Essential Eight maturity?", o:["Reach the same level across all eight strategies before moving up","Max out one strategy first","Skip straight to Level Three"], k:0,
+   w:"The strategies work together. An attacker will use whichever one is weakest."}},
+
+/* ---------------- FEED: cloud security ---------------- */
+{id:"cloud-shared", kind:"cloud", tag:"Cloud", title:"Shared responsibility",
+ cards:[
+  ["What it is","The cloud provider secures the cloud itself: data centres, hardware and the hypervisor. You secure what you put in it: data, identities, network rules and configuration."],
+  ["It shifts by service","With virtual machines (IaaS) you patch the operating system. With software as a service you mostly manage users, data and settings. Either way, your data and who can access it are always yours."]
+ ],
+ q:{d:1, q:"A company leaves a storage bucket public. Whose responsibility is that?", o:["The customer's","The cloud provider's","Nobody's"], k:0,
+   w:"Configuration is the customer's side of the model. Providers give you the controls; you have to use them."}},
+{id:"cloud-iam", kind:"cloud", tag:"Cloud", title:"Identity is the perimeter",
+ cards:[
+  ["What it is","In the cloud, identity and access management decides what every person and service can do. A leaked key with broad rights is as bad as an open firewall."],
+  ["Good habits","Lock the AWS root user or Entra Global Administrator away behind MFA and use it rarely. Give people and apps roles with least privilege, prefer short-lived credentials over long-lived access keys, and review permissions regularly."]
+ ],
+ q:{d:2, q:"Which is safest for an app running on an AWS server that needs to read one bucket?", o:["An IAM role allowing read access to that bucket only","An access key with admin rights saved in the code","The root user's credentials"], k:0,
+   w:"Roles give temporary credentials automatically, and least privilege limits what a compromise can reach."}},
+{id:"cloud-logging", kind:"cloud", tag:"Cloud", title:"Cloud logging",
+ cards:[
+  ["What to turn on","AWS CloudTrail records API calls and console sign-ins. In Microsoft's cloud, Entra sign-in logs and the Azure Activity log do similar jobs. Keep these logs somewhere attackers can't delete them."],
+  ["What to alert on","Root or Global Administrator sign-ins, sign-ins without MFA, logging being turned off, new access keys and permission changes. Attackers often disable logging first, so alert on that above all."]
+ ],
+ q:{d:2, q:"Someone stops CloudTrail logging in your AWS account at 2am. What should happen?", o:["An alert, treated as a possible intrusion","Nothing, logging is optional","Wait for the monthly report"], k:0,
+   w:"Disabling logs is a classic attacker move to hide what comes next."}},
+{id:"cloud-storage", kind:"cloud", tag:"Cloud", title:"Public storage",
+ cards:[
+  ["The risk","Cloud storage buckets and blobs left open to the public are behind many data exposures. It's a configuration problem, OWASP 2025 A02."],
+  ["The controls","On AWS, S3 Block Public Access has been on by default for new buckets since April 2023, and can be enforced across the account. Check older buckets, bucket policies and sharing links, and scan for public access automatically."]
+ ],
+ q:{d:2, q:"A bucket created in 2021 holds customer files. What's the first check?", o:["Its public access settings and bucket policy","Its storage class","Its file names"], k:0,
+   w:"Older buckets predate the safer defaults, so confirm public access is blocked."}},
+{id:"cloud-imds", kind:"cloud", tag:"Cloud", title:"The metadata service",
+ cards:[
+  ["What it is","Cloud servers can query a local metadata service, at 169.254.169.254 on AWS, for details including temporary credentials for their role. Useful for apps, and a prize for attackers."],
+  ["Protect it","On AWS, require IMDSv2, which needs a session token and makes simple SSRF attacks far harder. Give server roles least privilege, so stolen credentials can't reach much. Capital One in 2019 is the cautionary tale."]
+ ],
+ q:{d:3, q:"Why does requiring IMDSv2 help against SSRF?", o:["Requests need a session token that a simple forged request can't obtain","It encrypts the server's disk","It blocks all outbound traffic"], k:0,
+   w:"IMDSv2 needs a PUT request for a token first. Most SSRF flaws can only make simple GET requests."}},
+
+/* ---------------- FEED: Australian and NZ law ---------------- */
+{id:"law-ndb", kind:"law", tag:"AU", title:"Notifiable Data Breaches scheme",
+ cards:[
+  ["What it is","Under Australia's Privacy Act 1988, organisations covered by the Act must report an eligible data breach to the Office of the Australian Information Commissioner (OAIC) and tell affected people."],
+  ["When it applies","A breach is eligible when personal information is accessed, disclosed or lost, it's likely to cause serious harm, and you can't prevent that harm. If you only suspect one, you have 30 days to assess it, and you notify as soon as practicable."]
+ ],
+ q:{d:2, q:"You suspect an eligible data breach but aren't sure. How long do you have to assess it?", o:["30 days","72 hours","One year"], k:0,
+   w:"The scheme expects a reasonable, quick assessment within 30 days, and notification as soon as practicable if it's eligible."}},
+{id:"law-nz", kind:"law", tag:"NZ", title:"NZ Privacy Act 2020",
+ cards:[
+  ["What it is","In New Zealand, a privacy breach that has caused or is likely to cause serious harm is a notifiable privacy breach. You must tell the Privacy Commissioner and affected people as soon as practicable."],
+  ["Why it matters","Failing to notify the Commissioner is an offence with a fine of up to $10,000. More importantly, quick notice lets people protect themselves, for example by watching for scams."]
+ ],
+ q:{d:2, q:"Under the NZ Privacy Act 2020, who must be told about a notifiable privacy breach?", o:["The Privacy Commissioner and affected people","Only the police","Only the company's board"], k:0,
+   w:"Both the regulator and the people affected need to know, as soon as practicable."}},
+{id:"law-ransom", kind:"law", tag:"AU", title:"Reporting ransomware payments",
+ cards:[
+  ["What it is","Under Australia's Cyber Security Act 2024, businesses with an annual turnover over A$3 million must report a ransomware or cyber extortion payment to the Australian Signals Directorate within 72 hours. The rule started on 30 May 2025."],
+  ["What it isn't","Reporting doesn't make paying legal or wise, and it isn't permission. It gives the government a clearer picture of extortion, which helps everyone defend against it."]
+ ],
+ q:{d:2, q:"An Australian company with A$50 million turnover pays a ransom. What must it do?", o:["Report the payment to ASD within 72 hours","Nothing, payments are private","Report it at the end of the financial year"], k:0,
+   w:"The Cyber Security Act 2024 requires reporting within 72 hours for businesses over the A$3 million threshold."}},
+{id:"law-report", kind:"law", tag:"AU/NZ", title:"Who to call",
+ cards:[
+  ["Australia","Report cyber incidents to the Australian Signals Directorate's Australian Cyber Security Centre through ReportCyber at cyber.gov.au. Privacy breaches go to the OAIC."],
+  ["New Zealand","Report cyber incidents to the National Cyber Security Centre, which absorbed CERT NZ in 2024. Privacy breaches go to the Office of the Privacy Commissioner."]
+ ],
+ q:{d:1, q:"In New Zealand, which agency now takes over CERT NZ's role for cyber incident reports?", o:["The National Cyber Security Centre (NCSC)","The Privacy Commissioner","The police only"], k:0,
+   w:"CERT NZ became part of the NCSC in 2024. Privacy breaches still go to the Privacy Commissioner."}},
+
+/* ---------------- FEED: triage scenarios ---------------- */
+{id:"tri-spray", kind:"triage", tag:"Triage", title:"Many users, one source",
+ cards:[["The evidence","A Windows domain controller's Security log over two minutes. Forty different users each have one failed logon, all from the same address. Then one success.",
+  String.raw`4625  user=asmith   src=203.0.113.50  type=3
+4625  user=bjones   src=203.0.113.50  type=3
+4625  user=cwilson  src=203.0.113.50  type=3
+...   (37 more users, one attempt each)
+4624  user=dlee     src=203.0.113.50  type=3`]],
+ all:true,
+ qs:[{d:2, q:"What's the most likely activity?", o:["Password spraying that succeeded for dlee","A user who forgot their password","A normal backup job"], k:0,
+   w:"One attempt per user from one source avoids lockouts. The 4624 at the end means a guess worked."},
+  {d:3, q:"What's the best first action?", o:["Reset dlee's password, revoke their sessions and review what the account did","Delete the event logs","Email all forty users to ask if it was them"], k:0,
+   w:"Contain the compromised account first, then block the source and investigate its activity."}],
+ after:[["How to hunt it","In Microsoft Sentinel, this KQL finds sources that failed against many accounts in ten minutes.",
+  String.raw`SecurityEvent
+| where EventID == 4625
+| summarize users = dcount(TargetUserName) by IpAddress, bin(TimeGenerated, 10m)
+| where users > 10`]]},
+{id:"tri-ssh", kind:"triage", tag:"Triage", title:"A noisy SSH server",
+ cards:[["The evidence","Lines from a Linux server's SSH log. About 300 failures in five minutes from one address. No successful logins appear.",
+  String.raw`Failed password for root from 198.51.100.23 port 51022 ssh2
+Failed password for root from 198.51.100.23 port 51040 ssh2
+Failed password for invalid user admin from 198.51.100.23 port 51102 ssh2
+...   (about 300 lines in 5 minutes)`]],
+ all:true,
+ qs:[{d:1, q:"What's the most likely activity?", o:["An SSH brute-force attempt with no success seen","A successful compromise","A software update"], k:0,
+   w:"Many failures, one source, common usernames. Nothing shows it worked, but you still check."},
+  {d:2, q:"What do you check before closing this?", o:["That there's no “Accepted” login from that address","The server's CPU temperature","Whether the IP is in Australia"], k:0,
+   w:"Confirm the attacker never got in. Then harden: key-only logins, no root login, and rate limiting or fail2ban."}],
+ after:[["How to hunt it","On the server, look for any successful login from the attacking address.",
+  String.raw`sudo journalctl -u ssh | grep "Accepted" | grep 198.51.100.23`]]},
+{id:"tri-phish", kind:"triage", tag:"Triage", title:"A reported email",
+ cards:[["The evidence","A user reports this email. They haven't clicked the link.",
+  String.raw`From: "Microsoft 365" <no-reply@micros0ft-support.example>
+Reply-To: helpdesk@freemail.example
+Subject: Your password expires today
+Authentication-Results: spf=fail; dkim=none; dmarc=fail
+Link: https://login.micros0ft-support.example/reset`]],
+ all:true,
+ qs:[{d:1, q:"What is it?", o:["Credential phishing","A real Microsoft notice","A delivery receipt"], k:0,
+   w:"Look-alike domain, failed SPF and DMARC, urgency and a login link: classic credential phishing."},
+  {d:2, q:"What's the best next step?", o:["Find and remove matching emails, block the domain and check who clicked","Reply to the sender to complain","Forward it to all staff as a warning, link included"], k:0,
+   w:"Others probably got it too. Purge, block, then check proxy or sign-in logs for anyone who clicked or entered a password."}],
+ after:[["Thank the reporter","The user did exactly the right thing. A quick thank-you makes them more likely to report the next one, which is how many phishing campaigns get caught early."]]},
+{id:"tri-cloudtrail", kind:"triage", tag:"Triage", title:"A root sign-in",
+ cards:[["The evidence","An AWS CloudTrail event from 3am. Nobody on the team uses the root user.",
+  String.raw`"eventName": "ConsoleLogin",
+"userIdentity": {"type": "Root"},
+"sourceIPAddress": "192.0.2.77",
+"additionalEventData": {"MFAUsed": "No"},
+"responseElements": {"ConsoleLogin": "Success"}`]],
+ all:true,
+ qs:[{d:2, q:"What does this show?", o:["A successful root sign-in without MFA from an unknown address","A failed login attempt","A routine automated backup"], k:0,
+   w:"ConsoleLogin Success, Root, MFAUsed No. That combination should never happen unannounced."},
+  {d:3, q:"What's the best first response?", o:["Treat it as a compromise: secure root, enable MFA and review every action since","Wait to see if it happens again","Delete the CloudTrail event"], k:0,
+   w:"Rotate the root password, add MFA, then hunt for new users, access keys and changed permissions."}],
+ after:[["How to prevent it","Put phishing-resistant MFA on the root user, remove any root access keys, and alert on every root sign-in. Day-to-day work should use roles, never root."]]},
+{id:"tri-macro", kind:"triage", tag:"Triage", title:"Word starts PowerShell",
+ cards:[["The evidence","An endpoint alert from a finance laptop.",
+  String.raw`ParentImage: C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE
+Image: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+CommandLine: powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBi...`]],
+ all:true,
+ qs:[{d:2, q:"What's most likely happening?", o:["A malicious document ran hidden, encoded PowerShell","Word is checking for updates","The user is writing a script"], k:0,
+   w:"Word as the parent, a hidden window and an encoded command are classic signs of a malicious macro."},
+  {d:2, q:"What's the best first action?", o:["Isolate the laptop from the network, but leave it powered on","Switch it off at the wall","Delete the Word document"], k:0,
+   w:"Isolation stops the spread. Keeping it on preserves memory evidence. Then find the document, its sender and anyone else who received it."}],
+ after:[["How to hunt it","In Microsoft Defender for Endpoint, this KQL finds Office apps starting PowerShell.",
+  String.raw`DeviceProcessEvents
+| where InitiatingProcessFileName in~ ("winword.exe", "excel.exe")
+| where FileName =~ "powershell.exe"`]]},
+
+/* ---------------- FEED: interview practice ----------------
+   Say the answer out loud, reveal the model answer, then rate yourself.
+   Shaky or missed answers come back through spaced repetition. */
+{id:"int-cia", kind:"interview", tag:"Interview", title:"Explain the CIA triad to a non-technical manager.",
+ answer:"It's the three things security protects. Confidentiality: only the right people can see our data. Integrity: nobody can change it without us knowing. Availability: our systems work when staff and customers need them. Ransomware is a good example because it can hit all three at once."},
+{id:"int-risk", kind:"interview", tag:"Interview", title:"What's the difference between a threat, a vulnerability and a risk?",
+ answer:"A vulnerability is a weakness, like an unpatched server. A threat is whoever or whatever could exploit it, including insiders and accidents. Risk is how likely that is and how much harm it would do. So the same bug is high risk on the internet and low risk in an isolated lab."},
+{id:"int-authz", kind:"interview", tag:"Interview", title:"Explain authentication versus authorisation, with an example.",
+ answer:"Authentication proves who you are, like logging in with a password and MFA. Authorisation decides what you're allowed to do once you're in. For example, I can log in to the HR system, but I get a 403 on payroll because my account isn't allowed to see it."},
+{id:"int-mfa", kind:"interview", tag:"Interview", title:"Is SMS-based MFA good enough?",
+ answer:"It's much better than a password alone, but it's the weakest form of MFA. SIM swapping and fake login pages can steal the code, and app codes can be phished too. Where possible I'd move people to passkeys or FIDO2 keys, which are phishing-resistant because they're tied to the real site."},
+{id:"int-url", kind:"interview", tag:"Interview", title:"What happens when you type a website address and press Enter?",
+ answer:"If the laptop is new to the network, DHCP gives it an address, gateway and DNS server. DNS turns the name into an IP. The browser opens a TCP connection to port 443, or QUIC for HTTP/3, and TLS checks the certificate and sets up encryption. Then the HTTP request and response travel inside that tunnel."},
+{id:"int-port", kind:"interview", tag:"Interview", title:"A scan shows port 3389 open on a server. Is that a vulnerability?",
+ answer:"Not by itself. An open port means a service is listening, here Remote Desktop. It's a risk if it's exposed to the internet, unpatched or allows weak passwords. I'd check who can reach it, its patch level and whether it should be behind a VPN or gateway with MFA."},
+{id:"int-crypto", kind:"interview", tag:"Interview", title:"Explain encryption, hashing and encoding.",
+ answer:"Encryption is reversible with a key and protects confidentiality, like AES on a disk. Hashing is one-way and checks integrity, like comparing a file's SHA-256. Encoding, like Base64, is just a format change that anyone can reverse, so it protects nothing. Passwords should be hashed with a slow, salted algorithm."},
+{id:"int-failedlogons", kind:"interview", tag:"Interview", title:"You see hundreds of failed logons in the SIEM. What do you do?",
+ answer:"First I'd scope it: which accounts, which source, over what time. Many users from one source suggests spraying; one user from many suggests a targeted attack. Most importantly, I'd check for a successful logon afterwards. If there is one, I'd contain that account, then block the source and escalate."},
+{id:"int-ir", kind:"interview", tag:"Interview", title:"Walk me through incident response.",
+ answer:"I know the classic four phases from NIST SP 800-61 Rev. 2: preparation, detection and analysis, containment, eradication and recovery, and lessons learned. Rev. 3 from 2025 now aligns it with the CSF 2.0 functions. In practice: contain quickly, preserve evidence, communicate, recover from clean backups and fix the root cause."},
+{id:"int-ransom", kind:"interview", tag:"Interview", title:"A user says their files have strange extensions and there's a ransom note. What do you do?",
+ answer:"I'd isolate the machine from the network straight away but leave it powered on, to stop the spread and keep evidence. Then I'd escalate under our incident process, check for other affected machines and shares, and make sure backups are safe and offline. I wouldn't pay or delete anything on my own."},
+{id:"int-least", kind:"interview", tag:"Interview", title:"Give an example of least privilege from your IT support work.",
+ answer:"Answer from your own experience. For example: help desk staff could reset any password, including admins'. We split it so they could reset standard users only, and admin resets went through a separate process. If a help desk account was phished, the damage would be limited."},
+{id:"int-shared", kind:"interview", tag:"Interview", title:"Explain the cloud shared responsibility model.",
+ answer:"The provider secures the cloud itself: buildings, hardware and the virtualisation layer. The customer secures what they put in it: data, identities, configuration and, for virtual machines, the operating system. Most cloud breaches come from the customer side, like public buckets or over-permissive roles."},
+{id:"int-e8", kind:"interview", tag:"Interview", title:"What is the Essential Eight?",
+ answer:"It's the Australian Signals Directorate's baseline of eight mitigation strategies: patch applications, patch operating systems, MFA, restrict admin privileges, application control, restrict Office macros, user application hardening and regular backups. It has maturity levels zero to three, and you aim for the same level across all eight."},
+{id:"int-lab", kind:"interview", tag:"Interview", title:"Tell me about a security project you've done.",
+ answer:"Use a real lab write-up. A good structure: the goal, the setup (for example Kali and a Windows target on an isolated network), what you did (scanned it with Nmap and watched it in Wireshark and the firewall log), what you found and what you'd change in a real network."},
+{id:"int-why", kind:"interview", tag:"Interview", title:"Why do you want to move from IT support into security?",
+ answer:"Answer in your own words. Link your support work to security: you already handle account lockouts, phishing reports, patching and access requests. Say what you've done to build skills, like your diploma, home lab and write-ups, and what draws you to the role."},
+{id:"int-logs", kind:"interview", tag:"Interview", title:"Why do logging and alerting matter, if you already have a firewall?",
+ answer:"Prevention eventually fails, so you need to detect what gets through. Logs show who did what and when, and alerts make sure someone notices in time. OWASP 2025 lists Security Logging and Alerting Failures as A09. At Target in 2013, alerts fired but weren't acted on."}
 ];
+
+const FEED_EXTRA_Q = {
+/* Extra check questions for existing Feed decks. The Feed shows the easiest unanswered
+   check first, then the one you know least well, so difficulty rises as you master a deck. */
+"owasp-a01":[{d:3, q:"An app fetches any URL a user pastes into a “preview link” box. An attacker pastes `http://169.254.169.254/latest/meta-data/`. What is this?", o:["Server-side request forgery (SSRF), part of A01","SQL injection","Cross-site scripting"], k:0,
+   w:"169.254.169.254 is the cloud metadata address. Making the server fetch it is SSRF, which sits under A01 Broken Access Control in 2025."}],
+"owasp-a02":[{d:2, q:"Which is the best long-term fix for misconfiguration across many servers?", o:["A hardened, repeatable configuration applied automatically","Asking admins to be more careful","Changing settings by hand after each incident"], k:0,
+   w:"Manual changes drift. Configuration as code, checked automatically, keeps every server the same."}],
+"owasp-a03":[{d:3, q:"A popular open-source library you use is found to contain a backdoor in its latest release. What do you do first?", o:["Check your SBOM to see which systems use that version","Wait for the vendor to email you","Delete every open-source library"], k:0,
+   w:"Scope comes first. An SBOM tells you where the bad version runs, so you can pin or roll back those systems."}],
+"owasp-a04":[{d:2, q:"Which of these is a cryptographic failure?", o:["Storing passwords as unsalted MD5 hashes","Requiring MFA for admins","Using parameterised queries"], k:0,
+   w:"MD5 is fast and unsalted hashes crack quickly. Passwords need a slow, salted algorithm like Argon2 or bcrypt."}],
+"owasp-a05":[{d:3, q:"Text posted in a comment box runs as JavaScript in other users' browsers. What is it, and what's the main fix?", o:["Cross-site scripting; encode output for the HTML context","SQL injection; use parameterised queries","SSRF; block the metadata address"], k:0,
+   w:"XSS is injection into the browser. Encoding output stops the browser treating the text as code."}],
+"owasp-a06":[{d:2, q:"A gift card checkout lets users retry card numbers without limit. Which category is this mainly?", o:["A06 Insecure Design","A04 Cryptographic Failures","A09 Security Logging and Alerting Failures"], k:0,
+   w:"Nobody designed for abuse. Rate limits and per-user caps belong in the design from the start."}],
+"owasp-a07":[{d:2, q:"Which control best defends against credential stuffing?", o:["MFA plus blocking known breached passwords","Longer session timeouts","Hiding the login page URL"], k:0,
+   w:"Stuffing replays leaked passwords. MFA stops a reused password being enough, and breached-password checks stop reuse."}],
+"owasp-a08":[{d:3, q:"Why didn't code signing protect SolarWinds customers?", o:["The malicious code was added during the build, so it was signed","Customers had turned signature checks off","The certificate had expired"], k:0,
+   w:"A signature proves who built it, not that the build was clean. Protecting the pipeline matters as much as signing."}],
+"owasp-a09":[{d:2, q:"What's the most important test for your alerting?", o:["Trigger a test event and confirm a person receives and acts on it","Count how many log lines you store","Check the SIEM licence is current"], k:0,
+   w:"Alerts only matter if someone sees them. Test the whole path from event to human."}],
+"owasp-a10":[{d:2, q:"What should a user see when your app hits an unexpected error?", o:["A generic message, while the details go to your logs","The full stack trace, to help them report it","Nothing, and the action should carry on"], k:0,
+   w:"Users get a safe message, developers get the details in logs, and the action stops safely."}],
+"inc-change":[{d:2, q:"Change Healthcare paid US$22 million. What happened to the stolen data?", o:["It was still used in further extortion attempts","It was guaranteed deleted","It was returned to Change Healthcare"], k:0,
+   w:"Paying doesn't buy certainty. Data from the attack resurfaced in later extortion."}],
+"inc-medibank":[{d:3, q:"Which two controls would most directly have stopped the Medibank login?", o:["MFA on the VPN, and keeping privileged credentials off personal devices","Disk encryption and a bigger firewall","Antivirus on Medibank's servers and longer passwords"], k:0,
+   w:"The credentials were stolen from a personal computer and worked on a VPN with no second factor."}],
+"inc-waikato":[{d:2, q:"What made recovery at Waikato DHB so slow?", o:["Systems had to be rebuilt and restored across a whole health network","The ransom note was in another language","Staff refused to use paper"], k:0,
+   w:"Rebuilding many systems takes weeks. Tested backups and a practised plan shorten that time."}],
+"inc-latitude":[{d:2, q:"How did the attackers get a Latitude employee's credentials?", o:["Through an attack that came in via a major vendor","By guessing a weak password","By phoning the help desk"], k:0,
+   w:"The attack came through a major vendor and gave the attackers a Latitude employee's login."}],
+"inc-moveit":[{d:3, q:"Many MOVEit victims had never used MOVEit themselves. How were they affected?", o:["Their suppliers used it to transfer their data","Cl0p scanned their home networks","Their staff opened phishing emails"], k:0,
+   w:"Third-party risk: your data is only as safe as the tools your suppliers use."}],
+"inc-log4shell":[{d:2, q:"What did an attacker need to trigger Log4Shell?", o:["Get a crafted string into something the app logged","Physical access to the server","An admin password"], k:0,
+   w:"Usernames, headers and search boxes all got logged, so the attack surface was enormous."}],
+"inc-xz":[{d:3, q:"Why was the xz backdoor so hard to spot in code review?", o:["It was hidden in test files and build scripts, not the visible source","It was written in assembly language","The project had no source code"], k:0,
+   w:"Reviewers read the source, but the payload lived in build artefacts. Build pipelines are part of the attack surface."}],
+"inc-crowdstrike":[{d:2, q:"Why did many CrowdStrike-affected machines need hands-on fixes?", o:["They crashed at boot, so remote tools couldn't reach them","The update deleted all files","Staff had forgotten their passwords"], k:0,
+   w:"A machine stuck at a blue screen can't run remote management. Recovery keys and staged rollouts matter."}],
+"inc-uber":[{d:2, q:"How did the attacker get the contractor to approve an MFA prompt?", o:["Spamming push requests, then posing as IT on WhatsApp","A zero-day in the MFA app","Stealing the contractor's phone"], k:0,
+   w:"MFA fatigue plus social engineering. Number matching or phishing-resistant MFA would have helped."}],
+"inc-capitalone":[{d:2, q:"Besides SSRF, what made the Capital One breach so large?", o:["The cloud role had broad access to many storage buckets","The data was stored on paper","The firewall was switched off"], k:0,
+   w:"Least privilege on cloud roles limits what stolen credentials can reach."}]
+};
 
 const PY_LEVELS = [
   {name:"Basics", from:0, to:6},
@@ -1923,7 +2235,12 @@ const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
    Answering DAILY_GOAL questions in a day, in any tab, keeps the streak going. */
 const DAILY_GOAL = 5;
 const INTERVALS = [1, 3, 7, 16, 35];
-const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)"};
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--w2)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)"};
+// Each deck gets a list of checks: its main one plus any extras. Interview decks have none.
+FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = d.qs || [d.q].concat(FEED_EXTRA_Q[d.id] || []); });
+const checkKey = (d, n) => n ? `f:${d.id}#${n}` : `f:${d.id}`;
+function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag, e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview"}[d.kind] || d.tag; }
+function deckName(d){ return d.kind === "owasp" ? d.tag + " " + d.title : d.kind === "incident" ? d.title + " " + d.tag : d.kind === "interview" ? "Interview practice" : d.title; }
 function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
 const srs = asObj(store.get("cr2-srs", {}));
 const saveSrs = () => store.set("cr2-srs", srs);
@@ -1933,7 +2250,11 @@ function today(){ const t = dayNum(); if (daily.day !== t){ daily.day = t; daily
 function currentStreak(){ return daily.lastDone >= dayNum() - 1 ? daily.streak : 0; }
 function srsItem(key){
   const pre = key.slice(0, 2), rest = key.slice(2);
-  if (pre === "f:"){ const d = FEED_DECKS.find(x => x.id === rest); return d ? {q:d.q, src:d.kind === "owasp" ? "OWASP " + d.tag : d.title} : null; }
+  if (pre === "f:"){
+    const [id, n] = rest.split("#"), d = FEED_DECKS.find(x => x.id === id), q = d && d.qs && d.qs[+n || 0];
+    return q ? {q, src:d.kind === "owasp" ? "OWASP " + d.tag : d.title} : null;
+  }
+  if (pre === "i:"){ const d = FEED_DECKS.find(x => x.id === rest && x.kind === "interview"); return d ? {interview:d, src:"Interview"} : null; }
   const [dn, qi] = rest.split(".").map(Number);
   const list = pre === "s:" ? DAYS : pre === "p:" ? PY_LESSONS : null;
   const q = list && list[dn-1] && list[dn-1].quiz[qi];
@@ -1951,6 +2272,7 @@ function srsRecord(key, correct){
   else if (e.last !== t) e.box = Math.min(5, e.box + 1);
   e.due = t + INTERVALS[e.box - 1]; e.last = t; e.n = (e.n || 0) + 1;
   srs[key] = e; saveSrs();
+  if (!srsRecord.asked && navigator.storage && navigator.storage.persist){ srsRecord.asked = true; navigator.storage.persist().catch(() => {}); }
   const d = today(); d.qs++;
   if (d.qs === DAILY_GOAL){
     daily.streak = daily.lastDone === t - 1 ? daily.streak + 1 : daily.lastDone === t ? daily.streak : 1;
@@ -2137,8 +2459,11 @@ function makeTrack(tab, items, cfg){
     const rc = make("Recap", `${tag("Recap")}<h2>${last ? cfg.lastRecap : cfg.word + " " + dn + " in a nutshell"}</h2>
       <ul class="recap">${d.recap.map(r => `<li>${fmt(r)}</li>`).join("")}</ul>
       <div class="dscore"></div>
-      <div class="row"><button class="btn nx">${last ? "Finish" : "Start " + cfg.word + " " + (dn+1)}</button><button class="btn ghost redo" type="button">Redo this quiz</button></div>`);
+      <div class="row"><button class="btn nx">${last ? "Finish" : "Start " + cfg.word + " " + (dn+1)}</button><button class="btn ghost redo" type="button">Redo this quiz</button></div>
+      ${cfg.links && cfg.links[dn] ? `<button class="linkbtn" type="button">${esc(cfg.links[dn].text)} →</button>` : ""}`);
     T.recapScores[dn] = rc.querySelector(".dscore");
+    const lb = rc.querySelector(".linkbtn");
+    if (lb) lb.addEventListener("click", () => { const L = cfg.links[dn]; userSwitch(L.tab); goGroup(L.tab, L.n - 1); });
     rc.querySelector(".nx").addEventListener("click", () => last ? go(tab, T.cards.length-1) : goGroup(tab, dn));
     rc.querySelector(".redo").addEventListener("click", () => {
       d.quiz.forEach((q, qi) => delete answers[dn + "." + qi]);
@@ -2173,9 +2498,35 @@ addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost pick" type="button">Choose a day</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
 makeTrack("study", DAYS, {
   answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 1, wrapped",
+  links:{9:{tab:"py", n:11, text:"Subnet with Python: Lesson 11"}, 11:{tab:"py", n:10, text:"Check ports with Python: Lesson 10"},
+         18:{tab:"py", n:7, text:"Read logs with Python: Lesson 7"}, 19:{tab:"py", n:9, text:"Hash with Python: Lesson 9"},
+         22:{tab:"py", n:10, text:"Write a port checker: Lesson 10"}, 24:{tab:"py", n:14, text:"Build a brute-force detector: Lesson 14"},
+         28:{tab:"py", n:14, text:"Portfolio project: Python Lesson 14"}},
   id:(dn, n) => n === 0 ? "day-" + dn : "d" + dn + "-" + n,
   groupOf:i => { const w = WEEKS[Math.floor(i/7)]; return {c:w.c, label:`Week ${w.n} · ${w.name}`}; }
 });
+const PORTFOLIO = [
+  ["lab-ips", "Lab network with static IPs (Day 8)"],
+  ["fw-rule", "Firewall rule allowing lab ping only (Day 14)"],
+  ["perm-proof", "Permission test with a second user (Day 21)"],
+  ["nmap", "Nmap scan of the Windows target (Day 22)"],
+  ["wireshark", "Cleartext HTTP caught in Wireshark (Day 23)"],
+  ["logons", "Failed logons found in the Security log (Day 24)"],
+  ["scan-watch", "Scan and watch lab write-up (Day 25)"],
+  ["playbook", "Phishing playbook (Day 26)"],
+  ["repo", "GitHub homelab repo with a README (Day 28)"],
+  ["py-detector", "Python brute-force detector (Python 14)"],
+  ["py-s3", "Python S3 audit script (Python 13)"]
+];
+const portfolio = asObj(store.get("cr2-portfolio", {}));
+const pf = addCard("study", {c:"var(--w4)", id:"portfolio", label:"Portfolio", group:-3, html:`
+  <div class="tag"><span>Portfolio</span>Tick off each lab you've written up</div>
+  <h2>Your portfolio</h2>
+  <ul class="checks">${PORTFOLIO.map(([id, t]) => `<li><label><input type="checkbox" data-id="${id}"${portfolio[id] ? " checked" : ""}>${esc(t)}</label></li>`).join("")}</ul>
+  <div class="dscore pfScore"></div>`});
+const pfScore = () => { const n = PORTFOLIO.filter(([id]) => portfolio[id]).length; pf.querySelector(".pfScore").innerHTML = `<b>${n} of ${PORTFOLIO.length}</b> done. Each one is an interview story.`; return n; };
+pf.querySelectorAll("input").forEach(cb => cb.addEventListener("change", () => { if (cb.checked) portfolio[cb.dataset.id] = true; else delete portfolio[cb.dataset.id]; store.set("cr2-portfolio", portfolio); pfScore(); }));
+pfScore();
 document.getElementById("studyCount").textContent = `28 days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
   <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears every Study answer on this device.</p>
@@ -2192,6 +2543,9 @@ addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
   <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost pick" type="button">Choose a lesson</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
 makeTrack("py", PY_LESSONS, {
   answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Python track, wrapped", codeLabel:"Python",
+  links:{7:{tab:"study", n:18, text:"Background: Study Day 18"}, 8:{tab:"study", n:24, text:"Background: Study Day 24"},
+         9:{tab:"study", n:19, text:"Background: Study Day 19"}, 10:{tab:"study", n:22, text:"Background: Study Day 22"},
+         11:{tab:"study", n:9, text:"Background: Study Day 9"}, 14:{tab:"study", n:25, text:"Try it in the Day 25 lab"}},
   id:(dn, n) => n === 0 ? "py-" + dn : "p" + dn + "-" + n,
   groupOf:i => { const l = PY_LEVELS.find(l => i >= l.from && i < l.to); return {c:"var(--t-py)", label:`Python · ${l.name}`}; }
 });
@@ -2207,6 +2561,38 @@ const feedState = (() => {
 })();
 const saveFeed = () => store.set("cr2-feed", feedState);
 let feedSerial = 0, lastKind = null, decksAppended = 0;
+// Missed checks first, then the easiest one not yet answered, then the one you know least well.
+function pickCheck(d){
+  const keys = d.qs.map((q, n) => checkKey(d, n)), idx = d.qs.map((q, n) => n);
+  const missed = idx.filter(n => srs[keys[n]] && srs[keys[n]].box === 1);
+  if (missed.length) return missed[0];
+  const fresh = idx.filter(n => !srs[keys[n]]).sort((a, b) => (d.qs[a].d || 2) - (d.qs[b].d || 2));
+  if (fresh.length) return fresh[0];
+  return idx.sort((a, b) => srs[keys[a]].box - srs[keys[b]].box)[0];
+}
+function interviewHtml(d, tagHtml){
+  return `${tagHtml}<h2 class="q">${fmt(d.title)}</h2>
+    <p class="small">Answer out loud in about 30 seconds, as if you're in the interview. Then compare.</p>
+    <button class="btn reveal" type="button">Reveal a model answer</button>
+    <div class="model">${fmt(d.answer)}</div>
+    <div class="rate" role="group" aria-label="How did you go?"><button type="button" data-r="nailed">Nailed it</button><button type="button" data-r="shaky">Shaky</button><button type="button" data-r="missed">Missed it</button></div>
+    <p class="small rated" aria-live="polite"></p>`;
+}
+function wireInterview(card, d){
+  const model = card.querySelector(".model"), rate = card.querySelector(".rate"), rated = card.querySelector(".rated");
+  card.querySelector(".reveal").addEventListener("click", e => {
+    model.classList.add("show"); rate.classList.add("show"); e.currentTarget.hidden = true;
+    model.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
+  });
+  rate.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    if (rate.dataset.done) return;
+    rate.dataset.done = 1;
+    rate.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+    const nailed = b.dataset.r === "nailed";
+    srsRecord("i:" + d.id, nailed);
+    rated.textContent = nailed ? "Great. This one comes back in a few days." : "No problem. This one comes back tomorrow for another go.";
+  }));
+}
 function pickDeck(){
   // Skip recently shown decks, alternate OWASP and incident decks, and favour the least-seen ones.
   const avoid = feedState.recent.slice(-Math.min(6, FEED_DECKS.length - 1));
@@ -2220,25 +2606,39 @@ function pickDeck(){
 function appendDeck(){
   const d = pickDeck(); lastKind = d.kind;
   feedState.recent.push(d.id); feedState.recent = feedState.recent.slice(-30); saveFeed();
-  const c = DECK_COLOUR[d.kind], badge = d.kind === "owasp" ? "OWASP " + d.tag : "Incident " + d.tag;
-  const name = d.kind === "owasp" ? d.tag + " " + d.title : d.title + " " + d.tag;
-  const total = d.cards.length + 1, serial = ++feedSerial;
-  const tag = (i, extra) => `<div class="tag"><span>${esc(badge)}</span>${esc(d.title)} · ${extra || (i+1) + " of " + total}</div>`;
-  d.cards.forEach(([h, p], i) => {
-    const last = i === d.cards.length - 1;
-    addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0},
-      html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${last && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}`});
-  });
-  const s = addCard("feed", {c, label:"Check · " + name, group:serial, extra:{deck:d.id, pos:d.cards.length, total}, html: quizHtml(d.q, tag(0, "Check"), false, Math.random() * 4294967296 >>> 0)});
-  buildQuiz(s, d.q, null, pick => {
-    if (pick === null) return;
-    srsRecord("f:" + d.id, pick === d.q.k);
-    // Count each deck's check once per day, so repeats don't inflate the score.
-    const today = new Date().toLocaleDateString("en-CA");
-    if (feedState.scored[d.id] === today) return;
-    feedState.scored[d.id] = today; feedState.answered++; if (pick === d.q.k) feedState.right++;
-    saveFeed(); updateScore("feed", true);
-  });
+  const c = DECK_COLOUR[d.kind], badge = deckBadge(d), name = deckName(d), serial = ++feedSerial;
+  if (d.kind === "interview"){
+    const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:0, total:1, first:true},
+      html: interviewHtml(d, `<div class="tag"><span>Interview</span>Say it out loud</div>`)});
+    wireInterview(s, d);
+  } else {
+    // Which checks to show: triage decks show all; others show one, the most useful right now.
+    const show = d.all ? d.qs.map((q, n) => n) : [pickCheck(d)];
+    const after = d.after || [];
+    const total = d.cards.length + show.length + after.length;
+    const tag = (i, extra) => `<div class="tag"><span>${esc(badge)}</span>${esc(d.title)} · ${extra || (i+1) + " of " + total}</div>`;
+    const card = ([h, p, code], i, last) => {
+      const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0},
+        html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, "", true) : ""}${last && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}`});
+      if (code) wireCopy(s, code);
+    };
+    d.cards.forEach((x, i) => card(x, i, i === d.cards.length - 1));
+    show.forEach((n, j) => {
+      const q = d.qs[n], key = checkKey(d, n);
+      const s = addCard("feed", {c, label:"Check · " + name, group:serial, extra:{deck:d.id, pos:d.cards.length + j, total},
+        html: quizHtml(q, tag(d.cards.length + j, show.length > 1 ? "Check " + (j+1) + " of " + show.length : "Check"), false, Math.random() * 4294967296 >>> 0)});
+      buildQuiz(s, q, null, pick => {
+        if (pick === null) return;
+        srsRecord(key, pick === q.k);
+        // Count each check once per day, so repeats don't inflate the score.
+        const today = new Date().toLocaleDateString("en-CA");
+        if (feedState.scored[key] === today) return;
+        feedState.scored[key] = today; feedState.answered++; if (pick === q.k) feedState.right++;
+        saveFeed(); updateScore("feed", true);
+      });
+    });
+    after.forEach((x, i) => card(x, d.cards.length + show.length + i, false));
+  }
   // A natural pause every five decks, so the Feed isn't a bottomless scroll.
   if (++decksAppended % 5 === 0){
     const pause = addCard("feed", {c:"var(--t-feed)", label:"Pause", group:serial, extra:{pause:true}, html:`
@@ -2266,9 +2666,14 @@ function appendReview(at){
     <h2>Time to review</h2>
     <p>Questions you've answered before. Get one right and it comes back later; miss it and it comes back tomorrow.</p>`});
   keys.forEach((k, i) => {
-    const it = srsItem(k);
+    const it = srsItem(k), tagHtml = `<div class="tag"><span>Review</span>${esc(it.src)} · ${i + 1} of ${keys.length}</div>`;
+    if (it.interview){
+      const s = put({c, label:"Review · Interview", group:serial, extra:{review:true, pos:i + 1, total}, html: interviewHtml(it.interview, tagHtml)});
+      wireInterview(s, it.interview);
+      return;
+    }
     const s = put({c, label:"Review · " + it.src, group:serial, extra:{review:true, pos:i + 1, total},
-      html: quizHtml(it.q, `<div class="tag"><span>Review</span>${esc(it.src)} · ${i + 1} of ${keys.length}</div>`, false, Math.random() * 4294967296 >>> 0)});
+      html: quizHtml(it.q, tagHtml, false, Math.random() * 4294967296 >>> 0)});
     buildQuiz(s, it.q, null, pick => { if (pick !== null) srsRecord(k, pick === it.q.k); });
   });
   return true;
@@ -2289,8 +2694,8 @@ function reviewNow(){
 addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, html:`
   <div class="tag"><span>Feed</span>Never ends</div>
   <h1>Keep scrolling</h1>
-  <p>OWASP Top 10:2025 categories and real incidents, mixed and shuffled, with your due reviews mixed in.</p>
-  <p class="small"><b style="color:var(--t-feed)">Pink</b> decks are OWASP categories, <b style="color:var(--w4)">orange</b> are real incidents and <b style="color:var(--w3)">purple</b> are reviews.</p>
+  <p>Short decks, shuffled, with your due reviews mixed in.</p>
+  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--w2"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
 for (let i = 0; i < 3; i++) appendNext();
 
@@ -2369,7 +2774,7 @@ function render(){
       // The hash names the exact card, so a reload or a restored tab comes back to the same place.
       if (location.hash !== "#" + c.el.id) history.replaceState(history.state, "", "#" + c.el.id);
     } else {
-      where.textContent = active === "study" ? (c.group === -1 ? "Cyber Scroll" : "Finished") : (c.group === -1 ? "Python" : "Finished");
+      where.textContent = c.group === -1 ? (active === "study" ? "Cyber Scroll" : "Python") : c.label;
       const h = active === "study" ? "#study" : "#python";
       if (location.hash !== h) history.replaceState(history.state, "", h);
     }
@@ -2481,11 +2886,18 @@ function renderSheet(){
     : PY_LEVELS.map(l => ({title:l.name, c:"var(--t-py)", from:l.from, to:l.to}));
   document.getElementById("sheetTitle").textContent = tab === "py" ? "Jump to a lesson" : "Jump to a day";
   const t = trackTotals(tab);
-  document.getElementById("score").textContent = `${t.done} of ${t.total} questions answered · ${t.right} correct`;
+  // Mastery: average spaced-repetition box across a day's questions (unanswered count as zero).
+  const pre = tab === "study" ? "s:" : "p:";
+  const mastery = n => { const qs = T.items[n-1].quiz; const sum = qs.reduce((a, q, qi) => a + ((srs[pre + n + "." + qi] || {}).box || 0), 0); return Math.round(sum / (qs.length * 5) * 100); };
+  const started = T.items.map((d, i) => i + 1).filter(n => T.items[n-1].quiz.some((q, qi) => srs[pre + n + "." + qi]));
+  const weakest = started.sort((a, b) => mastery(a) - mastery(b)).slice(0, 3);
+  document.getElementById("score").innerHTML = `${t.done} of ${t.total} questions answered · ${t.right} correct${tab === "study" ? ` · portfolio ${pfScore()} of ${PORTFOLIO.length}` : ""}` +
+    (weakest.length ? `<div class="weak">${weakest.map(n => `<button class="x weakBtn" type="button" data-n="${n}">Weakest: ${T.cfg.word} ${n} · ${mastery(n)}%</button>`).join("")}</div>` : "");
+  document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
       const st = s.done === 0 ? "" : s.right < s.done ? "miss" : s.done === s.total ? "ok" : "part";
-      const label = s.done ? s.right + "/" + s.total + " right" : s.total + " questions";
+      const label = s.done ? s.right + "/" + s.total + " right" + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions";
       return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
   }</div>`).join("");
   dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
@@ -2525,6 +2937,36 @@ window.addEventListener("popstate", e => {
   ignoreHash = true;
   if (!fromHash()) switchTab("study");
   setTimeout(() => { ignoreHash = false; }, 100);
+});
+/* ---------- Backup and restore (copy and paste, since pages can't save files everywhere) ---------- */
+function backupText(){
+  const data = {};
+  try { for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (k.startsWith("cr2-") && k !== "cr2-test") data[k] = localStorage.getItem(k); } } catch(e){}
+  return JSON.stringify({app:"cyber-scroll", v:1, at:new Date().toISOString(), data});
+}
+const bkText = document.getElementById("bkText"), bkMsg = document.getElementById("bkMsg"), bkApplyRow = document.getElementById("bkApplyRow");
+document.getElementById("bkCopy").addEventListener("click", () => {
+  const text = backupText();
+  const shown = () => { bkText.hidden = false; bkText.value = text; bkText.select(); bkApplyRow.hidden = true; bkMsg.textContent = "Copying isn't allowed here, so the backup is selected above. Long-press to copy it."; };
+  try { navigator.clipboard.writeText(text).then(() => { bkMsg.textContent = "Backup copied. Paste it into a note or email to yourself."; store.set("cr2-lastbackup", Date.now()); }, shown); }
+  catch(e){ shown(); }
+});
+document.getElementById("bkPaste").addEventListener("click", () => {
+  bkText.hidden = false; bkText.value = ""; bkApplyRow.hidden = false;
+  bkMsg.textContent = "Paste your backup above, then tap Restore this backup. It replaces the progress on this device.";
+  bkText.focus();
+});
+document.getElementById("bkApply").addEventListener("click", () => {
+  let b; try { b = JSON.parse(bkText.value.trim()); } catch(e){ b = null; }
+  if (!b || b.app !== "cyber-scroll" || !b.data || typeof b.data !== "object"){ bkMsg.textContent = "That doesn't look like a Cyber Scroll backup. Copy the whole text, including the curly brackets."; return; }
+  if (!store.ok){ bkMsg.textContent = "This browser is blocking storage, so a backup can't be restored here."; return; }
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith("cr2-")).forEach(k => localStorage.removeItem(k));
+    Object.entries(b.data).forEach(([k, v]) => { if (k.startsWith("cr2-") && typeof v === "string") localStorage.setItem(k, v); });
+  } catch(e){ bkMsg.textContent = "Couldn't restore: storage is full or blocked."; return; }
+  bkMsg.textContent = "Restored. Reloading…";
+  history.replaceState(null, "", location.pathname + location.search);
+  setTimeout(() => location.reload(), 400);
 });
 document.getElementById("openDays").addEventListener("click", openSheet);
 document.querySelectorAll(".pick").forEach(b => b.addEventListener("click", openSheet));
