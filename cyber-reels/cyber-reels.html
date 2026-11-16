@@ -88,6 +88,14 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .opt.wrong .mk{color:var(--bad)}
 .card h2.q{font-size:clamp(22px,6vw,32px);line-height:1.15}
 .opts.out .opt{font-family:var(--mono);font-size:15px}
+.conf{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.conf button{min-height:44px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+.conf button[aria-pressed="true"]{border-color:var(--c);color:var(--text);background:color-mix(in srgb,var(--c) 16%,transparent)}
+.recall{display:flex;flex-direction:column;gap:10px;max-width:440px}
+.recall input{min-height:48px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-family:var(--mono);font-size:16px}
+.recall input:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.recall .row .btn{align-self:auto}
+.slip{color:var(--bad);border-color:var(--bad)}
 .why{display:none;font-size:16px;line-height:1.5;color:var(--muted);max-width:440px;border-top:1px solid var(--line);padding-top:12px}
 .why strong{color:var(--text)}
 .why.show{display:block}
@@ -2267,25 +2275,34 @@ function srsItem(key){
   const pre = key.slice(0, 2), rest = key.slice(2);
   if (pre === "f:"){
     const [id, n] = rest.split("#"), d = FEED_DECKS.find(x => x.id === id), q = d && d.qs && d.qs[+n || 0];
-    return q ? {q, src:d.kind === "owasp" ? "OWASP " + d.tag : d.title} : null;
+    return q ? {q, src:d.kind === "owasp" ? "OWASP " + d.tag : d.title, deck:d} : null;
   }
   if (pre === "i:"){ const d = FEED_DECKS.find(x => x.id === rest && x.kind === "interview"); return d ? {interview:d, src:"Interview"} : null; }
   const [dn, qi] = rest.split(".").map(Number);
   const list = pre === "s:" ? DAYS : pre === "p:" ? PY_LESSONS : null;
   const q = list && list[dn-1] && list[dn-1].quiz[qi];
-  return q ? {q, src:(pre === "s:" ? "Day " : "Lesson ") + dn} : null;
+  return q ? {q, src:(pre === "s:" ? "Day " : "Lesson ") + dn, tab:pre === "s:" ? "study" : "py", dn} : null;
 }
 function dueKeys(){
   const t = dayNum();
+  // Surprises (confidently wrong) first, then the most overdue, then the weakest.
   return Object.keys(srs).filter(k => srs[k].due <= t && srsItem(k))
-    .sort((a, b) => srs[a].due - srs[b].due || srs[a].box - srs[b].box);
+    .sort((a, b) => (srs[b].flag ? 1 : 0) - (srs[a].flag ? 1 : 0) || srs[a].due - srs[b].due || srs[a].box - srs[b].box);
 }
-function srsRecord(key, correct){
+function srsRecord(key, correct, sure){
+  if (sure === undefined) sure = true;
   const t = dayNum(), e = srs[key] || {box:1, due:t, last:0, n:0};
-  // At most one step up per day, so retrying a question straight away can't fast-track it.
-  if (!correct) e.box = 1;
-  else if (e.last !== t) e.box = Math.min(5, e.box + 1);
-  e.due = t + INTERVALS[e.box - 1]; e.last = t; e.n = (e.n || 0) + 1;
+  if (!correct){
+    // A miss drops to box 1. Being sure and wrong is a "surprise": those come back first.
+    e.box = 1; e.lapses = (e.lapses || 0) + 1;
+    if (sure) e.flag = "surprise"; else delete e.flag;
+  } else if (sure){
+    // At most one step up per day, so retrying a question straight away can't fast-track it.
+    if (e.last !== t) e.box = Math.min(5, e.box + 1);
+    delete e.flag;
+  }
+  // A lucky guess keeps its box and comes back tomorrow.
+  e.due = t + (correct && !sure ? 1 : INTERVALS[e.box - 1]); e.last = t; e.n = (e.n || 0) + 1;
   srs[key] = e; saveSrs();
   if (!srsRecord.asked && navigator.storage && navigator.storage.persist){ srsRecord.asked = true; navigator.storage.persist().catch(() => {}); }
   // Each question counts once a day towards the goal, so retrying one can't fill it.
@@ -2363,6 +2380,7 @@ const TABS = {
 };
 let active = "study";
 
+window.addCard = addCard;
 function addCard(tab, {c, id, label, group, html, extra, at}){
   const T = TABS[tab];
   const s = el("section","card");
@@ -2380,8 +2398,37 @@ function addCard(tab, {c, id, label, group, html, extra, at}){
 }
 
 /* A quiz card. persist: {obj, key, save} to remember the answer, or null for the feed. */
+function typedAnswers(q){
+  // Exact short answers (numbers, addresses, acronyms) can be typed from memory. A question can also list its own in `a`.
+  if (q.a) return q.a.map(normAns);
+  const right = q.o[q.k];
+  return /^[0-9./:\- ]{1,16}$/.test(right) || /^[A-Z0-9]{2,6}$/.test(right) ? [normAns(right)] : null;
+}
+function normAns(x){ return String(x).toLowerCase().replace(/[\s`'"]/g, ""); }
 function buildQuiz(card, q, persist, onChange){
   const btns = [...card.querySelectorAll(".opt")], why = card.querySelector(".why"), retry = card.querySelector(".retry");
+  const confBtns = [...card.querySelectorAll(".conf button")], opts = card.querySelector(".opts");
+  let forcedGuess = false;
+  const sure = () => !forcedGuess && confBtns.length ? confBtns[0].getAttribute("aria-pressed") === "true" : !forcedGuess;
+  const setSure = v => confBtns.forEach((b, i) => b.setAttribute("aria-pressed", (i === 0) === v ? "true" : "false"));
+  confBtns.forEach((b, i) => b.addEventListener("click", () => setSure(i === 0)));
+  // Recall first: options stay hidden until you've tried to answer from memory.
+  const recall = card.querySelector(".recall");
+  const showOpts = () => { if (recall) recall.hidden = true; opts.hidden = false; card.querySelector(".conf").hidden = false; };
+  if (recall){
+    const input = recall.querySelector("input"), msg = recall.querySelector(".recallMsg"), answers = typedAnswers(q);
+    recall.querySelector(".showOpts").addEventListener("click", () => { showOpts(); btns[0].focus({preventScroll:true}); });
+    const check = recall.querySelector(".checkTyped");
+    if (check) {
+      const run = () => {
+        if (!input.value.trim()) return;
+        if (answers.includes(normAns(input.value))){ showOpts(); setSure(true); btns.find(b => +b.dataset.j === q.k).click(); }
+        else { forcedGuess = true; showOpts(); msg.textContent = ""; why.innerHTML = "<strong>Not quite.</strong> Pick from the options. This one will count as a guess."; why.classList.add("show"); }
+      };
+      check.addEventListener("click", run);
+      input.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); run(); } });
+    }
+  }
   const reveal = (pick, fromUser) => {
     btns.forEach(b => {
       const j = +b.dataset.j, mk = b.querySelector(".mk"), st = b.querySelector(".st");
@@ -2403,24 +2450,31 @@ function buildQuiz(card, q, persist, onChange){
     const pick = +b.dataset.j;
     if (persist){ persist.obj[persist.key] = pick; persist.save(); }
     reveal(pick, true);
-    onChange(pick);
+    confBtns.forEach(x => x.disabled = true);
+    onChange(pick, sure());
   }));
   if (retry) retry.addEventListener("click", () => {
     if (persist){ delete persist.obj[persist.key]; persist.save(); }
-    clear(); onChange(null);
+    clear(); confBtns.forEach(x => x.disabled = false); setSure(true); onChange(null);
     btns[0].focus({preventScroll:true});
     card.scrollTo({top:0, behavior: reduceMotion() ? "auto" : "smooth"});
   });
-  if (persist && Number.isInteger(persist.obj[persist.key])) reveal(persist.obj[persist.key], false);
-  return clear;
+  if (persist && Number.isInteger(persist.obj[persist.key])){ reveal(persist.obj[persist.key], false); confBtns.forEach(x => x.disabled = true); }
+  return () => { clear(); confBtns.forEach(x => x.disabled = false); setSure(true); };
 }
-function quizHtml(q, tagHtml, withRetry, seed){
+function quizHtml(q, tagHtml, withRetry, seed, recall){
   const ord = order(q.o.length, seed || seedOf(q.q + (q.code || "")));
+  const typed = recall && typedAnswers(q);
   return `${tagHtml}
     ${q.d ? `<div class="lvl">${LEVEL[q.d]}</div>` : ""}
     <h2 class="q">${fmt(q.q)}</h2>
     ${q.code ? codeBlock(q.code, "", false) : ""}
-    <div class="opts${q.code ? " out" : ""}" role="group" aria-label="Answers">${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
+    ${recall ? `<div class="recall">
+      <p class="small">${typed ? "Type the answer from memory, or think it through first." : "Think of the answer before you look at the options."}</p>
+      ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">Check</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
+      <p class="small recallMsg" aria-live="polite"></p></div>` : ""}
+    <div class="conf" role="group" aria-label="How sure are you?"${recall ? " hidden" : ""}>How sure? <button type="button" aria-pressed="true">Sure</button><button type="button" aria-pressed="false">Guessing</button></div>
+    <div class="opts${q.code ? " out" : ""}" role="group" aria-label="Answers"${recall ? " hidden" : ""}>${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
     <div class="why" tabindex="-1"></div>
     ${withRetry ? `<button class="btn ghost retry" type="button">Try again</button>` : ""}`;
 }
@@ -2467,8 +2521,8 @@ function makeTrack(tab, items, cfg){
     T.resetters[dn] = [];
     d.quiz.forEach((q, qi) => {
       const s = make("Quiz " + (qi+1) + "/" + d.quiz.length, quizHtml(q, tag("Quiz", (qi+1) + " of " + d.quiz.length), true));
-      T.resetters[dn].push(buildQuiz(s, q, {obj:answers, key:dn + "." + qi, save}, pick => {
-        if (pick !== null) srsRecord((tab === "study" ? "s:" : "p:") + dn + "." + qi, pick === q.k);
+      T.resetters[dn].push(buildQuiz(s, q, {obj:answers, key:dn + "." + qi, save}, (pick, sure) => {
+        if (pick !== null) srsRecord((tab === "study" ? "s:" : "p:") + dn + "." + qi, pick === q.k, sure);
         updateScore(tab, pick !== null);
       }));
     });
@@ -2481,12 +2535,7 @@ function makeTrack(tab, items, cfg){
       ${cfg.links && cfg.links[dn] ? `<button class="linkbtn" type="button">${esc(cfg.links[dn].text)} →</button>` : ""}`);
     T.recapScores[dn] = rc.querySelector(".dscore");
     const lb = rc.querySelector(".linkbtn");
-    if (lb) lb.addEventListener("click", () => {
-      const L = cfg.links[dn], there = () => goGroup(L.tab, L.n - 1);
-      // Going back to Study restores its old card from history first, so jump only after that.
-      if (L.tab === "study" && history.state && history.state.tab){ pendingNav = there; userSwitch("study"); }
-      else { userSwitch(L.tab); there(); }
-    });
+    if (lb) lb.addEventListener("click", () => navigateTo(cfg.links[dn].tab, cfg.links[dn].n));
     rc.querySelector(".nx").addEventListener("click", () => last ? go(tab, Math.max(T.cards.findIndex(c => c.group <= -2), 0) || T.cards.length-1) : goGroup(tab, dn));
     rc.querySelector(".redo").addEventListener("click", () => {
       d.quiz.forEach((q, qi) => delete answers[dn + "." + qi]);
@@ -2636,10 +2685,12 @@ function pickDeck(){
   const least = pool.filter(d => (feedState.seen[d.id] || 0) === min);
   return least[Math.floor(Math.random() * least.length)];
 }
-function appendDeck(){
-  const d = pickDeck(); lastKind = d.kind;
+function appendDeck(forced, at){
+  const d = forced || pickDeck(); lastKind = d.kind;
   feedState.recent.push(d.id); feedState.recent = feedState.recent.slice(-30); saveFeed();
   const c = DECK_COLOUR[d.kind], badge = deckBadge(d), name = deckName(d), serial = ++feedSerial;
+  let pos = at;
+  const addCard = (tab, o) => window.addCard(tab, Object.assign(o, pos === undefined ? {} : {at:pos++}));
   if (d.kind === "interview"){
     const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:0, total:1, first:true},
       html: interviewHtml(d, `<div class="tag"><span>Interview</span>Say it out loud</div>`)});
@@ -2661,9 +2712,9 @@ function appendDeck(){
       const q = d.qs[n], key = checkKey(d, n);
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:d.cards.length + j, total},
         html: quizHtml(q, tag(d.cards.length + j, show.length > 1 ? "Check " + (j+1) + " of " + show.length : "Check"), false, Math.random() * 4294967296 >>> 0)});
-      buildQuiz(s, q, null, pick => {
+      buildQuiz(s, q, null, (pick, sure) => {
         if (pick === null) return;
-        srsRecord(key, pick === q.k);
+        srsRecord(key, pick === q.k, sure);
         // Count each check once per day, so repeats don't inflate the score.
         const today = new Date().toLocaleDateString("en-CA");
         if (feedState.scored[key] === today) return;
@@ -2674,7 +2725,7 @@ function appendDeck(){
     after.forEach((x, i) => card(x, d.cards.length + show.length + i, false));
   }
   // A natural pause every five decks, so the Feed isn't a bottomless scroll.
-  if (++decksAppended % 5 === 0){
+  if (at === undefined && ++decksAppended % 5 === 0){
     const pause = addCard("feed", {c:"var(--t-feed)", label:"Pause", group:serial, extra:{pause:true}, html:`
       <div class="tag"><span>Pause</span>${decksAppended} decks in this session</div>
       <h2>Nice run</h2>
@@ -2700,15 +2751,27 @@ function appendReview(at){
     <h2>Time to review</h2>
     <p>Questions you've answered before. Get one right and it comes back later; miss it and it comes back tomorrow.</p>`});
   keys.forEach((k, i) => {
-    const it = srsItem(k), tagHtml = `<div class="tag"><span>Review</span>${esc(it.src)} · ${i + 1} of ${keys.length}</div>`;
+    const slipping = (srs[k].lapses || 0) >= 3;
+    const it = srsItem(k), tagHtml = `<div class="tag"><span>Review</span>${esc(it.src)} · ${i + 1} of ${keys.length}${slipping ? ` · <span class="slip">Keeps slipping</span>` : ""}</div>`;
     if (it.interview){
       const s = put({c, label:"Review · Interview", group:serial, extra:{review:true, rkey:k, pos:i + 1, total}, html: interviewHtml(it.interview, tagHtml)});
       wireInterview(s, it.interview, () => { F.cards.find(x => x.el === s).answered = true; });
       return;
     }
+    const rereadText = it.tab ? `Re-read ${it.tab === "study" ? "Day" : "Lesson"} ${it.dn}` : "See this deck again";
     const s = put({c, label:"Review · " + it.src, group:serial, extra:{review:true, rkey:k, pos:i + 1, total},
-      html: quizHtml(it.q, tagHtml, false, Math.random() * 4294967296 >>> 0)});
-    buildQuiz(s, it.q, null, pick => { if (pick === null) return; F.cards.find(x => x.el === s).answered = true; srsRecord(k, pick === it.q.k); });
+      html: quizHtml(it.q, tagHtml, false, Math.random() * 4294967296 >>> 0, true) + `<button class="linkbtn reread" type="button" hidden>${rereadText} →</button>`});
+    const reread = s.querySelector(".reread");
+    reread.addEventListener("click", () => {
+      if (it.tab) navigateTo(it.tab, it.dn);
+      else { const j = F.cards.findIndex(x => x.el === s); let e = j; while (F.cards[e+1] && F.cards[e+1].group === F.cards[j].group) e++; appendDeck(it.deck, e + 1); go("feed", e + 1); }
+    });
+    buildQuiz(s, it.q, null, (pick, sure) => {
+      if (pick === null) return;
+      F.cards.find(x => x.el === s).answered = true;
+      srsRecord(k, pick === it.q.k, sure);
+      reread.hidden = pick === it.q.k;
+    });
   });
   return true;
 }
@@ -2894,6 +2957,12 @@ function switchTab(tab, focusView){
   render();
   if (focusView) TABS[tab].el.focus({preventScroll:true});
 }
+// Jump to a day or lesson in another tab. Going back to Study restores its old card from history first, so jump after that.
+function navigateTo(tab, n){
+  const there = () => goGroup(tab, n - 1);
+  if (tab === "study" && active !== "study" && history.state && history.state.tab){ pendingNav = there; userSwitch("study"); }
+  else { userSwitch(tab); there(); }
+}
 // Leaving Study adds one history entry, so the phone's Back button returns to Study instead of closing the app.
 function userSwitch(tab){
   if (tab === active){
@@ -2939,6 +3008,11 @@ function renderSheet(){
   const weakest = started.filter(missed).sort((a, b) => mastery(a) - mastery(b)).slice(0, 3);
   document.getElementById("score").innerHTML = `<div>Mastered means right on two separate days.</div>${t.done} of ${t.total} questions answered · ${t.right} correct${tab === "study" ? ` · portfolio ${pfScore()} of ${PORTFOLIO.length}` : ""}` +
     (weakest.length ? `<div class="weak">${weakest.map(n => `<button class="x weakBtn" type="button" data-n="${n}">Needs work: ${T.cfg.word} ${n}</button>`).join("")}</div>` : "");
+  const mine = Object.keys(srs).filter(k => k.startsWith(pre));
+  const surprises = mine.filter(k => srs[k].flag).length, slipping = mine.filter(k => (srs[k].lapses || 0) >= 3);
+  if (surprises || slipping.length) document.getElementById("score").insertAdjacentHTML("beforeend",
+    `<div>${surprises} surprise${surprises === 1 ? "" : "s"} (sure but wrong) · ${slipping.length} keep${slipping.length === 1 ? "s" : ""} slipping</div>` +
+    (slipping.length ? `<div class="weak">${[...new Set(slipping.map(k => +k.slice(2).split(".")[0]))].slice(0, 4).map(n => `<button class="x weakBtn slip" type="button" data-n="${n}">Keeps slipping: ${T.cfg.word} ${n}</button>`).join("")}</div>` : ""));
   document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
