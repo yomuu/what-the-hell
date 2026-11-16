@@ -1,10 +1,10 @@
 # Runs the /weekly-content workflow with Claude Code in headless mode and logs the result.
 # Task Scheduler calls this every Sunday at 7pm (see register-weekly-task.ps1). You can also run it by hand:
-#   powershell -NoProfile -ExecutionPolicy Bypass -File .\cyber-reels\tools\run-weekly-content.ps1
+#   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\run-weekly-content.ps1
 
 $ErrorActionPreference = "Stop"
-$Project = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path   # the repo root (contains .claude and cyber-reels)
-$LogDir  = Join-Path $Project "cyber-reels\content\logs"
+$Project = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path   # the repo root (contains .claude, content and tools)
+$LogDir  = Join-Path $Project "content\logs"
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 $Stamp   = Get-Date -Format "yyyy-MM-dd_HHmm"
 $JsonLog = Join-Path $LogDir "$Stamp.json"
@@ -23,39 +23,49 @@ if (-not (Test-Path $Claude)) { Write-Summary "FAILED: Claude Code not found. In
 & $Claude auth status *> $null
 if ($LASTEXITCODE -ne 0) { Write-Summary "FAILED: Claude Code isn't logged in. Run 'claude' once and log in, or set CLAUDE_CODE_OAUTH_TOKEN (see claude setup-token)."; exit 3 }
 
+# Back up the content before Claude touches it (step 3 of the workflow).
+$Backup = Join-Path $Project ("backups\" + (Get-Date -Format "yyyy-MM-dd"))
+if (-not (Test-Path $Backup)) {
+  New-Item -ItemType Directory -Force -Path $Backup | Out-Null
+  Copy-Item (Join-Path $Project "content\*.json") $Backup
+  Copy-Item (Join-Path $Project "sw.js") $Backup
+}
+
 # Permissions for this run only:
 #  - dontAsk: anything not listed below is denied automatically (nothing waits for a prompt).
 #  - reads inside this project folder are allowed by dontAsk itself.
-#  - edits only inside ./cyber-reels; web search and fetch; the three subagents; and one exact check command.
+#  - edits only to the content and the two app files; web search and fetch; the three subagents;
+#    the check and version scripts; and the exact git and gh commands that publish a pull request.
+$Commands = @(
+  "node tools/check.js",
+  "node tools/bump-version.js *",
+  "git switch main",
+  "git pull",
+  "git status",
+  "git switch -c weekly-content/*",
+  "git add content sw.js index.html app.js",
+  "git commit -m *",
+  "git push -u origin weekly-content/*",
+  "gh pr create *"
+)
 $Allowed = @(
-  "WebSearch",
-  "WebFetch",
-  "Agent(content-scout)",
-  "Agent(content-reviewer)",
-  "Agent(ux-reviewer)",
-  "Edit(./cyber-reels/**)",
-  "Write(./cyber-reels/**)",
-  "Bash(node cyber-reels/tools/check.js)",
-  "PowerShell(node cyber-reels/tools/check.js)"
-) -join ","
-
-# Back up the app before Claude touches it (step 3 of the workflow), so a rollback copy always exists.
-$BackupDir = Join-Path $Project "cyber-reels\backups"
-New-Item -ItemType Directory -Force -Path $BackupDir | Out-Null
-$Backup = Join-Path $BackupDir ("cyber-reels-" + (Get-Date -Format "yyyy-MM-dd") + ".html")
-if (-not (Test-Path $Backup)) { Copy-Item (Join-Path $Project "cyber-reels\cyber-reels.html") $Backup }
+  "WebSearch", "WebFetch",
+  "Agent(content-scout)", "Agent(content-reviewer)", "Agent(ux-reviewer)",
+  "Edit(./content/**)", "Write(./content/**)", "Edit(./index.html)", "Edit(./app.js)"
+) + ($Commands | ForEach-Object { "Bash($_)"; "PowerShell($_)" })
+$Allowed = $Allowed -join ","
 
 $start = Get-Date
 & $Claude -p "/weekly-content" `
   --permission-mode dontAsk `
   --allowedTools $Allowed `
-  --max-turns 120 `
+  --max-turns 150 `
   --output-format json 1> $JsonLog 2> $ErrLog
 $code = $LASTEXITCODE
 
-# Check the app afterwards whatever Claude did (step 6), so a broken file is always caught.
+# Check the app afterwards whatever Claude did, so a broken file is always caught.
 try {
-  $Check = (& node (Join-Path $Project "cyber-reels\tools\check.js") 2>&1 | Out-String).Trim()
+  $Check = (& node (Join-Path $Project "tools\check.js") 2>&1 | Out-String).Trim()
   $checkCode = $LASTEXITCODE
 } catch { $Check = "Skipped: Node.js isn't installed or not on PATH."; $checkCode = 0 }
 if ($checkCode -ne 0 -and $code -eq 0) { $code = 4 }

@@ -1,0 +1,5 @@
+# Local safety copies made before each weekly run (git history is the long-term record)
+backups/
+# Raw run logs; the summaries are enough
+content/logs/*.json
+content/logs/*.err.log

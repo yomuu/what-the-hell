@@ -1,11 +1,11 @@
 # Creates (or updates) a Windows Task Scheduler task that runs the Cyber Scroll weekly content
 # workflow every Sunday at 7pm. Run it once from PowerShell in the project folder:
-#   powershell -NoProfile -ExecutionPolicy Bypass -File .\cyber-reels\tools\register-weekly-task.ps1
+#   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\register-weekly-task.ps1
 # Add -RunNow to start a test run straight away.
 param([switch]$RunNow)
 
 $TaskName = "Cyber Scroll weekly content"
-$Project  = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$Project  = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $Runner   = Join-Path $PSScriptRoot "run-weekly-content.ps1"
 
 $Action = New-ScheduledTaskAction -Execute "powershell.exe" `
@@ -21,11 +21,11 @@ $Settings  = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBat
   -ExecutionTimeLimit (New-TimeSpan -Hours 2) -MultipleInstances IgnoreNew
 
 Register-ScheduledTask -TaskName $TaskName -Action $Action -Trigger $Trigger -Principal $Principal -Settings $Settings `
-  -Description "Runs /weekly-content with Claude Code in headless mode. Logs: $Project\cyber-reels\content\logs" -Force | Out-Null
+  -Description "Runs /weekly-content with Claude Code in headless mode. Logs: $Project\content\logs" -Force | Out-Null
 
 $task = Get-ScheduledTask -TaskName $TaskName
 Write-Output "Registered '$TaskName'. Next run: $((Get-ScheduledTaskInfo -TaskName $TaskName).NextRunTime)"
-Write-Output "Logs will appear in $Project\cyber-reels\content\logs"
+Write-Output "Logs will appear in $Project\content\logs"
 
 if ($RunNow) {
   Start-ScheduledTask -TaskName $TaskName

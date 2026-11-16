@@ -1,0 +1,2376 @@
+{
+ "decks": [
+  {
+   "id": "owasp-a01",
+   "kind": "owasp",
+   "tag": "A01",
+   "title": "Broken Access Control",
+   "cards": [
+    [
+     "What it is",
+     "Users can act outside their intended permissions: reading other people's records, changing someone else's account or reaching admin pages. It's number one in OWASP Top 10:2025."
+    ],
+    [
+     "Real example",
+     "In 2019 First American Financial exposed about 885 million records because document links used sequential numbers with no ownership check. Change the number in the address and you saw someone else's documents."
+    ],
+    [
+     "SSRF lives here now",
+     "Server-side request forgery (SSRF) tricks a server into fetching a URL for the attacker, often an internal one. It moved into A01 in 2025. At Capital One in 2019, SSRF let an attacker make a cloud server fetch its own credentials."
+    ],
+    [
+     "How to prevent it",
+     "Deny by default and check authorisation on the server for every request, including that the user owns the record. Never rely on hidden links or client-side checks. For SSRF, allow-list outbound destinations, block requests to cloud metadata addresses, and on AWS require IMDSv2, which makes simple SSRF far harder."
+    ]
+   ],
+   "q": {
+    "q": "A user changes `/orders/1043` to `/orders/1044` and sees a stranger's order. What's missing?",
+    "o": [
+     "A server-side check that the order belongs to the user",
+     "Stronger TLS",
+     "A longer session timeout"
+    ],
+    "k": 0,
+    "w": "This is an insecure direct object reference, a classic A01 flaw. The server must check ownership on every request."
+   }
+  },
+  {
+   "id": "owasp-a02",
+   "kind": "owasp",
+   "tag": "A02",
+   "title": "Security Misconfiguration",
+   "cards": [
+    [
+     "What it is",
+     "Insecure settings rather than buggy code: default passwords, unneeded features left on, verbose error pages, open cloud storage, missing security headers. It rose to A02 in 2025 because modern apps are mostly configuration."
+    ],
+    [
+     "Real example",
+     "Researchers regularly find cloud storage buckets and databases left open to the internet with no password, exposing millions of records. Nobody hacked anything clever; a setting was simply wrong."
+    ],
+    [
+     "How to prevent it",
+     "Build every environment from the same hardened, repeatable configuration. Remove features and accounts you don't use. Scan cloud settings automatically, for example with a cloud security posture management tool, and review them after every change."
+    ]
+   ],
+   "q": {
+    "q": "A production web app shows full stack traces with file paths when it errors. Which category fits best?",
+    "o": [
+     "A02 Security Misconfiguration",
+     "A05 Injection",
+     "A07 Authentication Failures"
+    ],
+    "k": 0,
+    "w": "Debug output left switched on in production is a configuration mistake. It also touches A10, which covers error handling. Either way, it hands attackers a map of your code."
+   }
+  },
+  {
+   "id": "owasp-a03",
+   "kind": "owasp",
+   "tag": "A03",
+   "title": "Software Supply Chain Failures",
+   "cards": [
+    [
+     "What it is",
+     "New in 2025. It expands 2021's Vulnerable and Outdated Components to the whole supply chain: the libraries you depend on, build tools, CI/CD pipelines and the people who maintain them. You inherit their weaknesses."
+    ],
+    [
+     "Real example",
+     "In March 2024 an engineer noticed SSH logins were about half a second slow and traced it to a backdoor in the xz compression library. A contributor had spent around two years earning maintainer trust before slipping it in. It was caught before most stable Linux releases shipped it."
+    ],
+    [
+     "How to prevent it",
+     "Know what you run: keep a software bill of materials (SBOM). Scan dependencies for known vulnerabilities and update promptly. Pin versions, verify signatures, use trusted registries and lock down who can change your build pipeline."
+    ]
+   ],
+   "q": {
+    "q": "Which practice helps most to find out whether you're affected when a new library flaw is announced?",
+    "o": [
+     "Keeping a software bill of materials (SBOM)",
+     "Turning on MFA for staff",
+     "Using longer passwords"
+    ],
+    "k": 0,
+    "w": "An SBOM lists every component and version you ship, so you can answer “are we exposed?” in minutes instead of days."
+   }
+  },
+  {
+   "id": "owasp-a04",
+   "kind": "owasp",
+   "tag": "A04",
+   "title": "Cryptographic Failures",
+   "cards": [
+    [
+     "What it is",
+     "Sensitive data isn't properly protected by cryptography: sent over plain HTTP, stored unencrypted, hashed with fast algorithms like MD5, or protected with weak or hard-coded keys."
+    ],
+    [
+     "Real example",
+     "In 2013 Adobe lost data on around 150 million accounts. The passwords were encrypted with one key in a weak mode instead of being hashed, so identical passwords produced identical results. Password hints sat beside them in plain text."
+    ],
+    [
+     "How to prevent it",
+     "Use TLS 1.2 or 1.3 everywhere. Encrypt sensitive data at rest. Hash passwords with Argon2 or bcrypt. Keep keys in a key management service, never in source code, and never invent your own crypto."
+    ]
+   ],
+   "q": {
+    "q": "A developer stores API keys in the app's source code on GitHub. What's the best fix?",
+    "o": [
+     "Move them to a secrets manager and rotate the exposed keys",
+     "Make the repository private and carry on",
+     "Base64-encode the keys"
+    ],
+    "k": 0,
+    "w": "Once a key has been committed it's compromised, so rotate it. Base64 is encoding, not protection."
+   }
+  },
+  {
+   "id": "owasp-a05",
+   "kind": "owasp",
+   "tag": "A05",
+   "title": "Injection",
+   "cards": [
+    [
+     "What it is",
+     "The app treats untrusted input as code or commands. SQL injection, OS command injection and cross-site scripting (XSS) all fall here. It's A05 in 2025."
+    ],
+    [
+     "Real example",
+     "In May 2023 the Cl0p gang exploited a SQL injection zero-day in MOVEit Transfer, a file-transfer product. They stole data from thousands of organisations, affecting tens of millions of people, before most victims knew the flaw existed."
+    ],
+    [
+     "How to prevent it",
+     "Use parameterised queries or a safe ORM, never string-built SQL. Encode output for the context it lands in (HTML, JavaScript, URLs) to stop XSS. Validate input against an allow-list, and give database accounts least privilege."
+    ]
+   ],
+   "q": {
+    "q": "Which of these stops SQL injection most reliably?",
+    "o": [
+     "Parameterised queries",
+     "Hiding error messages",
+     "Using HTTPS"
+    ],
+    "k": 0,
+    "w": "Parameters keep data separate from the query, so input can't change its meaning. Hiding errors only makes it harder to spot."
+   }
+  },
+  {
+   "id": "owasp-a06",
+   "kind": "owasp",
+   "tag": "A06",
+   "title": "Insecure Design",
+   "cards": [
+    [
+     "What it is",
+     "Flaws in the design itself, not in the code. A perfectly coded feature can still be unsafe if nobody thought about how it could be abused. You can't patch your way out of a bad design."
+    ],
+    [
+     "Real example",
+     "A password reset that relies on security questions like “mother's maiden name” is insecure by design: the answers are often public. So is a checkout that lets one user reserve unlimited stock with no rate limit."
+    ],
+    [
+     "How to prevent it",
+     "Threat model new features before building them: ask what could go wrong and who would abuse it. Write abuse cases next to user stories. Use proven secure design patterns, and build in limits such as rate limiting and per-user caps."
+    ]
+   ],
+   "q": {
+    "q": "What's the most effective time to catch an insecure design flaw?",
+    "o": [
+     "During design, through threat modelling",
+     "After launch, through a penetration test",
+     "Only after an incident"
+    ],
+    "k": 0,
+    "w": "Fixing a design on paper is cheap. Fixing it after launch can mean rebuilding the feature."
+   }
+  },
+  {
+   "id": "owasp-a07",
+   "kind": "owasp",
+   "tag": "A07",
+   "title": "Authentication Failures",
+   "cards": [
+    [
+     "What it is",
+     "Weaknesses in proving who someone is: no MFA, allowing weak or breached passwords, unlimited login attempts, weak account recovery or sessions that never expire."
+    ],
+    [
+     "Real example",
+     "In February 2024 attackers used stolen credentials on a Change Healthcare remote access portal that didn't require MFA. The ransomware attack that followed disrupted claims processing across US healthcare for weeks."
+    ],
+    [
+     "How to prevent it",
+     "Require MFA, ideally phishing-resistant passkeys or FIDO2 keys. Block known breached passwords. Rate-limit and monitor login attempts. Expire sessions properly and protect recovery flows as carefully as the login itself."
+    ]
+   ],
+   "q": {
+    "q": "Which control would most directly have stopped the Change Healthcare login?",
+    "o": [
+     "MFA on the remote access portal",
+     "Disk encryption",
+     "A web application firewall rule"
+    ],
+    "k": 0,
+    "w": "Stolen passwords alone were enough. A second factor would have blocked that first step."
+   }
+  },
+  {
+   "id": "owasp-a08",
+   "kind": "owasp",
+   "tag": "A08",
+   "title": "Software or Data Integrity Failures",
+   "cards": [
+    [
+     "What it is",
+     "Trusting code or data without checking it hasn't been tampered with: updates installed without a signature check, plugins from untrusted sources, or untrusted data deserialised into objects."
+    ],
+    [
+     "Real example",
+     "In the SolarWinds attack discovered in December 2020, malicious code was inserted during the build, so the poisoned Orion updates were properly signed. Customers' integrity checks passed because the build itself had been compromised."
+    ],
+    [
+     "How to prevent it",
+     "Verify digital signatures on updates and packages. Protect the CI/CD pipeline with access controls, reviews and logging. Don't deserialise untrusted data, or use formats like JSON with strict validation instead."
+    ]
+   ],
+   "q": {
+    "q": "An app downloads and runs updates over plain HTTP without checking a signature. What's the main risk?",
+    "o": [
+     "An on-path attacker can swap in a malicious update",
+     "The update will download slowly",
+     "Users can't log in"
+    ],
+    "k": 0,
+    "w": "Without a signature check, the app runs whatever arrives. Signatures prove who made the update and that it wasn't changed."
+   }
+  },
+  {
+   "id": "owasp-a09",
+   "kind": "owasp",
+   "tag": "A09",
+   "title": "Security Logging and Alerting Failures",
+   "cards": [
+    [
+     "What it is",
+     "Not logging security events, not alerting on them, or not acting on the alerts. The 2025 name stresses alerting: logs nobody watches don't stop anything. It was called Security Logging and Monitoring Failures in 2021."
+    ],
+    [
+     "Real example",
+     "During the 2013 Target breach, security tools raised alerts as the attackers set up their malware. The alerts weren't acted on in time, and about 40 million card numbers were stolen."
+    ],
+    [
+     "How to prevent it",
+     "Log logins, failures, access-control denials and admin actions with enough context. Send logs to a central SIEM, alert on suspicious patterns and test that alerts reach a person. Protect logs from tampering and have a response plan."
+    ]
+   ],
+   "q": {
+    "q": "Your app logs failed logins, but nobody reviews them and nothing alerts. Which category is this?",
+    "o": [
+     "A09 Security Logging and Alerting Failures",
+     "A02 Security Misconfiguration",
+     "A06 Insecure Design"
+    ],
+    "k": 0,
+    "w": "Collecting logs is only half the job. A09 is about making sure someone is alerted and acts."
+   }
+  },
+  {
+   "id": "owasp-a10",
+   "kind": "owasp",
+   "tag": "A10",
+   "title": "Mishandling of Exceptional Conditions",
+   "cards": [
+    [
+     "What it is",
+     "New in 2025. Apps that handle errors and unusual conditions badly: failing open, crashing on unexpected input, leaking details in error messages, or leaving a transaction half-finished."
+    ],
+    [
+     "Real example",
+     "On 19 July 2024 a faulty CrowdStrike content update triggered an out-of-bounds memory read that the Falcon sensor didn't handle, crashing about 8.5 million Windows computers. It wasn't an attack, but airlines, banks and hospitals went down."
+    ],
+    [
+     "How to prevent it",
+     "Fail safely: when something goes wrong, deny access rather than allow it. Catch and handle errors, and show users generic messages while logging the details. Test edge cases and bad input, and roll out changes in stages."
+    ]
+   ],
+   "q": {
+    "q": "A login check throws an error when the database is slow, and the code then lets the user in. What's the flaw?",
+    "o": [
+     "Failing open instead of failing safe",
+     "Weak password hashing",
+     "Missing HTTPS"
+    ],
+    "k": 0,
+    "w": "When a security check can't complete, the safe default is to deny. Failing open turns an outage into a breach."
+   }
+  },
+  {
+   "id": "inc-change",
+   "attack": [
+    "T1133 External Remote Services",
+    "T1078 Valid Accounts"
+   ],
+   "kind": "incident",
+   "tag": "2024",
+   "title": "Change Healthcare",
+   "cards": [
+    [
+     "What happened",
+     "In February 2024 the ALPHV/BlackCat ransomware gang hit Change Healthcare, which processes a huge share of US medical claims. Systems went offline and pharmacies and providers struggled to process claims and payments for weeks."
+    ],
+    [
+     "How they got in",
+     "Attackers logged in to a Citrix remote access portal with stolen credentials. The portal didn't require MFA. From there they moved through the network, stole data and deployed ransomware."
+    ],
+    [
+     "Impact",
+     "The company paid a US$22 million ransom. Its July 2025 notification to the US health regulator put the number of people affected at about 192.7 million, the largest healthcare data breach on record in the US."
+    ],
+    [
+     "Lessons",
+     "Every remote access portal needs MFA, with no exceptions for old systems. Paying didn't make the problem go away: data from the same attack was later used in further extortion attempts."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · MFA on remote access",
+   "q": {
+    "q": "What was the single missing control at Change Healthcare's entry point?",
+    "o": [
+     "MFA on the Citrix portal",
+     "Encryption of the claims database",
+     "An antivirus update"
+    ],
+    "k": 0,
+    "w": "The attackers didn't need an exploit. Valid credentials and no second factor were enough."
+   }
+  },
+  {
+   "id": "inc-medibank",
+   "attack": [
+    "T1555.003 Credentials from Password Stores: Credentials from Web Browsers",
+    "T1133 External Remote Services"
+   ],
+   "kind": "incident",
+   "tag": "2022",
+   "title": "Medibank",
+   "cards": [
+    [
+     "What happened",
+     "In October 2022 Australian health insurer Medibank found attackers had stolen data on about 9.7 million current and former customers, including health claims information."
+    ],
+    [
+     "How they got in",
+     "Malware on an IT service desk contractor's personal computer stole credentials the contractor had saved in their browser. The attackers used them to log in to Medibank's VPN, which didn't require MFA."
+    ],
+    [
+     "Impact",
+     "Medibank refused to pay the ransom, and the attackers published customer data on the dark web, including sensitive health records. Australia later sanctioned a Russian national over the attack."
+    ],
+    [
+     "Lessons",
+     "Contractor and admin accounts need MFA everywhere. Don't let privileged credentials live on personal devices. A refusal to pay is often right, but plan for the data being published."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · MFA and privileged access",
+   "q": {
+    "q": "How did the attackers first get Medibank credentials?",
+    "o": [
+     "Malware on a contractor's personal computer",
+     "A SQL injection flaw",
+     "A stolen backup tape"
+    ],
+    "k": 0,
+    "w": "An infostealer harvested saved browser credentials. The VPN's lack of MFA turned that into a breach."
+   }
+  },
+  {
+   "id": "inc-waikato",
+   "attack": [
+    "T1486 Data Encrypted for Impact"
+   ],
+   "kind": "incident",
+   "tag": "2021",
+   "title": "Waikato DHB",
+   "cards": [
+    [
+     "What happened",
+     "In May 2021 ransomware caused a full IT outage across Waikato District Health Board's hospitals in New Zealand (the DHB is now part of Te Whatu Ora). Staff went back to pen and paper, and many clinics and procedures were postponed."
+    ],
+    [
+     "How they got in",
+     "The full initial access details weren't published. The attackers had access long enough to steal data before encrypting systems, which shows the intrusion went unnoticed for a while."
+    ],
+    [
+     "Impact",
+     "Data exfiltration was confirmed, and patient and staff data was leaked. Recovery took weeks for core systems and much longer overall. The ransom wasn't paid."
+    ],
+    [
+     "Lessons",
+     "Health systems need tested offline backups, network segmentation and an incident plan that includes working without IT. Detecting attackers before they encrypt gives you far more options."
+    ]
+   ],
+   "maps": "Backups, segmentation and incident response",
+   "q": {
+    "q": "Waikato DHB confirmed data was stolen. What does that mean for recovery from backups?",
+    "o": [
+     "Backups restore systems but can't undo the data theft",
+     "Backups also recover the stolen data from the attackers",
+     "Backups make the leak impossible"
+    ],
+    "k": 0,
+    "w": "Double extortion hits confidentiality. Restoring brings systems back, but leaked data stays leaked."
+   }
+  },
+  {
+   "id": "inc-latitude",
+   "attack": [
+    "T1199 Trusted Relationship",
+    "T1078 Valid Accounts"
+   ],
+   "kind": "incident",
+   "tag": "2023",
+   "title": "Latitude Financial",
+   "cards": [
+    [
+     "What happened",
+     "In March 2023 Australian and New Zealand lender Latitude Financial disclosed a cyberattack. About 14 million customer records were stolen, including around 7.9 million driver licence numbers."
+    ],
+    [
+     "How they got in",
+     "The attack came in through a major vendor and gave the attackers a Latitude employee's login credentials. They used those to reach customer data held by two service providers."
+    ],
+    [
+     "Impact",
+     "Some records went back to 2005, long after customers had left. Latitude refused to pay the ransom, and regulators in both countries investigated."
+    ],
+    [
+     "Lessons",
+     "Keep data only as long as you need it. Monitor vendor and third-party access closely. Data you deleted years ago can't be stolen."
+    ]
+   ],
+   "maps": "Third-party risk · data minimisation",
+   "q": {
+    "q": "Which lesson does Latitude show most clearly?",
+    "o": [
+     "Don't keep customer data longer than you need it",
+     "Always pay the ransom",
+     "Third parties never cause breaches"
+    ],
+    "k": 0,
+    "w": "Millions of affected records belonged to former customers whose data could have been deleted."
+   }
+  },
+  {
+   "id": "inc-moveit",
+   "attack": [
+    "T1190 Exploit Public-Facing Application"
+   ],
+   "kind": "incident",
+   "tag": "2023",
+   "title": "MOVEit Transfer",
+   "cards": [
+    [
+     "What happened",
+     "In May 2023 the Cl0p ransomware gang mass-exploited MOVEit Transfer, a file-transfer product used by governments, banks and universities. They stole files rather than encrypting systems."
+    ],
+    [
+     "How they got in",
+     "A SQL injection zero-day (CVE-2023-34362) in the MOVEit web application let them run their own code and plant a web shell on internet-facing servers."
+    ],
+    [
+     "Impact",
+     "About 2,700 organisations and nearly 100 million people were affected, many through suppliers they'd never heard of. Cl0p extorted victims by threatening to publish the data."
+    ],
+    [
+     "Lessons",
+     "Internet-facing file-transfer tools are high-value targets. Patch them urgently, limit what data sits on them and for how long, and know which of your suppliers use them."
+    ]
+   ],
+   "maps": "A05 Injection · patching and supplier risk",
+   "q": {
+    "q": "What type of flaw did Cl0p exploit in MOVEit Transfer?",
+    "o": [
+     "SQL injection",
+     "A weak password",
+     "A misconfigured firewall"
+    ],
+    "k": 0,
+    "w": "It was a SQL injection zero-day in the web application, so no patch existed when the attacks began."
+   }
+  },
+  {
+   "id": "inc-log4shell",
+   "attack": [
+    "T1190 Exploit Public-Facing Application"
+   ],
+   "kind": "incident",
+   "tag": "2021",
+   "title": "Log4Shell",
+   "cards": [
+    [
+     "What happened",
+     "In December 2021 a critical flaw (CVE-2021-44228) was disclosed in Log4j, a logging library inside a huge number of Java applications. It scored the maximum 10.0 severity."
+    ],
+    [
+     "How it worked",
+     "If an app logged a string an attacker controlled, such as a username or browser header, Log4j could follow a lookup in that string and load remote code. Simply getting text into a log was enough."
+    ],
+    [
+     "Impact",
+     "Attackers began scanning for it within hours. Many organisations didn't know where they used Log4j, because it was buried inside other products and libraries."
+    ],
+    [
+     "Lessons",
+     "Know your dependencies, including the ones inside other software. A software bill of materials and fast patching turn a crisis into a checklist."
+    ]
+   ],
+   "maps": "A03 Software Supply Chain Failures · SBOM",
+   "q": {
+    "q": "Why was Log4Shell so hard for many organisations to respond to?",
+    "o": [
+     "They didn't know which systems contained Log4j",
+     "The patch was never released",
+     "It only affected Windows"
+    ],
+    "k": 0,
+    "w": "Log4j was often a dependency of a dependency. Without an inventory, teams had to hunt for it system by system."
+   }
+  },
+  {
+   "id": "inc-xz",
+   "attack": [
+    "T1195.001 Supply Chain Compromise: Compromise Software Dependencies and Development Tools"
+   ],
+   "kind": "incident",
+   "tag": "2024",
+   "title": "The xz utils backdoor",
+   "cards": [
+    [
+     "What happened",
+     "In March 2024 Microsoft engineer Andres Freund noticed SSH logins on a test system using more CPU and taking about half a second longer. He traced it to a backdoor in xz utils versions 5.6.0 and 5.6.1."
+    ],
+    [
+     "How it got in",
+     "A contributor known as “Jia Tan” spent around two years building trust in the project and became a maintainer. The malicious code was hidden in test files and build scripts, not in the visible source."
+    ],
+    [
+     "Impact",
+     "The backdoor targeted SSH on some Linux distributions. It was caught while mostly in testing and rolling releases, before most stable systems. Kali, a rolling release, briefly shipped it in late March 2024. It could have given someone remote access to many servers."
+    ],
+    [
+     "Lessons",
+     "Open-source projects often rest on a few unpaid maintainers. Watch for unexpected behaviour, check what's in release packages, and treat build pipelines as part of your attack surface."
+    ]
+   ],
+   "maps": "A03 Software Supply Chain Failures",
+   "q": {
+    "q": "How was the xz backdoor discovered?",
+    "o": [
+     "An engineer investigated slow SSH logins",
+     "An antivirus alert",
+     "The attacker confessed"
+    ],
+    "k": 0,
+    "w": "Curiosity about a small performance change caught one of the most serious supply chain attacks yet."
+   }
+  },
+  {
+   "id": "inc-crowdstrike",
+   "kind": "incident",
+   "tag": "2024",
+   "title": "CrowdStrike outage",
+   "cards": [
+    [
+     "What happened",
+     "On 19 July 2024 a faulty content update for CrowdStrike's Falcon sensor crashed about 8.5 million Windows computers, which got stuck on a blue screen at boot."
+    ],
+    [
+     "What went wrong",
+     "It wasn't an attack. The update contained data the sensor's code didn't expect, causing an out-of-bounds memory read inside a kernel driver. The error wasn't handled, so Windows crashed."
+    ],
+    [
+     "Impact",
+     "Airlines grounded flights, and hospitals, banks and broadcasters were disrupted around the world. Many machines needed hands-on fixes, one at a time, often with BitLocker recovery keys."
+    ],
+    [
+     "Lessons",
+     "Test updates against unexpected input, roll them out in stages and handle errors safely. Keep BitLocker recovery keys somewhere you can reach when Windows won't boot."
+    ]
+   ],
+   "maps": "A10 Mishandling of Exceptional Conditions · staged rollouts",
+   "q": {
+    "q": "Which OWASP Top 10:2025 category best fits the CrowdStrike crash?",
+    "o": [
+     "A10 Mishandling of Exceptional Conditions",
+     "A05 Injection",
+     "A07 Authentication Failures"
+    ],
+    "k": 0,
+    "w": "Unexpected input caused an unhandled error. A10 is about handling exceptional conditions safely."
+   }
+  },
+  {
+   "id": "inc-uber",
+   "attack": [
+    "T1621 Multi-Factor Authentication Request Generation",
+    "T1552.001 Unsecured Credentials: Credentials In Files"
+   ],
+   "kind": "incident",
+   "tag": "2022",
+   "title": "Uber",
+   "cards": [
+    [
+     "What happened",
+     "In September 2022 an attacker got broad access to Uber's internal systems, including chat, cloud consoles and security tools, and announced it in Uber's own Slack."
+    ],
+    [
+     "How they got in",
+     "They had a contractor's password and spammed MFA push requests. Then they contacted the contractor on WhatsApp, posing as Uber IT, until the contractor approved one."
+    ],
+    [
+     "Going deeper",
+     "Inside, the attacker found a PowerShell script on a network share with hard-coded admin credentials for Uber's privileged access management system. That unlocked much more."
+    ],
+    [
+     "Lessons",
+     "Use phishing-resistant MFA or at least number matching. Never hard-code secrets in scripts; use a secrets manager. Teach staff that real IT won't pressure them to approve prompts."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · secrets management",
+   "q": {
+    "q": "What turned one approved MFA prompt into broad access at Uber?",
+    "o": [
+     "Admin credentials hard-coded in a script on a network share",
+     "A zero-day in Slack",
+     "An unpatched VPN"
+    ],
+    "k": 0,
+    "w": "Secrets left in plain text let the attacker escalate quickly. Secrets belong in a vault, not in scripts."
+   }
+  },
+  {
+   "id": "inc-capitalone",
+   "attack": [
+    "T1552.005 Unsecured Credentials: Cloud Instance Metadata API"
+   ],
+   "kind": "incident",
+   "tag": "2019",
+   "title": "Capital One",
+   "cards": [
+    [
+     "What happened",
+     "In 2019 a former Amazon Web Services engineer copied data on about 100 million people in the US and 6 million in Canada from Capital One's AWS environment."
+    ],
+    [
+     "How they got in",
+     "A misconfigured web application firewall was vulnerable to server-side request forgery (SSRF). The attacker made it request the cloud metadata service, which returned temporary credentials."
+    ],
+    [
+     "Impact",
+     "Those credentials had broad access to storage buckets. Capital One was later fined US$80 million by a US regulator and settled a class action."
+    ],
+    [
+     "Lessons",
+     "SSRF is now part of A01 Broken Access Control. Require IMDSv2 on AWS, block metadata access from apps that don't need it, and give cloud roles least privilege."
+    ]
+   ],
+   "maps": "A01 Broken Access Control (SSRF) · least privilege",
+   "q": {
+    "q": "What did the SSRF flaw let the attacker obtain at Capital One?",
+    "o": [
+     "Temporary cloud credentials from the metadata service",
+     "The CEO's password",
+     "A copy of the firewall's source code"
+    ],
+    "k": 0,
+    "w": "The server fetched its own credentials on the attacker's behalf. Over-broad permissions did the rest."
+   }
+  },
+  {
+   "id": "e8-patch-apps",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "Patch applications",
+   "cards": [
+    [
+     "What it is",
+     "Keep applications such as browsers, Office, PDF readers and internet-facing services patched, and remove ones the vendor no longer supports. It's one of the eight mitigation strategies in the Australian Signals Directorate's Essential Eight."
+    ],
+    [
+     "Why it matters",
+     "Attackers routinely exploit known flaws, often within days of a fix being released. For internet-facing services, the Essential Eight sets 48 hours when the vendor rates a flaw critical or a working exploit exists."
+    ]
+   ],
+   "q": {
+    "d": 1,
+    "q": "Which application should be removed rather than patched?",
+    "o": [
+     "One the vendor no longer supports",
+     "A browser with a pending update",
+     "An Office version released this year"
+    ],
+    "k": 0,
+    "w": "Unsupported software gets no fixes. Remove or replace it."
+   }
+  },
+  {
+   "id": "e8-patch-os",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "Patch operating systems",
+   "cards": [
+    [
+     "What it is",
+     "Keep the operating systems on workstations, servers and network devices patched, and replace operating systems that are out of support. Patching the OS closes holes that let malware spread and escalate."
+    ],
+    [
+     "Real world",
+     "Windows 10 reached end of support in October 2025, so it no longer gets regular security updates. WannaCry in 2017 spread through unpatched Windows machines about two months after the fix was out."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "A clinic still runs Windows 10 PCs with no extended support. What does the Essential Eight say?",
+    "o": [
+     "Replace or upgrade the unsupported operating system",
+     "Keep using it if antivirus is installed",
+     "Only patch it once a year"
+    ],
+    "k": 0,
+    "w": "Out-of-support systems stop getting fixes. Upgrading them is part of patching operating systems."
+   }
+  },
+  {
+   "id": "e8-mfa",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "Multi-factor authentication",
+   "cards": [
+    [
+     "What it is",
+     "Require MFA for remote access, for privileged users and for online services that hold important data. It stops a stolen password being enough on its own."
+    ],
+    [
+     "Maturity matters",
+     "From Maturity Level Two, the Essential Eight expects phishing-resistant MFA, such as passkeys or FIDO2 security keys, rather than SMS or app codes that can be relayed by a fake login page."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "Which incidents in this app would MFA on remote access most directly have stopped?",
+    "o": [
+     "Medibank and Change Healthcare",
+     "Log4Shell and the CrowdStrike outage",
+     "xz utils and MOVEit"
+    ],
+    "k": 0,
+    "w": "Both started with stolen credentials on remote access with no second factor."
+   }
+  },
+  {
+   "id": "e8-admin",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "Restrict administrative privileges",
+   "cards": [
+    [
+     "What it is",
+     "Give admin rights only to people who need them, review those rights regularly and use separate admin accounts. Privileged accounts shouldn't browse the web or read email."
+    ],
+    [
+     "Why it matters",
+     "Attackers hunt for admin credentials because they unlock everything. If admins read email with a standard account, one phishing click doesn't hand over the domain."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "An IT admin reads email and browses the web while logged in with their domain admin account. What's the fix?",
+    "o": [
+     "A separate standard account for email and browsing",
+     "A longer admin password",
+     "Turning off the firewall for admins"
+    ],
+    "k": 0,
+    "w": "Keep privileged accounts away from the internet and email, where most attacks start."
+   }
+  },
+  {
+   "id": "e8-appcontrol",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "Application control",
+   "cards": [
+    [
+     "What it is",
+     "Only approved programs, scripts and installers can run. Everything else is blocked by default. It's allow-listing for software."
+    ],
+    [
+     "Where to start",
+     "Block programs from running in places users can write to, such as Downloads, the Desktop and temporary folders. That's where malicious attachments and downloads land."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "A user downloads `invoice.exe` to their Downloads folder and double-clicks it. With application control, what happens?",
+    "o": [
+     "It's blocked because it isn't on the approved list",
+     "It runs, because the user chose to open it",
+     "It runs with admin rights"
+    ],
+    "k": 0,
+    "w": "Allow-listing blocks anything that isn't approved, however convincing the file name is."
+   }
+  },
+  {
+   "id": "e8-macros",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "Restrict Microsoft Office macros",
+   "cards": [
+    [
+     "What it is",
+     "Turn off Office macros for users who don't need them, and block macros in files that came from the internet. Macro-enabled documents are a classic way to deliver malware."
+    ],
+    [
+     "Real world",
+     "For years, emailed Word and Excel files asked users to “enable content”, which ran a macro that downloaded malware. Microsoft now blocks macros in internet files by default, but settings still need checking."
+    ]
+   ],
+   "q": {
+    "d": 1,
+    "q": "Which macros should be blocked first?",
+    "o": [
+     "Macros in files that came from the internet",
+     "Macros written by your own finance team and signed",
+     "All Office features"
+    ],
+    "k": 0,
+    "w": "Internet-sourced macros are the delivery route attackers use. Trusted, signed business macros can be allowed."
+   }
+  },
+  {
+   "id": "e8-hardening",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "User application hardening",
+   "cards": [
+    [
+     "What it is",
+     "Lock down everyday apps so they can't easily be abused: browsers block web ads and Java from the internet, and old software such as Internet Explorer 11 is disabled or removed."
+    ],
+    [
+     "Why it matters",
+     "Attackers abuse features, not just bugs. Stopping Office from launching child processes, for example, breaks the pattern where a document starts PowerShell."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "Which is an example of user application hardening?",
+    "o": [
+     "Stopping Office apps from creating child processes",
+     "Buying a faster PC",
+     "Moving files to a USB drive"
+    ],
+    "k": 0,
+    "w": "Removing risky features from everyday apps shrinks what an attacker can use."
+   }
+  },
+  {
+   "id": "e8-backups",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "Regular backups",
+   "cards": [
+    [
+     "What it is",
+     "Back up important data, software and settings regularly, keep backups for as long as the business needs, and test restoring them. Standard users shouldn't be able to change or delete backups."
+    ],
+    [
+     "Remember",
+     "Backups restore encrypted data and get you running again. They do nothing about data that has already been stolen, so they're one layer, not the whole answer to ransomware."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "Why should ordinary user accounts be unable to delete backups?",
+    "o": [
+     "Ransomware running as that user could delete them too",
+     "It saves disk space",
+     "Backups are too large to delete"
+    ],
+    "k": 0,
+    "w": "Malware acts with the user's rights. Backups it can't reach are backups that survive."
+   }
+  },
+  {
+   "id": "e8-maturity",
+   "kind": "e8",
+   "tag": "E8",
+   "title": "Maturity levels",
+   "cards": [
+    [
+     "What they are",
+     "The Essential Eight has maturity levels from zero to three. Each level is designed to resist more capable attackers, from opportunistic ones at Level One to adaptive, targeted ones at Level Three."
+    ],
+    [
+     "How to use them",
+     "Aim for the same maturity level across all eight strategies before moving up. A strong score on one strategy doesn't make up for a gap in another."
+    ],
+    [
+     "Know its limits",
+     "The Essential Eight is a baseline designed for internet-connected Windows networks, not a complete security programme. Australian job ads often ask for it, so be ready to explain the eight strategies and where they stop."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "What's the recommended way to improve Essential Eight maturity?",
+    "o": [
+     "Reach the same level across all eight strategies before moving up",
+     "Max out one strategy first",
+     "Skip straight to Level Three"
+    ],
+    "k": 0,
+    "w": "The strategies work together. An attacker will use whichever one is weakest."
+   }
+  },
+  {
+   "id": "cloud-shared",
+   "kind": "cloud",
+   "tag": "Cloud",
+   "title": "Shared responsibility",
+   "cards": [
+    [
+     "What it is",
+     "The cloud provider secures the cloud itself: data centres, hardware and the hypervisor. You secure what you put in it: data, identities, network rules and configuration."
+    ],
+    [
+     "It shifts by service",
+     "With virtual machines (IaaS) you patch the operating system. With software as a service you mostly manage users, data and settings. Either way, your data and who can access it are always yours."
+    ]
+   ],
+   "q": {
+    "d": 1,
+    "q": "A company leaves a storage bucket public. Whose responsibility is that?",
+    "o": [
+     "The customer's",
+     "The cloud provider's",
+     "Nobody's"
+    ],
+    "k": 0,
+    "w": "Configuration is the customer's side of the model. Providers give you the controls; you have to use them."
+   }
+  },
+  {
+   "id": "cloud-iam",
+   "kind": "cloud",
+   "tag": "Cloud",
+   "title": "Identity is the perimeter",
+   "cards": [
+    [
+     "What it is",
+     "In the cloud, identity and access management decides what every person and service can do. A leaked key with broad rights is as bad as an open firewall."
+    ],
+    [
+     "Good habits",
+     "Lock the AWS root user or Entra Global Administrator away behind MFA and use it rarely. Give people and apps roles with least privilege, prefer short-lived credentials over long-lived access keys, and review permissions regularly."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "Which is safest for an app running on an AWS server that needs to read one bucket?",
+    "o": [
+     "An IAM role allowing read access to that bucket only",
+     "An access key with admin rights saved in the code",
+     "The root user's credentials"
+    ],
+    "k": 0,
+    "w": "Roles give temporary credentials automatically, and least privilege limits what a compromise can reach."
+   }
+  },
+  {
+   "id": "cloud-logging",
+   "kind": "cloud",
+   "tag": "Cloud",
+   "title": "Cloud logging",
+   "cards": [
+    [
+     "What to turn on",
+     "AWS CloudTrail records API calls and console sign-ins. In Microsoft's cloud, Entra sign-in logs and the Azure Activity log do similar jobs. CloudTrail's event history only keeps 90 days, so send a trail to protected storage, ideally in a separate logging account."
+    ],
+    [
+     "What to alert on",
+     "Root or Global Administrator sign-ins, sign-ins without MFA, logging being turned off, new access keys and permission changes. Attackers often disable logging first, so alert on that above all."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "Someone stops CloudTrail logging in your AWS account at 2am. What should happen?",
+    "o": [
+     "An alert, treated as a possible intrusion",
+     "Nothing, logging is optional",
+     "Wait for the monthly report"
+    ],
+    "k": 0,
+    "w": "Disabling logs is a classic attacker move to hide what comes next."
+   }
+  },
+  {
+   "id": "cloud-storage",
+   "kind": "cloud",
+   "tag": "Cloud",
+   "title": "Public storage",
+   "cards": [
+    [
+     "The risk",
+     "Cloud storage buckets and blobs left open to the public are behind many data exposures. It's a configuration problem, OWASP 2025 A02."
+    ],
+    [
+     "The controls",
+     "On AWS, S3 Block Public Access has been on by default for new buckets since April 2023, and can be enforced across the account. Check older buckets, bucket policies and sharing links, and scan for public access automatically."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "A bucket created in 2021 holds customer files. What's the first check?",
+    "o": [
+     "Its public access settings and bucket policy",
+     "Its storage class",
+     "Its file names"
+    ],
+    "k": 0,
+    "w": "Older buckets predate the safer defaults, so confirm public access is blocked."
+   }
+  },
+  {
+   "id": "cloud-imds",
+   "kind": "cloud",
+   "tag": "Cloud",
+   "title": "The metadata service",
+   "cards": [
+    [
+     "What it is",
+     "Cloud servers can query a local metadata service, at 169.254.169.254 on AWS, for details including temporary credentials for their role. Useful for apps, and a prize for attackers."
+    ],
+    [
+     "Protect it",
+     "On AWS, require IMDSv2, which needs a session token and makes simple SSRF attacks far harder. Give server roles least privilege, so stolen credentials can't reach much. Capital One in 2019 is the cautionary tale."
+    ]
+   ],
+   "q": {
+    "d": 3,
+    "q": "Why does requiring IMDSv2 help against SSRF?",
+    "o": [
+     "Requests need a session token that a simple forged request can't obtain",
+     "It encrypts the server's disk",
+     "It blocks all outbound traffic"
+    ],
+    "k": 0,
+    "w": "IMDSv2 needs a PUT request for a token first. Most SSRF flaws can only make simple GET requests."
+   }
+  },
+  {
+   "id": "law-ndb",
+   "kind": "law",
+   "tag": "AU",
+   "title": "Notifiable Data Breaches scheme",
+   "cards": [
+    [
+     "What it is",
+     "Under Australia's Privacy Act 1988, covered organisations must report an eligible data breach to the Office of the Australian Information Commissioner (OAIC) and tell affected people. That mostly means businesses with turnover over A$3 million, plus all health service providers and some others."
+    ],
+    [
+     "When it applies",
+     "A breach is eligible when personal information is accessed or disclosed without authorisation, or lost in a way that makes that likely, it's likely to cause serious harm, and you can't prevent that harm. If you only suspect one, you have 30 days to assess it, and you notify as soon as practicable."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "You suspect an eligible data breach but aren't sure. How long do you have to assess it?",
+    "o": [
+     "30 days",
+     "72 hours",
+     "One year"
+    ],
+    "k": 0,
+    "w": "The scheme expects a reasonable, quick assessment within 30 days, and notification as soon as practicable if it's eligible."
+   }
+  },
+  {
+   "id": "law-nz",
+   "kind": "law",
+   "tag": "NZ",
+   "title": "NZ Privacy Act 2020",
+   "cards": [
+    [
+     "What it is",
+     "In New Zealand, a privacy breach that has caused or is likely to cause serious harm is a notifiable privacy breach. You must tell the Privacy Commissioner and affected people as soon as practicable."
+    ],
+    [
+     "Why it matters",
+     "Failing to notify the Commissioner is an offence with a fine of up to NZ$10,000. More importantly, quick notice lets people protect themselves, for example by watching for scams."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "Under the NZ Privacy Act 2020, who must be told about a notifiable privacy breach?",
+    "o": [
+     "The Privacy Commissioner and affected people",
+     "Only the police",
+     "Only the company's board"
+    ],
+    "k": 0,
+    "w": "Both the regulator and the people affected need to know, as soon as practicable."
+   }
+  },
+  {
+   "id": "law-ransom",
+   "kind": "law",
+   "tag": "AU",
+   "title": "Reporting ransomware payments",
+   "cards": [
+    [
+     "What it is",
+     "Under Australia's Cyber Security Act 2024, businesses with an annual turnover over A$3 million must report a ransomware or cyber extortion payment to the Australian Signals Directorate within 72 hours of paying. Critical infrastructure entities must report regardless of turnover. The rule started on 30 May 2025."
+    ],
+    [
+     "What it isn't",
+     "Reporting isn't approval. Paying is legal but discouraged, and paying a sanctioned group can break sanctions law. Remember one incident can trigger several separate reports: privacy, ransom payment and cyber incident."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "An Australian company with A$50 million turnover pays a ransom. What must it do?",
+    "o": [
+     "Report the payment to ASD within 72 hours",
+     "Nothing, payments are private",
+     "Report it at the end of the financial year"
+    ],
+    "k": 0,
+    "w": "The Cyber Security Act 2024 requires reporting within 72 hours for businesses over the A$3 million threshold."
+   }
+  },
+  {
+   "id": "law-report",
+   "kind": "law",
+   "tag": "AU/NZ",
+   "title": "Who to call",
+   "cards": [
+    [
+     "Australia",
+     "Report cyber incidents to the Australian Signals Directorate's Australian Cyber Security Centre through ReportCyber at cyber.gov.au. Privacy breaches go to the OAIC."
+    ],
+    [
+     "New Zealand",
+     "Report cyber incidents to the National Cyber Security Centre, which began absorbing CERT NZ in 2023 and has since retired the CERT NZ brand. Privacy breaches go to the Office of the Privacy Commissioner."
+    ]
+   ],
+   "q": {
+    "d": 1,
+    "q": "In New Zealand, which agency has taken over CERT NZ's role for cyber incident reports?",
+    "o": [
+     "The National Cyber Security Centre (NCSC)",
+     "The Privacy Commissioner",
+     "The police only"
+    ],
+    "k": 0,
+    "w": "CERT NZ has been merged into the NCSC, a process that began in 2023. Privacy breaches still go to the Privacy Commissioner."
+   }
+  },
+  {
+   "id": "tri-attack",
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "MITRE ATT&CK in two minutes",
+   "cards": [
+    [
+     "Tactics are the why",
+     "MITRE ATT&CK is a free catalogue of real attacker behaviour. Tactics are the attacker's goals. The Enterprise matrix has 14, including Initial Access, Execution, Persistence, Privilege Escalation, Credential Access, Lateral Movement and Exfiltration."
+    ],
+    [
+     "Techniques are the how",
+     "Each tactic holds techniques with IDs, like T1110 Brute Force. Sub-techniques add a number: T1110.003 is Password Spraying. One technique can sit under several tactics. SOC tickets, threat reports and detection rules use these IDs as a shared language."
+    ]
+   ],
+   "q": {
+    "d": 1,
+    "q": "In ATT&CK, what does T1110.003 identify?",
+    "o": [
+     "A specific technique: password spraying",
+     "A software vulnerability, like a CVE",
+     "A Windows event ID"
+    ],
+    "k": 0,
+    "w": "T numbers are techniques. The .003 marks a sub-technique of T1110 Brute Force."
+   }
+  },
+  {
+   "id": "tri-spray",
+   "attack": [
+    "T1110.003 Brute Force: Password Spraying"
+   ],
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "Many users, one source",
+   "cards": [
+    [
+     "The evidence",
+     "A Windows server's Security log over two minutes, all network logons. Forty different users each have one failed logon from the same public address. Then one success.",
+     "4625 asmith  203.0.113.50\n4625 bjones  203.0.113.50\n4625 cwilson 203.0.113.50\n...  37 more users, 1 try each\n4624 dlee    203.0.113.50"
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 2,
+     "q": "What's the most likely activity?",
+     "o": [
+      "Password spraying that succeeded for dlee",
+      "A user who forgot their password",
+      "A normal backup job"
+     ],
+     "k": 0,
+     "w": "One attempt per user from one source avoids lockouts. The 4624 at the end means a guess worked. A public address reaching this server directly is a finding too."
+    },
+    {
+     "d": 3,
+     "q": "What's the best first action?",
+     "o": [
+      "Reset dlee's password, revoke their sessions and review what the account did",
+      "Delete the event logs",
+      "Email all forty users to ask if it was them"
+     ],
+     "k": 0,
+     "w": "Contain the compromised account first, then block the source, investigate its activity, and start a timeline as you escalate."
+    }
+   ],
+   "after": [
+    [
+     "How to hunt it",
+     "In Microsoft Sentinel, this KQL finds sources that failed against many accounts in ten minutes.",
+     "SecurityEvent\n| where EventID == 4625\n| summarize users = dcount(TargetUserName) by IpAddress, bin(TimeGenerated, 10m)\n| where users > 10"
+    ]
+   ]
+  },
+  {
+   "id": "tri-ssh",
+   "attack": [
+    "T1110.001 Brute Force: Password Guessing"
+   ],
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "A noisy SSH server",
+   "cards": [
+    [
+     "The evidence",
+     "A Linux server's SSH log, simplified. About 300 failures in five minutes from one address. No successful logins appear.",
+     "Failed password  root\n  from 198.51.100.23\nFailed password  root\n  from 198.51.100.23\nFailed password  admin (invalid)\n  from 198.51.100.23\n...  about 300 in 5 minutes"
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 1,
+     "q": "What's the most likely activity?",
+     "o": [
+      "An SSH brute-force attempt with no success seen",
+      "A successful compromise",
+      "A software update"
+     ],
+     "k": 0,
+     "w": "Many failures, one source, common usernames. Nothing shows it worked, but you still check."
+    },
+    {
+     "d": 2,
+     "q": "What do you check before closing this?",
+     "o": [
+      "That there's no “Accepted” login from that address",
+      "The server's CPU temperature",
+      "Whether the IP is in Australia"
+     ],
+     "k": 0,
+     "w": "Confirm the attacker never got in. Then harden: key-only logins, no root login, and rate limiting or fail2ban."
+    }
+   ],
+   "after": [
+    [
+     "How to hunt it",
+     "On the server, look for any successful login from the attacking address. On Red Hat or Fedora the unit is sshd, not ssh.",
+     "sudo journalctl -u ssh | grep \"Accepted\" | grep 198.51.100.23"
+    ]
+   ]
+  },
+  {
+   "id": "tri-phish",
+   "attack": [
+    "T1566.002 Phishing: Spearphishing Link"
+   ],
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "A reported email",
+   "cards": [
+    [
+     "The evidence",
+     "A user reports this email. They haven't clicked the link.",
+     "From: \"Microsoft 365\"\n  no-reply@micros0ft-support.example\nReply-To: helpdesk@freemail.example\nSubject: Your password expires today\nSPF fail · DKIM none · DMARC fail\nLink: login.micros0ft-support.example"
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 1,
+     "q": "What is it?",
+     "o": [
+      "Credential phishing",
+      "A real Microsoft notice",
+      "A delivery receipt"
+     ],
+     "k": 0,
+     "w": "Look-alike domain, failed SPF and DMARC, urgency and a login link: classic credential phishing."
+    },
+    {
+     "d": 2,
+     "q": "What's the best next step?",
+     "o": [
+      "Find and remove matching emails, block the domain and check who clicked",
+      "Reply to the sender to complain",
+      "Forward it to all staff as a warning, link included"
+     ],
+     "k": 0,
+     "w": "Others probably got it too. Purge, block, then check proxy or sign-in logs for anyone who clicked or entered a password."
+    }
+   ],
+   "after": [
+    [
+     "Thank the reporter",
+     "The user did exactly the right thing. A quick thank-you makes them more likely to report the next one, which is how many phishing campaigns get caught early."
+    ]
+   ]
+  },
+  {
+   "id": "tri-cloudtrail",
+   "attack": [
+    "T1078.004 Valid Accounts: Cloud Accounts"
+   ],
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "A root sign-in",
+   "cards": [
+    [
+     "The evidence",
+     "Key fields from an AWS CloudTrail event at 3am. Nobody on the team uses the root user.",
+     "eventName: ConsoleLogin\nuserIdentity.type: Root\nsourceIPAddress: 192.0.2.77\nMFAUsed: No\nConsoleLogin: Success"
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 2,
+     "q": "What does this show?",
+     "o": [
+      "A successful root sign-in without MFA from an unknown address",
+      "A failed login attempt",
+      "A routine automated backup"
+     ],
+     "k": 0,
+     "w": "ConsoleLogin Success, Root, MFAUsed No. That combination should never happen unannounced."
+    },
+    {
+     "d": 3,
+     "q": "What's the best first response?",
+     "o": [
+      "Treat it as a compromise: secure root, enable MFA and review every action since",
+      "Wait to see if it happens again",
+      "Delete the CloudTrail event"
+     ],
+     "k": 0,
+     "w": "Rotate the root password, add MFA, then hunt for new users, access keys and changed permissions."
+    }
+   ],
+   "after": [
+    [
+     "How to prevent it",
+     "Put phishing-resistant MFA on the root user, remove any root access keys, and alert on every root sign-in. Day-to-day work should use roles, never root."
+    ]
+   ]
+  },
+  {
+   "id": "tri-macro",
+   "attack": [
+    "T1204.002 User Execution: Malicious File",
+    "T1059.001 Command and Scripting Interpreter: PowerShell"
+   ],
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "Word starts PowerShell",
+   "cards": [
+    [
+     "The evidence",
+     "An endpoint alert from a finance laptop, paths shortened.",
+     "Parent:  …\\Office16\\WINWORD.EXE\nProcess: …\\powershell.exe\nCommand: powershell -nop -w hidden\n  -enc SQBFAFgAIAAoAE4AZQB3AC0A…"
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 2,
+     "q": "What's most likely happening?",
+     "o": [
+      "A malicious document ran hidden, encoded PowerShell",
+      "Word is checking for updates",
+      "The user is writing a script"
+     ],
+     "k": 0,
+     "w": "Word as the parent, a hidden window and an encoded command are classic signs of a malicious macro."
+    },
+    {
+     "d": 2,
+     "q": "What's the best first action?",
+     "o": [
+      "Isolate the laptop from the network, but leave it powered on",
+      "Switch it off at the wall",
+      "Delete the Word document"
+     ],
+     "k": 0,
+     "w": "Isolation stops the spread. Keeping it on preserves memory evidence. Then find the document, its sender and anyone else who received it."
+    }
+   ],
+   "after": [
+    [
+     "How to hunt it",
+     "In Microsoft Defender for Endpoint, this KQL finds Office apps starting PowerShell.",
+     "DeviceProcessEvents\n| where InitiatingProcessFileName in~ (\"winword.exe\", \"excel.exe\")\n| where FileName =~ \"powershell.exe\""
+    ]
+   ]
+  },
+  {
+   "id": "int-cia",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Explain the CIA triad to a non-technical manager.",
+   "answer": "It's the three things security protects. Confidentiality: only the right people can see our data. Integrity: nobody can change it without us knowing. Availability: our systems work when staff and customers need them. Ransomware is a good example because it can hit all three at once."
+  },
+  {
+   "id": "int-risk",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "What's the difference between a threat, a vulnerability and a risk?",
+   "answer": "A vulnerability is a weakness, like an unpatched server. A threat is whoever or whatever could exploit it, including insiders and accidents. Risk is how likely that is and how much harm it would do. So the same bug is high risk on the internet and low risk in an isolated lab."
+  },
+  {
+   "id": "int-authz",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Explain authentication versus authorisation, with an example.",
+   "answer": "Authentication proves who you are, like logging in with a password and MFA. Authorisation decides what you're allowed to do once you're in. For example, I can log in to the HR system, but I get a 403 on payroll because my account isn't allowed to see it."
+  },
+  {
+   "id": "int-mfa",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Is SMS-based MFA good enough?",
+   "answer": "It's much better than a password alone, but it's the weakest form of MFA. SIM swapping and fake login pages can steal the code, and app codes can be phished too. Where possible I'd move people to passkeys or FIDO2 keys, which are phishing-resistant because they're tied to the real site."
+  },
+  {
+   "id": "int-url",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "What happens when you type a website address and press Enter?",
+   "answer": "If the laptop is new to the network, DHCP gives it an address, gateway and DNS server. DNS turns the name into an IP. The browser opens a TCP connection to port 443, or QUIC for HTTP/3, and TLS checks the certificate and sets up encryption. Then the HTTP request and response travel inside that tunnel."
+  },
+  {
+   "id": "int-port",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "A scan shows port 3389 open on a server. Is that a vulnerability?",
+   "answer": "Not by itself. An open port means a service is listening, here Remote Desktop. It's a risk if it's exposed to the internet, unpatched or allows weak passwords. I'd check who can reach it, its patch level and whether it should be behind a VPN or gateway with MFA."
+  },
+  {
+   "id": "int-crypto",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Explain encryption, hashing and encoding.",
+   "answer": "Encryption is reversible with a key and protects confidentiality, like AES on a disk. Hashing is one-way and checks integrity, like comparing a file's SHA-256. Encoding, like Base64, is just a format change that anyone can reverse, so it protects nothing. Passwords should be hashed with a slow, salted algorithm."
+  },
+  {
+   "id": "int-failedlogons",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "You see hundreds of failed logons in the SIEM. What do you do?",
+   "answer": "First I'd scope it: which accounts, which source, over what time. Many users from one source suggests spraying; one user from many suggests a targeted attack. Most importantly, I'd check for a successful logon afterwards. If there is one, I'd contain that account, then block the source and escalate."
+  },
+  {
+   "id": "int-ir",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Walk me through incident response.",
+   "answer": "I know the classic four phases from NIST SP 800-61 Rev. 2: preparation, detection and analysis, containment, eradication and recovery, and post-incident activity, where lessons are learned. Rev. 3 from 2025 now aligns it with the CSF 2.0 functions. In practice: contain quickly, preserve evidence, communicate, recover from clean backups and fix the root cause."
+  },
+  {
+   "id": "int-ransom",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "A user says their files have strange extensions and there's a ransom note. What do you do?",
+   "answer": "I'd isolate the machine from the network straight away but leave it powered on, to stop the spread and keep evidence. Then I'd escalate under our incident process, check for other affected machines and shares, make sure backups are safe and offline, and involve whoever handles legal reporting. I wouldn't pay or delete anything on my own."
+  },
+  {
+   "id": "int-least",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Give an example of least privilege from your IT support work.",
+   "answer": "Answer from your own experience, using STAR: situation, task, action, result. For example: help desk staff could reset any password, including admins'. We split it so they could reset standard users only, and admin resets went through a separate process. If a help desk account was phished, the damage would be limited."
+  },
+  {
+   "id": "int-shared",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Explain the cloud shared responsibility model.",
+   "answer": "The provider secures the cloud itself: buildings, hardware and the virtualisation layer. The customer secures what they put in it: data, identities, configuration and, for virtual machines, the operating system. Most cloud breaches come from the customer side, like public buckets or over-permissive roles."
+  },
+  {
+   "id": "int-e8",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "What is the Essential Eight?",
+   "answer": "It's the Australian Signals Directorate's baseline of eight mitigation strategies: patch applications, patch operating systems, MFA, restrict admin privileges, application control, restrict Office macros, user application hardening and regular backups. It has maturity levels zero to three, and you aim for the same level across all eight."
+  },
+  {
+   "id": "int-lab",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Tell me about a security project you've done.",
+   "answer": "Use a real lab write-up. A good structure: the goal, the setup (for example Kali and a Windows target on an isolated network), what you did (scanned it with Nmap and watched it in Wireshark and the firewall log), what you found and what you'd change in a real network."
+  },
+  {
+   "id": "int-why",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Why do you want to move from IT support into security?",
+   "answer": "Answer in your own words. Link your support work to security: you already handle account lockouts, phishing reports, patching and access requests. Say what you've done to build skills, like your diploma, home lab and write-ups, and what draws you to the role."
+  },
+  {
+   "id": "int-logs",
+   "kind": "interview",
+   "tag": "Interview",
+   "title": "Why do logging and alerting matter, if you already have a firewall?",
+   "answer": "Prevention eventually fails, so you need to detect what gets through. Logs show who did what and when, and alerts make sure someone notices in time. OWASP 2025 lists Security Logging and Alerting Failures as A09. At Target in 2013, alerts fired but weren't acted on."
+  },
+  {
+   "id": "inc-qubole",
+   "attack": [
+    "T1199 Trusted Relationship",
+    "T1078.004 Valid Accounts: Cloud Accounts",
+    "T1530 Data from Cloud Storage"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "title": "Qubole cross-account trust abuse",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "What happened",
+     "From 14 to 26 October 2026, an attacker used credentials tied to a Qubole AWS account to get into the AWS accounts of many Qubole customers. Wiz published the findings on 9 November 2026, working with Sentra and Mandiant."
+    ],
+    [
+     "How they got in",
+     "Customers had created IAM roles that trusted Qubole's AWS account, so Qubole's data platform could reach their data. The attacker took over two Qubole IAM users and assumed those roles. In many cases the roles were left over from integrations the customer no longer used."
+    ],
+    [
+     "Impact",
+     "The attacker read secrets from Secrets Manager, SSM Parameter Store and Lambda environment variables, then tested the keys it found. It also copied S3 data, sometimes whole buckets. SecurityWeek reports more than a dozen organisations were hit. Some victims had no S3 data events or access logs, so they couldn't tell which files were read."
+    ],
+    [
+     "Lessons",
+     "Remove vendor roles you no longer use. Trust the vendor's exact IAM role, not their whole account (`:root`), and limit it to the vendor's published IP addresses. Turn on S3 data events for sensitive buckets. Don't treat the External ID as a secret."
+    ]
+   ],
+   "maps": "A01 Broken Access Control · A09 Security Logging and Alerting Failures · CSF GV.SC supply chain",
+   "q": {
+    "d": 2,
+    "q": "Why did the attacker's requests into customer AWS accounts succeed?",
+    "o": [
+     "The customers' roles still trusted Qubole's AWS account",
+     "The customers' S3 buckets were set to allow public reads",
+     "AWS had an unpatched flaw in its IAM service"
+    ],
+    "k": 0,
+    "w": "No AWS flaw was needed. Stale trust policies let anyone holding Qubole-side credentials assume the roles."
+   }
+  },
+  {
+   "id": "inc-sshole",
+   "attack": [
+    "T1133 External Remote Services",
+    "T1190 Exploit Public-Facing Application"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "title": "SSHole: OpenSSH password bypass",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "What happened",
+     "On 5 November 2026 OpenSSH released 10.6p2 to fix CVE-2026-123158, nicknamed \"SSHole\". On 9 November CISA added it to its Known Exploited Vulnerabilities (KEV) catalogue."
+    ],
+    [
+     "How they got in",
+     "On Linux systems that use the musl C library and an OpenSSH built without PAM, a very long password could get through SSH password login. Alpine Linux is the main example. Distros built on glibc, like Debian, Ubuntu, Red Hat and SUSE, aren't affected."
+    ],
+    [
+     "Impact",
+     "Exploitation started fast. SANS ISC honeypots saw the first exploit attempts on 5 November, the same day a proof of concept appeared. BleepingComputer and GreyNoise report successful break-ins within days. The CVE has a CVSS 3.1 score of 8.1 (High)."
+    ],
+    [
+     "Lessons",
+     "Patch internet-facing SSH fast once a flaw hits the KEV list. Use key-based logins and set `PasswordAuthentication no`. Know which of your hosts and containers run Alpine, because that decides whether you're exposed."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · CSF ID.RA and PR.PS patching",
+   "q": {
+    "d": 2,
+    "q": "Which servers were exposed to SSHole?",
+    "o": [
+     "Alpine and other musl builds without PAM that allow password logins",
+     "Ubuntu and Debian servers that allow password logins",
+     "Any server that uses SSH keys only"
+    ],
+    "k": 0,
+    "w": "The bug needs musl, an OpenSSH built without PAM, and password logins turned on. glibc distros like Ubuntu and Debian weren't affected, and key-only logins block the bypass."
+   }
+  },
+  {
+   "id": "inc-amadeus",
+   "attack": [
+    "T1199 Trusted Relationship"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "title": "Amadeus airline booking data breach",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "What happened",
+     "In late October 2026 Cathay Pacific said travel technology provider Amadeus had told it about unauthorised access to booking data. In early November Qantas said Amadeus had told it the same. Cathay says the access ran from August 2023 to September 2026."
+    ],
+    [
+     "How they got in",
+     "Amadeus says a vulnerability in a booking-display environment made certain booking data accessible. Cathay Pacific says Amadeus told it that the attacker used login credentials assigned to a system account. Neither company has published full technical details."
+    ],
+    [
+     "Impact",
+     "Cathay Pacific says about 53,000 bookings were affected. Qantas says its own systems weren't affected and it doesn't yet know which of its customers, if any, had data accessed. Amadeus says it has no evidence that payment or financial data was accessed."
+    ],
+    [
+     "Lessons",
+     "Your customers' data is only as safe as your supplier's systems. Service and system accounts need the same care as human ones: strong secrets, rotation, monitoring and least privilege. Access that lasted about three years before it was found points to a monitoring gap."
+    ]
+   ],
+   "maps": "CSF GV.SC supply chain · CSF DE.CM continuous monitoring",
+   "q": {
+    "d": 2,
+    "q": "Qantas says its own systems weren't touched. Why might its customers still be affected?",
+    "o": [
+     "Their booking data was held in a supplier's system",
+     "Qantas staff reused passwords on the booking portal",
+     "Customers clicked a phishing link sent by the attackers"
+    ],
+    "k": 0,
+    "w": "Third-party risk means your data can leak from someone else's network. Only the Amadeus side has been reported as accessed."
+   }
+  },
+  {
+   "id": "inc-maersk-lfl",
+   "kind": "incident",
+   "tag": "2026",
+   "title": "Maersk legacy system breach",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "What happened",
+     "On 11 November 2026, shipping company Maersk confirmed that someone accessed a local legacy system it inherited through an earlier acquisition and took data from it. Separately, the WhiteArmor ransomware gang listed Maersk on its leak site. Maersk hasn't linked the two."
+    ],
+    [
+     "How they got in",
+     "Not disclosed. Maersk hasn't said how the attackers got in or when the intrusion began. Some reporting links the data to LF Logistics, which Maersk bought in 2022, but Maersk hasn't confirmed this."
+    ],
+    [
+     "Impact",
+     "WhiteArmor says it holds about 100 GB of data and wants US$5 million. Maersk says the incident is isolated, its early findings suggest no sensitive data was disclosed, and it found no sign that other systems or shipping operations were affected."
+    ],
+    [
+     "Lessons",
+     "When you acquire a company, you acquire its old servers and its risk. Put inherited systems in your asset inventory, then patch, isolate or retire them. A system you forgot about is one you aren't monitoring."
+    ]
+   ],
+   "maps": "CSF ID.AM asset management · CSF GV.SC supply chain",
+   "q": {
+    "d": 2,
+    "q": "Why are systems like the one breached at Maersk often higher risk?",
+    "o": [
+     "They often miss normal patching and monitoring",
+     "They always run in a less secure public cloud",
+     "They are usually the company's newest systems"
+    ],
+    "k": 0,
+    "w": "Inherited legacy systems often sit outside your normal patching, monitoring and inventory, which makes them easy to forget."
+   }
+  },
+  {
+   "id": "inc-fakejob-android",
+   "attack": [
+    "T1660 Phishing (Mobile)",
+    "T1453 Abuse Accessibility Features"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "region": "NZ/AU",
+   "title": "Fake job app malware (NCSC NZ warning)",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "What happened",
+     "On 4 November 2026 NCSC New Zealand warned that malicious actors are spreading Android malware disguised as a job-seeking app. It can also be disguised as a banking app."
+    ],
+    [
+     "How they got in",
+     "Fake jobs are advertised on social media, then the chat moves to a messaging app and a link to download another app. Victims sideload it, meaning they install it from outside the Play Store. It shows a fake Google Play update page and asks for settings, especially Accessibility access."
+    ],
+    [
+     "Impact",
+     "NCSC hasn't named the app or said how many New Zealanders were affected. It warns that uninstalling the app may not fully remove the malware, because it can install more. A factory reset is more likely to work."
+    ],
+    [
+     "Lessons",
+     "Never enable installs from unknown sources. A real employer won't need you to install an app from a link. Be very wary of any app asking for Accessibility access, because that permission can let it read and control your screen."
+    ]
+   ],
+   "maps": "CSF PR.AT awareness and training · CSF PR.PS device settings",
+   "q": {
+    "d": 1,
+    "q": "A recruiter on social media asks you to install their \"jobs app\" from a link. What's the safest move?",
+    "o": [
+     "Decline and check the company through its official website",
+     "Install it, but deny any permission it asks for",
+     "Install it, then uninstall it if anything looks odd"
+    ],
+    "k": 0,
+    "w": "NCSC warns that uninstalling may not remove the malware. The safe move is not to sideload it at all."
+   }
+  },
+  {
+   "id": "qf-sshd-t",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "SSH quick check",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "Check your SSH login setting",
+     "Run `sudo sshd -T | grep -i passwordauthentication` to see the setting sshd is actually using. `passwordauthentication no` blocks SSHole-style password bypasses. Check any Match blocks too, because they can turn passwords back on for some users."
+    ]
+   ]
+  },
+  {
+   "id": "qf-trust-root",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "AWS trust policies",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "Spot the mistake: a trust policy",
+     "A role trusts `arn:aws:iam::111122223333:root` (a vendor's account) with no conditions. The mistake is that it trusts the vendor's whole account. Name the vendor's exact role, limit it to the vendor's IP addresses, and delete the role once you stop using the vendor."
+    ]
+   ]
+  },
+  {
+   "id": "qf-s3-data-events",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "CloudTrail logging",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "S3 reads aren't logged by default",
+     "CloudTrail records management events by default, but S3 object reads are \"data events\" you must turn on. In the Qubole attack, some victims couldn't tell which files were taken."
+    ]
+   ]
+  },
+  {
+   "id": "qf-nz-numbers",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "NCSC NZ threat report",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "NZ by the numbers (2025/26)",
+     "NCSC NZ logged 4,673 reports in 2025/26. It flagged 369 incidents of potential national significance, up from 331, and recorded 4 \"highly significant\" C2 incidents. That's as many as in the previous ten years combined."
+    ]
+   ]
+  },
+  {
+   "id": "qf-kev",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "CISA KEV",
+   "added": "2026-11-16",
+   "cards": [
+    [
+     "KEV means \"it's being used now\"",
+     "CISA's KEV catalogue lists flaws with evidence of real-world exploitation. US federal civilian agencies get fixed deadlines, and SSHole's was 12 November, just 3 days after it was added. Everyone else should treat KEV as a \"patch first\" list."
+    ]
+   ]
+  },
+  {
+   "id": "kql-where",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "where and project",
+   "cards": [
+    [
+     "Reading a query",
+     "Kusto Query Language (KQL) runs in Microsoft Sentinel, Defender and Log Analytics. A query starts with a table, and each `|` passes the rows on to the next step, top to bottom.",
+     "SecurityEvent\n| where EventID == 4625\n| project TimeGenerated, Account, IpAddress, Computer"
+    ],
+    [
+     "Filter, then choose columns",
+     "`where` keeps only the rows that match. `project` picks the columns you want to see. Filter as early as you can: smaller tables are faster and cheaper. Practise free in Microsoft's Log Analytics demo (aka.ms/LADemo)."
+    ]
+   ],
+   "q": {
+    "d": 1,
+    "q": "In this query, which line keeps only failed logons?",
+    "code": "SecurityEvent\n| where EventID == 4625\n| project TimeGenerated, Account, IpAddress, Computer",
+    "o": [
+     "`| where EventID == 4625`",
+     "`| project TimeGenerated, Account, IpAddress, Computer`",
+     "`SecurityEvent`"
+    ],
+    "k": 0,
+    "w": "`where` filters rows. 4625 is a failed logon; `project` only chooses columns."
+   }
+  },
+  {
+   "id": "kql-summarize",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Counting with summarize",
+   "cards": [
+    [
+     "Group and count",
+     "`summarize count() by X` groups rows by X and counts each group. It's how you find top talkers, top targets and noisy sources.",
+     "SecurityEvent\n| where EventID == 4625\n| summarize count() by IpAddress\n| top 10 by count_"
+    ],
+    [
+     "The count_ column",
+     "`count()` makes a column named `count_`. Use `top 10 by count_` or `sort by count_ desc` to see the biggest first. In Splunk, roughly: `index=wineventlog EventCode=4625 | stats count by src_ip`."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "You want failed logons per source IP, biggest first. Which line goes after `where EventID == 4625`?",
+    "o": [
+     "`| summarize count() by IpAddress | sort by count_ desc`",
+     "`| project IpAddress`",
+     "`| where IpAddress == count()`"
+    ],
+    "k": 0,
+    "w": "`summarize` does the grouping and counting; sorting by `count_` puts the noisiest first."
+   }
+  },
+  {
+   "id": "kql-time",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Time windows: ago and bin",
+   "cards": [
+    [
+     "Recent only",
+     "`ago(1h)` means one hour before now. Put `where TimeGenerated > ago(1h)` near the top of a query to search only recent data.",
+     "SecurityEvent\n| where TimeGenerated > ago(1h)\n| where EventID == 4625\n| summarize count() by bin(TimeGenerated, 5m)"
+    ],
+    [
+     "Buckets of time",
+     "`bin(TimeGenerated, 5m)` rounds each timestamp down into 5-minute buckets, so a burst stands out. Add `| render timechart` in Log Analytics to see it as a chart."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "What does `bin(TimeGenerated, 5m)` do?",
+    "o": [
+     "Groups events into 5-minute buckets",
+     "Deletes events older than 5 minutes",
+     "Waits 5 minutes before running"
+    ],
+    "k": 0,
+    "w": "Bucketing by time turns a list of events into a pattern you can spot, like a spike of failures."
+   }
+  },
+  {
+   "id": "kql-has",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "has versus contains",
+   "cards": [
+    [
+     "Whole terms",
+     "`has` matches a whole term, and it's fast because Log Analytics indexes terms. `ProcessCommandLine has \"-enc\"` finds the switch as a separate term. Attackers vary it (`-e`, `-EncodedCommand`), so real hunts check several.",
+     "DeviceProcessEvents\n| where FileName =~ \"powershell.exe\"\n| where ProcessCommandLine has \"-enc\""
+    ],
+    [
+     "Any substring",
+     "`contains` matches any part of the text, so it's slower. Both are case-insensitive; `has_cs` and `contains_cs` are the case-sensitive versions. `=~` is a case-insensitive equals."
+    ]
+   ],
+   "q": {
+    "d": 3,
+    "q": "Does `\"powershell.exe -nop\" has \"power\"` return true?",
+    "o": [
+     "No, because power isn't a whole term there",
+     "Yes, because has matches any substring",
+     "Yes, but only in upper case"
+    ],
+    "k": 0,
+    "w": "`has` looks for whole terms. `contains \"power\"` would match, because it checks substrings."
+   }
+  },
+  {
+   "id": "kql-signin",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Sign-ins in SigninLogs",
+   "cards": [
+    [
+     "The table",
+     "Microsoft Entra sign-ins land in `SigninLogs`. Useful columns: UserPrincipalName, IPAddress, Location, AppDisplayName and ResultType. ResultType \"0\" means success; other codes are failures, such as 50126 for a bad username or password.",
+     "SigninLogs\n| where TimeGenerated > ago(1d)\n| where ResultType == \"50126\"\n| summarize users = dcount(UserPrincipalName), failures = count() by IPAddress\n| where users > 10"
+    ],
+    [
+     "Why it matters",
+     "The query counts distinct users failing from each IP: many users from one IP is a password spray. Many failures on one user from many IPs is a targeted attack. Background sign-ins by apps are in a separate table, AADNonInteractiveUserSignInLogs."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "In SigninLogs, what does ResultType \"0\" mean?",
+    "o": [
+     "A successful sign-in",
+     "A failed password",
+     "A blocked country"
+    ],
+    "k": 0,
+    "w": "Zero means no error. Anything else is a failure or interruption, with the code telling you why."
+   }
+  },
+  {
+   "id": "kql-process",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Process creation (4688)",
+   "cards": [
+    [
+     "The event",
+     "Windows Event ID 4688 records a new process. With command-line auditing turned on, it includes the full command line, which is where attackers' encoded PowerShell shows up.",
+     "SecurityEvent\n| where EventID == 4688\n| where CommandLine has \"-enc\"\n| project TimeGenerated, Computer, Account, ParentProcessName, CommandLine"
+    ],
+    [
+     "Turn it on first",
+     "4688 needs the “Audit Process Creation” policy turned on, and command lines also need the Group Policy setting “Include command line in process creation events”. Defender for Endpoint records them in DeviceProcessEvents without that step."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "Your 4688 events have an empty CommandLine column. What's the likely cause?",
+    "o": [
+     "Command-line auditing isn't turned on",
+     "The process never ran",
+     "KQL can't read command lines"
+    ],
+    "k": 0,
+    "w": "4688 records the process, but the command line only appears once the audit policy setting is enabled."
+   }
+  },
+  {
+   "id": "kql-roles",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Role changes in AuditLogs",
+   "cards": [
+    [
+     "The table",
+     "Changes to Microsoft Entra ID, such as new users, group changes and role assignments, land in `AuditLogs`. Someone being added to a powerful role is one of the most important things to alert on. Matching “member to role” also catches PIM activations and eligible assignments.",
+     "AuditLogs\n| where OperationName has \"member to role\"\n| extend Actor = tostring(InitiatedBy.user.userPrincipalName)\n| project TimeGenerated, Actor, TargetResources"
+    ],
+    [
+     "Reading nested data",
+     "Some columns hold JSON, like InitiatedBy. Reach into them with dots, then wrap the value in `tostring()` so you can filter or project it."
+    ]
+   ],
+   "q": {
+    "d": 2,
+    "q": "Why alert when someone is added to Global Administrator?",
+    "o": [
+     "It's a common attacker step to keep control of a tenant",
+     "It happens thousands of times a day",
+     "Global Administrator has no real power"
+    ],
+    "k": 0,
+    "w": "New admin role members are rare and powerful, which makes them a high-value, low-noise alert."
+   }
+  },
+  {
+   "id": "kql-join",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Joining two results",
+   "cards": [
+    [
+     "Failures then a success",
+     "`join` combines two result sets on a shared column. Here: sources with many failed logons that also had a successful logon.",
+     "let fails = SecurityEvent\n  | where EventID == 4625\n  | summarize failures = count() by IpAddress\n  | where failures > 20;\nfails\n| join kind=inner (\n    SecurityEvent | where EventID == 4624 | distinct IpAddress\n  ) on IpAddress"
+    ],
+    [
+     "let and inner joins",
+     "`let` names a result so you can reuse it. `kind=inner` keeps only rows found in both sides, so you see just the sources that failed a lot and also logged on successfully at some point. It doesn't check the order."
+    ]
+   ],
+   "q": {
+    "d": 3,
+    "q": "A query joins a list of IPs with many failed logons to a list of IPs with a successful logon, using `join kind=inner ... on IpAddress`. What does it return?",
+    "o": [
+     "IPs that appear in both the failures list and the successes",
+     "Every IP from both tables",
+     "Only IPs that never succeeded"
+    ],
+    "k": 0,
+    "w": "An inner join keeps matches from both sides: many failures and at least one success, the shape of a guessed password."
+   }
+  }
+ ],
+ "extraQuestions": {
+  "owasp-a01": [
+   {
+    "d": 3,
+    "q": "An app fetches any URL a user pastes into a “preview link” box. An attacker pastes `http://169.254.169.254/latest/meta-data/`. What is this?",
+    "o": [
+     "Server-side request forgery (SSRF), part of A01",
+     "SQL injection",
+     "Cross-site scripting"
+    ],
+    "k": 0,
+    "w": "169.254.169.254 is the cloud metadata address. Making the server fetch it is SSRF, which sits under A01 Broken Access Control in 2025."
+   }
+  ],
+  "owasp-a02": [
+   {
+    "d": 2,
+    "q": "Which is the best long-term fix for misconfiguration across many servers?",
+    "o": [
+     "A hardened, repeatable configuration applied automatically",
+     "Asking admins to be more careful",
+     "Changing settings by hand after each incident"
+    ],
+    "k": 0,
+    "w": "Manual changes drift. Configuration as code, checked automatically, keeps every server the same."
+   }
+  ],
+  "owasp-a03": [
+   {
+    "d": 3,
+    "q": "A popular open-source library you use is found to contain a backdoor in its latest release. What do you do first?",
+    "o": [
+     "Check your SBOM to see which systems use that version",
+     "Wait for the vendor to email you",
+     "Delete every open-source library"
+    ],
+    "k": 0,
+    "w": "Scope comes first. An SBOM tells you where the bad version runs, so you can pin or roll back those systems."
+   }
+  ],
+  "owasp-a04": [
+   {
+    "d": 2,
+    "q": "Which of these is a cryptographic failure?",
+    "o": [
+     "Storing passwords as unsalted MD5 hashes",
+     "Requiring MFA for admins",
+     "Using parameterised queries"
+    ],
+    "k": 0,
+    "w": "MD5 is fast and unsalted hashes crack quickly. Passwords need a slow, salted algorithm like Argon2 or bcrypt."
+   }
+  ],
+  "owasp-a05": [
+   {
+    "d": 3,
+    "q": "Text posted in a comment box runs as JavaScript in other users' browsers. What is it, and what's the main fix?",
+    "o": [
+     "Cross-site scripting; encode output for the HTML context",
+     "SQL injection; use parameterised queries",
+     "SSRF; block the metadata address"
+    ],
+    "k": 0,
+    "w": "XSS is injection into the browser. Encoding output stops the browser treating the text as code."
+   }
+  ],
+  "owasp-a06": [
+   {
+    "d": 2,
+    "q": "A gift card checkout lets users retry card numbers without limit. Which category is this mainly?",
+    "o": [
+     "A06 Insecure Design",
+     "A04 Cryptographic Failures",
+     "A09 Security Logging and Alerting Failures"
+    ],
+    "k": 0,
+    "w": "Nobody designed for abuse. Rate limits and per-user caps belong in the design from the start."
+   }
+  ],
+  "owasp-a07": [
+   {
+    "d": 2,
+    "q": "Which control best defends against credential stuffing?",
+    "o": [
+     "MFA plus blocking known breached passwords",
+     "Longer session timeouts",
+     "Hiding the login page URL"
+    ],
+    "k": 0,
+    "w": "Stuffing replays leaked passwords. MFA stops a reused password being enough, and breached-password checks stop reuse."
+   }
+  ],
+  "owasp-a08": [
+   {
+    "d": 3,
+    "q": "Why didn't code signing protect SolarWinds customers?",
+    "o": [
+     "The malicious code was added during the build, so it was signed",
+     "Customers had turned signature checks off",
+     "The certificate had expired"
+    ],
+    "k": 0,
+    "w": "A signature proves who built it, not that the build was clean. Protecting the pipeline matters as much as signing."
+   }
+  ],
+  "owasp-a09": [
+   {
+    "d": 2,
+    "q": "What's the most important test for your alerting?",
+    "o": [
+     "Trigger a test event and confirm a person receives and acts on it",
+     "Count how many log lines you store",
+     "Check the SIEM licence is current"
+    ],
+    "k": 0,
+    "w": "Alerts only matter if someone sees them. Test the whole path from event to human."
+   }
+  ],
+  "owasp-a10": [
+   {
+    "d": 2,
+    "q": "What should a user see when your app hits an unexpected error?",
+    "o": [
+     "A generic message, while the details go to your logs",
+     "The full stack trace, to help them report it",
+     "Nothing, and the action should carry on"
+    ],
+    "k": 0,
+    "w": "Users get a safe message, developers get the details in logs, and the action stops safely."
+   }
+  ],
+  "inc-change": [
+   {
+    "d": 2,
+    "q": "Change Healthcare paid US$22 million. What happened to the stolen data?",
+    "o": [
+     "It was still used in further extortion attempts",
+     "It was guaranteed deleted",
+     "It was returned to Change Healthcare"
+    ],
+    "k": 0,
+    "w": "Paying doesn't buy certainty. Data from the attack resurfaced in later extortion."
+   }
+  ],
+  "inc-medibank": [
+   {
+    "d": 3,
+    "q": "Which two controls would most directly have stopped the Medibank login?",
+    "o": [
+     "MFA on the VPN, and keeping privileged credentials off personal devices",
+     "Disk encryption and a bigger firewall",
+     "Antivirus on Medibank's servers and longer passwords"
+    ],
+    "k": 0,
+    "w": "The credentials were stolen from a personal computer and worked on a VPN with no second factor."
+   }
+  ],
+  "inc-waikato": [
+   {
+    "d": 2,
+    "q": "What made recovery at Waikato DHB so slow?",
+    "o": [
+     "Systems had to be rebuilt and restored across a whole health network",
+     "The ransom note was in another language",
+     "Staff refused to use paper"
+    ],
+    "k": 0,
+    "w": "Rebuilding many systems takes weeks. Tested backups and a practised plan shorten that time."
+   }
+  ],
+  "inc-latitude": [
+   {
+    "d": 2,
+    "q": "How did the attackers get a Latitude employee's credentials?",
+    "o": [
+     "Through an attack that came in via a major vendor",
+     "By guessing a weak password",
+     "By phoning the help desk"
+    ],
+    "k": 0,
+    "w": "The attack came through a major vendor and gave the attackers a Latitude employee's login. The exact vendor route was never fully disclosed."
+   }
+  ],
+  "inc-moveit": [
+   {
+    "d": 3,
+    "q": "Many MOVEit victims had never used MOVEit themselves. How were they affected?",
+    "o": [
+     "Their suppliers used it to transfer their data",
+     "Cl0p scanned their home networks",
+     "Their staff opened phishing emails"
+    ],
+    "k": 0,
+    "w": "Third-party risk: your data is only as safe as the tools your suppliers use."
+   }
+  ],
+  "inc-log4shell": [
+   {
+    "d": 2,
+    "q": "What did an attacker need to trigger Log4Shell?",
+    "o": [
+     "Get a crafted string into something the app logged",
+     "Physical access to the server",
+     "An admin password"
+    ],
+    "k": 0,
+    "w": "Usernames, headers and search boxes all got logged, so the attack surface was enormous."
+   }
+  ],
+  "inc-xz": [
+   {
+    "d": 3,
+    "q": "Why was the xz backdoor so hard to spot in code review?",
+    "o": [
+     "It was hidden in test files and build scripts, not the visible source",
+     "It was written in assembly language",
+     "The project had no source code"
+    ],
+    "k": 0,
+    "w": "Reviewers read the git source, but the payload was in the release tarballs and test files. What you ship, not just what's in the repo, is attack surface."
+   }
+  ],
+  "inc-crowdstrike": [
+   {
+    "d": 2,
+    "q": "Why did many CrowdStrike-affected machines need hands-on fixes?",
+    "o": [
+     "They crashed at boot, so remote tools couldn't reach them",
+     "The update deleted all files",
+     "Staff had forgotten their passwords"
+    ],
+    "k": 0,
+    "w": "A machine stuck at a blue screen can't run remote management. Recovery keys and staged rollouts matter."
+   }
+  ],
+  "inc-uber": [
+   {
+    "d": 2,
+    "q": "How did the attacker get the contractor to approve an MFA prompt?",
+    "o": [
+     "Spamming push requests, then posing as IT on WhatsApp",
+     "A zero-day in the MFA app",
+     "Stealing the contractor's phone"
+    ],
+    "k": 0,
+    "w": "MFA fatigue plus social engineering. Number matching or phishing-resistant MFA would have helped."
+   }
+  ],
+  "tri-spray": [
+   {
+    "d": 2,
+    "q": "Password spraying (T1110.003) sits under which ATT&CK tactic?",
+    "o": [
+     "Credential Access",
+     "Initial Access",
+     "Exfiltration"
+    ],
+    "k": 0,
+    "w": "Brute force and its sub-techniques are ways of getting credentials, so they sit under Credential Access."
+   }
+  ],
+  "tri-ssh": [
+   {
+    "d": 1,
+    "q": "An analyst tags this alert T1110.001. What are they telling the team?",
+    "o": [
+     "It's an ATT&CK technique: brute force by password guessing",
+     "It's a CVE that needs patching",
+     "It's an internal ticket number"
+    ],
+    "k": 0,
+    "w": "Using ATT&CK IDs gives everyone the same name for the behaviour, whatever tool raised the alert."
+   }
+  ],
+  "tri-phish": [
+   {
+    "d": 1,
+    "q": "Phishing (T1566) belongs to which ATT&CK tactic?",
+    "o": [
+     "Initial Access",
+     "Exfiltration",
+     "Impact"
+    ],
+    "k": 0,
+    "w": "Phishing is how attackers first get in, so it's an Initial Access technique."
+   }
+  ],
+  "tri-macro": [
+   {
+    "d": 2,
+    "q": "A user opening a malicious document (T1204.002) maps to which ATT&CK tactic?",
+    "o": [
+     "Execution",
+     "Persistence",
+     "Exfiltration"
+    ],
+    "k": 0,
+    "w": "User Execution covers tricking someone into running the attacker's code."
+   }
+  ],
+  "tri-cloudtrail": [
+   {
+    "d": 3,
+    "q": "Logging in with stolen valid cloud credentials (T1078.004) is listed under several ATT&CK tactics. Which is one of them?",
+    "o": [
+     "Initial Access",
+     "Exfiltration",
+     "Impact"
+    ],
+    "k": 0,
+    "w": "Valid Accounts appears under Initial Access, Persistence, Privilege Escalation and Defense Evasion."
+   }
+  ],
+  "inc-capitalone": [
+   {
+    "d": 2,
+    "q": "Besides SSRF, what made the Capital One breach so large?",
+    "o": [
+     "The cloud role had broad access to many storage buckets",
+     "The data was stored on paper",
+     "The firewall was switched off"
+    ],
+    "k": 0,
+    "w": "Least privilege on cloud roles limits what stolen credentials can reach."
+   }
+  ]
+ }
+}
