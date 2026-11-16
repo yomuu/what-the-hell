@@ -1423,18 +1423,31 @@ document.getElementById("closeDays").addEventListener("click", () => closeSheet(
 sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
 document.getElementById("nextBtn").addEventListener("click", next);
 document.getElementById("toTop").addEventListener("click", () => go(0));
-document.getElementById("reset").addEventListener("click", () => {
-  if (!confirm("Clear all your answers on this device?")) return;
+// Two taps to reset, confirmed in the page itself (some hosts block confirm() dialogs).
+const resetBtn = document.getElementById("reset");
+let resetArmed = null;
+resetBtn.addEventListener("click", () => {
+  if (!resetArmed){
+    resetBtn.textContent = "Tap again to clear all answers";
+    resetArmed = setTimeout(() => { resetArmed = null; resetBtn.textContent = "Reset answers"; }, 4000);
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed = null;
   answers = {}; store.set("cr2-answers", {}); store.del("cr2-pos");
-  history.replaceState(null, "", location.pathname + location.search); location.reload();
+  Object.values(resetters).forEach(list => list.forEach(f => f()));
+  updateScore(false);
+  resetBtn.textContent = "Answers cleared";
+  setTimeout(() => { resetBtn.textContent = "Reset answers"; }, 2000);
+  resumeBtn.textContent = "Start Day 1";
 });
 
 // Resume
 const savedId = store.get("cr2-pos", "start");
 const savedIdx = cards.findIndex(c => c.el.id === savedId);
 const resumeBtn = document.getElementById("resume");
-if (savedIdx > 0 && cards[savedIdx].day >= 0){ resumeBtn.textContent = `Continue Day ${cards[savedIdx].day+1}`; resumeBtn.addEventListener("click", () => go(savedIdx)); }
-else resumeBtn.addEventListener("click", () => goDay(1));
+let resumeTo = (savedIdx > 0 && cards[savedIdx].day >= 0) ? savedIdx : -1;
+if (resumeTo > 0) resumeBtn.textContent = `Continue Day ${cards[resumeTo].day+1}`;
+resumeBtn.addEventListener("click", () => resumeTo > 0 && resumeBtn.textContent !== "Start Day 1" ? go(resumeTo) : goDay(1));
 
 document.addEventListener("keydown", e => {
   if (sheet.classList.contains("open")){ if (e.key === "Escape") closeSheet(); return; }
