@@ -371,7 +371,7 @@ sudo -l`},
   ["App codes and push","Authenticator-app codes avoid SIM swapping, but you can still type them into a fake site that passes them on. Push approvals can be abused by spamming prompts until you tap Approve. Number matching makes that harder."],
   ["Phishing-resistant","FIDO2 security keys and passkeys are bound to the real website's domain. A look-alike site gets nothing it can use, even if you're fooled. These are the only phishing-resistant options."]
  ],
- real:["Twilio and Cloudflare, 2022","In August 2022 the same SMS phishing campaign hit both companies. At Twilio, staff entered credentials on fake pages and attackers got into internal systems. At Cloudflare, some staff were fooled too, but their FIDO2 hardware keys blocked the logins."],
+ real:["Twilio and Cloudflare, 2022","In July and August 2022 the same SMS phishing campaign hit both companies. At Twilio, staff entered credentials on fake pages and attackers got into internal systems. At Cloudflare, some staff were fooled too, but their FIDO2 hardware keys blocked the logins."],
  myth:["Any MFA stops phishing.","SMS and app codes can be typed into a fake site and relayed in real time. Only FIDO2 keys and passkeys resist phishing, because they check the real domain."],
  tryit:{h:"Audit your own MFA", where:"Your phone and browser",
   p:"Check the second factor on your email, password manager and bank. Where passkeys or security keys are offered, add one and keep a backup method safe. Start with email: it can reset everything else."},
@@ -393,7 +393,7 @@ sudo -l`},
  sub:"Boring habits that stop most attacks.",
  learn:[
   ["Cyber hygiene","Hygiene is the routine: patching, backups, a password manager, MFA everywhere and reviewing app permissions. None of it is exciting. Many breaches start with one of these being skipped."],
-  ["Patch promptly","Attackers often build exploits soon after a patch comes out by studying the fix. So patch internet-facing systems first. Australia's Essential Eight sets 48 hours for those when a flaw is critical or already exploited."],
+  ["Patch promptly","Attackers often build exploits soon after a patch comes out by studying the fix. So patch internet-facing systems first. Australia's Essential Eight sets 48 hours for those when the vendor rates a flaw critical or a working exploit exists."],
   ["Backups that work","Follow 3-2-1: three copies, on two types of storage, one offsite. Keep at least one copy offline or immutable so ransomware can't reach it. A backup you've never test-restored is a hope, not a plan."],
   ["Hardening","Hardening shrinks the attack surface by changing insecure defaults. Replace default credentials, disable unneeded services, close unused ports and remove unused software. Keeping defaults is the opposite of hardening."],
   ["Use a baseline","Don't harden from memory. CIS Benchmarks and vendor security baselines list recommended settings for Windows, Linux, browsers and cloud services. They give you a checklist you can audit against."]
@@ -1410,7 +1410,7 @@ const FEED_DECKS = [
 {id:"e8-patch-apps", kind:"e8", tag:"E8", title:"Patch applications",
  cards:[
   ["What it is","Keep applications such as browsers, Office, PDF readers and internet-facing services patched, and remove ones the vendor no longer supports. It's one of the eight mitigation strategies in the Australian Signals Directorate's Essential Eight."],
-  ["Why it matters","Attackers routinely exploit known flaws, often within days of a fix being released. For internet-facing services, the Essential Eight sets 48 hours when a flaw is critical or already being exploited."]
+  ["Why it matters","Attackers routinely exploit known flaws, often within days of a fix being released. For internet-facing services, the Essential Eight sets 48 hours when the vendor rates a flaw critical or a working exploit exists."]
  ],
  q:{d:1, q:"Which application should be removed rather than patched?", o:["One the vendor no longer supports","A browser with a pending update","An Office version released this year"], k:0,
    w:"Unsupported software gets no fixes. Remove or replace it."}},
@@ -1534,10 +1534,10 @@ const FEED_DECKS = [
 {id:"law-report", kind:"law", tag:"AU/NZ", title:"Who to call",
  cards:[
   ["Australia","Report cyber incidents to the Australian Signals Directorate's Australian Cyber Security Centre through ReportCyber at cyber.gov.au. Privacy breaches go to the OAIC."],
-  ["New Zealand","Report cyber incidents to the National Cyber Security Centre, which absorbed CERT NZ between 2023 and 2024. Privacy breaches go to the Office of the Privacy Commissioner."]
+  ["New Zealand","Report cyber incidents to the National Cyber Security Centre, which began absorbing CERT NZ in 2023 and has since retired the CERT NZ brand. Privacy breaches go to the Office of the Privacy Commissioner."]
  ],
  q:{d:1, q:"In New Zealand, which agency has taken over CERT NZ's role for cyber incident reports?", o:["The National Cyber Security Centre (NCSC)","The Privacy Commissioner","The police only"], k:0,
-   w:"CERT NZ became part of the NCSC between 2023 and 2024. Privacy breaches still go to the Privacy Commissioner."}},
+   w:"CERT NZ has been merged into the NCSC, a process that began in 2023. Privacy breaches still go to the Privacy Commissioner."}},
 
 /* ---------------- FEED: triage scenarios ---------------- */
 {id:"tri-spray", kind:"triage", tag:"Triage", title:"Many users, one source",
