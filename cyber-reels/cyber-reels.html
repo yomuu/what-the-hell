@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* One visual world: a dark, full-screen vertical feed; each week has its own signal colour. */
+  /* One visual world: dark, full-screen vertical feeds. Weeks and tabs each have their own signal colour. */
   --bg:#0e1216;
   --surface:#171d24;
   --sunk:#0a0d10;
@@ -23,6 +23,10 @@
   --w2:#3ec7e0;
   --w3:#a78bfa;
   --w4:#ff7a59;
+  --t-study:#ffb020;
+  --t-feed:#f472b6;
+  --t-py:#5b9dff;
+  --tab-h:58px;
   --display:"Archivo","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
@@ -41,9 +45,11 @@ button:focus-visible,a:focus-visible,.why:focus-visible{outline:2px solid var(--
 .meta b{color:var(--accent,var(--w1));font-weight:500}
 .meta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
-.feed::-webkit-scrollbar{display:none}
-.card{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;padding:calc(env(safe-area-inset-top) + 64px) 68px calc(env(safe-area-inset-bottom) + 40px) 22px;position:relative;max-width:640px;margin:0 auto}
+/* Each tab is its own scroll-snap feed. Inactive feeds are hidden but keep their scroll position. */
+.view{position:fixed;left:0;right:0;top:0;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom));overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
+.view::-webkit-scrollbar{display:none}
+.view.off{visibility:hidden;pointer-events:none}
+.card{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;padding:calc(env(safe-area-inset-top) + 64px) 68px 28px 22px;position:relative;max-width:640px;margin:0 auto}
 .card::-webkit-scrollbar{display:none}
 .card::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
 /* margin:auto centres short cards and lets tall ones scroll from the top instead of clipping */
@@ -58,6 +64,8 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .card code{font-family:var(--mono);font-size:.84em;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
 .hint{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
 .warn{font-size:15px;line-height:1.45;color:var(--bad);max-width:40ch}
+.chip{align-self:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--text);border:1px solid var(--c);border-radius:8px;padding:6px 10px;max-width:440px;line-height:1.4}
+.chip b{color:var(--c);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-right:6px}
 
 .opts{display:flex;flex-direction:column;gap:10px;max-width:440px}
 .opt{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-height:48px;font-size:17px;line-height:1.35;cursor:pointer;transition:border-color .15s,background .15s}
@@ -104,13 +112,21 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .dscore{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em}
 .dscore b{color:var(--text);font-weight:500}
 
-.more{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 10px);z-index:4;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;pointer-events:none;opacity:0;transition:opacity .2s}
+.more{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 10px);z-index:4;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;pointer-events:none;opacity:0;transition:opacity .2s}
 .more.show{opacity:1}
 
-.rail{position:fixed;right:10px;bottom:calc(env(safe-area-inset-bottom) + 28px);z-index:6;display:flex;flex-direction:column;gap:14px;align-items:center}
+.rail{position:fixed;right:10px;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 16px);z-index:6;display:flex;flex-direction:column;gap:14px;align-items:center}
 .rb{width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer}
 .rb svg{width:22px;height:22px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .rl{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:7;display:grid;grid-template-columns:repeat(3,1fr);height:calc(var(--tab-h) + env(safe-area-inset-bottom));padding:0 max(0px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0px,env(safe-area-inset-left));background:var(--surface);border-top:1px solid var(--line)}
+.tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;background:none;border:0;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tab::before{content:"";position:absolute;top:-1px;left:28%;right:28%;height:3px;border-radius:0 0 3px 3px;background:var(--tc);opacity:0;transition:opacity .2s}
+.tab[aria-selected="true"]{color:var(--tc)}
+.tab[aria-selected="true"]::before{opacity:1}
+.tab:focus-visible{outline:2px solid var(--tc);outline-offset:-4px}
 
 .btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
@@ -138,7 +154,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .day.miss .n{background:var(--bad);border-color:var(--bad);color:#0e1216}
 .x{background:none;border:1px solid var(--line);border-radius:999px;padding:10px 16px;min-height:44px;cursor:pointer;font-size:14px}
 
-@media (prefers-reduced-motion:reduce){.bar i,.opt,.more{transition:none}.feed{scroll-behavior:auto}}
+@media (prefers-reduced-motion:reduce){.bar i,.opt,.more,.tab::before{transition:none}.view{scroll-behavior:auto}}
 @media (min-width:700px){.card{padding-right:96px}}
 @media (max-height:640px){.in{gap:14px}h1{font-size:clamp(32px,9.5vw,52px)}.card p{font-size:17px}}
 @media (pointer:coarse){.kb{display:none}}
@@ -151,12 +167,20 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
 
-<main class="feed" id="feed" tabindex="-1" aria-label="Study cards, swipe up for the next card"></main>
+<main class="view" id="v-study" tabindex="-1" aria-label="Study plan, swipe up for the next card"></main>
+<main class="view off" id="v-feed" tabindex="-1" aria-label="Feed, swipe up for more cards"></main>
+<main class="view off" id="v-py" tabindex="-1" aria-label="Python lessons, swipe up for the next card"></main>
 <div class="more" id="more" aria-hidden="true">More below ↓</div>
 
 <nav class="rail" id="rail" aria-label="Study controls">
-  <div><button class="rb" id="openDays" aria-label="Choose a day"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button><div class="rl">Days</div></div>
+  <div id="pickWrap"><button class="rb" id="openDays" aria-label="Choose a day"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button><div class="rl" id="pickLabel">Days</div></div>
   <div><button class="rb" id="nextBtn" aria-label="Next card"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="rl">Next</div></div>
+</nav>
+
+<nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+  <button class="tab" role="tab" id="tab-study" data-tab="study" aria-controls="v-study" style="--tc:var(--t-study)"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Study</button>
+  <button class="tab" role="tab" id="tab-feed" data-tab="feed" aria-controls="v-feed" style="--tc:var(--t-feed)"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 10l3-3 3 3M12 7v10"/></svg>Feed</button>
+  <button class="tab" role="tab" id="tab-py" data-tab="py" aria-controls="v-py" style="--tc:var(--t-py)"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Python</button>
 </nav>
 
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
@@ -170,22 +194,25 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 <script>
 /* ==========================================================================
    CONTENT
-   Each day is one object. Card order in the feed:
+   STUDY: each day is one object. Card order in the feed:
    topic, learn[], real, myth, tryit, review[], quiz[], recap.
 
    t      title                          sub    one-line hook on the topic card
-   learn  [[heading, body], ...]         one idea per card, 2 to 4 sentences
+   learn  [[heading, body, code?], ...]  one idea per card, 2 to 4 sentences
    real   [heading, body]                a breach, incident or everyday example
    myth   [myth, fact]                   optional
    tryit  {h, p, code, where}            code is optional; where = which machine.
                                          Lines starting with # in code are shown as comments.
    review [[heading, body], ...]         optional, used on review days
-   quiz   [{q, o:[...], k, w, d}, ...]   k = index of the right option in o,
+   quiz   [{q, code?, o:[...], k, w, d}] k = index of the right option in o,
                                          w = explanation, d = 1 easy, 2 medium, 3 hard.
                                          Options are shuffled on screen, so write
                                          them in any order.
    recap  [point, ...]
    Text supports `inline code` with backticks. Keep it plain: no HTML.
+
+   FEED_DECKS: {id, kind:"owasp"|"incident", tag, title, cards:[[h, p]...], maps?, q}
+   PY_LESSONS: same shape as a Study day.
    ========================================================================== */
 const WEEKS = [
   {n:1, name:"Security fundamentals", c:"var(--w1)"},
@@ -1134,28 +1161,776 @@ VirtualBox internal network. Kali 10.10.10.10, Windows 10.10.10.20.
  ],
  recap:["Stage 1 done: fundamentals, networking, OS, crypto, hands-on analysis.","Grow the lab with a vulnerable VM and a SIEM, kept internal.","Write up everything on GitHub.","Next: the intermediate stage."]}
 ];
+
+const FEED_DECKS = [
+/* ---------------- FEED: OWASP Top 10:2025 decks ---------------- */
+{id:"owasp-a01", kind:"owasp", tag:"A01", title:"Broken Access Control",
+ cards:[
+  ["What it is","Users can act outside their intended permissions: reading other people's records, changing someone else's account or reaching admin pages. It's number one in OWASP Top 10:2025. Server-side request forgery (SSRF), where an attacker makes the server fetch a URL for them, now sits under A01 too."],
+  ["Real example","In 2019 First American Financial exposed about 885 million records because document links used sequential numbers with no ownership check. The same year, an SSRF flaw at Capital One let an attacker make a cloud server fetch its own credentials, then copy data on about 106 million people."],
+  ["How to prevent it","Deny by default and check authorisation on the server for every request, including that the user owns the record. Never rely on hidden links or client-side checks. For SSRF, allow-list outbound destinations and block cloud metadata addresses, for example by requiring AWS IMDSv2."]
+ ],
+ q:{q:"A user changes `/orders/1043` to `/orders/1044` and sees a stranger's order. What's missing?", o:["A server-side check that the order belongs to the user","Stronger TLS","A longer session timeout"], k:0,
+   w:"This is an insecure direct object reference, a classic A01 flaw. The server must check ownership on every request."}},
+
+{id:"owasp-a02", kind:"owasp", tag:"A02", title:"Security Misconfiguration",
+ cards:[
+  ["What it is","Insecure settings rather than buggy code: default passwords, unneeded features left on, verbose error pages, open cloud storage, missing security headers. It rose to A02 in 2025 because modern apps are mostly configuration."],
+  ["Real example","Researchers regularly find cloud storage buckets and databases left open to the internet with no password, exposing millions of records. Nobody hacked anything clever; a setting was simply wrong."],
+  ["How to prevent it","Build every environment from the same hardened, repeatable configuration. Remove features and accounts you don't use. Scan cloud settings automatically, for example with a cloud security posture management tool, and review them after every change."]
+ ],
+ q:{q:"A production web app shows full stack traces with file paths when it errors. Which category fits best?", o:["A02 Security Misconfiguration","A05 Injection","A07 Authentication Failures"], k:0,
+   w:"Detailed errors in production are a configuration mistake. They hand attackers a map of your code."}},
+
+{id:"owasp-a03", kind:"owasp", tag:"A03", title:"Software Supply Chain Failures",
+ cards:[
+  ["What it is","New in 2025. It expands 2021's Vulnerable and Outdated Components to the whole supply chain: the libraries you depend on, build tools, CI/CD pipelines and the people who maintain them. You inherit their weaknesses."],
+  ["Real example","In March 2024 an engineer noticed SSH logins were about half a second slow and traced it to a backdoor in the xz compression library. A contributor had spent around two years earning maintainer trust before slipping it in. It was caught before most stable Linux releases shipped it."],
+  ["How to prevent it","Know what you run: keep a software bill of materials (SBOM). Scan dependencies for known vulnerabilities and update promptly. Pin versions, verify signatures, use trusted registries and lock down who can change your build pipeline."]
+ ],
+ q:{q:"Which practice helps most to find out whether you're affected when a new library flaw is announced?", o:["Keeping a software bill of materials (SBOM)","Turning on MFA for staff","Using longer passwords"], k:0,
+   w:"An SBOM lists every component and version you ship, so you can answer “are we exposed?” in minutes instead of days."}},
+
+{id:"owasp-a04", kind:"owasp", tag:"A04", title:"Cryptographic Failures",
+ cards:[
+  ["What it is","Sensitive data isn't properly protected by cryptography: sent over plain HTTP, stored unencrypted, hashed with fast algorithms like MD5, or protected with weak or hard-coded keys."],
+  ["Real example","In 2013 Adobe lost data on around 150 million accounts. The passwords were encrypted with one key in a weak mode instead of being hashed, so identical passwords produced identical results. Password hints sat beside them in plain text."],
+  ["How to prevent it","Use TLS 1.2 or 1.3 everywhere. Encrypt sensitive data at rest. Hash passwords with Argon2 or bcrypt. Keep keys in a key management service, never in source code, and never invent your own crypto."]
+ ],
+ q:{q:"A developer stores API keys in the app's source code on GitHub. What's the best fix?", o:["Move them to a secrets manager and rotate the exposed keys","Make the repository private and carry on","Base64-encode the keys"], k:0,
+   w:"Once a key has been committed it's compromised, so rotate it. Base64 is encoding, not protection."}},
+
+{id:"owasp-a05", kind:"owasp", tag:"A05", title:"Injection",
+ cards:[
+  ["What it is","The app treats untrusted input as code or commands. SQL injection, OS command injection and cross-site scripting (XSS) all fall here. It's A05 in 2025."],
+  ["Real example","In May 2023 the Cl0p gang exploited a SQL injection zero-day in MOVEit Transfer, a file-transfer product. They stole data from thousands of organisations, affecting tens of millions of people, before most victims knew the flaw existed."],
+  ["How to prevent it","Use parameterised queries or a safe ORM, never string-built SQL. Encode output for the context it lands in (HTML, JavaScript, URLs) to stop XSS. Validate input against an allow-list, and give database accounts least privilege."]
+ ],
+ q:{q:"Which of these stops SQL injection most reliably?", o:["Parameterised queries","Hiding error messages","Using HTTPS"], k:0,
+   w:"Parameters keep data separate from the query, so input can't change its meaning. Hiding errors only makes it harder to spot."}},
+
+{id:"owasp-a06", kind:"owasp", tag:"A06", title:"Insecure Design",
+ cards:[
+  ["What it is","Flaws in the design itself, not in the code. A perfectly coded feature can still be unsafe if nobody thought about how it could be abused. You can't patch your way out of a bad design."],
+  ["Real example","A password reset that relies on security questions like “mother's maiden name” is insecure by design: the answers are often public. So is a checkout that lets one user reserve unlimited stock with no rate limit."],
+  ["How to prevent it","Threat model new features before building them: ask what could go wrong and who would abuse it. Write abuse cases next to user stories. Use proven secure design patterns, and build in limits such as rate limiting and per-user caps."]
+ ],
+ q:{q:"What's the most effective time to catch an insecure design flaw?", o:["During design, through threat modelling","After launch, through a penetration test","Only after an incident"], k:0,
+   w:"Fixing a design on paper is cheap. Fixing it after launch can mean rebuilding the feature."}},
+
+{id:"owasp-a07", kind:"owasp", tag:"A07", title:"Authentication Failures",
+ cards:[
+  ["What it is","Weaknesses in proving who someone is: no MFA, allowing weak or breached passwords, unlimited login attempts, weak account recovery or sessions that never expire."],
+  ["Real example","In February 2024 attackers used stolen credentials on a Change Healthcare remote access portal that didn't require MFA. The ransomware attack that followed disrupted claims processing across US healthcare for weeks."],
+  ["How to prevent it","Require MFA, ideally phishing-resistant passkeys or FIDO2 keys. Block known breached passwords. Rate-limit and monitor login attempts. Expire sessions properly and protect recovery flows as carefully as the login itself."]
+ ],
+ q:{q:"Which control would most directly have stopped the Change Healthcare login?", o:["MFA on the remote access portal","Disk encryption","A web application firewall rule"], k:0,
+   w:"Stolen passwords alone were enough. A second factor would have blocked that first step."}},
+
+{id:"owasp-a08", kind:"owasp", tag:"A08", title:"Software or Data Integrity Failures",
+ cards:[
+  ["What it is","Trusting code or data without checking it hasn't been tampered with: updates installed without a signature check, plugins from untrusted sources, or untrusted data deserialised into objects."],
+  ["Real example","In the SolarWinds attack discovered in December 2020, malicious code was inserted during the build, so the poisoned Orion updates were properly signed. Customers' integrity checks passed because the build itself had been compromised."],
+  ["How to prevent it","Verify digital signatures on updates and packages. Protect the CI/CD pipeline with access controls, reviews and logging. Don't deserialise untrusted data, or use formats like JSON with strict validation instead."]
+ ],
+ q:{q:"An app downloads and runs updates over plain HTTP without checking a signature. What's the main risk?", o:["An on-path attacker can swap in a malicious update","The update will download slowly","Users can't log in"], k:0,
+   w:"Without a signature check, the app runs whatever arrives. Signatures prove who made the update and that it wasn't changed."}},
+
+{id:"owasp-a09", kind:"owasp", tag:"A09", title:"Security Logging and Alerting Failures",
+ cards:[
+  ["What it is","Not logging security events, not alerting on them, or not acting on the alerts. The 2025 name stresses alerting: logs nobody watches don't stop anything. It was called Security Logging and Monitoring Failures in 2021."],
+  ["Real example","During the 2013 Target breach, security tools raised alerts as the attackers set up their malware. The alerts weren't acted on in time, and about 40 million card numbers were stolen."],
+  ["How to prevent it","Log logins, failures, access-control denials and admin actions with enough context. Send logs to a central SIEM, alert on suspicious patterns and test that alerts reach a person. Protect logs from tampering and have a response plan."]
+ ],
+ q:{q:"Your app logs failed logins, but nobody reviews them and nothing alerts. Which category is this?", o:["A09 Security Logging and Alerting Failures","A02 Security Misconfiguration","A06 Insecure Design"], k:0,
+   w:"Collecting logs is only half the job. A09 is about making sure someone is alerted and acts."}},
+
+{id:"owasp-a10", kind:"owasp", tag:"A10", title:"Mishandling of Exceptional Conditions",
+ cards:[
+  ["What it is","New in 2025. Apps that handle errors and unusual conditions badly: failing open, crashing on unexpected input, leaking details in error messages, or leaving a transaction half-finished."],
+  ["Real example","On 19 July 2024 a faulty CrowdStrike content update triggered an out-of-bounds memory read that the Falcon sensor didn't handle, crashing about 8.5 million Windows computers. It wasn't an attack, but airlines, banks and hospitals went down."],
+  ["How to prevent it","Fail safely: when something goes wrong, deny access rather than allow it. Catch and handle errors, and show users generic messages while logging the details. Test edge cases and bad input, and roll out changes in stages."]
+ ],
+ q:{q:"A login check throws an error when the database is slow, and the code then lets the user in. What's the flaw?", o:["Failing open instead of failing safe","Weak password hashing","Missing HTTPS"], k:0,
+   w:"When a security check can't complete, the safe default is to deny. Failing open turns an outage into a breach."}},
+
+/* ---------------- FEED: incident decks ---------------- */
+{id:"inc-change", kind:"incident", tag:"2024", title:"Change Healthcare",
+ cards:[
+  ["What happened","In February 2024 the ALPHV/BlackCat ransomware gang hit Change Healthcare, which processes a huge share of US medical claims. Systems went offline and pharmacies and providers struggled to process claims and payments for weeks."],
+  ["How they got in","Attackers logged in to a Citrix remote access portal with stolen credentials. The portal didn't require MFA. From there they moved through the network, stole data and deployed ransomware."],
+  ["Impact","The company paid a US$22 million ransom. Its July 2025 notification to the US health regulator put the number of people affected at about 192.7 million, the largest healthcare data breach on record in the US."],
+  ["Lessons","Every remote access portal needs MFA, with no exceptions for old systems. Paying didn't make the problem go away: data from the same attack was later used in further extortion attempts."]
+ ],
+ maps:"A07 Authentication Failures · MFA on remote access",
+ q:{q:"What was the single missing control at Change Healthcare's entry point?", o:["MFA on the Citrix portal","Encryption of the claims database","An antivirus update"], k:0,
+   w:"The attackers didn't need an exploit. Valid credentials and no second factor were enough."}},
+
+{id:"inc-medibank", kind:"incident", tag:"2022", title:"Medibank",
+ cards:[
+  ["What happened","In October 2022 Australian health insurer Medibank found attackers had stolen data on about 9.7 million current and former customers, including health claims information."],
+  ["How they got in","Malware on an IT service desk contractor's personal computer stole credentials the contractor had saved in their browser. The attackers used them to log in to Medibank's VPN, which didn't require MFA."],
+  ["Impact","Medibank refused to pay the ransom, and the attackers published customer data on the dark web, including sensitive health records. Australia later sanctioned a Russian national over the attack."],
+  ["Lessons","Contractor and admin accounts need MFA everywhere. Don't let privileged credentials live on personal devices. A refusal to pay is often right, but plan for the data being published."]
+ ],
+ maps:"A07 Authentication Failures · MFA and privileged access",
+ q:{q:"How did the attackers first get Medibank credentials?", o:["Malware on a contractor's personal computer","A SQL injection flaw","A stolen backup tape"], k:0,
+   w:"An infostealer harvested saved browser credentials. The VPN's lack of MFA turned that into a breach."}},
+
+{id:"inc-waikato", kind:"incident", tag:"2021", title:"Waikato DHB",
+ cards:[
+  ["What happened","In May 2021 ransomware caused a full IT outage across Waikato District Health Board's hospitals in New Zealand. Staff went back to pen and paper, and many clinics and procedures were postponed."],
+  ["How they got in","The full initial access details weren't published. The attackers had access long enough to steal data before encrypting systems, which shows the intrusion went unnoticed for a while."],
+  ["Impact","Data exfiltration was confirmed, and patient and staff data was leaked. Recovery took weeks for core systems and much longer overall. The ransom wasn't paid."],
+  ["Lessons","Health systems need tested offline backups, network segmentation and an incident plan that includes working without IT. Detecting attackers before they encrypt gives you far more options."]
+ ],
+ maps:"Backups, segmentation and incident response",
+ q:{q:"Waikato DHB confirmed data was stolen. What does that mean for recovery from backups?", o:["Backups restore systems but can't undo the data theft","Backups also recover the stolen data from the attackers","Backups make the leak impossible"], k:0,
+   w:"Double extortion hits confidentiality. Restoring brings systems back, but leaked data stays leaked."}},
+
+{id:"inc-latitude", kind:"incident", tag:"2023", title:"Latitude Financial",
+ cards:[
+  ["What happened","In March 2023 Australian and New Zealand lender Latitude Financial disclosed a cyberattack. About 14 million customer records were stolen, including around 7.9 million driver licence numbers."],
+  ["How they got in","The attack came in through a major vendor and gave the attackers a Latitude employee's login credentials. They used those to reach customer data held by two service providers."],
+  ["Impact","Some records went back to 2005, long after customers had left. Latitude refused to pay the ransom, and regulators in both countries investigated."],
+  ["Lessons","Keep data only as long as you need it. Monitor vendor and third-party access closely. Data you deleted years ago can't be stolen."]
+ ],
+ maps:"Third-party risk · data minimisation",
+ q:{q:"Which lesson does Latitude show most clearly?", o:["Don't keep customer data longer than you need it","Always pay the ransom","Third parties never cause breaches"], k:0,
+   w:"Millions of affected records belonged to former customers whose data could have been deleted."}},
+
+{id:"inc-moveit", kind:"incident", tag:"2023", title:"MOVEit Transfer",
+ cards:[
+  ["What happened","In May 2023 the Cl0p ransomware gang mass-exploited MOVEit Transfer, a file-transfer product used by governments, banks and universities. They stole files rather than encrypting systems."],
+  ["How they got in","A SQL injection zero-day (CVE-2023-34362) in the MOVEit web application let them run their own code and plant a web shell on internet-facing servers."],
+  ["Impact","Thousands of organisations and tens of millions of people were affected, many through suppliers they'd never heard of. Cl0p extorted victims by threatening to publish the data."],
+  ["Lessons","Internet-facing file-transfer tools are high-value targets. Patch them urgently, limit what data sits on them and for how long, and know which of your suppliers use them."]
+ ],
+ maps:"A05 Injection · patching and supplier risk",
+ q:{q:"What type of flaw did Cl0p exploit in MOVEit Transfer?", o:["SQL injection","A weak password","A misconfigured firewall"], k:0,
+   w:"It was a SQL injection zero-day in the web application, so no patch existed when the attacks began."}},
+
+{id:"inc-log4shell", kind:"incident", tag:"2021", title:"Log4Shell",
+ cards:[
+  ["What happened","In December 2021 a critical flaw (CVE-2021-44228) was disclosed in Log4j, a logging library inside a huge number of Java applications. It scored the maximum 10.0 severity."],
+  ["How it worked","If an app logged a string an attacker controlled, such as a username or browser header, Log4j could follow a lookup in that string and load remote code. Simply getting text into a log was enough."],
+  ["Impact","Attackers began scanning for it within hours. Many organisations didn't know where they used Log4j, because it was buried inside other products and libraries."],
+  ["Lessons","Know your dependencies, including the ones inside other software. A software bill of materials and fast patching turn a crisis into a checklist."]
+ ],
+ maps:"A03 Software Supply Chain Failures · SBOM",
+ q:{q:"Why was Log4Shell so hard for many organisations to respond to?", o:["They didn't know which systems contained Log4j","The patch was never released","It only affected Windows"], k:0,
+   w:"Log4j was often a dependency of a dependency. Without an inventory, teams had to hunt for it system by system."}},
+
+{id:"inc-xz", kind:"incident", tag:"2024", title:"The xz utils backdoor",
+ cards:[
+  ["What happened","In March 2024 Microsoft engineer Andres Freund noticed SSH logins on a test system using more CPU and taking about half a second longer. He traced it to a backdoor in xz utils versions 5.6.0 and 5.6.1."],
+  ["How it got in","A contributor known as “Jia Tan” spent around two years building trust in the project and became a maintainer. The malicious code was hidden in test files and build scripts, not in the visible source."],
+  ["Impact","The backdoor targeted SSH on some Linux distributions. It was caught while mostly in testing and rolling releases, before it reached most stable systems. It could have given someone remote access to many servers."],
+  ["Lessons","Open-source projects often rest on a few unpaid maintainers. Watch for unexpected behaviour, check what's in release packages, and treat build pipelines as part of your attack surface."]
+ ],
+ maps:"A03 Software Supply Chain Failures",
+ q:{q:"How was the xz backdoor discovered?", o:["An engineer investigated slow SSH logins","An antivirus alert","The attacker confessed"], k:0,
+   w:"Curiosity about a small performance change caught one of the most serious supply chain attacks yet."}},
+
+{id:"inc-crowdstrike", kind:"incident", tag:"2024", title:"CrowdStrike outage",
+ cards:[
+  ["What happened","On 19 July 2024 a faulty content update for CrowdStrike's Falcon sensor crashed about 8.5 million Windows computers, which got stuck on a blue screen at boot."],
+  ["What went wrong","It wasn't an attack. The update contained data the sensor's code didn't expect, causing an out-of-bounds memory read inside a kernel driver. The error wasn't handled, so Windows crashed."],
+  ["Impact","Airlines grounded flights, and hospitals, banks and broadcasters were disrupted around the world. Many machines needed hands-on fixes, one at a time, often with BitLocker recovery keys."],
+  ["Lessons","Test updates against unexpected input, roll them out in stages and handle errors safely. Keep BitLocker recovery keys somewhere you can reach when Windows won't boot."]
+ ],
+ maps:"A10 Mishandling of Exceptional Conditions · staged rollouts",
+ q:{q:"Which OWASP Top 10:2025 category best fits the CrowdStrike crash?", o:["A10 Mishandling of Exceptional Conditions","A05 Injection","A07 Authentication Failures"], k:0,
+   w:"Unexpected input caused an unhandled error. A10 is about handling exceptional conditions safely."}},
+
+{id:"inc-uber", kind:"incident", tag:"2022", title:"Uber",
+ cards:[
+  ["What happened","In September 2022 an attacker got broad access to Uber's internal systems, including chat, cloud consoles and security tools, and announced it in Uber's own Slack."],
+  ["How they got in","They had a contractor's password and spammed MFA push requests. Then they contacted the contractor on WhatsApp, posing as Uber IT, until the contractor approved one."],
+  ["Going deeper","Inside, the attacker found a PowerShell script on a network share with hard-coded admin credentials for Uber's privileged access management system. That unlocked much more."],
+  ["Lessons","Use phishing-resistant MFA or at least number matching. Never hard-code secrets in scripts; use a secrets manager. Teach staff that real IT won't pressure them to approve prompts."]
+ ],
+ maps:"A07 Authentication Failures · secrets management",
+ q:{q:"What turned one approved MFA prompt into broad access at Uber?", o:["Admin credentials hard-coded in a script on a network share","A zero-day in Slack","An unpatched VPN"], k:0,
+   w:"Secrets left in plain text let the attacker escalate quickly. Secrets belong in a vault, not in scripts."}},
+
+{id:"inc-capitalone", kind:"incident", tag:"2019", title:"Capital One",
+ cards:[
+  ["What happened","In 2019 a former cloud engineer copied data on about 100 million people in the US and 6 million in Canada from Capital One's AWS environment."],
+  ["How they got in","A misconfigured web application firewall was vulnerable to server-side request forgery (SSRF). The attacker made it request the cloud metadata service, which returned temporary credentials."],
+  ["Impact","Those credentials had broad access to storage buckets. Capital One was later fined US$80 million by a US regulator and settled a class action."],
+  ["Lessons","SSRF is now part of A01 Broken Access Control. Require IMDSv2 on AWS, block metadata access from apps that don't need it, and give cloud roles least privilege."]
+ ],
+ maps:"A01 Broken Access Control (SSRF) · least privilege",
+ q:{q:"What did the SSRF flaw let the attacker obtain at Capital One?", o:["Temporary cloud credentials from the metadata service","The CEO's password","A copy of the firewall's source code"], k:0,
+   w:"The server fetched its own credentials on the attacker's behalf. Over-broad permissions did the rest."}}
+];
+
+const PY_LEVELS = [
+  {name:"Basics", from:0, to:6},
+  {name:"Security scripts", from:6, to:12},
+  {name:"Cloud and capstone", from:12, to:14}
+];
+const PY_LESSONS = [
+/* ---------------- PYTHON TRACK ----------------
+   Same shape as a Study day, plus:
+   learn items may have a third element: a code example.
+   quiz items may have `code` (shown under the question). With run:true,
+   the build check runs the code and confirms it prints o[k] exactly. */
+{t:"Your first script",
+ sub:"Why security people use Python, and how to run it.",
+ learn:[
+  ["Why Python","Python is the most common scripting language in security. Analysts use it to parse logs, call APIs, automate checks and glue tools together. Kali already has Python 3 installed."],
+  ["Two ways to run it","Type `python3` to open the interactive prompt and try lines one at a time. Or save code in a file ending in .py and run `python3 hello.py`. Leave the prompt with `exit()`."],
+  ["print and comments","`print()` shows output. Anything after `#` is a comment that Python ignores. Use comments to explain why, not what.", String.raw`# Say hello to the SOC
+print("Hello, SOC")
+print(2 + 3)`],
+  ["Indentation is syntax","Python groups code by indentation, not braces. Lines inside an if or a loop are indented four spaces. Getting it wrong is an error, not a style issue.", String.raw`if 2 > 1:
+    print("indented, so inside the if")
+print("back outside")`]
+ ],
+ real:["On the job","A SOC analyst gets 2,000 alerts exported to a file. Reading them by hand takes a day. A 15-line script sorts and counts them in a second. That's why so many security job ads mention Python."],
+ myth:["You have to be a programmer to use Python in security.","Most security scripts are short: read something, filter it, count it, print it. You'll write useful ones by the end of this track."],
+ tryit:{h:"Run a script", where:"Kali terminal",
+  p:"Create a file, run it, then change the message and run it again.",
+  code:String.raw`echo 'print("Hello from Kali")' > hello.py
+python3 hello.py`},
+ quiz:[
+  {d:1, run:true, q:"What does this print?", code:String.raw`print(2 + 3)
+# print(10)`, o:["5","10","2 + 3"], k:0,
+   w:"The second line is a comment, so only `print(2 + 3)` runs."},
+  {d:1, q:"How do you run a script saved as scan.py?", o:["python3 scan.py","run scan.py","print scan.py"], k:0,
+   w:"Give the file to the python3 interpreter."},
+  {d:2, q:"What happens when you run this?", code:String.raw`if True:
+print("hi")`, o:["An IndentationError","It prints hi","It prints nothing"], k:0,
+   w:"The body of an if must be indented. Python refuses to run the file."}
+ ],
+ recap:["Python is the security team's glue language.","Run it with `python3` or `python3 file.py`.","`print()` shows output; `#` starts a comment.","Indentation groups code."]},
+
+{t:"Variables and types",
+ sub:"Names for values, and why text isn't a number.",
+ learn:[
+  ["Variables","A variable is a name for a value. You create one by assigning to it with `=`. Pick names that say what the value is, like `target_ip`, not `x`.", String.raw`target_ip = "10.10.10.20"
+port = 445
+print(target_ip, port)`],
+  ["The core types","`str` is text, `int` is a whole number, `float` has a decimal point and `bool` is True or False. `type()` tells you which one you have."],
+  ["Text isn't a number","Anything you read from a file, a log or user input arrives as text. \"22\" + \"1\" joins text into \"221\"; it doesn't add. Convert with `int()` before doing maths."],
+  ["Converting","`int(\"22\")` turns text into a number and `str(22)` turns a number into text. Converting text that isn't a number, like `int(\"ssh\")`, raises a ValueError."]
+ ],
+ real:["On the job","A firewall export lists ports as text. A script that compares `\"8080\" > \"443\"` gets the wrong answer, because text compares character by character. Converting to int first fixes it."],
+ myth:["Python works out what you meant, so types don't matter.","Python won't guess. Mixing text and numbers either raises an error or quietly does the wrong thing."],
+ tryit:{h:"Try types in the prompt", where:"Kali: run python3",
+  p:"Type each line into the Python prompt and predict the result before you press Enter.",
+  code:String.raw`type(22)
+type("22")
+"22" + "1"
+int("22") + 1`},
+ quiz:[
+  {d:1, run:true, q:"What does this print?", code:String.raw`port = "22"
+print(port + "1")`, o:["221","23","An error"], k:0,
+   w:"Both values are text, so `+` joins them."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`port = "22"
+print(int(port) + 1)`, o:["23","221","An error"], k:0,
+   w:"`int()` converts the text to a number first, so this is real addition."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`print(type(3.0))`, o:["<class 'float'>","<class 'int'>","3"], k:0,
+   w:"The decimal point makes it a float, even though the value is a whole number."}
+ ],
+ recap:["Assign with `=`, and use descriptive names.","str, int, float and bool are the core types.","Input from files and logs is text.","Convert with `int()` and `str()` before mixing."]},
+
+{t:"Working with strings",
+ sub:"Slicing, splitting and searching text.",
+ learn:[
+  ["String methods","Strings come with built-in methods. `.lower()` and `.upper()` change case, `.strip()` removes spaces and newlines from the ends, and `.replace()` swaps text.", String.raw`user = "  Admin \n"
+print(user.strip().lower())`],
+  ["Split into parts","`.split()` breaks a string into a list of words. With an argument it splits on that character instead. It's the quickest way to pull fields out of a log line.", String.raw`line = "Failed password for root from 10.0.0.5"
+parts = line.split()
+print(parts[-1])`],
+  ["Searching","`in` checks whether text appears anywhere in a string. `.startswith()` and `.endswith()` check the ends. All of them are case-sensitive."],
+  ["f-strings","Put an f before the quotes and you can drop variables straight into text with braces. They're the clearest way to build output and messages.", String.raw`ip = "10.10.10.20"
+open_ports = 3
+print(f"{ip} has {open_ports} open ports")`]
+ ],
+ real:["On the job","Phishing triage often starts with string checks: does the sender's domain end with your company's domain, or with a look-alike? A couple of `.endswith()` and `.lower()` calls handle that."],
+ myth:["`in` and `==` do the same thing.","`==` needs an exact match. `in` finds text anywhere, so \"admin\" in \"sysadmin\" is True. That difference causes real filtering bugs."],
+ tryit:{h:"Pull fields from a log line", where:"Kali: python3",
+  p:"Split a real-looking SSH log line and print the user and IP address.",
+  code:String.raw`line = "Failed password for invalid user test from 10.10.10.10 port 51234 ssh2"
+parts = line.split()
+print("user:", parts[5])
+print("ip:", parts[7])`},
+ quiz:[
+  {d:2, run:true, q:"What does this print?", code:String.raw`line = "Failed password for root"
+print(line.split()[2])`, o:["for","password","root"], k:0,
+   w:"Counting starts at 0: Failed is 0, password is 1, for is 2."},
+  {d:1, run:true, q:"What does this print?", code:String.raw`print("admin" in "sysadmin")`, o:["True","False","An error"], k:0,
+   w:"`in` matches anywhere inside the string, which is easy to forget when filtering usernames."},
+  {d:1, run:true, q:"What does this print?", code:String.raw`ip = "10.10.10.20"
+print(f"Scanning {ip}")`, o:["Scanning 10.10.10.20","Scanning {ip}","f\"Scanning {ip}\""], k:0,
+   w:"The f prefix fills in the braces with the variable's value."}
+ ],
+ recap:["`.strip()`, `.lower()` and `.split()` do most text clean-up.","`in` matches anywhere; `==` needs an exact match.","Indexes start at 0, and -1 is the last item.","f-strings build readable output."]},
+
+{t:"Lists and loops",
+ sub:"Doing the same thing to many items.",
+ learn:[
+  ["Lists","A list holds items in order, in square brackets. Get an item by its index, starting at 0. `len()` gives the number of items and `.append()` adds one to the end.", String.raw`ports = [22, 80, 443]
+ports.append(3389)
+print(ports[0], len(ports))`],
+  ["for loops","A for loop runs its indented block once for each item. This is how you check every host, every port or every log line.", String.raw`for port in [22, 80, 443]:
+    print("checking", port)`],
+  ["range","`range(1, 5)` produces 1, 2, 3 and 4. The end number is not included. It's handy for port ranges and counting."],
+  ["Filtering as you go","Combine a loop and an if to keep only what matters. Build a new list of matches, then work with that.", String.raw`ports = [21, 22, 23, 80, 443]
+risky = []
+for p in ports:
+    if p in (21, 23):
+        risky.append(p)
+print(risky)`]
+ ],
+ real:["On the job","A vulnerability scanner returns 500 findings. A loop that keeps only the critical ones on internet-facing hosts gives you a short list to fix first."],
+ myth:["`range(1, 5)` includes 5.","The stop value is excluded, so `range(1, 5)` gives 1 to 4. For ports 1 to 1024, write `range(1, 1025)`."],
+ tryit:{h:"Loop over hosts", where:"Kali: python3",
+  p:"Loop over your lab addresses and print a line for each. Then change it to skip the Kali address.",
+  code:String.raw`hosts = ["10.10.10.10", "10.10.10.20"]
+for h in hosts:
+    print("would scan", h)`},
+ quiz:[
+  {d:1, run:true, q:"What does this print?", code:String.raw`ports = [22, 80, 443]
+print(ports[1])`, o:["80","22","443"], k:0,
+   w:"Index 1 is the second item, because counting starts at 0."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`print(list(range(1, 4)))`, o:["[1, 2, 3]","[1, 2, 3, 4]","[0, 1, 2, 3]"], k:0,
+   w:"The start is included and the stop is not."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`total = 0
+for n in [3, 4, 5]:
+    total = total + n
+print(total)`, o:["12","5","345"], k:0,
+   w:"The loop adds each number to the running total: 3, then 7, then 12."}
+ ],
+ recap:["Lists hold ordered items; indexes start at 0.","for loops run once per item.","`range(a, b)` stops before b.","Loop plus if filters a list."]},
+
+{t:"Dictionaries and counting",
+ sub:"Look things up by name, and count what you see.",
+ learn:[
+  ["Dictionaries","A dictionary maps keys to values, in curly braces. Look a value up by its key, the way DNS looks up an address by name.", String.raw`services = {22: "ssh", 80: "http", 443: "https"}
+print(services[443])`],
+  ["Safe lookups","Looking up a missing key with square brackets raises a KeyError. `.get(key, default)` returns the default instead, which is safer with messy data."],
+  ["Counting by hand","To count things, add 1 to a dictionary value each time you see a key. Start missing keys at 0 with `.get()`.", String.raw`counts = {}
+for ip in ["1.1.1.1", "2.2.2.2", "1.1.1.1"]:
+    counts[ip] = counts.get(ip, 0) + 1
+print(counts)`],
+  ["Counter does it for you","`collections.Counter` counts a list in one line, and `.most_common(n)` gives the top n. It's perfect for top talkers and top failed-login sources.", String.raw`from collections import Counter
+fails = ["1.1.1.1", "2.2.2.2", "1.1.1.1"]
+print(Counter(fails).most_common(1))`]
+ ],
+ real:["On the job","“Which IPs failed to log in the most last night?” is a daily SOC question. Read the log, pull out the IPs, put them in a Counter, print `most_common(10)`. Done."],
+ myth:["Dictionaries are only for advanced code.","They're one of the most useful beginner tools: look-up tables, counts and parsed JSON are all dictionaries."],
+ tryit:{h:"Count top talkers", where:"Kali: python3",
+  p:"Count how often each IP appears and print the top two.",
+  code:String.raw`from collections import Counter
+ips = ["10.10.10.20", "10.10.10.30", "10.10.10.20", "8.8.8.8", "10.10.10.20"]
+for ip, n in Counter(ips).most_common(2):
+    print(ip, n)`},
+ quiz:[
+  {d:1, run:true, q:"What does this print?", code:String.raw`services = {22: "ssh", 80: "http"}
+print(services.get(443, "unknown"))`, o:["unknown","None","A KeyError"], k:0,
+   w:"443 isn't a key, so `.get()` returns the default you gave it."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`from collections import Counter
+print(Counter(["a", "b", "a"]).most_common(1))`, o:["[('a', 2)]","{'a': 2}","a"], k:0,
+   w:"`most_common` returns a list of (item, count) pairs, highest first."},
+  {d:2, q:"Why use `counts.get(ip, 0) + 1` instead of `counts[ip] + 1`?", o:["The first time an IP appears it isn't a key yet","It runs faster","It sorts the dictionary"], k:0,
+   w:"Square brackets on a missing key raise a KeyError. `.get` starts new keys at 0."}
+ ],
+ recap:["Dictionaries map keys to values.","`.get(key, default)` avoids KeyErrors.","Count with `.get(k, 0) + 1`, or use Counter.","`most_common(n)` gives the top n."]},
+
+{t:"Conditions and functions",
+ sub:"Make decisions, then package code you'll reuse.",
+ learn:[
+  ["if, elif, else","An if runs its block only when the condition is true. elif checks the next condition and else catches everything left. Only the first matching branch runs.", String.raw`fails = 7
+if fails > 10:
+    print("block")
+elif fails > 5:
+    print("warn")
+else:
+    print("ok")`],
+  ["Comparisons","`==` means equal and `!=` means not equal. `<`, `>`, `<=` and `>=` compare numbers. Combine conditions with `and`, `or` and `not`. A single `=` assigns; it never compares."],
+  ["Functions","`def` defines a function: a named block you can call again and again. Parameters go in the brackets, and `return` sends a result back.", String.raw`def is_admin_port(port):
+    return port in (22, 3389, 5985)
+
+print(is_admin_port(3389))`],
+  ["Why functions matter","Functions stop you copying code around. Fix a bug once and every caller gets the fix. They also make scripts easier to test and read."]
+ ],
+ real:["On the job","Detection rules are functions in disguise: given an event, return True if it's suspicious. Writing small functions like `is_off_hours(timestamp)` is exactly how SIEM and SOAR logic is built."],
+ myth:["A function that prints a result returns it too.","print shows a value on screen; return hands it back to the caller. A function without return gives back None."],
+ tryit:{h:"Write a tiny rule", where:"Kali: python3",
+  p:"Write a function that flags a login as suspicious after more than five failures, then test it with a few values.",
+  code:String.raw`def suspicious(fails):
+    return fails > 5
+
+for n in [2, 6, 11]:
+    print(n, suspicious(n))`},
+ quiz:[
+  {d:1, run:true, q:"What does this print?", code:String.raw`fails = 7
+if fails > 10:
+    print("block")
+elif fails > 5:
+    print("warn")
+else:
+    print("ok")`, o:["warn","block","ok"], k:0,
+   w:"7 isn't over 10, but it is over 5, so the elif branch runs."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`def risk(likelihood, impact):
+    return likelihood * impact
+
+print(risk(3, 4))`, o:["12","7","34"], k:0,
+   w:"The function multiplies its two arguments and returns 12."},
+  {d:3, q:"What does this print?", code:String.raw`def check(port):
+    print("checked", port)
+
+result = check(22)
+print(result)`, o:["checked 22, then None","checked 22, then 22","None only"], k:0,
+   w:"The function prints but never returns, so `result` is None."}
+ ],
+ recap:["if, elif and else choose a branch.","`==` compares; `=` assigns.","`def` packages code; `return` hands back a result.","Small functions make detection logic readable."]},
+
+{t:"Reading files and logs",
+ sub:"Where most security scripts start.",
+ learn:[
+  ["Open with with","`with open(path) as f:` opens a file and closes it automatically when the block ends, even if an error happens. Use it every time.", String.raw`with open("ssh.log") as f:
+    for line in f:
+        print(line.strip())`],
+  ["Line by line","Looping over a file gives one line at a time, so even a huge log fits in memory. Each line ends with a newline, which `.strip()` removes."],
+  ["Writing files","Open with \"w\" to write a new file, which replaces anything already there. Use \"a\" to append. Writing your results to a file makes them easy to attach to a ticket."],
+  ["Messy logs","Real logs contain odd characters. `open(path, errors=\"replace\")` swaps unreadable bytes for a placeholder instead of crashing halfway through."]
+ ],
+ real:["On the job","An incident responder receives a 2 GB web server log. Opening it in Notepad hangs the laptop. A Python loop reads it line by line, keeps only requests from the suspect IP and writes them to a small file."],
+ myth:["You must load the whole file before searching it.","Looping over the file object reads one line at a time. That's faster to start and works on files bigger than your RAM."],
+ tryit:{h:"Count failed SSH logins", where:"Kali terminal",
+  p:"Export SSH logs to a file, then count the failures with Python. Fail a login first so there's something to find.",
+  code:String.raw`sudo journalctl -u ssh > ssh.log
+python3 -c '
+count = 0
+with open("ssh.log", errors="replace") as f:
+    for line in f:
+        if "Failed password" in line:
+            count += 1
+print(count, "failed logins")
+'`},
+ quiz:[
+  {d:1, q:"What does `with open(...) as f:` give you that plain `open()` doesn't?", o:["The file closes automatically when the block ends","The file opens faster","The file is encrypted"], k:0,
+   w:"The with block guarantees the file is closed, even if an error interrupts it."},
+  {d:2, q:"You open report.txt with mode \"w\". What happens to what was already in it?", o:["It's replaced","New text is added to the end","Python refuses to open it"], k:0,
+   w:"\"w\" truncates the file. Use \"a\" to append instead."},
+  {d:2, q:"Why loop over a log file line by line instead of reading it all at once?", o:["It handles files bigger than memory","It sorts the lines","It removes duplicate lines"], k:0,
+   w:"Only one line is held at a time, so file size stops mattering."}
+ ],
+ recap:["Always open files with `with`.","Loop over the file to read line by line.","\"w\" replaces; \"a\" appends.","`errors=\"replace\"` survives messy logs."]},
+
+{t:"Regular expressions",
+ sub:"Find patterns, not just fixed text.",
+ learn:[
+  ["What regex is","A regular expression is a pattern that matches text. Python's `re` module uses it to find IP addresses, usernames or error codes inside messy lines. Write patterns as raw strings, like `r\"...\"`."],
+  ["Building blocks","`\\d` matches a digit and `\\S` any non-space character. `+` means one or more. `.` matches any character, so escape it as `\\.` when you mean a real dot."],
+  ["Capture groups","Brackets capture part of a match. `re.search` returns a match object, and `.group(1)` gives you what the first brackets captured.", String.raw`import re
+line = "Failed password for root from 10.0.0.5 port 22"
+m = re.search(r"from (\S+)", line)
+if m:
+    print(m.group(1))`],
+  ["findall","`re.findall` returns every match in the text as a list. It's the quickest way to pull all the IP addresses or numbers out of a line."]
+ ],
+ real:["On the job","Threat intel reports list indicators like IPs and domains buried in paragraphs. A regex pulls them out in seconds so they can be blocked or searched for in your SIEM."],
+ myth:["You need to memorise regex syntax.","Nobody does. Learn the few building blocks here, then test patterns on a site like regex101 or in the Python prompt."],
+ tryit:{h:"Extract IPs from text", where:"Kali: python3",
+  p:"Pull every IPv4-looking address out of a block of text. The pattern is simple, so it can match impossible values like 999.1.1.1; real tools also validate.",
+  code:String.raw`import re
+text = "Blocked 10.10.10.10 and 203.0.113.7; allowed 10.10.10.20"
+print(re.findall(r"\d+\.\d+\.\d+\.\d+", text))`},
+ quiz:[
+  {d:2, run:true, q:"What does this print?", code:String.raw`import re
+m = re.search(r"from (\S+)", "Failed password for root from 10.0.0.5 port 22")
+print(m.group(1))`, o:["10.0.0.5","root","from 10.0.0.5"], k:0,
+   w:"The brackets capture the non-space text right after \"from \"."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`import re
+print(re.findall(r"\d+", "port 22 and 443"))`, o:["['22', '443']","[22, 443]","22443"], k:0,
+   w:"findall returns every match as a string inside a list."},
+  {d:3, q:"Why write the pattern as `r\"\\d+\"` instead of `\"\\d+\"`?", o:["The r keeps backslashes exactly as typed","It makes the regex case-insensitive","It runs faster"], k:0,
+   w:"A raw string stops Python treating backslashes as its own escapes before the regex engine sees them."}
+ ],
+ recap:["`re.search` finds the first match; `re.findall` finds them all.","Capture groups pull out just the part you need.","Use raw strings for patterns.","Escape a real dot as `\\.`."]},
+
+{t:"Hashing and encoding",
+ sub:"Fingerprints, file checks and why Base64 isn't security.",
+ learn:[
+  ["hashlib","Python's `hashlib` computes hashes like SHA-256. Hash functions work on bytes, so encode text first with `.encode()`. `.hexdigest()` gives the familiar hex string.", String.raw`import hashlib
+print(hashlib.sha256("hello".encode()).hexdigest())`],
+  ["Hashing a file","Read the file in binary mode and feed it to the hash in chunks, so large files don't fill memory. Compare the result with the publisher's hash to check integrity."],
+  ["Encoding isn't encryption","Base64 turns bytes into safe text for email or URLs. Anyone can reverse it with no key. Seeing Base64 in a script or config means obscured, not protected."],
+  ["Passwords need more","SHA-256 is too fast for storing passwords. Use a slow, salted algorithm such as Argon2 or bcrypt, through a library like argon2-cffi. Never write your own."]
+ ],
+ real:["On the job","Malware analysts share file hashes, not files. Searching a SHA-256 in a threat intel service tells you in seconds whether a suspicious attachment is already known to be malicious."],
+ myth:["Base64 hides secrets.","Base64 is encoding: one line of Python reverses it. Attackers use it to dodge simple text filters, not to protect anything."],
+ tryit:{h:"Hash a file in chunks", where:"Kali: save as hashfile.py",
+  p:"Hash any file and compare the result with `sha256sum` on the same file. They should match exactly.",
+  code:String.raw`import hashlib, sys
+h = hashlib.sha256()
+with open(sys.argv[1], "rb") as f:
+    for chunk in iter(lambda: f.read(65536), b""):
+        h.update(chunk)
+print(h.hexdigest())
+# run: python3 hashfile.py /etc/hostname
+# compare: sha256sum /etc/hostname`},
+ quiz:[
+  {d:2, run:true, q:"What does this print?", code:String.raw`import hashlib
+print(len(hashlib.sha256(b"x").hexdigest()))`, o:["64","32","256"], k:0,
+   w:"SHA-256 is 256 bits, which is 32 bytes, which is 64 hex characters."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`import base64
+print(base64.b64decode("aGk=").decode())`, o:["hi","aGk=","An error, because you need a key"], k:0,
+   w:"No key needed. That's why Base64 is encoding, not encryption."},
+  {d:1, q:"Which should you use to store user passwords?", o:["Argon2 or bcrypt","SHA-256 on its own","Base64"], k:0,
+   w:"Password hashes must be slow and salted so stolen hashes are expensive to crack."}
+ ],
+ recap:["Hash bytes: `.encode()` text first.","Hash big files in chunks, in binary mode.","Base64 is reversible encoding.","Passwords need Argon2 or bcrypt."]},
+
+{t:"Sockets and port checks",
+ sub:"Talk to the network directly, in your lab only.",
+ learn:[
+  ["The socket module","A socket is one end of a network connection. `socket.socket()` makes a TCP socket, and `connect_ex((host, port))` tries to connect. It returns 0 when the port is open."],
+  ["Always set a timeout","Without a timeout, a filtered port can hang your script for a long time. `s.settimeout(1)` gives up after a second. Close each socket when you're done with it."],
+  ["A tiny port check","Loop over a few ports and report the open ones. This is a TCP connect check: the full handshake completes, unlike Nmap's SYN scan.", String.raw`import socket
+host = "10.10.10.20"
+for port in [22, 135, 445, 3389]:
+    s = socket.socket()
+    s.settimeout(1)
+    if s.connect_ex((host, port)) == 0:
+        print(port, "open")
+    s.close()`],
+  ["Permission still applies","A Python scanner is still a scanner. Only point it at systems you own or have written permission to test. Your internal lab is fine."]
+ ],
+ real:["On the job","Tools like Nmap are better for real scanning. But a 10-line socket check is perfect inside automation, for example confirming a service came back up after a patch or that a port is closed after a firewall change."],
+ myth:["Writing your own scanner makes you stealthier than Nmap.","A connect scan completes the handshake, so it's noisier than a SYN scan and easily logged. Use Python for automation, not stealth."],
+ tryit:{h:"Check your target's ports", where:"Kali, against the Windows target",
+  p:"Save the learn card's code as portcheck.py and run it. Then compare the result with `sudo nmap -sS -p 22,135,445,3389 10.10.10.20`.",
+  code:String.raw`python3 portcheck.py
+sudo nmap -sS -p 22,135,445,3389 10.10.10.20`},
+ quiz:[
+  {d:1, q:"What does `connect_ex` return when a port is open?", o:["0","1","True"], k:0,
+   w:"It returns an error number, and 0 means no error: the connection succeeded."},
+  {d:2, q:"Why call `s.settimeout(1)` before connecting?", o:["So filtered ports don't hang the script","To make the connection encrypted","To scan UDP instead"], k:0,
+   w:"A firewall that silently drops packets never answers. The timeout stops your script waiting."},
+  {d:2, q:"How does this Python check differ from `nmap -sS`?", o:["It completes the full TCP handshake","It never sends a SYN","It only works on UDP"], k:0,
+   w:"connect_ex does a full connect. Nmap's -sS sends SYN and never completes the handshake."}
+ ],
+ recap:["`connect_ex` returns 0 for an open port.","Always set a timeout and close sockets.","A connect check completes the handshake.","Lab or written permission only."]},
+
+{t:"IP addresses and JSON",
+ sub:"Two everyday formats in security automation.",
+ learn:[
+  ["The ipaddress module","`ipaddress` understands IPv4 and IPv6. It can tell you if an address is private and whether it sits inside a network, so you don't parse dots by hand.", String.raw`import ipaddress
+ip = ipaddress.ip_address("10.10.10.20")
+print(ip.is_private, ip in ipaddress.ip_network("10.10.10.0/24"))`],
+  ["JSON","Most security APIs, SIEM exports and cloud logs use JSON. `json.loads()` turns JSON text into Python dictionaries and lists, and `json.dumps()` turns them back into text."],
+  ["Reading nested data","Parsed JSON is just dictionaries and lists inside each other. Reach into it step by step with keys and indexes.", String.raw`import json
+alert = json.loads('{"rule": "brute force", "src": {"ip": "203.0.113.7"}, "count": 42}')
+print(alert["src"]["ip"], alert["count"])`],
+  ["Pretty printing","`json.dumps(data, indent=2)` prints JSON with line breaks and indents, which makes a messy API response readable in seconds."]
+ ],
+ real:["On the job","A SIEM exports 300 alerts as JSON. A script loads them, keeps the ones whose source IP isn't private, and prints a short list of external addresses to check against threat intel."],
+ myth:["JSON is a Python thing.","JSON is a language-neutral text format used everywhere on the web. Python just happens to map it neatly onto dictionaries and lists."],
+ tryit:{h:"Filter alerts by source", where:"Kali: python3",
+  p:"Load a small list of alerts and print only the ones from public IP addresses.",
+  code:String.raw`import json, ipaddress
+data = '[{"src": "10.10.10.10"}, {"src": "203.0.113.7"}, {"src": "8.8.8.8"}]'
+for alert in json.loads(data):
+    if not ipaddress.ip_address(alert["src"]).is_private:
+        print("external:", alert["src"])`},
+ quiz:[
+  {d:1, run:true, q:"What does this print?", code:String.raw`import ipaddress
+print(ipaddress.ip_address("8.8.8.8").is_private)`, o:["False","True","An error"], k:0,
+   w:"8.8.8.8 is a public address, so it isn't private."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`import json
+print(json.loads('{"user": "kali", "fails": 3}')["fails"])`, o:["3","\"3\"","fails"], k:0,
+   w:"JSON numbers become Python ints, so you get 3, not text."},
+  {d:2, run:true, q:"What does this print?", code:String.raw`import ipaddress
+net = ipaddress.ip_network("192.168.1.0/26")
+print(ipaddress.ip_address("192.168.1.70") in net)`, o:["False","True","An error"], k:0,
+   w:"A /26 starting at .0 covers .0 to .63, so .70 is outside it."}
+ ],
+ recap:["`ipaddress` handles private checks and subnet membership.","`json.loads` turns JSON text into Python data.","Reach into nested data one key at a time.","`json.dumps(..., indent=2)` makes it readable."]},
+
+{t:"Errors and arguments",
+ sub:"Scripts that handle bad input and take options.",
+ learn:[
+  ["Exceptions","When something goes wrong, Python raises an exception, like FileNotFoundError or ValueError. Unhandled, it stops the script with a traceback."],
+  ["try and except","Wrap risky code in try, and handle a specific exception in except. Catch the errors you expect; a bare `except:` hides real bugs.", String.raw`try:
+    port = int("ssh")
+except ValueError:
+    print("not a port number")`],
+  ["Fail safely","If a security check can't complete, decide what happens. A function that returns True for “allowed” when it hits an error is failing open, which is OWASP 2025 A10. Default to deny."],
+  ["Command-line arguments","`argparse` turns `python3 tool.py ssh.log --threshold 5` into named values, with help text for free. It makes a script reusable without editing the code.", String.raw`import argparse
+p = argparse.ArgumentParser(description="Count failed logins")
+p.add_argument("logfile")
+p.add_argument("--threshold", type=int, default=5)
+args = p.parse_args()
+print(args.logfile, args.threshold)`]
+ ],
+ real:["On the job","A scheduled script crashes at 3am because one log line is malformed, and nobody notices for a week. Handling the expected error, logging it and carrying on keeps monitoring alive."],
+ myth:["Catching every exception with a bare except is the safe choice.","It hides bugs and can even catch Ctrl+C. Catch the specific errors you expect and let real problems surface."],
+ tryit:{h:"Make it robust", where:"Kali: save as safe_read.py",
+  p:"Run it with a file that exists, then with one that doesn't, and see the difference.",
+  code:String.raw`import sys
+try:
+    with open(sys.argv[1]) as f:
+        print(sum(1 for _ in f), "lines")
+except FileNotFoundError:
+    print("No such file:", sys.argv[1])
+    sys.exit(1)
+# python3 safe_read.py /etc/hostname
+# python3 safe_read.py nope.log`},
+ quiz:[
+  {d:1, run:true, q:"What does this print?", code:String.raw`try:
+    port = int("ssh")
+    print("port", port)
+except ValueError:
+    print("bad input")`, o:["bad input","port ssh","A traceback"], k:0,
+   w:"`int(\"ssh\")` raises ValueError, so the except block runs instead."},
+  {d:3, q:"An access check hits a database error and returns True. What's wrong?", o:["It fails open, so errors grant access","It's too slow","It logs too much"], k:0,
+   w:"When a check can't finish, deny by default. Failing open turns an outage into a breach."},
+  {d:2, q:"What does argparse give you?", o:["Named command-line options with built-in help","Faster loops","Automatic encryption"], k:0,
+   w:"Users can change inputs without editing the code, and `--help` documents the options."}
+ ],
+ recap:["Exceptions stop scripts unless handled.","Catch specific errors, not everything.","Security checks should fail safe.","argparse makes scripts reusable."]},
+
+{t:"Cloud checks with boto3",
+ sub:"Use Python to audit an AWS account.",
+ learn:[
+  ["What boto3 is","boto3 is the official AWS SDK for Python. Install it with `pip install boto3`. Cloud security teams use it to audit settings across many accounts and services."],
+  ["Credentials","boto3 finds credentials from `aws configure`, environment variables or an IAM role. Never put access keys in your code. Use a read-only role for audits, following least privilege."],
+  ["Asking AWS questions","A client object exposes API calls as methods. Responses are dictionaries, the same as parsed JSON.", String.raw`import boto3
+s3 = boto3.client("s3")
+for b in s3.list_buckets()["Buckets"]:
+    print(b["Name"])`],
+  ["Handle missing settings","Some calls raise ClientError when a setting doesn't exist, such as a bucket with no public access block. Catch it and treat the bucket as needing review."]
+ ],
+ real:["On the job","Misconfigured cloud storage is behind many data exposures, and it's OWASP 2025 A02. A short boto3 script that flags buckets without a public access block is a classic cloud security interview project."],
+ myth:["A script that finds no problems proves the account is safe.","It only checks what you wrote it to check. Account-level settings, bucket policies and ACLs all affect public access too. Treat scripts as one layer."],
+ tryit:{h:"Flag S3 buckets to review", where:"Your own AWS account, read-only role",
+  p:"This checks each bucket's own public access block only; account-level settings can also block public access. Use your own free-tier account, never an employer's without approval.",
+  code:String.raw`import boto3
+from botocore.exceptions import ClientError
+s3 = boto3.client("s3")
+for b in s3.list_buckets()["Buckets"]:
+    name = b["Name"]
+    try:
+        cfg = s3.get_public_access_block(Bucket=name)
+        ok = all(cfg["PublicAccessBlockConfiguration"].values())
+    except ClientError:
+        ok = False
+    print("OK    " if ok else "REVIEW", name)`},
+ quiz:[
+  {d:1, q:"Where should a boto3 script get its AWS credentials?", o:["From aws configure, environment variables or an IAM role","Hard-coded at the top of the script","From a comment in the code"], k:0,
+   w:"Hard-coded keys leak through repos and screenshots. Let boto3 find credentials outside the code."},
+  {d:2, q:"Why give an audit script a read-only role?", o:["If the script or key leaks, it can't change anything","Read-only roles run faster","AWS requires it"], k:0,
+   w:"Least privilege limits the damage from a compromised script or credential."},
+  {d:2, q:"In the Try it script, what does it mean when `get_public_access_block` raises ClientError?", o:["The bucket has no bucket-level public access block, so review it","The bucket is definitely public","The bucket was deleted"], k:0,
+   w:"No block at bucket level doesn't prove it's public, but it means you should check the account settings and bucket policy."}
+ ],
+ recap:["boto3 is the AWS SDK for Python.","Credentials come from outside the code.","Use read-only roles for audits.","A clean script result is one layer, not proof."]},
+
+{t:"Capstone: a brute-force detector",
+ sub:"Put the whole track together in one tool.",
+ learn:[
+  ["The goal","Read an SSH log, find failed logins, count them per source IP and print the IPs over a threshold. It uses files, regex, Counter, functions, error handling and argparse."],
+  ["The plan","Break it into steps before writing code: get arguments, open the file safely, match each line, count, then report. Each step is a few lines you already know."],
+  ["The core","The heart of the tool is a loop with a regex and a Counter.", String.raw`import re
+from collections import Counter
+pattern = re.compile(r"Failed password .* from (\S+)")
+counts = Counter()
+for line in ["Failed password for root from 10.0.0.5 port 22 ssh2"]:
+    m = pattern.search(line)
+    if m:
+        counts[m.group(1)] += 1
+print(counts)`],
+  ["Make it yours","Once it works, extend it: add a `--top` option, flag failures followed by a success from the same IP, or output JSON for a SIEM. Then write it up on GitHub."]
+ ],
+ real:["On the job","Interviewers love a small, working tool you can explain line by line. “I wrote a script that finds brute-force sources in SSH logs” shows Python, log analysis and security thinking at once."],
+ myth:["Portfolio projects have to be big to count.","A small tool with a clear README, sample output and an honest list of limitations beats an unfinished large one."],
+ tryit:{h:"Build the detector", where:"Kali: save as bruteforce.py",
+  p:"Fail a few SSH logins on Kali first, export the log, then run the tool against it.",
+  code:String.raw`import argparse, re, sys
+from collections import Counter
+
+p = argparse.ArgumentParser(description="Find brute-force sources in an SSH log")
+p.add_argument("logfile")
+p.add_argument("--threshold", type=int, default=3)
+args = p.parse_args()
+
+pattern = re.compile(r"Failed password .* from (\S+)")
+counts = Counter()
+try:
+    with open(args.logfile, errors="replace") as f:
+        for line in f:
+            m = pattern.search(line)
+            if m:
+                counts[m.group(1)] += 1
+except FileNotFoundError:
+    sys.exit(f"No such file: {args.logfile}")
+
+for ip, n in counts.most_common():
+    if n >= args.threshold:
+        print(f"{ip}: {n} failed logins")
+# sudo journalctl -u ssh > ssh.log
+# python3 bruteforce.py ssh.log --threshold 2`},
+ quiz:[
+  {d:2, q:"Which part of the detector pulls the source IP out of each line?", o:["The regex capture group","The Counter","argparse"], k:0,
+   w:"`(\\S+)` after \"from \" captures the IP, and `.group(1)` returns it."},
+  {d:2, q:"Why compile the regex once with `re.compile` outside the loop?", o:["It avoids re-processing the pattern on every line","It makes the regex case-insensitive","It's required for capture groups"], k:0,
+   w:"Python caches patterns anyway, but compiling once is clearer and avoids repeated work on huge logs."},
+  {d:3, q:"Which extension would best catch a successful brute-force attack?", o:["Flag an IP with many failures followed by a success","Print the log in colour","Sort IPs alphabetically"], k:0,
+   w:"Many failures then a success from the same source is a classic sign that a password was guessed."}
+ ],
+ recap:["Plan the steps, then code each one.","Regex extracts, Counter counts, argparse configures.","Handle missing files cleanly.","Write it up on GitHub with sample output."]}
+];
 /* ==========================================================================
    APP
    ========================================================================== */
+const initialHash = location.hash; // read before any tab renders and rewrites it
 const store = {
   ok: (() => { try { localStorage.setItem("cr2-test", "1"); localStorage.removeItem("cr2-test"); return true; } catch(e){ return false; } })(),
   get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
   set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
   del(k){ try { localStorage.removeItem(k); } catch(e){} }
 };
-// Answers are keyed "day.question" and store the index in the authored option list.
-let answers = store.get("cr2-answers", {});
-if (!answers || typeof answers !== "object") answers = {};
+const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
 
-const feed = document.getElementById("feed");
-const cards = [];
 const LEVEL = {1:"Easy", 2:"Medium", 3:"Hard"};
 const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-function weekOf(i){ return WEEKS[Math.floor(i/7)]; }
 function el(tag, cls, html){ const e = document.createElement(tag); if(cls) e.className = cls; if(html !== undefined) e.innerHTML = html; return e; }
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function fmt(s){ return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>"); }
 function codeHtml(src){ return src.split("\n").map(l => `<span${/^\s*#/.test(l) ? ' class="c"' : ""}>${esc(l)}</span>`).join(""); }
+function codeBlock(src, where, copy){
+  return `<div class="code">${copy || where ? `<div class="ch"><span class="where">${esc(where || "")}</span>${copy ? `<button class="cp" type="button" aria-label="Copy code">Copy</button>` : ""}</div>` : ""}<pre><code>${codeHtml(src)}</code></pre></div>`;
+}
+function wireCopy(scope, text){
+  const cp = scope.querySelector(".cp");
+  if (!cp) return;
+  cp.addEventListener("click", () => {
+    const pre = cp.closest(".code").querySelector("pre");
+    const fallback = () => {
+      // Clipboard blocked: select the code so a long-press can copy it.
+      try { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch(e){}
+      cp.textContent = "Selected"; setTimeout(() => cp.textContent = "Copy", 1600);
+    };
+    try { navigator.clipboard.writeText(text).then(() => { cp.textContent = "Copied"; setTimeout(() => cp.textContent = "Copy", 1400); }, fallback); }
+    catch(e){ fallback(); }
+  });
+}
+// Two taps to confirm, inside the page (some hosts block confirm() dialogs).
+function twoTap(btn, armedText, action){
+  const label = btn.textContent; let armed = null;
+  btn.addEventListener("click", () => {
+    if (!armed){ btn.textContent = armedText; armed = setTimeout(() => { armed = null; btn.textContent = label; }, 4000); return; }
+    clearTimeout(armed); armed = null; action();
+    btn.textContent = "Done"; setTimeout(() => btn.textContent = label, 1800);
+  });
+}
 
 // Stable option shuffle per question, so the right answer isn't always in the same spot.
 function seedOf(s){ let h = 2166136261; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -1165,232 +1940,390 @@ function order(n, seed){
   return a;
 }
 
-function quizStats(dn){
-  const d = DAYS[dn-1]; let done = 0, right = 0;
-  d.quiz.forEach((q, qi) => { const a = answers[dn + "." + qi]; if (Number.isInteger(a)){ done++; if (a === q.k) right++; } });
+/* ---------- Tabs and their feeds ---------- */
+const TABS = {
+  study:{el:document.getElementById("v-study"), cards:[], current:0, accent:"var(--t-study)"},
+  feed: {el:document.getElementById("v-feed"),  cards:[], current:0, accent:"var(--t-feed)"},
+  py:   {el:document.getElementById("v-py"),    cards:[], current:0, accent:"var(--t-py)"}
+};
+let active = "study";
+
+function addCard(tab, {c, id, label, group, html, extra}){
+  const T = TABS[tab];
+  const s = el("section","card");
+  s.style.setProperty("--c", c);
+  if (id) s.id = id;
+  s.innerHTML = `<div class="in">${html}</div>`;
+  T.el.appendChild(s);
+  const card = Object.assign({el:s, label, group, tab}, extra || {});
+  T.cards.push(card);
+  s.addEventListener("scroll", () => { if (tab === active && T.cards[T.current] === card) updateMore(); }, {passive:true});
+  if (T.io) T.io.observe(s);
+  return s;
+}
+
+/* A quiz card. persist: {obj, key, save} to remember the answer, or null for the feed. */
+function buildQuiz(card, q, persist, onChange){
+  const btns = [...card.querySelectorAll(".opt")], why = card.querySelector(".why"), retry = card.querySelector(".retry");
+  const reveal = (pick, fromUser) => {
+    btns.forEach(b => {
+      const j = +b.dataset.j, mk = b.querySelector(".mk"), st = b.querySelector(".st");
+      b.setAttribute("aria-disabled", "true");
+      if (j === q.k){ b.classList.add("right"); mk.textContent = "✓"; st.textContent = j === pick ? " (your answer, correct)" : " (correct answer)"; }
+      else if (j === pick){ b.classList.add("wrong"); mk.textContent = "✗"; st.textContent = " (your answer)"; }
+    });
+    why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}`;
+    why.classList.add("show");
+    if (retry) retry.classList.add("show");
+    if (fromUser){ why.focus({preventScroll:true}); why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"}); }
+  };
+  const clear = () => {
+    btns.forEach(b => { b.removeAttribute("aria-disabled"); b.classList.remove("right","wrong"); b.querySelector(".mk").textContent = ""; b.querySelector(".st").textContent = ""; });
+    why.classList.remove("show"); why.innerHTML = ""; if (retry) retry.classList.remove("show");
+  };
+  btns.forEach(b => b.addEventListener("click", () => {
+    if (b.getAttribute("aria-disabled") === "true") return;
+    const pick = +b.dataset.j;
+    if (persist){ persist.obj[persist.key] = pick; persist.save(); }
+    reveal(pick, true);
+    onChange(pick);
+  }));
+  if (retry) retry.addEventListener("click", () => {
+    if (persist){ delete persist.obj[persist.key]; persist.save(); }
+    clear(); onChange(null);
+    btns[0].focus({preventScroll:true});
+    card.scrollTo({top:0, behavior: reduceMotion() ? "auto" : "smooth"});
+  });
+  if (persist && Number.isInteger(persist.obj[persist.key])) reveal(persist.obj[persist.key], false);
+  return clear;
+}
+function quizHtml(q, tagHtml, withRetry){
+  const ord = order(q.o.length, seedOf(q.q + (q.code || "")));
+  return `${tagHtml}
+    ${q.d ? `<div class="lvl">${LEVEL[q.d]}</div>` : ""}
+    <h2 class="q">${fmt(q.q)}</h2>
+    ${q.code ? codeBlock(q.code, "", false) : ""}
+    <div class="opts" role="group" aria-label="Answers">${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
+    <div class="why" tabindex="-1" aria-live="polite"></div>
+    ${withRetry ? `<button class="btn ghost retry" type="button">Try again</button>` : ""}`;
+}
+
+/* ---------- Study and Python tracks (same card engine) ---------- */
+function makeTrack(tab, items, cfg){
+  const answers = asObj(store.get(cfg.answersKey, {}));
+  const save = () => store.set(cfg.answersKey, answers);
+  const T = TABS[tab];
+  Object.assign(T, {items, cfg, answers, recapScores:{}, resetters:{}});
+  T.cardCount = d => 2 + d.learn.length + (d.real ? 1 : 0) + (d.myth ? 1 : 0) + (d.tryit ? 1 : 0) + (d.review ? d.review.length : 0) + d.quiz.length;
+
+  items.forEach((d, i) => {
+    const g = cfg.groupOf(i), dn = i + 1, c = g.c;
+    let n = 0;
+    const make = (label, html) => { const id = cfg.id(dn, n); n++; return addCard(tab, {c, id, label, group:i, html}); };
+    const tag = (kind, extra) => `<div class="tag"><span>${kind}</span>${cfg.word} ${dn}${extra ? " · " + extra : ""}</div>`;
+
+    make("Topic", `<div class="tag"><span>${cfg.word} ${dn}</span>${esc(g.label)}</div><h1>${fmt(d.t)}</h1>
+      ${d.sub ? `<p>${fmt(d.sub)}</p>` : ""}
+      <div class="hint">${T.cardCount(d)} cards · ${d.quiz.length} questions · swipe up ↑</div>`);
+
+    d.learn.forEach(([h, p, code], j) => {
+      const s = make("Learn " + (j+1) + "/" + d.learn.length,
+        `${tag("Learn", (j+1) + " of " + d.learn.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, cfg.codeLabel || "", true) : ""}`);
+      if (code) wireCopy(s, code);
+    });
+
+    if (d.real) make(cfg.realLabel, `${tag(cfg.realLabel)}<h2>${fmt(d.real[0])}</h2><p>${fmt(d.real[1])}</p>`);
+
+    if (d.myth) make("Myth vs fact", `${tag("Myth vs fact")}<h2>Don't fall for it</h2>
+      <div class="mf"><div class="m"><b>Myth</b>${fmt(d.myth[0])}</div><div class="f"><b>Fact</b>${fmt(d.myth[1])}</div></div>`);
+
+    if (d.tryit){
+      const t = d.tryit;
+      const s = make("Try it", `${tag("Try it")}<h2>${fmt(t.h)}</h2>${t.where && !t.code ? `<div class="where">${esc(t.where)}</div>` : ""}<p>${fmt(t.p)}</p>
+        ${t.code ? codeBlock(t.code, t.where, true) : ""}`);
+      if (t.code) wireCopy(s, t.code);
+    }
+
+    (d.review || []).forEach(([h, p], j) => make("Review " + (j+1) + "/" + d.review.length,
+      `${tag("Review", (j+1) + " of " + d.review.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>`));
+
+    T.resetters[dn] = [];
+    d.quiz.forEach((q, qi) => {
+      const s = make("Quiz " + (qi+1) + "/" + d.quiz.length, quizHtml(q, tag("Quiz", (qi+1) + " of " + d.quiz.length), true));
+      T.resetters[dn].push(buildQuiz(s, q, {obj:answers, key:dn + "." + qi, save}, pick => updateScore(tab, pick !== null)));
+    });
+
+    const last = dn === items.length;
+    const rc = make("Recap", `${tag("Recap")}<h2>${last ? cfg.lastRecap : cfg.word + " " + dn + " in a nutshell"}</h2>
+      <ul class="recap">${d.recap.map(r => `<li>${fmt(r)}</li>`).join("")}</ul>
+      <div class="dscore"></div>
+      <div class="row"><button class="btn nx">${last ? "Finish" : "Start " + cfg.word + " " + (dn+1)}</button><button class="btn ghost redo" type="button">Redo this quiz</button></div>`);
+    T.recapScores[dn] = rc.querySelector(".dscore");
+    rc.querySelector(".nx").addEventListener("click", () => last ? go(tab, T.cards.length-1) : goGroup(tab, dn));
+    rc.querySelector(".redo").addEventListener("click", () => {
+      d.quiz.forEach((q, qi) => delete answers[dn + "." + qi]);
+      save();
+      T.resetters[dn].forEach(f => f());
+      updateScore(tab, false);
+      go(tab, T.cards.findIndex(c => c.group === i && c.label.startsWith("Quiz 1/")));
+    });
+  });
+}
+function trackStats(tab, dn){
+  const T = TABS[tab], d = T.items[dn-1]; let done = 0, right = 0;
+  d.quiz.forEach((q, qi) => { const a = T.answers[dn + "." + qi]; if (Number.isInteger(a)){ done++; if (a === q.k) right++; } });
   return {done, right, total: d.quiz.length};
 }
-const TOTAL_Q = DAYS.reduce((s, d) => s + d.quiz.length, 0);
-const cardCount = d => 3 + d.learn.length + (d.myth ? 1 : 0) + (d.tryit ? 1 : 0) + (d.review ? d.review.length : 0) + d.quiz.length;
+function trackTotals(tab){
+  const T = TABS[tab]; let done = 0, right = 0, total = 0;
+  T.items.forEach((d, i) => { const s = trackStats(tab, i+1); done += s.done; right += s.right; total += s.total; });
+  return {done, right, total};
+}
 
-// Intro card
-const intro = el("section","card");
-intro.style.setProperty("--c","var(--w1)");
-intro.id = "start";
-intro.innerHTML = `<div class="in">
-  <div class="tag"><span>Stage 1</span>28 days · ${DAYS.reduce((s, d) => s + cardCount(d), 0)} cards · ${TOTAL_Q} questions</div>
+/* ---------- Study tab ---------- */
+const S = TABS.study;
+const studyIntroCount = () => DAYS.reduce((s, d) => s + S.cardCount(d), 0);
+addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
+  <div class="tag"><span>Stage 1</span><span id="studyCount"></span></div>
   <h1>Cyber Scroll</h1>
-  <p>Swipe up through one idea at a time. Each day mixes short lessons, a real incident, a lab task and a quiz.</p>
-  <div class="legend"><span>Learn</span><span>Real world</span><span>Myth vs fact</span><span>Try it</span><span>Quiz</span><span>Recap</span></div>
+  <p>Swipe up through one idea at a time. Each day mixes short lessons, a real incident, a lab task and a quiz. Swipe up ↑<span class="kb"> or press the down arrow</span>.</p>
   <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
-  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost" id="pick">Choose a day</button></div>
-  <div class="hint">Swipe up ↑<span class="kb"> or press the down arrow</span></div></div>`;
-feed.appendChild(intro); cards.push({el:intro, day:-1, label:"Start"});
+  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost pick" type="button">Choose a day</button></div>`});
+makeTrack("study", DAYS, {
+  answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 1, wrapped",
+  id:(dn, n) => n === 0 ? "day-" + dn : "d" + dn + "-" + n,
+  groupOf:i => { const w = WEEKS[Math.floor(i/7)]; return {c:w.c, label:`Week ${w.n} · ${w.name}`}; }
+});
+document.getElementById("studyCount").textContent = `28 days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
+addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
+  <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears every Study answer on this device.</p>
+  <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
-const recapScores = {};
-const resetters = {};
-DAYS.forEach((d, i) => {
-  const wk = weekOf(i), dn = i + 1;
-  let n = 0;
-  const make = (label, body) => {
-    const s = el("section","card");
-    s.style.setProperty("--c", wk.c);
-    s.dataset.day = dn;
-    s.id = n === 0 ? "day-" + dn : "d" + dn + "-" + n;
-    n++;
-    s.innerHTML = `<div class="in">${body}</div>`;
-    feed.appendChild(s);
-    cards.push({el:s, day:i, label});
-    return s;
-  };
-  const tag = (kind, extra) => `<div class="tag"><span>${kind}</span>Day ${dn}${extra ? " · " + extra : ""}</div>`;
+/* ---------- Python tab ---------- */
+const P = TABS.py;
+addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
+  <div class="tag"><span>Python</span>${PY_LESSONS.length} lessons · ${PY_LESSONS.reduce((s,d)=>s+d.quiz.length,0)} questions</div>
+  <h1>Python for security</h1>
+  <p>Short lessons that build up to real tools: log parsing, regex, hashing, port checks and a cloud audit script.</p>
+  <div class="weeks">${PY_LEVELS.map(l=>`<div style="--wc:var(--t-py)"><b>${esc(l.name)}</b>Lessons ${l.from+1} to ${l.to}</div>`).join("")}</div>
+  <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost pick" type="button">Choose a lesson</button></div>
+  <div class="hint">Run the examples in your Kali VM as you go</div>`});
+makeTrack("py", PY_LESSONS, {
+  answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Python track, wrapped", codeLabel:"Python",
+  id:(dn, n) => n === 0 ? "py-" + dn : "p" + dn + "-" + n,
+  groupOf:i => { const l = PY_LEVELS.find(l => i >= l.from && i < l.to); return {c:"var(--t-py)", label:`Python · ${l.name}`}; }
+});
+addCard("py", {c:"var(--t-py)", id:"py-finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Python track complete</div><h1>You can script it</h1>
+  <p class="endScore"></p><p class="small">Turn the capstone into a GitHub project with a README and sample output. Reset clears every Python answer on this device.</p>
+  <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
-  make("Topic", `<div class="tag"><span>Day ${dn}</span>Week ${wk.n} · ${wk.name}</div><h1>${fmt(d.t)}</h1>
-    ${d.sub ? `<p>${fmt(d.sub)}</p>` : ""}
-    <div class="hint">${cardCount(d)} cards · ${d.quiz.length} questions · swipe up ↑</div>`);
-
-  d.learn.forEach(([h, p], j) => make("Learn " + (j+1) + "/" + d.learn.length,
-    `${tag("Learn", (j+1) + " of " + d.learn.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>`));
-
-  if (d.real) make("Real world", `${tag("Real world")}<h2>${fmt(d.real[0])}</h2><p>${fmt(d.real[1])}</p>`);
-
-  if (d.myth) make("Myth vs fact", `${tag("Myth vs fact")}<h2>Don't fall for it</h2>
-    <div class="mf"><div class="m"><b>Myth</b>${fmt(d.myth[0])}</div><div class="f"><b>Fact</b>${fmt(d.myth[1])}</div></div>`);
-
-  if (d.tryit){
-    const t = d.tryit;
-    const s = make("Try it", `${tag("Try it")}<h2>${fmt(t.h)}</h2>${t.where && !t.code ? `<div class="where">${esc(t.where)}</div>` : ""}<p>${fmt(t.p)}</p>
-      ${t.code ? `<div class="code"><div class="ch"><span class="where">${esc(t.where || "")}</span><button class="cp" type="button" aria-label="Copy commands">Copy</button></div><pre><code>${codeHtml(t.code)}</code></pre></div>` : ""}`);
-    const cp = s.querySelector(".cp");
-    if (cp) cp.addEventListener("click", () => {
-      const pre = s.querySelector("pre");
-      const fallback = () => {
-        // Clipboard blocked: select the code so a long-press can copy it.
-        try { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch(e){}
-        cp.textContent = "Selected";
-        setTimeout(() => cp.textContent = "Copy", 1600);
-      };
-      try {
-        navigator.clipboard.writeText(t.code).then(() => { cp.textContent = "Copied"; setTimeout(() => cp.textContent = "Copy", 1400); }, fallback);
-      } catch(e){ fallback(); }
-    });
-  }
-
-  (d.review || []).forEach(([h, p], j) => make("Review " + (j+1) + "/" + d.review.length,
-    `${tag("Review", (j+1) + " of " + d.review.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>`));
-
-  resetters[dn] = [];
-  d.quiz.forEach((q, qi) => {
-    const key = dn + "." + qi;
-    const ord = order(q.o.length, seedOf(q.q));
-    const qc = make("Quiz " + (qi+1) + "/" + d.quiz.length, `${tag("Quiz", (qi+1) + " of " + d.quiz.length)}
-      ${q.d ? `<div class="lvl">${LEVEL[q.d]}</div>` : ""}
-      <h2 class="q">${fmt(q.q)}</h2>
-      <div class="opts" role="group" aria-label="Answers">${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
-      <div class="why" tabindex="-1" aria-live="polite"></div>
-      <button class="btn ghost retry" type="button">Try again</button>`);
-    const btns = [...qc.querySelectorAll(".opt")], why = qc.querySelector(".why"), retry = qc.querySelector(".retry");
-    const reveal = (pick, fromUser) => {
-      btns.forEach(b => {
-        const j = +b.dataset.j, mk = b.querySelector(".mk"), st = b.querySelector(".st");
-        b.setAttribute("aria-disabled", "true");
-        if (j === q.k){ b.classList.add("right"); mk.textContent = "✓"; st.textContent = j === pick ? " (your answer, correct)" : " (correct answer)"; }
-        else if (j === pick){ b.classList.add("wrong"); mk.textContent = "✗"; st.textContent = " (your answer)"; }
-      });
-      why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}`;
-      why.classList.add("show");
-      retry.classList.add("show");
-      if (fromUser){
-        why.focus({preventScroll:true});
-        why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
-      }
-    };
-    const clear = () => {
-      btns.forEach(b => { b.removeAttribute("aria-disabled"); b.classList.remove("right","wrong"); b.querySelector(".mk").textContent = ""; b.querySelector(".st").textContent = ""; });
-      why.classList.remove("show"); why.innerHTML = ""; retry.classList.remove("show");
-    };
-    resetters[dn].push(clear);
-    btns.forEach(b => b.addEventListener("click", () => {
-      if (b.getAttribute("aria-disabled") === "true") return;
-      const pick = +b.dataset.j;
-      answers[key] = pick;
-      store.set("cr2-answers", answers);
-      reveal(pick, true);
-      updateScore(true);
-    }));
-    retry.addEventListener("click", () => {
-      delete answers[key];
-      store.set("cr2-answers", answers);
-      clear(); updateScore(false);
-      btns[0].focus({preventScroll:true});
-      qc.scrollTo({top:0, behavior: reduceMotion() ? "auto" : "smooth"});
-    });
-    if (Number.isInteger(answers[key])) reveal(answers[key], false);
+/* ---------- Feed tab: endless, shuffled decks ---------- */
+const F = TABS.feed;
+const feedState = (() => {
+  const s = asObj(store.get("cr2-feed", {}));
+  return {seen:asObj(s.seen), recent:Array.isArray(s.recent) ? s.recent : [], decks:+s.decks || 0, answered:+s.answered || 0, right:+s.right || 0};
+})();
+const saveFeed = () => store.set("cr2-feed", feedState);
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)"};
+let feedSerial = 0, lastKind = null;
+function pickDeck(){
+  // Skip recently shown decks, alternate OWASP and incident decks, and favour the least-seen ones.
+  const avoid = feedState.recent.slice(-Math.min(6, FEED_DECKS.length - 1));
+  let pool = FEED_DECKS.filter(d => !avoid.includes(d.id));
+  const other = pool.filter(d => d.kind !== lastKind);
+  if (other.length) pool = other;
+  const min = Math.min(...pool.map(d => feedState.seen[d.id] || 0));
+  const least = pool.filter(d => (feedState.seen[d.id] || 0) === min);
+  return least[Math.floor(Math.random() * least.length)];
+}
+function appendDeck(){
+  const d = pickDeck(); lastKind = d.kind;
+  feedState.recent.push(d.id); feedState.recent = feedState.recent.slice(-30); saveFeed();
+  const c = DECK_COLOUR[d.kind], badge = d.kind === "owasp" ? "OWASP " + d.tag : "Incident " + d.tag;
+  const name = d.kind === "owasp" ? d.tag + " " + d.title : d.title + " " + d.tag;
+  const total = d.cards.length + 1, serial = ++feedSerial;
+  const tag = (i, extra) => `<div class="tag"><span>${esc(badge)}</span>${esc(d.title)} · ${extra || (i+1) + " of " + total}</div>`;
+  d.cards.forEach(([h, p], i) => {
+    const last = i === d.cards.length - 1;
+    addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0}, html: i === 0
+      ? `${tag(i)}<h2>${fmt(d.title)}</h2><div class="lvl">${fmt(h)}</div><p>${fmt(p)}</p>`
+      : `${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${last && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}`});
   });
+  const s = addCard("feed", {c, label:name + " · Check", group:serial, extra:{deck:d.id, pos:d.cards.length, total}, html: quizHtml(d.q, tag(0, "Check"), false)});
+  buildQuiz(s, d.q, null, pick => { if (pick === null) return; feedState.answered++; if (pick === d.q.k) feedState.right++; saveFeed(); updateScore("feed", true); });
+}
+addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, html:`
+  <div class="tag"><span>Feed</span>Never ends</div>
+  <h1>Keep scrolling</h1>
+  <p>OWASP Top 10:2025 categories and real incidents, mixed and shuffled. Each deck ends with a quick check.</p>
+  <div class="legend"><span style="color:var(--t-feed)">OWASP</span><span style="color:var(--w4)">Incidents</span></div>
+  <div class="hint">${FEED_DECKS.length} decks · swipe up ↑</div>`});
+for (let i = 0; i < 3; i++) appendDeck();
 
-  const rc = make("Recap", `${tag("Recap")}<h2>${dn === 28 ? "Stage 1, wrapped" : "Day " + dn + " in a nutshell"}</h2>
-    <ul class="recap">${d.recap.map(r => `<li>${fmt(r)}</li>`).join("")}</ul>
-    <div class="dscore"></div>
-    <div class="row">${dn < 28 ? `<button class="btn nx">Start Day ${dn+1}</button>` : `<button class="btn nx">Finish</button>`}<button class="btn ghost redo" type="button">Redo this quiz</button></div>`);
-  recapScores[dn] = rc.querySelector(".dscore");
-  rc.querySelector(".nx").addEventListener("click", () => dn < 28 ? goDay(dn+1) : go(cards.length-1));
-  rc.querySelector(".redo").addEventListener("click", () => {
-    d.quiz.forEach((q, qi) => delete answers[dn + "." + qi]);
-    store.set("cr2-answers", answers);
-    resetters[dn].forEach(f => f());
-    updateScore(false);
-    go(cards.findIndex(c => c.el.id === "d" + dn + "-" + (cardCount(d) - d.quiz.length - 1)));
+// Keep the DOM small on long sessions: drop whole decks well above the reader.
+function trimFeed(){
+  if (F.cards.length < 90 || F.current < 50) return;
+  // Decks are contiguous, so everything before the deck holding keepFrom is whole decks.
+  const keepFrom = F.current - 25, g = F.cards[keepFrom].group;
+  const cut = F.cards.findIndex(c => c.group === g);
+  if (cut <= 0) return;
+  const removed = F.cards.splice(0, cut);
+  const h = removed.reduce((sum, c) => sum + c.el.offsetHeight, 0);
+  removed.forEach(c => { F.io.unobserve(c.el); c.el.remove(); });
+  F.el.scrollTop -= h;
+  F.current -= cut;
+}
+
+/* ---------- Header, progress and the "more below" hint ---------- */
+const prog = document.getElementById("prog"), where = document.getElementById("where"), count = document.getElementById("count");
+const more = document.getElementById("more"), live = document.getElementById("live");
+const sheet = document.getElementById("sheet");
+const hasMore = c => c.scrollHeight - c.clientHeight - c.scrollTop > 6;
+function updateMore(){ const c = TABS[active].cards[TABS[active].current]; more.classList.toggle("show", !!c && !sheet.classList.contains("open") && hasMore(c.el)); }
+
+function setCurrent(tab, idx){
+  const T = TABS[tab];
+  if (idx < 0) return;
+  T.current = idx;
+  const c = T.cards[idx];
+  if (tab === "feed"){
+    if (c.first && !c.counted){ c.counted = true; feedState.seen[c.deck] = (feedState.seen[c.deck] || 0) + 1; feedState.decks++; saveFeed(); }
+    if (idx >= T.cards.length - 4){ appendDeck(); appendDeck(); }
+    if (c.first) trimFeed();
+  } else if (c.group >= 0){
+    store.set(tab === "study" ? "cr2-pos" : "cr2-py-pos", c.el.id);
+  }
+  if (tab === active) render();
+}
+function render(){
+  const T = TABS[active], c = T.cards[T.current];
+  if (!c) return;
+  let accent = T.accent;
+  if (active === "feed"){
+    accent = c.el.style.getPropertyValue("--c") || T.accent;
+    prog.style.width = c.total ? ((c.pos + 1) / c.total * 100) + "%" : "0%";
+    where.innerHTML = c.group >= 0 ? `<b>Feed</b> · ${esc(c.label)}` : "<b>Feed</b>";
+    if (location.hash !== "#feed") history.replaceState(history.state, "", "#feed");
+  } else {
+    prog.style.width = (T.current / (T.cards.length - 1) * 100) + "%";
+    if (c.group >= 0){
+      accent = c.el.style.getPropertyValue("--c") || T.accent;
+      where.innerHTML = `<b>${T.cfg.word} ${c.group+1}</b> · ${esc(c.label)}`;
+      // The hash names the exact card, so a reload or a restored tab comes back to the same place.
+      if (location.hash !== "#" + c.el.id) history.replaceState(history.state, "", "#" + c.el.id);
+    } else {
+      where.textContent = active === "study" ? (c.group === -1 ? "Cyber Scroll" : "Finished") : (c.group === -1 ? "Python" : "Finished");
+      const h = active === "study" ? "#study" : "#python";
+      if (location.hash !== h) history.replaceState(history.state, "", h);
+    }
+  }
+  document.documentElement.style.setProperty("--accent", accent);
+  updateScore(active, false);
+  updateMore();
+}
+function updateScore(tab, announce){
+  if (tab === "feed"){
+    if (active === "feed") count.textContent = `${feedState.decks} decks · ${feedState.right}/${feedState.answered} right`;
+    if (announce) live.textContent = `${feedState.right} of ${feedState.answered} feed checks right`;
+    return;
+  }
+  const T = TABS[tab];
+  T.items.forEach((d, i) => {
+    const s = trackStats(tab, i+1), r = T.recapScores[i+1];
+    if (r) r.innerHTML = s.done ? `Quiz: <b>${s.right} of ${s.total}</b> right${s.done < s.total ? ` · ${s.total - s.done} unanswered` : ""}` : `Quiz: not answered yet`;
+  });
+  const t = trackTotals(tab);
+  if (tab === active) count.textContent = `${t.right}/${t.done} correct`;
+  if (announce) live.textContent = `${t.right} of ${t.done} correct so far`;
+  const es = T.el.querySelector(".endScore");
+  if (es) es.textContent = t.done ? `You got ${t.right} of ${t.done} questions right${t.done < t.total ? `, with ${t.total - t.done} still to do` : ""}.` : "You haven't answered any questions yet.";
+  if (sheet.classList.contains("open")) renderSheet();
+}
+
+Object.entries(TABS).forEach(([tab, T]) => {
+  T.io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) setCurrent(tab, T.cards.findIndex(c => c.el === e.target)); }), {root:T.el, threshold:0.6});
+  T.cards.forEach(c => T.io.observe(c.el));
+});
+
+/* ---------- Navigation ---------- */
+function go(tab, idx){
+  const T = TABS[tab];
+  idx = Math.max(0, Math.min(T.cards.length-1, idx));
+  // Smooth for a step or two; instant for long jumps so pickers don't scroll through hundreds of cards.
+  const smooth = tab === active && Math.abs(idx - T.current) <= 2 && !reduceMotion();
+  T.cards[idx].el.scrollIntoView({behavior: smooth ? "smooth" : "auto"});
+}
+function goGroup(tab, i){ go(tab, TABS[tab].cards.findIndex(c => c.group === i)); }
+// Next and the down keys finish reading a tall card before moving on.
+function next(){
+  const T = TABS[active], c = T.cards[T.current].el;
+  if (hasMore(c)) c.scrollBy({top: c.clientHeight * 0.8, behavior: reduceMotion() ? "auto" : "smooth"});
+  else go(active, T.current + 1);
+}
+function prev(){
+  const T = TABS[active], c = T.cards[T.current].el;
+  if (c.scrollTop > 6) c.scrollBy({top: -c.clientHeight * 0.8, behavior: reduceMotion() ? "auto" : "smooth"});
+  else go(active, T.current - 1);
+}
+
+function switchTab(tab, focusView){
+  if (!TABS[tab]) tab = "study";
+  active = tab;
+  Object.entries(TABS).forEach(([k, T]) => {
+    const on = k === tab;
+    T.el.classList.toggle("off", !on);
+    T.el.inert = !on;
+    const b = document.getElementById("tab-" + k);
+    b.setAttribute("aria-selected", on ? "true" : "false");
+    b.tabIndex = on ? 0 : -1;
+  });
+  store.set("cr2-tab", tab);
+  const pickWrap = document.getElementById("pickWrap");
+  pickWrap.hidden = tab === "feed";
+  document.getElementById("pickLabel").textContent = tab === "py" ? "Lessons" : "Days";
+  document.getElementById("openDays").setAttribute("aria-label", tab === "py" ? "Choose a lesson" : "Choose a day");
+  render();
+  if (focusView) TABS[tab].el.focus({preventScroll:true});
+}
+document.querySelectorAll(".tab").forEach(b => {
+  b.addEventListener("click", () => switchTab(b.dataset.tab));
+  b.addEventListener("keydown", e => {
+    const order = ["study","feed","py"], i = order.indexOf(b.dataset.tab);
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft"){
+      e.preventDefault(); e.stopPropagation();
+      const n = order[(i + (e.key === "ArrowRight" ? 1 : 2)) % 3];
+      switchTab(n); document.getElementById("tab-" + n).focus();
+    }
   });
 });
 
-// End card
-const end = el("section","card");
-end.style.setProperty("--c","var(--w4)");
-end.id = "finish";
-end.innerHTML = `<div class="in"><div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
-  <p id="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears every answer on this device.</p>
-  <div class="row"><button class="btn" id="toTop">Back to start</button><button class="btn ghost" id="reset">Reset answers</button></div></div>`;
-feed.appendChild(end); cards.push({el:end, day:-2, label:"Finished"});
-
-// Header, progress and the "more below" hint
-const prog = document.getElementById("prog"), where = document.getElementById("where"), count = document.getElementById("count");
-const more = document.getElementById("more"), live = document.getElementById("live");
-let current = 0;
-const hasMore = c => c.scrollHeight - c.clientHeight - c.scrollTop > 6;
-function updateMore(){ more.classList.toggle("show", !sheet.classList.contains("open") && hasMore(cards[current].el)); }
-cards.forEach(c => c.el.addEventListener("scroll", () => { if (cards[current].el === c.el) updateMore(); }, {passive:true}));
-
-function setHeader(idx){
-  if (idx < 0) return;
-  current = idx;
-  const c = cards[idx];
-  prog.style.width = (idx / (cards.length - 1) * 100) + "%";
-  if (c.day >= 0){
-    document.documentElement.style.setProperty("--accent", weekOf(c.day).c);
-    where.innerHTML = `<b>Day ${c.day+1}</b> · ${esc(c.label)}`;
-    store.set("cr2-pos", c.el.id);
-    // The hash names the exact card, so a reload or a restored tab comes back to the same place.
-    if (location.hash !== "#" + c.el.id) history.replaceState(history.state, "", "#" + c.el.id);
-  } else {
-    document.documentElement.style.setProperty("--accent", c.day === -1 ? "var(--w1)" : "var(--w4)");
-    where.textContent = c.day === -1 ? "Cyber Scroll" : "Finished";
-  }
-  updateMore();
-}
-function updateScore(announce){
-  let done = 0, right = 0;
-  DAYS.forEach((d, i) => { const s = quizStats(i+1); done += s.done; right += s.right;
-    const r = recapScores[i+1];
-    if (r) r.innerHTML = s.done ? `Quiz: <b>${s.right} of ${s.total}</b> right${s.done < s.total ? ` · ${s.total - s.done} unanswered` : ""}` : `Quiz: not answered yet`;
-  });
-  count.textContent = `${right}/${done} correct`;
-  if (announce) live.textContent = `${right} of ${done} correct so far`;
-  document.getElementById("score").textContent = `${done} of ${TOTAL_Q} questions answered · ${right} correct`;
-  const es = document.getElementById("endScore");
-  if (es) es.textContent = done ? `You got ${right} of ${done} questions right${done < TOTAL_Q ? `, with ${TOTAL_Q-done} still to do` : ""}.` : "You haven't answered any questions yet.";
-}
-const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) setHeader(cards.findIndex(c => c.el === e.target)); }), {root:feed, threshold:0.6});
-cards.forEach(c => io.observe(c.el));
-
-function go(idx){
-  idx = Math.max(0, Math.min(cards.length-1, idx));
-  // Smooth for a step or two; instant for long jumps so the Days picker doesn't scroll through hundreds of cards.
-  const smooth = Math.abs(idx - current) <= 2 && !reduceMotion();
-  cards[idx].el.scrollIntoView({behavior: smooth ? "smooth" : "auto"});
-}
-function goDay(n){ go(cards.findIndex(c => c.day === n-1)); }
-// Next and the down keys finish reading a tall card before moving on.
-function next(){
-  const c = cards[current].el;
-  if (hasMore(c)) c.scrollBy({top: c.clientHeight * 0.8, behavior: reduceMotion() ? "auto" : "smooth"});
-  else go(current + 1);
-}
-function prev(){
-  const c = cards[current].el;
-  if (c.scrollTop > 6) c.scrollBy({top: -c.clientHeight * 0.8, behavior: reduceMotion() ? "auto" : "smooth"});
-  else go(current - 1);
-}
-
-// Day picker. Opening it adds a history entry, so the phone's Back button closes it instead of leaving the app.
-const sheet = document.getElementById("sheet"), dayList = document.getElementById("dayList");
-const rail = document.getElementById("rail");
+/* ---------- Day and lesson picker. Opening it adds a history entry, so Back closes it. ---------- */
+const dayList = document.getElementById("dayList"), rail = document.getElementById("rail"), tabsBar = document.getElementById("tabs");
 let opener = null, afterClose = null, ignoreHash = false;
-function renderDays(){
-  const cur = cards[current].day + 1;
-  dayList.innerHTML = WEEKS.map((w,wi) => `<div class="wk" style="color:${w.c}">Week ${w.n} · ${w.name}</div><div class="days">${
-    DAYS.slice(wi*7, wi*7+7).map((d,j) => { const n = wi*7+j+1, s = quizStats(n);
+function renderSheet(){
+  const tab = active === "py" ? "py" : "study", T = TABS[tab];
+  const cur = T.cards[T.current] ? T.cards[T.current].group + 1 : 0;
+  const groups = tab === "study"
+    ? WEEKS.map((w, wi) => ({title:`Week ${w.n} · ${w.name}`, c:w.c, from:wi*7, to:wi*7+7}))
+    : PY_LEVELS.map(l => ({title:l.name, c:"var(--t-py)", from:l.from, to:l.to}));
+  document.getElementById("sheetTitle").textContent = tab === "py" ? "Jump to a lesson" : "Jump to a day";
+  const t = trackTotals(tab);
+  document.getElementById("score").textContent = `${t.done} of ${t.total} questions answered · ${t.right} correct`;
+  dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
+    T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
       const st = s.done === 0 ? "" : s.right < s.done ? "miss" : s.done === s.total ? "ok" : "part";
       const label = s.done ? s.right + "/" + s.total + " right" : s.total + " questions";
-      return `<button class="day ${st}" style="--dc:${w.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
+      return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
   }</div>`).join("");
-  dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goDay(n)); }));
+  dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goGroup(tab, n - 1)); }));
 }
 function openSheet(e){
+  if (active === "feed") return;
   opener = (e && e.currentTarget) || document.activeElement;
-  renderDays();
+  renderSheet();
   sheet.classList.add("open");
-  feed.inert = true; rail.inert = true;
+  Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true;
   more.classList.remove("show");
   history.pushState({sheet:1}, "");
   const cur = dayList.querySelector('[aria-current="true"]');
@@ -1399,8 +2332,8 @@ function openSheet(e){
 }
 function hideSheet(){
   sheet.classList.remove("open");
-  feed.inert = false; rail.inert = false;
-  if (opener && opener.isConnected && opener !== document.body) opener.focus({preventScroll:true}); else feed.focus({preventScroll:true});
+  Object.entries(TABS).forEach(([k, T]) => T.el.inert = k !== active); rail.inert = false; tabsBar.inert = false;
+  if (opener && opener.isConnected && opener !== document.body) opener.focus({preventScroll:true}); else TABS[active].el.focus({preventScroll:true});
   const f = afterClose; afterClose = null;
   if (f) f();
   updateMore();
@@ -1418,36 +2351,32 @@ window.addEventListener("popstate", () => {
   if (sheet.classList.contains("open")){ ignoreHash = true; hideSheet(); setTimeout(() => { ignoreHash = false; }, 100); }
 });
 document.getElementById("openDays").addEventListener("click", openSheet);
-document.getElementById("pick").addEventListener("click", openSheet);
+document.querySelectorAll(".pick").forEach(b => b.addEventListener("click", openSheet));
 document.getElementById("closeDays").addEventListener("click", () => closeSheet());
 sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
 document.getElementById("nextBtn").addEventListener("click", next);
-document.getElementById("toTop").addEventListener("click", () => go(0));
-// Two taps to reset, confirmed in the page itself (some hosts block confirm() dialogs).
-const resetBtn = document.getElementById("reset");
-let resetArmed = null;
-resetBtn.addEventListener("click", () => {
-  if (!resetArmed){
-    resetBtn.textContent = "Tap again to clear all answers";
-    resetArmed = setTimeout(() => { resetArmed = null; resetBtn.textContent = "Reset answers"; }, 4000);
-    return;
-  }
-  clearTimeout(resetArmed); resetArmed = null;
-  answers = {}; store.set("cr2-answers", {}); store.del("cr2-pos");
-  Object.values(resetters).forEach(list => list.forEach(f => f()));
-  updateScore(false);
-  resetBtn.textContent = "Answers cleared";
-  setTimeout(() => { resetBtn.textContent = "Reset answers"; }, 2000);
-  resumeBtn.textContent = "Start Day 1";
+[["study", S], ["py", P]].forEach(([tab, T]) => {
+  T.el.querySelector(".toTop").addEventListener("click", () => go(tab, 0));
+  twoTap(T.el.querySelector(".reset"), "Tap again to clear", () => {
+    Object.keys(T.answers).forEach(k => delete T.answers[k]);
+    store.set(T.cfg.answersKey, {});
+    Object.values(T.resetters).forEach(list => list.forEach(f => f()));
+    updateScore(tab, false);
+  });
 });
 
-// Resume
-const savedId = store.get("cr2-pos", "start");
-const savedIdx = cards.findIndex(c => c.el.id === savedId);
-const resumeBtn = document.getElementById("resume");
-let resumeTo = (savedIdx > 0 && cards[savedIdx].day >= 0) ? savedIdx : -1;
-if (resumeTo > 0) resumeBtn.textContent = `Continue Day ${cards[resumeTo].day+1}`;
-resumeBtn.addEventListener("click", () => resumeTo > 0 && resumeBtn.textContent !== "Start Day 1" ? go(resumeTo) : goDay(1));
+/* ---------- Resume buttons ---------- */
+function wireResume(tab, btnId, posKey, word){
+  const T = TABS[tab], btn = document.getElementById(btnId);
+  const idx = T.cards.findIndex(c => c.el.id === store.get(posKey, ""));
+  if (idx > 0 && T.cards[idx].group >= 0) btn.textContent = `Continue ${word} ${T.cards[idx].group + 1}`;
+  btn.addEventListener("click", () => {
+    const i = T.cards.findIndex(c => c.el.id === store.get(posKey, ""));
+    if (i > 0 && T.cards[i].group >= 0) go(tab, i); else goGroup(tab, 0);
+  });
+}
+wireResume("study", "resume", "cr2-pos", "Day");
+wireResume("py", "pyResume", "cr2-py-pos", "Lesson");
 
 document.addEventListener("keydown", e => {
   if (sheet.classList.contains("open")){ if (e.key === "Escape") closeSheet(); return; }
@@ -1456,16 +2385,24 @@ document.addEventListener("keydown", e => {
   if (["ArrowUp","PageUp","k"].includes(e.key)){ e.preventDefault(); prev(); }
 });
 
-// Hash links: #day-5 opens a day; #d5-7 opens an exact card (that's what the address bar shows while you read).
-function fromHash(){
-  const id = location.hash.slice(1);
-  if (!/^(day-\d+|d\d+-\d+)$/.test(id)) return;
-  const idx = cards.findIndex(c => c.el.id === id);
-  if (idx >= 0) go(idx);
+/* ---------- Hash links ----------
+   #day-5 or #d5-7 open Study, #py-3 or #p3-2 open Python, #feed opens the Feed,
+   #study and #python open a tab at its current card. */
+function fromHash(hash){
+  const id = (hash || location.hash).slice(1);
+  if (id === "feed" || id === "study" || id === "python"){ switchTab(id === "python" ? "py" : id); return true; }
+  for (const tab of ["study","py"]){
+    const idx = TABS[tab].cards.findIndex(c => c.el.id === id);
+    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
+  }
+  return false;
 }
 window.addEventListener("hashchange", () => { if (ignoreHash){ ignoreHash = false; return; } fromHash(); });
-renderDays(); updateScore(false); setHeader(0);
-if (location.hash) requestAnimationFrame(() => setTimeout(fromHash, 50));
+
+// A link to a card or tab wins; otherwise reopen the last tab used.
+const savedTab = store.get("cr2-tab", "study");
+switchTab(TABS[savedTab] ? savedTab : "study");
+if (initialHash) requestAnimationFrame(() => setTimeout(() => fromHash(initialHash), 50));
 </script>
 </body>
 </html>
