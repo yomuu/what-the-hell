@@ -1416,14 +1416,14 @@ const FEED_DECKS = [
 {id:"e8-patch-os", kind:"e8", tag:"E8", title:"Patch operating systems",
  cards:[
   ["What it is","Keep the operating systems on workstations, servers and network devices patched, and replace operating systems that are out of support. Patching the OS closes holes that let malware spread and escalate."],
-  ["Real world","Windows 10 reached end of support in October 2025, so it no longer gets regular security updates. WannaCry in 2017 spread through unpatched Windows machines months after the fix was out."]
+  ["Real world","Windows 10 reached end of support in October 2025, so it no longer gets regular security updates. WannaCry in 2017 spread through unpatched Windows machines about two months after the fix was out."]
  ],
  q:{d:2, q:"A clinic still runs Windows 10 PCs with no extended support. What does the Essential Eight say?", o:["Replace or upgrade the unsupported operating system","Keep using it if antivirus is installed","Only patch it once a year"], k:0,
    w:"Out-of-support systems stop getting fixes. Upgrading them is part of patching operating systems."}},
 {id:"e8-mfa", kind:"e8", tag:"E8", title:"Multi-factor authentication",
  cards:[
   ["What it is","Require MFA for remote access, for privileged users and for online services that hold important data. It stops a stolen password being enough on its own."],
-  ["Maturity matters","Higher Essential Eight maturity levels expect phishing-resistant MFA, such as passkeys or FIDO2 security keys, rather than SMS or app codes that can be relayed by a fake login page."]
+  ["Maturity matters","From Maturity Level Two, the Essential Eight expects phishing-resistant MFA, such as passkeys or FIDO2 security keys, rather than SMS or app codes that can be relayed by a fake login page."]
  ],
  q:{d:2, q:"Which incidents in this app would MFA on remote access most directly have stopped?", o:["Medibank and Change Healthcare","Log4Shell and the CrowdStrike outage","xz utils and MOVEit"], k:0,
    w:"Both started with stolen credentials on remote access with no second factor."}},
@@ -1466,7 +1466,7 @@ const FEED_DECKS = [
  cards:[
   ["What they are","The Essential Eight has maturity levels from zero to three. Each level is designed to resist more capable attackers, from opportunistic ones at Level One to adaptive, targeted ones at Level Three."],
   ["How to use them","Aim for the same maturity level across all eight strategies before moving up. A strong score on one strategy doesn't make up for a gap in another."],
-  ["In job ads","Australian security roles often ask for Essential Eight experience. Being able to explain the eight strategies and how an assessment works is a good interview answer."]
+  ["Know its limits","The Essential Eight is a baseline designed for internet-connected Windows networks, not a complete security programme. Australian job ads often ask for it, so be ready to explain the eight strategies and where they stop."]
  ],
  q:{d:2, q:"What's the recommended way to improve Essential Eight maturity?", o:["Reach the same level across all eight strategies before moving up","Max out one strategy first","Skip straight to Level Three"], k:0,
    w:"The strategies work together. An attacker will use whichever one is weakest."}},
@@ -1488,7 +1488,7 @@ const FEED_DECKS = [
    w:"Roles give temporary credentials automatically, and least privilege limits what a compromise can reach."}},
 {id:"cloud-logging", kind:"cloud", tag:"Cloud", title:"Cloud logging",
  cards:[
-  ["What to turn on","AWS CloudTrail records API calls and console sign-ins. In Microsoft's cloud, Entra sign-in logs and the Azure Activity log do similar jobs. Keep these logs somewhere attackers can't delete them."],
+  ["What to turn on","AWS CloudTrail records API calls and console sign-ins. In Microsoft's cloud, Entra sign-in logs and the Azure Activity log do similar jobs. CloudTrail's event history only keeps 90 days, so send a trail to protected storage, ideally in a separate logging account."],
   ["What to alert on","Root or Global Administrator sign-ins, sign-ins without MFA, logging being turned off, new access keys and permission changes. Attackers often disable logging first, so alert on that above all."]
  ],
  q:{d:2, q:"Someone stops CloudTrail logging in your AWS account at 2am. What should happen?", o:["An alert, treated as a possible intrusion","Nothing, logging is optional","Wait for the monthly report"], k:0,
@@ -1511,36 +1511,36 @@ const FEED_DECKS = [
 /* ---------------- FEED: Australian and NZ law ---------------- */
 {id:"law-ndb", kind:"law", tag:"AU", title:"Notifiable Data Breaches scheme",
  cards:[
-  ["What it is","Under Australia's Privacy Act 1988, organisations covered by the Act must report an eligible data breach to the Office of the Australian Information Commissioner (OAIC) and tell affected people."],
-  ["When it applies","A breach is eligible when personal information is accessed, disclosed or lost, it's likely to cause serious harm, and you can't prevent that harm. If you only suspect one, you have 30 days to assess it, and you notify as soon as practicable."]
+  ["What it is","Under Australia's Privacy Act 1988, covered organisations must report an eligible data breach to the Office of the Australian Information Commissioner (OAIC) and tell affected people. That mostly means businesses with turnover over A$3 million, plus all health service providers and some others."],
+  ["When it applies","A breach is eligible when personal information is accessed or disclosed without authorisation, or lost in a way that makes that likely, it's likely to cause serious harm, and you can't prevent that harm. If you only suspect one, you have 30 days to assess it, and you notify as soon as practicable."]
  ],
  q:{d:2, q:"You suspect an eligible data breach but aren't sure. How long do you have to assess it?", o:["30 days","72 hours","One year"], k:0,
    w:"The scheme expects a reasonable, quick assessment within 30 days, and notification as soon as practicable if it's eligible."}},
 {id:"law-nz", kind:"law", tag:"NZ", title:"NZ Privacy Act 2020",
  cards:[
   ["What it is","In New Zealand, a privacy breach that has caused or is likely to cause serious harm is a notifiable privacy breach. You must tell the Privacy Commissioner and affected people as soon as practicable."],
-  ["Why it matters","Failing to notify the Commissioner is an offence with a fine of up to $10,000. More importantly, quick notice lets people protect themselves, for example by watching for scams."]
+  ["Why it matters","Failing to notify the Commissioner is an offence with a fine of up to NZ$10,000. More importantly, quick notice lets people protect themselves, for example by watching for scams."]
  ],
  q:{d:2, q:"Under the NZ Privacy Act 2020, who must be told about a notifiable privacy breach?", o:["The Privacy Commissioner and affected people","Only the police","Only the company's board"], k:0,
    w:"Both the regulator and the people affected need to know, as soon as practicable."}},
 {id:"law-ransom", kind:"law", tag:"AU", title:"Reporting ransomware payments",
  cards:[
-  ["What it is","Under Australia's Cyber Security Act 2024, businesses with an annual turnover over A$3 million must report a ransomware or cyber extortion payment to the Australian Signals Directorate within 72 hours. The rule started on 30 May 2025."],
-  ["What it isn't","Reporting doesn't make paying legal or wise, and it isn't permission. It gives the government a clearer picture of extortion, which helps everyone defend against it."]
+  ["What it is","Under Australia's Cyber Security Act 2024, businesses with an annual turnover over A$3 million must report a ransomware or cyber extortion payment to the Australian Signals Directorate within 72 hours of paying. Critical infrastructure entities must report regardless of turnover. The rule started on 30 May 2025."],
+  ["What it isn't","Reporting isn't approval. Paying is legal but discouraged, and paying a sanctioned group can break sanctions law. Remember one incident can trigger several separate reports: privacy, ransom payment and cyber incident."]
  ],
  q:{d:2, q:"An Australian company with A$50 million turnover pays a ransom. What must it do?", o:["Report the payment to ASD within 72 hours","Nothing, payments are private","Report it at the end of the financial year"], k:0,
    w:"The Cyber Security Act 2024 requires reporting within 72 hours for businesses over the A$3 million threshold."}},
 {id:"law-report", kind:"law", tag:"AU/NZ", title:"Who to call",
  cards:[
   ["Australia","Report cyber incidents to the Australian Signals Directorate's Australian Cyber Security Centre through ReportCyber at cyber.gov.au. Privacy breaches go to the OAIC."],
-  ["New Zealand","Report cyber incidents to the National Cyber Security Centre, which absorbed CERT NZ in 2024. Privacy breaches go to the Office of the Privacy Commissioner."]
+  ["New Zealand","Report cyber incidents to the National Cyber Security Centre, which absorbed CERT NZ between 2023 and 2024. Privacy breaches go to the Office of the Privacy Commissioner."]
  ],
- q:{d:1, q:"In New Zealand, which agency now takes over CERT NZ's role for cyber incident reports?", o:["The National Cyber Security Centre (NCSC)","The Privacy Commissioner","The police only"], k:0,
-   w:"CERT NZ became part of the NCSC in 2024. Privacy breaches still go to the Privacy Commissioner."}},
+ q:{d:1, q:"In New Zealand, which agency has taken over CERT NZ's role for cyber incident reports?", o:["The National Cyber Security Centre (NCSC)","The Privacy Commissioner","The police only"], k:0,
+   w:"CERT NZ became part of the NCSC between 2023 and 2024. Privacy breaches still go to the Privacy Commissioner."}},
 
 /* ---------------- FEED: triage scenarios ---------------- */
 {id:"tri-spray", kind:"triage", tag:"Triage", title:"Many users, one source",
- cards:[["The evidence","A Windows domain controller's Security log over two minutes. Forty different users each have one failed logon, all from the same address. Then one success.",
+ cards:[["The evidence","A Windows server's Security log over two minutes. Forty different users each have one failed logon, all from the same public address. Then one success.",
   String.raw`4625  user=asmith   src=203.0.113.50  type=3
 4625  user=bjones   src=203.0.113.50  type=3
 4625  user=cwilson  src=203.0.113.50  type=3
@@ -1548,9 +1548,9 @@ const FEED_DECKS = [
 4624  user=dlee     src=203.0.113.50  type=3`]],
  all:true,
  qs:[{d:2, q:"What's the most likely activity?", o:["Password spraying that succeeded for dlee","A user who forgot their password","A normal backup job"], k:0,
-   w:"One attempt per user from one source avoids lockouts. The 4624 at the end means a guess worked."},
+   w:"One attempt per user from one source avoids lockouts. The 4624 at the end means a guess worked. A public address reaching this server directly is a finding too."},
   {d:3, q:"What's the best first action?", o:["Reset dlee's password, revoke their sessions and review what the account did","Delete the event logs","Email all forty users to ask if it was them"], k:0,
-   w:"Contain the compromised account first, then block the source and investigate its activity."}],
+   w:"Contain the compromised account first, then block the source, investigate its activity, and start a timeline as you escalate."}],
  after:[["How to hunt it","In Microsoft Sentinel, this KQL finds sources that failed against many accounts in ten minutes.",
   String.raw`SecurityEvent
 | where EventID == 4625
@@ -1567,7 +1567,7 @@ Failed password for invalid user admin from 198.51.100.23 port 51102 ssh2
    w:"Many failures, one source, common usernames. Nothing shows it worked, but you still check."},
   {d:2, q:"What do you check before closing this?", o:["That there's no “Accepted” login from that address","The server's CPU temperature","Whether the IP is in Australia"], k:0,
    w:"Confirm the attacker never got in. Then harden: key-only logins, no root login, and rate limiting or fail2ban."}],
- after:[["How to hunt it","On the server, look for any successful login from the attacking address.",
+ after:[["How to hunt it","On the server, look for any successful login from the attacking address. On Red Hat or Fedora the unit is sshd, not ssh.",
   String.raw`sudo journalctl -u ssh | grep "Accepted" | grep 198.51.100.23`]]},
 {id:"tri-phish", kind:"triage", tag:"Triage", title:"A reported email",
  cards:[["The evidence","A user reports this email. They haven't clicked the link.",
@@ -1630,11 +1630,11 @@ CommandLine: powershell -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0ATwBi...`]],
 {id:"int-failedlogons", kind:"interview", tag:"Interview", title:"You see hundreds of failed logons in the SIEM. What do you do?",
  answer:"First I'd scope it: which accounts, which source, over what time. Many users from one source suggests spraying; one user from many suggests a targeted attack. Most importantly, I'd check for a successful logon afterwards. If there is one, I'd contain that account, then block the source and escalate."},
 {id:"int-ir", kind:"interview", tag:"Interview", title:"Walk me through incident response.",
- answer:"I know the classic four phases from NIST SP 800-61 Rev. 2: preparation, detection and analysis, containment, eradication and recovery, and lessons learned. Rev. 3 from 2025 now aligns it with the CSF 2.0 functions. In practice: contain quickly, preserve evidence, communicate, recover from clean backups and fix the root cause."},
+ answer:"I know the classic four phases from NIST SP 800-61 Rev. 2: preparation, detection and analysis, containment, eradication and recovery, and post-incident activity, where lessons are learned. Rev. 3 from 2025 now aligns it with the CSF 2.0 functions. In practice: contain quickly, preserve evidence, communicate, recover from clean backups and fix the root cause."},
 {id:"int-ransom", kind:"interview", tag:"Interview", title:"A user says their files have strange extensions and there's a ransom note. What do you do?",
- answer:"I'd isolate the machine from the network straight away but leave it powered on, to stop the spread and keep evidence. Then I'd escalate under our incident process, check for other affected machines and shares, and make sure backups are safe and offline. I wouldn't pay or delete anything on my own."},
+ answer:"I'd isolate the machine from the network straight away but leave it powered on, to stop the spread and keep evidence. Then I'd escalate under our incident process, check for other affected machines and shares, make sure backups are safe and offline, and involve whoever handles legal reporting. I wouldn't pay or delete anything on my own."},
 {id:"int-least", kind:"interview", tag:"Interview", title:"Give an example of least privilege from your IT support work.",
- answer:"Answer from your own experience. For example: help desk staff could reset any password, including admins'. We split it so they could reset standard users only, and admin resets went through a separate process. If a help desk account was phished, the damage would be limited."},
+ answer:"Answer from your own experience, using STAR: situation, task, action, result. For example: help desk staff could reset any password, including admins'. We split it so they could reset standard users only, and admin resets went through a separate process. If a help desk account was phished, the damage would be limited."},
 {id:"int-shared", kind:"interview", tag:"Interview", title:"Explain the cloud shared responsibility model.",
  answer:"The provider secures the cloud itself: buildings, hardware and the virtualisation layer. The customer secures what they put in it: data, identities, configuration and, for virtual machines, the operating system. Most cloud breaches come from the customer side, like public buckets or over-permissive roles."},
 {id:"int-e8", kind:"interview", tag:"Interview", title:"What is the Essential Eight?",
@@ -1677,13 +1677,13 @@ const FEED_EXTRA_Q = {
 "inc-waikato":[{d:2, q:"What made recovery at Waikato DHB so slow?", o:["Systems had to be rebuilt and restored across a whole health network","The ransom note was in another language","Staff refused to use paper"], k:0,
    w:"Rebuilding many systems takes weeks. Tested backups and a practised plan shorten that time."}],
 "inc-latitude":[{d:2, q:"How did the attackers get a Latitude employee's credentials?", o:["Through an attack that came in via a major vendor","By guessing a weak password","By phoning the help desk"], k:0,
-   w:"The attack came through a major vendor and gave the attackers a Latitude employee's login."}],
+   w:"The attack came through a major vendor and gave the attackers a Latitude employee's login. The exact vendor route was never fully disclosed."}],
 "inc-moveit":[{d:3, q:"Many MOVEit victims had never used MOVEit themselves. How were they affected?", o:["Their suppliers used it to transfer their data","Cl0p scanned their home networks","Their staff opened phishing emails"], k:0,
    w:"Third-party risk: your data is only as safe as the tools your suppliers use."}],
 "inc-log4shell":[{d:2, q:"What did an attacker need to trigger Log4Shell?", o:["Get a crafted string into something the app logged","Physical access to the server","An admin password"], k:0,
    w:"Usernames, headers and search boxes all got logged, so the attack surface was enormous."}],
 "inc-xz":[{d:3, q:"Why was the xz backdoor so hard to spot in code review?", o:["It was hidden in test files and build scripts, not the visible source","It was written in assembly language","The project had no source code"], k:0,
-   w:"Reviewers read the source, but the payload lived in build artefacts. Build pipelines are part of the attack surface."}],
+   w:"Reviewers read the git source, but the payload was in the release tarballs and test files. What you ship, not just what's in the repo, is attack surface."}],
 "inc-crowdstrike":[{d:2, q:"Why did many CrowdStrike-affected machines need hands-on fixes?", o:["They crashed at boot, so remote tools couldn't reach them","The update deleted all files","Staff had forgotten their passwords"], k:0,
    w:"A machine stuck at a blue screen can't run remote management. Recovery keys and staged rollouts matter."}],
 "inc-uber":[{d:2, q:"How did the attacker get the contractor to approve an MFA prompt?", o:["Spamming push requests, then posing as IT on WhatsApp","A zero-day in the MFA app","Stealing the contractor's phone"], k:0,
