@@ -649,7 +649,7 @@ ping -c 3 10.10.10.20`},
   {d:3, q:"Which pairing is correct?", o:["ARP maps an IP to a MAC; DNS maps a name to an IP","ARP maps a name to an IP; DNS maps an IP to a MAC","DHCP maps a name to a MAC; ARP hands out addresses"], k:0,
    w:"ARP works locally between IP and MAC. DNS turns names into IPs. DHCP hands out addresses."}
  ],
- recap:["Firewalls filter by rules. Stateful ones track connections.","Default deny for inbound, and filter outbound too.","A WAF protects web apps. No firewall stops phishing.","You can now trace a laptop to a website: DHCP, DNS, ARP, TCP, TLS."]},
+ recap:["Firewalls filter by rules. Stateful ones track connections.","Default deny for inbound, and filter outbound too.","A WAF protects web apps. No firewall stops phishing.","You can now trace a laptop to a website: DHCP, ARP, DNS, TCP, TLS."]},
 /* ---------------- WEEK 3: Operating systems and crypto ---------------- */
 {t:"Windows vs Linux",
  sub:"Same ideas, different places to look.",
@@ -890,9 +890,9 @@ sudo userdel -r tester`},
  learn:[
   ["What Nmap does","Nmap discovers live hosts, open ports, running services and their versions. Defenders use it to check their own exposure; attackers use it for reconnaissance. Same tool, different permission."],
   ["Permission first","Only scan systems you own or have written permission to test. Unauthorised scanning can breach laws and acceptable use policies, and it sets off alarms. Your internal lab is the place to practise."],
-  ["Host discovery","`nmap -sn 10.10.10.0/24` finds live hosts without scanning ports. Run as root on a local subnet, Nmap uses ARP, so even hosts that block ping show up."],
+  ["Host discovery","`sudo nmap -sn 10.10.10.0/24` finds live hosts without scanning ports. Run as root on a local subnet, Nmap uses ARP, so even hosts that block ping show up. Without sudo it falls back to weaker probes."],
   ["The SYN scan","`sudo nmap -sS` sends a SYN to each port. SYN-ACK means open, RST means closed, and no reply means filtered. Nmap never completes the handshake, which is why it's called a half-open scan."],
-  ["Versions and scripts","`-sV` identifies the service and version on open ports, `-O` guesses the OS and `-sC` runs default scripts for extra detail. By default Nmap scans the 1,000 most common TCP ports; `-p-` scans all 65,535."],
+  ["Versions and scripts","`-sV` identifies the service and version on open ports, `-O` guesses the OS and `-sC` runs default scripts for extra detail. By default Nmap scans the 1,000 most common TCP ports; `-p-` scans all 65,535. UDP services like DNS need `-sU`."],
   ["From results to risk","A port list is just an inventory. Compare each service and version with what should be there, then look up known vulnerabilities for those versions. Open isn't the same as vulnerable."]
  ],
  real:["The internet is always scanning","Services like Shodan and Censys scan the whole IPv4 internet continuously and index what they find. Anything you expose, like RDP or an old admin page, can be listed within days. Attackers often search these indexes instead of scanning themselves."],
@@ -927,12 +927,12 @@ sudo nmap -sS -sV -p 135,139,445,3389 10.10.10.20`},
  real:["Firesheep, 2010","In 2010 a Firefox add-on called Firesheep let anyone on public Wi-Fi grab other people's session cookies for sites like Facebook and Twitter with one click. Those sites used HTTPS for the login page but not for the rest of the session. The outcry pushed big sites to use HTTPS everywhere."],
  myth:["With Wireshark you can read anyone's HTTPS traffic.","TLS encrypts the content. You see addresses, ports, timing and usually the server name, but not the pages or passwords unless you hold the session keys."],
  tryit:{h:"Catch a cleartext request", where:"Kali and Windows target",
-  p:"On Kali, start Wireshark on eth0. Serve a folder over plain HTTP, then browse to it from the Windows target. Filter, then follow the TCP stream and read the request your browser sent.",
+  p:"On Kali, start Wireshark with sudo and capture on eth0. Serve a folder over plain HTTP on 8080, a port Wireshark decodes as HTTP. Browse to it from Windows, then follow the TCP stream and read the request.",
   code:`# Kali: serve the current folder over plain HTTP
-python3 -m http.server 8000
+python3 -m http.server 8080
 
 # Windows browser
-http://10.10.10.10:8000
+http://10.10.10.10:8080
 
 # Wireshark display filter on Kali
 http && ip.addr == 10.10.10.20`},
@@ -953,8 +953,8 @@ http && ip.addr == 10.10.10.20`},
  learn:[
   ["Why logs matter","Logs record logins, errors, changes and connections. Without them you can't detect an attack or prove what an attacker did. OWASP Top 10:2025 lists Security Logging and Alerting Failures as A09."],
   ["Linux logs","Debian and Ubuntu write authentication events to /var/log/auth.log; the Red Hat family uses /var/log/secure. Many systems, Kali included, use the systemd journal: `journalctl -u ssh` shows SSH events."],
-  ["Windows Security log","Event Viewer's Security log records logons and account changes. Key IDs: 4624 successful logon, 4625 failed logon, 4672 admin-level logon, 4720 user account created, 1102 audit log cleared."],
-  ["Logon types","Events 4624 and 4625 include a logon type. Type 2 is at the keyboard, 3 is over the network (like a file share) and 10 is Remote Desktop. A burst of type 3 or 10 failures from one IP is a classic brute-force sign."],
+  ["Windows Security log","Event Viewer's Security log records logons and account changes. Key IDs: 4624 successful logon, 4625 failed logon, 4672 special (admin-level) privileges at logon, 4720 user account created, 1102 audit log cleared."],
+  ["Logon types","Events 4624 and 4625 include a logon type. Type 2 is at the keyboard, 3 is over the network (like a file share) and 10 is Remote Desktop. With Network Level Authentication on, failed RDP logons often show as type 3, so check the source IP too."],
   ["SIEMs","A SIEM collects logs from many systems in one place, correlates them and raises alerts. Wazuh is a free, open-source option; Microsoft Sentinel and Splunk are common at work. Alerts only help if someone acts on them."],
   ["Red flags","Many failures then a success from the same IP. A logon at 3am from a new country. A new admin account. The Security log being cleared. Any one might be innocent; together they tell a story."]
  ],
@@ -977,7 +977,7 @@ auditpol /get /subcategory:"Logon"`},
   {d:3, q:"What does OWASP Top 10:2025 call A09?", o:["Security Logging and Alerting Failures","Security Logging and Monitoring Failures","Insufficient Logging"], k:0,
    w:"The 2021 name was Security Logging and Monitoring Failures. The 2025 list renamed it to stress alerting."}
  ],
- recap:["Linux: auth.log, secure or journalctl.","Windows: 4624, 4625, 4672, 4720 and 1102.","Logon type 3 is network, type 10 is RDP.","A SIEM centralises logs, but someone has to act on alerts."]},
+ recap:["Linux: auth.log, secure or journalctl.","Windows: 4624, 4625, 4672, 4720 and 1102.","Logon type 3 is network, 10 is RDP, but failed RDP often shows as 3.","A SIEM centralises logs, but someone has to act on alerts."]},
 
 {t:"Lab: scan and watch",
  sub:"Attack your own lab and see what the defender sees.",
@@ -985,19 +985,22 @@ auditpol /get /subcategory:"Logon"`},
   ["The plan","You'll scan the Windows target from Kali while watching with Wireshark and the Windows firewall log. Seeing both sides of one attack is the fastest way to learn detection."],
   ["Set up","Both VMs on the labnet internal network: Kali at 10.10.10.10, Windows at 10.10.10.20. Snapshot both first. Confirm they can see each other with `sudo nmap -sn 10.10.10.0/24`."],
   ["Give the defender eyes","Windows Defender Firewall doesn't log dropped packets by default. Turn logging on (see the Try it card). The log lives at C:\\Windows\\System32\\LogFiles\\Firewall\\pfirewall.log."],
-  ["Run the scan","Start Wireshark on Kali's eth0 with `tcp.flags.syn == 1 && tcp.flags.ack == 0`. Then run the SYN scan. Watch a wall of SYNs from one source hit many ports in seconds."],
+  ["Run the scan","Start Wireshark on Kali's eth0, then apply the display filter `tcp.flags.syn == 1 && tcp.flags.ack == 0`. Now run the SYN scan. Watch a wall of SYNs from one source hit many ports in seconds."],
   ["Compare the evidence","In Wireshark, Statistics then Conversations shows one source talking to many ports. On Windows, the firewall log shows a DROP line for each blocked probe. What did the scan learn, and what did the defender see?"]
  ],
  real:["A scan from the inside","SOC analysts treat scans very differently depending on where they come from. Scans from the internet are constant background noise. An internal laptop scanning the server subnet often means a compromised machine looking for its next hop."],
  myth:["If a scan didn't show up in Event Viewer, nothing recorded it.","A SYN scan rarely creates logon events, but firewall logs, network flow records and intrusion detection systems all see it. Detection depends on looking in the right place."],
  tryit:{h:"Run the lab", where:"Windows target, then Kali",
-  p:"Turn on firewall logging and tail the log on Windows. Then scan from Kali and watch the DROP lines arrive. Turn the logging off again afterwards if you like.",
+  p:"Turn on firewall logging and tail the log on Windows. Then scan from Kali and watch the DROP lines arrive. Afterwards, restore both clean snapshots.",
   code:`# Windows PowerShell (admin)
 Set-NetFirewallProfile -All -LogBlocked True
 Get-Content C:\\Windows\\System32\\LogFiles\\Firewall\\pfirewall.log -Tail 20 -Wait
 
 # Kali
-sudo nmap -sS --top-ports 200 10.10.10.20`},
+sudo nmap -sS --top-ports 200 10.10.10.20
+
+# Windows: turn logging off again
+Set-NetFirewallProfile -All -LogBlocked False`},
  quiz:[
   {d:1, q:"What pattern in Wireshark shows a port scan?", o:["Many SYNs from one source to many ports","One long TLS session","Only DNS replies"], k:0,
    w:"A scanner probes many ports fast, so you see a burst of SYNs from one IP across many destination ports."},
@@ -1018,7 +1021,7 @@ sudo nmap -sS --top-ports 200 10.10.10.20`},
   ["The four-phase cycle","NIST SP 800-61 Rev. 2 described four phases: preparation; detection and analysis; containment, eradication and recovery; and post-incident activity. You'll still see it in textbooks and interviews."],
   ["Rev. 3 and CSF 2.0","NIST SP 800-61 Rev. 3 (April 2025) instead organises incident response around the six CSF 2.0 functions: Govern, Identify, Protect, Detect, Respond, Recover. Preparation is now spread across Govern, Identify and Protect."],
   ["In the moment","Contain first: isolate the machine from the network, but don't switch it off, because memory holds evidence. Preserve logs, note what you do and when, and escalate. Then remove the cause and recover from clean backups."],
-  ["Learn from it","After recovery, hold a blameless review: what happened, what worked and what didn't. Then fix the gaps. In Australia and New Zealand, a breach involving personal information may also need to be reported to the privacy regulator."]
+  ["Learn from it","After recovery, hold a blameless review: what happened, what worked and what didn't. Then fix the gaps. In Australia and New Zealand, a breach of personal information likely to cause serious harm must be reported: to the OAIC in Australia or the Privacy Commissioner in NZ."]
  ],
  real:["Maersk and NotPetya, 2017","In June 2017 NotPetya malware tore through shipping giant Maersk, wiping thousands of machines within hours. Every domain controller was hit except one in Ghana, which happened to be offline during a power cut. That one copy let Maersk rebuild its network in about ten days."],
  myth:["Incident response starts when you get breached.","Most of it happens before: knowing your assets, backups, logging, contacts and a written plan. Rev. 3 makes that explicit with Govern, Identify and Protect."],
@@ -1041,15 +1044,15 @@ sudo nmap -sS --top-ports 200 10.10.10.20`},
  learn:[
   ["How to review","This is the big one. Answer each review card's heading out loud first. Then do the quiz cold, without scrolling back. Anything you miss tells you which day to redo."]
  ],
- real:["Latitude Financial, 2023","In March 2023 attackers used a vendor employee's stolen login to get into Latitude Financial, which serves customers in Australia and New Zealand. They took about 14 million records, including millions of driver licence numbers, some kept for years. Latitude refused to pay. Identity, third-party access and keeping too much data, all in one."],
+ real:["Latitude Financial, 2023","In March 2023 an attack that came in through a major vendor gave attackers a Latitude Financial employee's login. Latitude serves customers in Australia and New Zealand. The attackers took about 14 million records, including millions of driver licence numbers, some kept for years. Latitude refused to pay. Identity, third-party access and keeping too much data, all in one."],
  myth:["Once you've finished Stage 1, the basics are done.","The basics are what most breaches exploit: missing MFA, unpatched systems, weak access control and ignored alerts. You'll use these ideas at every level."],
  tryit:{h:"Build a one-page cheat sheet", where:"Paper or notes app",
   p:"From memory, write down the key ports, the Windows Event IDs, the MFA ranking, the permission octals and the six CSF 2.0 functions. Then check it against the cards. Keep it for interview prep."},
  review:[
-  ["Week 1","CIA, and double extortion hitting all three. Threats include insiders and accidents. Risk is likelihood and impact. SMS is MFA but weak; only FIDO2 keys and passkeys are phishing-resistant."],
+  ["Week 1","CIA, and double extortion hitting all three. Threats include insiders and accidents. Risk is likelihood and impact. Authorisation is checked on every request, with least privilege. SMS is MFA but weak; only FIDO2 keys and passkeys are phishing-resistant."],
   ["Week 2","Open means listening, not vulnerable. TCP has a handshake; UDP doesn't. DHCP, ARP, DNS, TCP and TLS get a laptop to a website. The padlock means encrypted, not honest."],
   ["Week 3","Config lives in /etc or the Registry. Read rwx and octal. Judge a process by its path and parent, not its name. Hash passwords with bcrypt or Argon2. Vulnerable VMs never go on bridged networks."],
-  ["Week 4","Nmap finds hosts, ports and versions, with permission only. Wireshark shows the wire. Logs and a SIEM catch what attackers leave behind. Defence in depth means no single control does everything."],
+  ["Week 4","Nmap finds hosts, ports and versions, with permission only. Wireshark shows the wire. Logs and a SIEM catch what attackers leave behind. Incident response now follows the CSF 2.0 functions. Defence in depth means no single control does everything."],
   ["Explain: SMS MFA","SMS counts as MFA, but SIM swapping and fake login pages can steal the code. App codes can be phished too. FIDO2 keys and passkeys check the real domain, so a phishing site gets nothing."],
   ["Explain: open ports","Open just means a service is listening. Risk depends on what it is, its version, its configuration and who can reach it. RDP open to the internet is risky; 443 on a patched web server is expected."],
   ["Explain: backups","Offline or immutable backups restore encrypted data and get you running again. They do nothing about data that's already been stolen, the other half of double extortion."],
@@ -1080,9 +1083,9 @@ sudo nmap -sS --top-ports 200 10.10.10.20`},
  learn:[
   ["What you've covered","Security fundamentals, networking, operating systems, cryptography, scanning, packet capture and logs. That's the base every intermediate topic builds on."],
   ["The intermediate stage","Next comes frameworks in depth (NIST CSF 2.0, ISO 27001, the Essential Eight), security tools, configuring controls, vulnerability management and cloud security basics."],
-  ["Grow the lab","Add a deliberately vulnerable VM, such as Metasploitable 2, on the internal network only. Add a SIEM, such as Wazuh, and send it Windows and Linux logs. Then attack your lab and detect yourself."],
+  ["Grow the lab","Add a deliberately vulnerable VM, such as Metasploitable 2, on the internal network only. Add a SIEM, such as Wazuh (give it 4 to 8 GB of RAM), and send it Windows and Linux logs. Then attack your lab and detect yourself."],
   ["Show your work","Write up each lab on GitHub: goal, setup, steps, what you saw and what you'd fix. Screenshots and clear explanations beat a list of courses. Never publish real credentials or anything from an employer's systems."],
-  ["Certifications","CompTIA Security+ is a common first security certification and often appears in entry-level job ads. For cloud security roles, AWS and Microsoft Azure security certifications are worth a look. Pair any cert with lab write-ups."],
+  ["Certifications","CompTIA Security+ is a common first security certification and often appears in entry-level job ads. For cloud roles, start with an entry cert like AWS Cloud Practitioner or Microsoft SC-900, then aim for a cloud security cert. Pair any cert with lab write-ups."],
   ["Keep the habit","A few cards a day beats a cram. Redo red days in the Days picker. Follow alerts from Australia's ACSC and New Zealand's NCSC, and read one incident write-up a week."]
  ],
  real:["What hiring managers look for","Entry-level security roles usually want networking and OS basics, log analysis, some scripting and clear communication. IT support is a real asset: you already troubleshoot, document and calm down stressed users. Say that in interviews, with examples."],
