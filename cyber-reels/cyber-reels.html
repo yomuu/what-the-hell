@@ -22,6 +22,7 @@
   --w2:#3ec7e0;
   --w3:#a78bfa;
   --w4:#ff7a59;
+  --w5:#38bdf8;
   --t-study:#ffb020;
   --t-feed:#f472b6;
   --t-py:#5b9dff;
@@ -305,7 +306,8 @@ const WEEKS = [
   {n:1, name:"Security fundamentals", c:"var(--w1)"},
   {n:2, name:"Networking", c:"var(--w2)"},
   {n:3, name:"Operating systems and crypto", c:"var(--w3)"},
-  {n:4, name:"Hands-on analysis", c:"var(--w4)"}
+  {n:4, name:"Hands-on analysis", c:"var(--w4)"},
+  {n:5, name:"Microsoft and cloud identity", c:"var(--w5)"}
 ];
 
 const DAYS = [
@@ -1246,7 +1248,211 @@ VirtualBox internal network. Kali 10.10.10.10, Windows 10.10.10.20.
   {d:1, q:"What does a SIEM add to your lab?", o:["Central log collection and alerting","Faster internet","Another vulnerable target"], k:0,
    w:"A SIEM lets you practise the defender's job: collecting logs, writing detections and responding to alerts."}
  ],
- recap:["Stage 1 done: fundamentals, networking, OS, crypto, hands-on analysis.","Grow the lab with a vulnerable VM and a SIEM, kept internal.","Write up everything on GitHub.","Next: the intermediate stage."]}
+ recap:["Stage 1 done: fundamentals, networking, OS, crypto, hands-on analysis.","Grow the lab with a vulnerable VM and a SIEM, kept internal.","Write up everything on GitHub.","Next: the intermediate stage."]},
+/* ---------------- WEEK 5 (Stage 2): Microsoft and cloud identity ---------------- */
+{t:"Microsoft Entra ID",
+ sub:"The identity system behind Microsoft 365 and Azure.",
+ learn:[
+  ["What it is","Microsoft Entra ID is Microsoft's cloud identity service, called Azure Active Directory until 2023. It holds the users, groups, devices and apps for Microsoft 365 and Azure, and handles their sign-ins."],
+  ["Not AD in the cloud","On-premises Active Directory uses Kerberos, NTLM and LDAP, with OUs and Group Policy. Entra ID uses web protocols such as OAuth 2.0, OpenID Connect and SAML. Many organisations run both and sync accounts with Microsoft Entra Connect."],
+  ["Roles","Admin rights come from roles. Global Administrator can change almost anything, so Microsoft recommends fewer than five of them. Narrower roles, such as User Administrator, Helpdesk Administrator and Security Reader, cover most day-to-day work."],
+  ["Just-in-time admin","Privileged Identity Management (PIM) lets people activate an admin role only when they need it, for a few hours, with approval and MFA. Nobody holds standing admin rights that an attacker could steal."],
+  ["Apps are identities too","Enterprise applications and service principals sign in and get permissions too. An app granted broad access to mail or files is as valuable to an attacker as an admin account, so review app permissions as well as people."]
+ ],
+ real:["Midnight Blizzard and Microsoft, 2024","In January 2024 Microsoft disclosed that a Russian state group had password-sprayed a legacy test tenant account with no MFA. The attackers then abused an old test OAuth app with elevated access to reach email belonging to senior leaders and security staff."],
+ myth:["Entra ID is just Active Directory in the cloud.","It's a different system with different protocols, no OUs and no Group Policy. Many skills transfer, but cloud identity has its own attacks, like consent phishing and token theft."],
+ tryit:{h:"List your tenant's admins", where:"Your own test tenant, PowerShell",
+  p:"Use Microsoft Graph PowerShell in a tenant you own, such as a free trial. This lists roles that have members, then the members of one role. Fewer is better.",
+  code:String.raw`Install-Module Microsoft.Graph -Scope CurrentUser
+Connect-MgGraph -Scopes "Directory.Read.All"
+Get-MgDirectoryRole | Select-Object DisplayName, Id
+Get-MgDirectoryRoleMember -DirectoryRoleId <role-id>`},
+ quiz:[
+  {d:1, q:"What was Microsoft Entra ID called before 2023?", o:["Azure Active Directory","Active Directory Domain Services","Microsoft Intune"], k:0,
+   w:"Microsoft renamed Azure AD to Microsoft Entra ID in 2023. The service itself didn't change."},
+  {d:2, q:"How many Global Administrators does Microsoft recommend?", o:["Fewer than five","At least ten, for cover","One per department"], k:0,
+   w:"Global Administrator can change almost anything. Keep it to a few people and give everyone else narrower roles."},
+  {d:2, q:"What does Privileged Identity Management (PIM) add?", o:["Admin roles that are activated only when needed, for a limited time","A second copy of every user account","Encryption for Entra ID"], k:0,
+   w:"Just-in-time access means there are no permanent admin rights waiting to be stolen."},
+  {d:3, q:"How did the attackers first get into Microsoft in the 2024 Midnight Blizzard incident?", o:["Password spraying a legacy test account that had no MFA","A zero-day in Windows","A stolen laptop"], k:0,
+   w:"A forgotten, low-value test account without MFA became the way in. Old accounts and apps need the same controls as new ones."}
+ ],
+ recap:["Entra ID is Microsoft's cloud identity service, formerly Azure AD.","It uses OAuth, OpenID Connect and SAML, not Kerberos and LDAP.","Keep Global Administrators to a few; use PIM for just-in-time admin.","Apps and service principals need permission reviews too."]},
+
+{t:"Conditional Access",
+ sub:"If this sign-in looks like that, then require this.",
+ learn:[
+  ["If, then","Conditional Access policies are if-then rules for sign-ins. If the user, app, location, device or risk matches, then block, allow, or require something extra such as MFA or a compliant device."],
+  ["When it runs","Conditional Access is checked after the first sign-in step, when Entra ID knows who is signing in. It needs Entra ID P1 licences; tenants without them can turn on security defaults, which require MFA in a simpler, all-or-nothing way."],
+  ["Test before you enforce","Every new policy can run in report-only mode first. Sign-in logs then show what would have happened, so you can catch a policy that would lock out a whole team before it does."],
+  ["Block legacy authentication","Old protocols, like basic authentication for email, can't do MFA, so password sprays target them. A policy that blocks legacy authentication closes that gap."],
+  ["Emergency access accounts","Keep at least two cloud-only break-glass accounts excluded from Conditional Access, with very strong credentials, kept offline. Alert on every use. They save you if a bad policy locks everyone else out."]
+ ],
+ real:["One setting, huge effect","In 2019 Microsoft reported that MFA would block over 99.9% of automated attacks on accounts. Conditional Access is how most organisations require it in the right places, and block the legacy protocols that can't use it."],
+ myth:["Conditional Access replaces MFA.","It decides when to require MFA and what else to check. Without MFA or a phishing-resistant method behind it, there's nothing strong to require."],
+ tryit:{h:"Build a policy safely", where:"Entra admin portal, test tenant",
+  p:"In your own test tenant, go to Protection, then Conditional Access. Create a policy that requires MFA for a test user, set it to report-only, sign in as that user, then check the sign-in log's Conditional Access details. Exclude your emergency account from every policy."},
+ quiz:[
+  {d:1, q:"What's the best way to test a new Conditional Access policy?", o:["Report-only mode, then check the sign-in logs","Turn it on for everyone and wait for complaints","Test it on the Global Administrator first"], k:0,
+   w:"Report-only shows what would happen without blocking anyone."},
+  {d:2, q:"Why block legacy authentication?", o:["It can't do MFA, so password sprays target it","It's too slow","It only works on Linux"], k:0,
+   w:"An MFA policy doesn't help if attackers can sign in through a protocol that never asks for MFA."},
+  {d:2, q:"What are emergency access (break-glass) accounts for?", o:["Getting back in if a policy or outage locks everyone out","Everyday admin work","Sharing with contractors"], k:0,
+   w:"They're excluded from Conditional Access, protected strongly and monitored, so their use is always a big deal."},
+  {d:3, q:"A small business has no Entra ID P1 licences. What's the simplest way to require MFA?", o:["Turn on security defaults","Write a Conditional Access policy anyway","Ask staff to opt in"], k:0,
+   w:"Conditional Access needs P1. Security defaults give free, baseline MFA for everyone."}
+ ],
+ recap:["Conditional Access is if-then rules for sign-ins.","It needs P1; security defaults are the free baseline.","Test in report-only, block legacy authentication.","Keep two monitored break-glass accounts outside the policies."]},
+
+{t:"Azure RBAC and Entra roles",
+ sub:"Two permission systems, often confused.",
+ learn:[
+  ["Two systems","Entra roles control the directory: users, groups, apps and tenant settings. Azure role-based access control (RBAC) controls Azure resources, like virtual machines, storage and networks. Being powerful in one doesn't automatically make you powerful in the other."],
+  ["Scopes","Azure RBAC is assigned at a scope: management group, subscription, resource group or a single resource. Assignments flow down, so Owner on a subscription means Owner on everything inside it."],
+  ["The built-in roles","Owner can do everything, including granting access. Contributor can create and change resources but can't grant access. Reader can only look. User Access Administrator can manage who has access."],
+  ["An assignment has three parts","A role assignment links a security principal (a user, group or app), a role definition, and a scope. Assign roles to groups, not individuals, at the narrowest scope that works."],
+  ["Global Admin and Azure","A Global Administrator doesn't control Azure subscriptions by default, but can elevate themselves to User Access Administrator over all of them. That switch is logged and should alert."]
+ ],
+ real:["Owner to save time","A common finding in cloud reviews: a contractor given Owner on a whole subscription “to save time”. They could grant access to anyone and delete anything. Contributor on one resource group would have done the job."],
+ myth:["Global Administrator automatically controls every Azure subscription.","Not by default. They can elevate themselves to manage access across all subscriptions, which is why that action should be logged and alerted on."],
+ tryit:{h:"See who can do what", where:"Azure CLI, your own subscription",
+  p:"List every role assignment for a user across all scopes, then read what a built-in role allows. Look for Owner where Contributor or Reader would do.",
+  code:String.raw`az login
+az role assignment list --assignee user@example.com --all --output table
+az role definition list --name Contributor --output json`},
+ quiz:[
+  {d:1, q:"Which permission system controls who can manage Azure virtual machines?", o:["Azure RBAC","Entra roles","Group Policy"], k:0,
+   w:"Azure resources use Azure RBAC. Entra roles control the directory itself."},
+  {d:2, q:"What can Owner do that Contributor can't?", o:["Grant other people access","Create virtual machines","Read storage accounts"], k:0,
+   w:"Contributor manages resources but not access. Owner manages both."},
+  {d:2, q:"Someone is Reader on a subscription. What can they do in a resource group inside it?", o:["Read it, because assignments flow down","Nothing, scopes don't inherit","Change anything in it"], k:0,
+   w:"Assignments at a higher scope are inherited by everything below."},
+  {d:3, q:"A contractor needs to manage one app's resources. What's the best assignment?", o:["Contributor on that app's resource group","Owner on the subscription","Global Administrator"], k:0,
+   w:"Narrowest role, narrowest scope. Contributor can't grant access, and the resource group limits the reach."}
+ ],
+ recap:["Entra roles run the directory; Azure RBAC runs resources.","Scopes run from management group to resource, and inherit down.","Owner grants access; Contributor can't; Reader only reads.","Assign to groups at the narrowest scope."]},
+
+{t:"Defender for Endpoint",
+ sub:"What an EDR sees, and what it lets you do.",
+ learn:[
+  ["EDR, not just antivirus","Antivirus blocks known bad files. Endpoint detection and response (EDR) records what processes, files, network connections and logons do, so you can spot suspicious behaviour and investigate it. Microsoft Defender for Endpoint is a common example."],
+  ["Alerts become incidents","Defender groups related alerts into incidents in the Microsoft Defender portal. One incident might combine a phishing email, a malicious document and a PowerShell download across several devices."],
+  ["The device timeline","Each device has a timeline and process tree. You can follow exactly what happened: Word started PowerShell, which connected to an IP, which downloaded a file."],
+  ["Response actions","From the portal you can isolate a device from the network, run an antivirus scan, collect an investigation package or use live response. Isolation keeps the device connected to Defender, so you can keep investigating."],
+  ["Advanced hunting","Advanced hunting runs KQL over tables like DeviceProcessEvents, DeviceNetworkEvents and DeviceLogonEvents, with 30 days of data. It's how you ask “has this happened anywhere else?”"]
+ ],
+ real:["A typical SOC alert","An analyst gets “Suspicious PowerShell command line” on a finance laptop. The process tree shows Word as the parent. They isolate the device, check advanced hunting for the same command on other devices, and find one more. Both are contained within minutes."],
+ myth:["EDR is just antivirus with a new name.","Antivirus mostly blocks known files. EDR records behaviour so you can detect new techniques, investigate what happened and respond across devices."],
+ tryit:{h:"Hunt for failed logons", where:"Defender portal, advanced hunting",
+  p:"If you have access to a Defender trial or lab, run this to find devices and accounts with many failed logons in the last day.",
+  code:String.raw`DeviceLogonEvents
+| where Timestamp > ago(1d)
+| where ActionType == "LogonFailed"
+| summarize failures = count() by DeviceName, AccountName
+| top 10 by failures`},
+ quiz:[
+  {d:1, q:"What does EDR add on top of antivirus?", o:["A record of device behaviour you can investigate and respond to","Faster file downloads","A firewall for the whole network"], k:0,
+   w:"EDR is about visibility and response, not just blocking known files."},
+  {d:2, q:"Why isolate a device instead of switching it off?", o:["It stops the spread but keeps evidence and the Defender connection","It's faster to switch on later","Switching off deletes the malware"], k:0,
+   w:"An isolated device can't reach the network but can still be investigated, and memory evidence survives."},
+  {d:2, q:"Which table records process launches in advanced hunting?", o:["DeviceProcessEvents","DeviceLogonEvents","SigninLogs"], k:0,
+   w:"DeviceProcessEvents holds process creation, including command lines and parent processes."},
+  {d:3, q:"You find one device running a malicious command. What's the best next question?", o:["Has this command run on any other device?","Who installed Defender?","Is the device under warranty?"], k:0,
+   w:"Scope comes next. Advanced hunting across all devices tells you how far it has spread."}
+ ],
+ recap:["EDR records behaviour; antivirus blocks known files.","Alerts are grouped into incidents in the Defender portal.","Isolate devices to contain them without losing evidence.","Advanced hunting uses KQL across Device tables."]},
+
+{t:"Microsoft Sentinel incidents",
+ sub:"From log to alert to closed incident.",
+ learn:[
+  ["What Sentinel is","Microsoft Sentinel is a cloud SIEM and SOAR built on a Log Analytics workspace. It's also part of the unified security operations experience in the Defender portal."],
+  ["How alerts are made","Data connectors bring in logs from Entra ID, Defender, firewalls and more. Analytics rules, usually scheduled KQL queries, look for suspicious patterns and raise alerts, which are grouped into incidents."],
+  ["Entities","Alerts map entities such as accounts, hosts and IP addresses. Clicking an entity shows everything Sentinel knows about it, which makes linking related activity much faster."],
+  ["Working an incident","Assign yourself, set it to Active, check the severity, investigate the entities and evidence, then close it with a classification: true positive, benign positive or false positive. Good notes help the next analyst."],
+  ["Automation","Automation rules can assign, tag or close incidents. Playbooks, built on Azure Logic Apps, can take actions like disabling a user or posting to Teams. Automate the repetitive steps; keep people for judgement."]
+ ],
+ real:["Tuning the noise","A new SOC turns on dozens of analytics rules and gets hundreds of incidents a day, most benign. Analysts start skimming. Tuning the noisiest rules with exclusions and thresholds is what lets the real incidents stand out."],
+ myth:["More analytics rules always means better detection.","Untuned rules create alert fatigue, and real attacks get missed in the noise. Fewer, well-tuned rules beat many noisy ones."],
+ tryit:{h:"Practise the query side", where:"Microsoft's Log Analytics demo",
+  p:"Open Microsoft's free Log Analytics demo environment and try a summary query. If this table isn't there, pick another from the list on the left and adapt it.",
+  code:String.raw`SecurityEvent
+| where TimeGenerated > ago(1d)
+| summarize events = count() by EventID
+| top 10 by events`},
+ quiz:[
+  {d:1, q:"What turns a KQL query into alerts in Sentinel?", o:["An analytics rule","A data connector","A workbook"], k:0,
+   w:"Connectors bring data in, workbooks visualise it, and analytics rules detect and alert."},
+  {d:2, q:"An incident turns out to be a real admin doing approved work. How should it be closed?", o:["Benign positive","True positive","False positive"], k:0,
+   w:"The detection was right, the activity happened, but it wasn't malicious. That's a benign positive."},
+  {d:2, q:"What are Sentinel playbooks built on?", o:["Azure Logic Apps","Python scripts on a VM","Excel macros"], k:0,
+   w:"Playbooks are Logic Apps workflows that can take response actions automatically or on demand."},
+  {d:3, q:"Analysts are ignoring incidents because most are noise. What's the best fix?", o:["Tune the noisiest analytics rules","Turn on more rules","Close all low-severity incidents unread"], k:0,
+   w:"Alert fatigue is a tuning problem. Fewer, better alerts get real attention."}
+ ],
+ recap:["Sentinel is a cloud SIEM and SOAR on Log Analytics.","Connectors bring data; analytics rules raise alerts; incidents group them.","Close with true positive, benign positive or false positive.","Tune rules to beat alert fatigue."]},
+
+{t:"Vulnerability management",
+ sub:"Which of ten thousand findings do you fix first?",
+ learn:[
+  ["CVEs","A CVE ID, like CVE-2021-44228, names one publicly known vulnerability. Scanners match the software and versions you run against CVEs, and often return thousands of findings."],
+  ["CVSS: how bad","The Common Vulnerability Scoring System rates severity from 0 to 10. Under CVSS v3, 9.0 and above is critical, 7.0 to 8.9 high, 4.0 to 6.9 medium and below that low. CVSS v4.0 came out in 2023."],
+  ["EPSS: how likely","The Exploit Prediction Scoring System, from FIRST, estimates the probability that a vulnerability will be exploited in the next 30 days. A medium CVSS flaw with a high EPSS can matter more than a critical one nobody exploits."],
+  ["KEV: already happening","CISA's Known Exploited Vulnerabilities catalogue lists flaws attackers are using in the wild. If something you run is on it, especially if it's internet-facing, it goes to the top of the list."],
+  ["Putting it together","Fix internet-facing systems with known or likely exploitation first. The Essential Eight asks for internet-facing services to be patched within 48 hours when the vendor rates a flaw critical or a working exploit exists, and within two weeks otherwise."]
+ ],
+ real:["Citrix Bleed, 2023","In October 2023 attackers mass-exploited CVE-2023-4966 in Citrix NetScaler, which leaked session tokens. Patching stopped new leaks, but stolen sessions kept working, so Citrix told customers to kill all active sessions too. Ransomware groups used it against large organisations."],
+ myth:["Always patch the highest CVSS score first.","Severity isn't likelihood. Exposure, exploitation in the wild (KEV) and probability (EPSS) often matter more than the raw score."],
+ tryit:{h:"Check a CVE's real-world risk", where:"Your host machine (needs internet)",
+  p:"Ask FIRST's free EPSS API for a CVE's exploitation probability, then count the entries in CISA's KEV catalogue.",
+  code:String.raw`curl -s "https://api.first.org/data/v1/epss?cve=CVE-2023-4966"
+
+curl -s https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json |
+  python3 -c "import json,sys; print(len(json.load(sys.stdin)['vulnerabilities']), 'known exploited')"`},
+ quiz:[
+  {d:1, q:"What does EPSS estimate?", o:["The probability a vulnerability will be exploited in the next 30 days","How severe a vulnerability is","How long a patch takes to install"], k:0,
+   w:"CVSS is severity; EPSS is likelihood of exploitation. Use both."},
+  {d:2, q:"A flaw in your internet-facing VPN appears in CISA's KEV catalogue. What does that tell you?", o:["Attackers are actively exploiting it, so fix it first","It's a low priority","It only affects US government systems"], k:0,
+   w:"KEV means exploitation is happening now. Internet-facing plus KEV goes straight to the top."},
+  {d:2, q:"Under CVSS v3, what rating does a score of 9.8 get?", o:["Critical","High","Medium"], k:0,
+   w:"9.0 to 10.0 is critical; 7.0 to 8.9 is high."},
+  {d:3, q:"Why wasn't patching enough for Citrix Bleed?", o:["Session tokens stolen before the patch kept working until sessions were killed","The patch didn't exist","Patching made it worse"], k:0,
+   w:"A patch closes the hole, but anything stolen through it stays valid. Revoke sessions, tokens and credentials too."}
+ ],
+ recap:["CVE names the flaw; CVSS rates severity.","EPSS estimates likelihood; KEV confirms exploitation.","Internet-facing plus exploited goes first.","After patching, revoke what may have been stolen."]},
+
+{t:"Week 5 review",
+ sub:"Microsoft and cloud identity, pulled together.",
+ learn:[
+  ["How to review","Answer each review heading out loud before you read it. Then do the quiz without scrolling back. These are the topics junior SOC and cloud interviews in Australia and New Zealand ask about most."]
+ ],
+ real:["Putting the week together","An alert in Sentinel shows a sign-in to a contractor account from a new country without MFA. Conditional Access should have required MFA, the account had Owner on a subscription, and Defender shows a new process on a server. Every topic this week touches that one incident."],
+ myth:["Cloud security is a completely different field from what you've learned.","It's the same ideas: identity, least privilege, logging, detection and patching. The names and tools change: Entra roles, RBAC, Conditional Access, Sentinel and Defender."],
+ tryit:{h:"Write the incident up", where:"Notes app or GitHub",
+  p:"Use the real-world card's scenario. In half a page, write what you'd check first, which logs you'd query, what you'd contain, and which control would have stopped it. That's an interview answer and a portfolio piece."},
+ review:[
+  ["Entra ID","Microsoft's cloud identity, formerly Azure AD. Web protocols, not Kerberos. Few Global Administrators, PIM for just-in-time admin, and review app permissions too."],
+  ["Conditional Access","If-then sign-in rules: block, allow, or require MFA or a compliant device. Needs P1; security defaults otherwise. Test in report-only, block legacy auth, keep break-glass accounts."],
+  ["RBAC versus Entra roles","Entra roles run the directory; Azure RBAC runs resources at inherited scopes. Owner grants access, Contributor can't, Reader reads."],
+  ["Defender and Sentinel","Defender for Endpoint records device behaviour and lets you isolate and hunt. Sentinel collects logs, raises alerts from analytics rules and groups them into incidents."],
+  ["Vulnerability management","CVSS is severity, EPSS is likelihood, KEV is confirmed exploitation. Internet-facing and exploited first. Revoke stolen sessions after patching."]
+ ],
+ quiz:[
+  {d:2, q:"Which Microsoft feature can require MFA only for risky or external sign-ins?", o:["Conditional Access","Azure RBAC","Defender for Endpoint"], k:0,
+   w:"Conditional Access applies conditions like location and risk before deciding what to require."},
+  {d:2, q:"A user can create VMs but can't give anyone else access. Which Azure role fits?", o:["Contributor","Owner","Global Administrator"], k:0,
+   w:"Contributor manages resources without managing access."},
+  {d:2, q:"Which Sentinel component turns a scheduled KQL query into alerts?", o:["Analytics rule","Data connector","Workbook"], k:0,
+   w:"Analytics rules detect; connectors ingest; workbooks visualise."},
+  {d:1, q:"What's the best way to contain a compromised laptop in Defender for Endpoint?", o:["Isolate the device","Uninstall Defender","Switch it off at the wall"], k:0,
+   w:"Isolation cuts it off from the network while keeping the evidence and the Defender connection."},
+  {d:3, q:"Two flaws: CVSS 9.1 with no known exploitation on an internal server, and CVSS 7.5 in KEV on your internet-facing VPN. Which first?", o:["The VPN flaw in KEV","The 9.1 internal flaw","Whichever is older"], k:0,
+   w:"Exposure and active exploitation beat raw severity."},
+  {d:2, q:"Why keep emergency access accounts outside Conditional Access?", o:["So a broken policy can't lock every admin out","So they can skip MFA forever unnoticed","Because Conditional Access can't apply to admins"], k:0,
+   w:"They're your way back in, so protect them with very strong credentials and alert on every use."},
+  {d:3, q:"What did Midnight Blizzard abuse after its first foothold at Microsoft in 2024?", o:["An old test OAuth app with elevated access","A misconfigured firewall","A USB drive"], k:0,
+   w:"Apps are identities too. Unused apps with broad permissions are a quiet route to sensitive data."}
+ ],
+ recap:["Identity is the cloud perimeter: Entra ID, Conditional Access, PIM.","Least privilege in Azure: narrow roles at narrow scopes.","Detect with Sentinel, respond with Defender.","Patch by exposure and exploitation, not just score."]}
 ];
 
 const FEED_DECKS = [
@@ -2705,7 +2911,7 @@ function trackTotals(tab){
 const S = TABS.study;
 const studyIntroCount = () => DAYS.reduce((s, d) => s + S.cardCount(d), 0);
 addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
-  <div class="tag"><span>Stage 1</span><i id="studyCount" style="font-style:normal"></i></div>
+  <div class="tag"><span>Stages 1 and 2</span><i id="studyCount" style="font-style:normal"></i></div>
   <h1>Cyber Scroll</h1>
   <p>One idea per card: short lessons, a real incident, a lab task and a quiz each day. Swipe up ↑<span class="kb"> or press the down arrow</span>.</p>
   <div class="stats streakLine"></div>
@@ -2714,7 +2920,7 @@ addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
   <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
 makeTrack("study", DAYS, {
-  answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 1, wrapped",
+  answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 2, wrapped",
   links:{9:{tab:"py", n:11, text:"Python Lesson 11: IPs and JSON"}, 11:{tab:"py", n:10, text:"Python Lesson 10: port checks"},
          18:{tab:"py", n:7, text:"Python Lesson 7: reading logs"}, 19:{tab:"py", n:9, text:"Python Lesson 9: hashing"},
          22:{tab:"py", n:10, text:"Python Lesson 10: port checker"}, 24:{tab:"py", n:14, text:"Python Lesson 14: detector"},
@@ -2803,8 +3009,8 @@ document.getElementById("stDelete").addEventListener("click", () => {
   if (!deleteArmed){ deleteArmed = true; document.getElementById("stDelete").textContent = "Tap again to delete"; return; }
   stories.splice(editing, 1); saveStories(); toast("Story deleted"); closeStory();
 });
-document.getElementById("studyCount").textContent = `28 days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
-addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
+document.getElementById("studyCount").textContent = `${DAYS.length} days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
+addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stages 1 and 2 complete</div><h1>That's all ${DAYS.length} days</h1>
   <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears your Study quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
