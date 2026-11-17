@@ -1,7 +1,7 @@
 # Cyber Bunker: handoff for Claude Code
 
 ## What this is
-Cyber Bunker is a mobile-first study app (an installable web app) that swipes like Instagram Reels. I use it instead of scrolling Instagram. It was first a single file called cyber-reels.html (kept in archive/) and was later named Cyber Scroll; the main file is now `index.html`.
+Cyber Bunker is a mobile-first study app (an installable web app) that swipes like Instagram Reels. I use it instead of scrolling Instagram. It began as a single-file prototype (kept in `archive/`); the main file is now `index.html`.
 
 ## Current state
 - Three tabs: **Training Bunker** (a 35-day plan in Levels B1 to B5), **The Archive** (an endless feed of OWASP Threat Codex decks, incident files, quick-fire cards and more) and **Terminal** (Python lessons with code you can edit and run in the browser).
