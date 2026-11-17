@@ -481,14 +481,14 @@
      "d": 1,
      "run": true,
      "q": "What does this print?",
-     "code": "fails = 7\nif fails > 10:\n    print(\"block\")\nelif fails > 5:\n    print(\"warn\")\nelse:\n    print(\"ok\")",
+     "code": "fails = 3\nif fails > 10:\n    print(\"block\")\nelif fails > 5:\n    print(\"warn\")\nelse:\n    print(\"ok\")",
      "o": [
-      "warn",
+      "ok",
       "block",
-      "ok"
+      "warn"
      ],
      "k": 0,
-     "w": "7 isn't over 10, but it is over 5, so the elif branch runs."
+     "w": "3 isn't over 10 or over 5, so neither the if nor the elif runs, and the else branch prints ok."
     },
     {
      "d": 2,
@@ -970,14 +970,14 @@
      "d": 1,
      "run": true,
      "q": "What does this print?",
-     "code": "try:\n    port = int(\"ssh\")\n    print(\"port\", port)\nexcept ValueError:\n    print(\"bad input\")",
+     "code": "try:\n    port = int(\"8080\")\n    print(\"port\", port)\nexcept ValueError:\n    print(\"bad input\")",
      "o": [
+      "port 8080",
       "bad input",
-      "port ssh",
       "A traceback"
      ],
      "k": 0,
-     "w": "`int(\"ssh\")` raises ValueError, so the except block runs instead."
+     "w": "\"8080\" is all digits, so `int()` works, the print runs and the except block is skipped."
     },
     {
      "d": 3,

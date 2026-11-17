@@ -1,5 +1,5 @@
 {
- "version": 3,
+ "version": 4,
  "date": "2026-11-17",
- "note": "Run Python code in the app, and an Install app button."
+ "note": "Run Python offline, install button, quiz tweaks."
 }

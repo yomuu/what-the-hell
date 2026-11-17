@@ -81,6 +81,12 @@ try {
   else if (ver && Number(m[1]) !== Number(ver.version)) problems.push(`Version mismatch: sw.js has ${m[1]}, content/version.json has ${ver.version}. Run: node tools/bump-version.js`);
 } catch (e) {}
 
+// The service worker caches the same Pyodide version the app loads.
+try {
+  const a = read("app.js").match(/PYODIDE_VERSION = "([\d.]+)"/), s = read("sw.js").match(/PYODIDE_VERSION = "([\d.]+)"/);
+  if (!a || !s || a[1] !== s[1]) problems.push(`Pyodide version differs: app.js ${a && a[1]}, sw.js ${s && s[1]}`);
+} catch (e) {}
+
 if (problems.length) {
   console.log(`${problems.length} problem${problems.length === 1 ? "" : "s"} found:`);
   problems.forEach(p => console.log("- " + p));

@@ -1,8 +1,10 @@
 /* Cyber Scroll service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 3;
+const VERSION = 4;
 const CACHE = "cyber-scroll-v" + VERSION;
+const PYODIDE_VERSION = "0.27.7";   // keep in step with app.js
+const PYODIDE_CACHE = "cyber-scroll-pyodide-" + PYODIDE_VERSION;
 const ASSETS = [
   "./", "index.html", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
   "content/study.json", "content/feed.json", "content/python.json", "content/version.json"
@@ -36,7 +38,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k.startsWith("cyber-scroll-v") && k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => (k.startsWith("cyber-scroll-v") && k !== CACHE) || (k.startsWith("cyber-scroll-pyodide") && k !== PYODIDE_CACHE)).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -66,11 +68,12 @@ self.addEventListener("fetch", event => {
 
   // Pyodide (Python for the Run buttons): downloaded the first time you run code, then served from this cache.
   // The files never change for a given Pyodide version, so the cache is kept across app updates.
-  if (url.hostname === "cdn.jsdelivr.net" && url.pathname.startsWith("/npm/pyodide@")) {
+  if (url.hostname === "cdn.jsdelivr.net" && url.pathname.startsWith("/npm/pyodide@" + PYODIDE_VERSION + "/")) {
     event.respondWith(
-      caches.open("cyber-scroll-pyodide").then(cache =>
+      caches.open(PYODIDE_CACHE).then(cache =>
         cache.match(req).then(hit => hit || fetch(req).then(res => {
-          if (res.ok || res.type === "opaque") cache.put(req, res.clone());
+          // waitUntil keeps the worker alive until the (large) file is fully saved.
+          if (res.ok || res.type === "opaque") event.waitUntil(cache.put(req, res.clone()).catch(() => {}));
           return res;
         }))
       )
@@ -83,7 +86,7 @@ self.addEventListener("fetch", event => {
     event.respondWith(
       caches.open("cyber-scroll-fonts").then(cache =>
         cache.match(req).then(hit => {
-          const fresh = fetch(req).then(res => { if (res.ok) cache.put(req, res.clone()); return res; }).catch(() => hit);
+          const fresh = fetch(req).then(res => { if (res.ok) event.waitUntil(cache.put(req, res.clone()).catch(() => {})); return res; }).catch(() => hit);
           return hit || fresh;
         })
       )

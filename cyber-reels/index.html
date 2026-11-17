@@ -199,7 +199,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .yours b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--good);margin-bottom:4px}
 
 .btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
-.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid color-mix(in srgb,var(--text) 35%,transparent)}
 .btn:disabled{opacity:.45;cursor:default}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 .weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px}
@@ -296,9 +296,9 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
     <div id="dayList"></div>
     <section class="backup" id="installHelp" aria-labelledby="inTitle">
       <div class="wk" id="inTitle">Install on your phone</div>
-      <p>Installed, it opens full screen from your home screen and works offline.</p>
+      <p id="installMsg">Installed, it opens full screen from your home screen and works offline.</p>
       <div class="row"><button class="btn installBtn" type="button" hidden>Install app</button></div>
-      <p class="small">No button? In Chrome, tap the ⋮ menu, then <b>Add to Home screen</b> or <b>Install app</b>.</p>
+      <p class="small">No button? In Chrome, tap the ⋮ menu, then <b>Add to Home screen</b> or <b>Install app</b>. If asked, choose <b>Install</b>, not Create shortcut.</p>
     </section>
     <section class="backup" aria-labelledby="bkTitle">
       <div class="wk" id="bkTitle">Back up your progress</div>

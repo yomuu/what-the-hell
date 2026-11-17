@@ -1,5 +1,8 @@
 /* Cyber Scroll app engine. index.html loads the content JSON into globals, then this file. */
 document.getElementById("v-study").innerHTML = "";
+// Feed decks by id (looked up on every swipe, so a Map rather than a search).
+const DECK_INDEX = new Map(FEED_DECKS.map(d => [d.id, d]));
+const deckById = id => DECK_INDEX.get(id);
 /* ==========================================================================
    APP
    ========================================================================== */
@@ -40,13 +43,13 @@ function currentStreak(){ return daily.lastDone >= dayNum() - 1 ? daily.streak :
 function srsItem(key){
   const pre = key.slice(0, 2), rest = key.slice(2);
   if (pre === "f:"){
-    const [id, n] = rest.split("#"), d = FEED_DECKS.find(x => x.id === id), q = d && d.qs && d.qs[+n || 0];
+    const [id, n] = rest.split("#"), d = deckById(id), q = d && d.qs && d.qs[+n || 0];
     if (!q) return null;
     // Triage questions only make sense next to their evidence, so review shows the log with them.
     const withEvidence = d.kind === "triage" && !q.code && d.cards[0] && d.cards[0][2] ? Object.assign({}, q, {code:d.cards[0][2]}) : q;
     return {q:withEvidence, src:d.kind === "owasp" ? "OWASP " + d.tag : d.title, deck:d};
   }
-  if (pre === "i:"){ const d = FEED_DECKS.find(x => x.id === rest && x.kind === "interview"); return d ? {interview:d, src:"Interview"} : null; }
+  if (pre === "i:"){ const d = deckById(rest); if (d && d.kind !== "interview") return null; return d ? {interview:d, src:"Interview"} : null; }
   const [dn, qi] = rest.split(".").map(Number);
   const list = pre === "s:" ? DAYS : pre === "p:" ? PY_LESSONS : null;
   const q = list && list[dn-1] && list[dn-1].quiz[qi];
@@ -127,12 +130,19 @@ function wireCopy(scope, text){
   });
 }
 /* ---------- Run Python in the browser (Pyodide) ----------
-   Loaded only the first time you tap Run (about 14 MB). The service worker keeps a copy, so later runs work offline. */
-const PYODIDE_URL = "https://cdn.jsdelivr.net/npm/pyodide@0.27.7/";
+   Downloaded only after you agree on the first tap (about 14 MB). The service worker keeps it, so later runs work offline.
+   Content authors: examples run on the main thread with no time limit, so never mark a loop that doesn't end as runnable. */
+const PYODIDE_VERSION = "0.27.7", PYODIDE_URL = `https://cdn.jsdelivr.net/npm/pyodide@${PYODIDE_VERSION}/`, PYODIDE_CACHE = "cyber-scroll-pyodide-" + PYODIDE_VERSION;
 // Code that needs files, the network, arguments or AWS can't run here; those cards stay copy-only.
-const canRun = src => !/\bopen\(|import (socket|boto3|argparse|subprocess|requests)|sys\.argv|input\(/.test(src);
-const RUN_HTML = label => `<div class="runbox"><button class="btn ghost runBtn" type="button">${label}</button><pre class="pyout" hidden aria-live="polite"></pre></div>`;
-let pyodideReady = null;
+const canRun = src => !/\b(socket|boto3|botocore|argparse|subprocess|requests)\b|\bopen\(|sys\.argv|input\(/.test(src);
+const RUN_HTML = label => `<div class="runbox"><button class="btn runBtn" type="button" style="--c:var(--good)" data-label="${label}">${label}</button><pre class="pyout" hidden></pre></div>`;
+let pyodideReady = null, pyAgreed = false;
+async function pythonSaved(){
+  try {
+    const c = await caches.open(PYODIDE_CACHE);
+    return !!(await c.match(PYODIDE_URL + "pyodide.asm.wasm")) && !!(await c.match(PYODIDE_URL + "python_stdlib.zip"));
+  } catch (e) { return false; }
+}
 function loadPython(){
   if (pyodideReady) return pyodideReady;
   pyodideReady = new Promise((resolve, reject) => {
@@ -142,7 +152,13 @@ function loadPython(){
     s.onload = resolve; s.onerror = () => reject(new Error("offline"));
     document.head.appendChild(s);
   }).then(() => loadPyodide({indexURL: PYODIDE_URL}));
-  pyodideReady.catch(() => { pyodideReady = null; });
+  pyodideReady.then(async () => {
+    // Say once whether Python is now kept for offline use.
+    if (store.get("cr2-py-saved", false)) return;
+    await new Promise(r => setTimeout(r, 1500));
+    if (await pythonSaved()){ store.set("cr2-py-saved", true); toast("Python is saved on this phone, so Run works offline too."); }
+    else toast("Python ran, but isn't saved for offline use yet. Open the app again on Wi-Fi.");
+  }, () => { pyodideReady = null; });
   return pyodideReady;
 }
 document.addEventListener("click", async e => {
@@ -150,21 +166,29 @@ document.addEventListener("click", async e => {
   if (!btn) return;
   const card = btn.closest(".card"), out = btn.parentNode.querySelector(".pyout"), code = card && card.__runCode;
   if (!code || btn.disabled) return;
-  const label = btn.textContent;
-  btn.disabled = true; out.hidden = false; out.className = "pyout";
-  out.textContent = pyodideReady ? "Running…" : "Loading Python… The first time downloads about 14 MB, then it works offline.";
+  const say = text => { out.hidden = false; out.textContent = text; live.textContent = text; };
+  // First time: ask before downloading 14 MB.
+  if (!pyodideReady && !pyAgreed && !(await pythonSaved())){
+    const c = navigator.connection, mobile = c && (c.saveData || c.type === "cellular");
+    out.className = "pyout";
+    say(`Running code here needs Python, a one-time download of about 14 MB.${mobile ? " You're on mobile data." : ""} After that it works offline.`);
+    btn.textContent = "Download and run"; pyAgreed = true; return;
+  }
+  btn.disabled = true; out.className = "pyout";
+  say(pyodideReady ? "Running…" : "Loading Python…");
+  let loaded = false;
   try {
-    const py = await loadPython();
+    const py = await loadPython(); loaded = true;
     const lines = [];
     py.setStdout({batched: t => lines.push(t)}); py.setStderr({batched: t => lines.push(t)});
     try { py.runPython(code, {globals: py.globals.get("dict")()}); }
     catch (err){ out.classList.add("err"); lines.push(String(err.message || err).trim().split("\n").filter(l => l.trim()).slice(-1)[0] || "Error"); }
-    out.textContent = lines.join("\n") || "(no output)";
+    say(lines.join("\n") || "(no output)");
   } catch (err){
     out.classList.add("err");
-    out.textContent = navigator.onLine ? "Python couldn't load. Try again in a moment." : "You're offline. Python needs a connection the first time you run code; after that it works offline.";
+    say(navigator.onLine ? "Python couldn't load. Try again in a moment." : "You're offline. Python needs a connection the first time you run code; after that it works offline.");
   }
-  btn.disabled = false; btn.textContent = label === "Run it here" || label === "Run again" ? "Run again" : label;
+  btn.disabled = false; btn.textContent = loaded ? "Run again" : btn.dataset.label;
 });
 
 /* ---------- Install button (Android Chrome and other browsers that support it) ---------- */
@@ -173,17 +197,19 @@ function refreshInstall(){
   document.querySelectorAll(".installBtn").forEach(b => b.hidden = standalone || !window.installPrompt);
   const help = document.getElementById("installHelp");
   if (help) help.hidden = standalone;
+  const done = store.get("cr2-installed", false), msg = document.getElementById("installMsg");
+  if (msg && done) msg.textContent = "Installed. Open Cyber Scroll from your home screen for full screen and offline use.";
 }
 document.addEventListener("click", async e => {
   const btn = e.target.closest && e.target.closest(".installBtn");
   if (!btn || !window.installPrompt) return;
   const ev = window.installPrompt; window.installPrompt = null;
   ev.prompt();
-  try { const r = await ev.userChoice; if (r.outcome !== "accepted") toast("Not installed. You can install it later from the Days sheet."); } catch (err) {}
+  try { const r = await ev.userChoice; if (r.outcome !== "accepted") toast("Not installed. You can install later from Chrome's ⋮ menu."); } catch (err) {}
   refreshInstall();
 });
 window.addEventListener("installready", refreshInstall);
-window.addEventListener("appinstalled", () => { window.installPrompt = null; refreshInstall(); toast("Installed. Open Cyber Scroll from your home screen."); });
+window.addEventListener("appinstalled", () => { window.installPrompt = null; store.set("cr2-installed", true); refreshInstall(); toast("Installed. Open Cyber Scroll from your home screen."); });
 
 // Two taps to confirm, inside the page (some hosts block confirm() dialogs).
 function twoTap(btn, armedText, action){
@@ -402,8 +428,7 @@ addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
   <button class="linkbtn" id="bkNudge" type="button" hidden>Back up your progress →</button>
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
-  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button></div>
-  <button class="btn ghost installBtn" type="button" hidden>Install app</button>`});
+  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("study", DAYS, {
   answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 2, wrapped",
   links:{9:{tab:"py", n:11, text:"Python Lesson 11: IPs and JSON"}, 11:{tab:"py", n:10, text:"Python Lesson 10: port checks"},
@@ -516,10 +541,10 @@ const P = TABS.py;
 addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
   <div class="tag"><span>Python</span>${PY_LESSONS.length} lessons · ${PY_LESSONS.reduce((s,d)=>s+d.quiz.length,0)} questions</div>
   <h1>Python for security</h1>
-  <p>Short lessons that build up to real tools: log parsing, regex, hashing, port checks and a cloud audit script. Run the examples in Kali as you go.</p>
+  <p>Short lessons that build up to real tools: log parsing, regex, hashing, port checks and a cloud audit script. Tap <b>Run it here</b> to try the short examples in the app; run the bigger tools in Kali.</p>
   <div class="weeks">${PY_LEVELS.map(l=>`<div style="--wc:var(--t-py)"><b>${esc(l.name)}</b>Lessons ${l.from+1} to ${l.to}</div>`).join("")}</div>
   <div class="stats streakLine"></div>
-  <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
+  <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("py", PY_LESSONS, {
   answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Python track, wrapped", codeLabel:"Python",
   links:{7:{tab:"study", n:18, text:"Background: Study Day 18"}, 8:{tab:"study", n:24, text:"Background: Study Day 24"},
@@ -585,7 +610,7 @@ const TARGETS = {mixed:{}, soc:{triage:1.5, kql:1.5, incident:0.75, interview:0.
 let target = TARGETS[store.get("cr2-target", "mixed")] ? store.get("cr2-target", "mixed") : "mixed";
 // Share of a kind's answered checks that are still weak (box 1 or 2). Weak kinds come up more often.
 function weakShare(kind){
-  const keys = Object.keys(srs).filter(k => k.startsWith("f:") && (FEED_DECKS.find(d => d.id === k.slice(2).split("#")[0]) || {}).kind === kind);
+  const keys = Object.keys(srs).filter(k => k.startsWith("f:") && (deckById(k.slice(2).split("#")[0]) || {}).kind === kind);
   return keys.length ? keys.filter(k => srs[k].box <= 2).length / keys.length : 0;
 }
 function pickDeck(){
