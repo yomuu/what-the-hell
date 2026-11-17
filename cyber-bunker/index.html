@@ -223,7 +223,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .weeks div{font-size:14px;line-height:1.35;color:var(--muted);border-left:3px solid var(--wc);padding:4px 10px}
 .weeks b{display:block;color:var(--text);font-weight:600}
 .legend{display:flex;flex-wrap:wrap;gap:6px;max-width:440px}
-.legend span{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+.legend span{color:var(--secondary)!important;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
 
 .sheet{position:fixed;inset:0;z-index:10;background:rgba(5,8,10,.72);display:none;align-items:flex-end;justify-content:center}
 .sheet.open{display:flex}
@@ -284,8 +284,11 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
   --hazard:repeating-linear-gradient(-45deg,var(--amber) 0 9px,var(--bunker) 9px 18px);
   --scan:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);
   --control:var(--ash); /* borders of tappable things need 3:1; ash is 5.1:1 on bunker black */
+  --alarm:#ff6b6b;      /* small warning text: breach red is too dark for it (about 6:1 on bunker black) */
 }
 *,*::before,*::after{border-radius:0!important}
+.warn,.slip,.tag .slip,.opt.wrong .mk,#v-py .opt.wrong .mk{color:var(--alarm)}
+.warn{font-size:16px}
 body{background:var(--bunker)}
 
 /* Type roles: headings Plex Sans 700 uppercase; body Plex Sans 400; labels and stamps Plex Mono; VT323 for short CRT text only */
@@ -302,7 +305,10 @@ h2{font-size:clamp(22px,6.3vw,34px)}
 .btn.ghost{color:var(--bone);border:2px solid var(--control);background:transparent}
 .linkbtn{font-size:13px;border:2px dashed var(--control)}
 .rate button,.conf button,.x,.cp,.hpick{border:2px solid var(--control)}
-button:focus-visible,a:focus-visible,.editor:focus-visible,.recall input:focus-visible,textarea:focus-visible{outline:3px solid var(--amber)!important;outline-offset:2px}
+:focus-visible{outline:3px solid var(--amber)!important;outline-offset:2px}
+.update button:focus-visible{outline-color:var(--bunker)!important;outline-offset:-5px}
+.chips button:focus-visible{outline-offset:-5px}
+#v-py :focus-visible{outline-color:var(--phosphor)!important}
 
 /* Header bar: CRT amber */
 .top{background:var(--bunker);padding-bottom:6px;border-bottom:2px solid var(--metal)}
@@ -339,17 +345,20 @@ button:focus-visible,a:focus-visible,.editor:focus-visible,.recall input:focus-v
 .pyout{font-family:var(--crt);font-size:21px;line-height:1.2;border-left-width:6px}
 .pyout.err{border-color:var(--breach);color:var(--bone)}
 .pyout.pass{border-color:var(--phosphor)}
+.pyout.note{font-family:var(--mono);font-size:15px;line-height:1.5;color:var(--bone)}
 .editor{caret-color:var(--phosphor)}
 .why.show{padding:12px 14px;color:var(--phosphor)}
+.why.miss strong{color:var(--amber)}
 .why strong{color:var(--phosphor);font-family:var(--crt);font-size:22px;font-weight:400;letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
 .card code{background:var(--termbg);border:1px solid var(--dimgreen);color:var(--phosphor)}
 
 /* Hazard-stripe dividers */
-.hazard{height:10px;background:var(--hazard)}
+.hazard{height:6px;background:var(--hazard)}
+.backup p,.checks label,.day{font-size:16px}
 .recap{border-top:6px solid transparent;border-image:var(--hazard) 6;padding-top:12px}
 
 /* Incident record card */
-.rec{display:flex;flex-direction:column;gap:12px;margin:0 -16px}
+.rec{display:flex;flex-direction:column;gap:10px;margin:0 -16px}
 .rec > *:not(.hazard):not(.rec-hd){margin-left:16px;margin-right:16px}
 .rec-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px 6px 16px;font-family:var(--crt);font-size:22px;letter-spacing:.06em;color:var(--amber);background:var(--bunker)}
 .recno{border:2px solid var(--metal);padding:0 8px;font-size:20px;color:var(--amber)}
@@ -358,12 +367,12 @@ button:focus-visible,a:focus-visible,.editor:focus-visible,.recall input:focus-v
 .rec-file .new{color:var(--phosphor)}
 .stamp{flex:none;font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:.12em;text-transform:uppercase;border:2.5px solid currentColor;padding:2px 8px;transform:rotate(-8deg);margin:6px 4px 6px 0}
 .stamp.breached{color:var(--breach)} .stamp.verified{color:var(--amber)} .stamp.developing{color:var(--cyan)}
-.rec-name{font-size:clamp(30px,9vw,48px);margin-top:2px}
+.rec-name{font-size:clamp(28px,8vw,44px);margin-top:0}
 .card p.rec-entry{border-left:4px solid var(--breach);padding-left:12px;font-size:17px}
 .rec-entry b,.redact .txt b{display:block;font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:2px}
 .card p.rec-impact{color:var(--secondary);font-size:17px}
 .redact{display:block;width:auto;min-height:48px;text-align:left;cursor:pointer;background:none;border:0;padding:0;color:var(--bone)}
-.redact .bar{display:flex;align-items:center;min-height:48px;padding:0 12px;background:repeating-linear-gradient(90deg,#000 0 14px,#0a0a0a 14px 16px);border:2px solid var(--control);font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--secondary)}
+.redact .redact-bar{display:flex;align-items:center;min-height:48px;padding:0 12px;background:repeating-linear-gradient(90deg,#000 0 14px,#0a0a0a 14px 16px);border:2px solid var(--control);font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--secondary)}
 .redact .txt{display:block;font-size:17px;line-height:1.45;border-left:4px solid var(--amber);padding-left:12px}
 .term.split{display:grid;grid-template-columns:1fr 1fr;padding:0}
 .term.split > div{padding:10px 12px;min-width:0}
@@ -374,7 +383,10 @@ button:focus-visible,a:focus-visible,.editor:focus-visible,.recall input:focus-v
 .cursor{animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 .card p.rec-src{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ash);max-width:none}
-.rec-ft{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0 0;border-top:2px solid var(--metal);font-family:var(--crt);font-size:20px;letter-spacing:.05em;color:var(--amber);text-transform:uppercase}
+.rec-ft span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-ft span:last-child{flex:none}
+.rec-hd span,.meta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-ft{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0 0;border-top:2px solid var(--metal);font-family:var(--crt);font-size:18px;letter-spacing:.05em;color:var(--amber);text-transform:uppercase}
 
 /* Tab bar and chips */
 .tabs{background:var(--bunker);border-top:0;box-shadow:0 -4px 0 var(--metal)}
@@ -387,7 +399,7 @@ button:focus-visible,a:focus-visible,.editor:focus-visible,.recall input:focus-v
 .chips button{font-size:11px;letter-spacing:.02em;padding:0 7px;border:2px solid var(--control);background:var(--bunker);color:var(--bone)}
 .chips button[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--bunker)}
 /* Toasts sit just above the tab bar, so they never cover the header, chips or record bar. */
-.toast{top:auto;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 20px);transform:translate(-50%,8px)}
+.toast{top:auto;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 56px);transform:translate(-50%,8px)}
 .toast.show{transform:translate(-50%,0)}
 body.has-update .toast{bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 84px)}
 
@@ -400,7 +412,7 @@ body.has-update .toast{bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 
 .day .n{border-width:2px}
 .weeks div{border-left-width:4px}
 .pyMeter{font-family:var(--crt);font-size:22px;color:var(--phosphor)}
-.pyMeter i{background:var(--metal);width:9px;height:16px}
+.pyMeter i{background:var(--dimgreen);width:9px;height:16px}
 
 /* Terminal tab: a full green-screen console */
 #v-py{background:var(--scan),var(--termbg)}
@@ -409,6 +421,10 @@ body.has-update .toast{bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 
 #v-py .card > .in::before{background:repeating-linear-gradient(-45deg,var(--phosphor) 0 9px,var(--termbg) 9px 18px)}
 #v-py .opt,#v-py .mf div,#v-py .hintBox,#v-py .solBox{background:#102414;border-color:var(--dimgreen);color:var(--phosphor)}
 #v-py .btn.ghost{color:var(--phosphor);border-color:var(--dimgreen)}
+#v-py .opt.right{border-color:var(--phosphor);background:color-mix(in srgb,var(--phosphor) 14%,#102414)}
+#v-py .opt.wrong{border-color:var(--breach);background:color-mix(in srgb,var(--breach) 18%,#102414);color:var(--bone)}
+#v-py .mf .m{border-color:var(--breach)}
+#v-py .mf .f{border-color:var(--phosphor)}
 #v-py .btn{--c:var(--phosphor)}
 #v-py .tag span{border-color:var(--phosphor)}
 #v-py .recap{border-image:repeating-linear-gradient(-45deg,var(--phosphor) 0 9px,var(--termbg) 9px 18px) 6}

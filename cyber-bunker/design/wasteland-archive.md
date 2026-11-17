@@ -20,6 +20,7 @@ The CSS lives at the end of the `<style>` block in `index.html`, under "WASTELAN
 | `--bone` | #d9d6cc | Body text | 12.67 |
 | `--secondary` | #b8b5ab | Secondary text, impact text | 8.98 |
 | `--ash` | #8a877d | Tertiary text, borders of tappable controls (3:1 needed) | 5.13 |
+| `--alarm` | #ff6b6b | Small warning text ("Keeps slipping", storage warning, the ✗ mark). Breach red is too dark for small text | about 6 |
 
 Accent per tab: Training Bunker amber, The Archive cyan, Terminal phosphor green. Text on a filled amber, cyan or green button is bunker black.
 
@@ -31,9 +32,9 @@ Loaded from Google Fonts: IBM Plex Sans (400, 700), IBM Plex Mono (500, 700) and
 |---|---|
 | Company names and headings | IBM Plex Sans 700, uppercase, letter-spacing -0.01em |
 | Body | IBM Plex Sans 400, at least 16px |
-| Small labels, tags, buttons, chips, tab labels | IBM Plex Mono 500, uppercase, letter-spacing about 0.1em |
+| Small labels, tags, buttons, chips, tab labels | IBM Plex Mono 500, uppercase, letter-spacing about 0.1em (filter chips use 0.02em so all five fit at 375px) |
 | Stamps | IBM Plex Mono 700, 19px, uppercase. Bold 19px counts as large text, so breach red meets WCAG AA (3:1) |
-| Header bar, record bar, footer, counters, terminal panel labels, Python output | VT323, short text only, never paragraphs |
+| Header bar, record bar, footer, counters, terminal panel labels, Python program output | VT323, short text only, never paragraphs. App messages inside the output box (download prompt, offline notices) use Plex Mono |
 | Code | IBM Plex Mono |
 
 ## Shared language (all tabs)
@@ -56,7 +57,7 @@ Loaded from Google Fonts: IBM Plex Sans (400, 700), IBM Plex Mono (500, 700) and
 6. **Impact** text in secondary colour, then a tap-to-reveal redaction bar hiding the key lesson. It's a button with aria-expanded, at least 48px tall.
 7. **Green terminal panel** split in two: CODEX (OWASP category in phosphor green) and STATUS (amber, with a blinking cursor).
 8. **Source line** in ash, as small mono text.
-9. **Footer** in VT323: "SWIPE ↑ NEXT RECORD" on the left, and a segmented block meter (■□□□□ 1/5) on the right.
+9. **Footer** in VT323: "SWIPE ↑ FULL FILE" on the left (the deck's detail cards follow), and a segmented block meter (■□□□□ 1/5) on the right.
 
 Data comes from the incident deck's fields: `date`, `status`, `region`, `entry`, `impact`, `lesson`, `source`, `maps` and `title`.
 

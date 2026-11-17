@@ -180,16 +180,17 @@ document.addEventListener("click", async e => {
   if (!btn) return;
   const card = btn.closest(".card"), box = btn.closest(".runbox"), out = box.querySelector(".pyout"), ed = box.querySelector(".editor"), code = ed ? ed.value : card && card.__runCode;
   if (!code || btn.disabled) return;
-  const say = text => { out.hidden = false; out.textContent = text; live.textContent = text; };
+  // note = a message from the app (Plex Mono); otherwise real program output (VT323).
+  const say = (text, note) => { out.hidden = false; out.textContent = text; out.classList.toggle("note", !!note); live.textContent = text; };
   // First time: ask before downloading 14 MB.
   if (!pyodideReady && !pyAgreed && !(await pythonSaved())){
     const c = navigator.connection, mobile = c && (c.saveData || c.type === "cellular");
     out.className = "pyout";
-    say(`Running code here needs Python, a one-time download of about 14 MB.${mobile ? " You're on mobile data." : ""} After that it works offline.`);
+    say(`Running code here needs Python, a one-time download of about 14 MB.${mobile ? " You're on mobile data." : ""} After that it works offline.`, true);
     btn.textContent = "Download and run"; pyAgreed = true; return;
   }
   btn.disabled = true; out.className = "pyout";
-  say(pyodideReady ? "Running…" : "Loading Python…");
+  say(pyodideReady ? "Running…" : "Loading Python…", true);
   let loaded = false;
   try {
     const py = await loadPython(); loaded = true;
@@ -207,7 +208,7 @@ document.addEventListener("click", async e => {
     }
   } catch (err){
     out.classList.add("err");
-    say(navigator.onLine ? "Python couldn't load. Try again in a moment." : "You're offline. Python needs a connection the first time you run code; after that it works offline.");
+    say(navigator.onLine ? "Python couldn't load. Try again in a moment." : "You're offline. Python needs a connection the first time you run code; after that it works offline.", true);
   }
   btn.disabled = false; btn.textContent = loaded && !ed ? "Run again" : btn.dataset.label;
 });
@@ -230,7 +231,12 @@ function wireEditor(card, original){
     if (e.key === "Tab" && !e.shiftKey && !escaped){ e.preventDefault(); ed.setRangeText("    ", ed.selectionStart, ed.selectionEnd, "end"); }
     escaped = false;
   });
-  card.querySelector(".resetCode").addEventListener("click", () => { ed.value = original; sizeEditor(ed); const o = card.querySelector(".pyout"); o.hidden = true; });
+  card.querySelector(".resetCode").addEventListener("click", () => {
+    ed.value = original; sizeEditor(ed);
+    const o = card.querySelector(".pyout"); o.hidden = true; o.className = "pyout"; o.textContent = "";
+    const note = card.querySelector(".doneNote"), dn = +(card.querySelector(".runbox").dataset.dn || 0);
+    if (note) note.textContent = dn && pyDone[dn] ? `Lesson ${dn} complete.` : "";
+  });
 }
 /* ---------- Lessons completed (a challenge passed, or marked done) ---------- */
 const pyDone = asObj(store.get("cr2-py-done", {}));
@@ -371,6 +377,7 @@ function buildQuiz(card, q, persist, onChange){
       if (j === q.k){ b.classList.add("right"); mk.textContent = "✓"; st.textContent = j === pick ? " (your answer, correct)" : " (correct answer)"; }
       else if (j === pick){ b.classList.add("wrong"); mk.textContent = "✗"; st.textContent = " (your answer)"; }
     });
+    why.classList.toggle("miss", pick !== q.k);
     why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}${q.run && q.code && canRun(q.code) ? RUN_HTML("Run it to check") : ""}`;
     if (q.run && q.code) card.__runCode = q.code;
     why.classList.add("show");
@@ -702,10 +709,10 @@ function recordHtml(d, total){
     <h1 class="rec-name">${fmt(d.title)}</h1>
     <p class="rec-entry"><b>Entry point</b>${fmt(d.entry)}</p>
     <p class="rec-impact">${fmt(d.impact)}</p>
-    <button class="redact" type="button" aria-expanded="false"><span class="bar">Classified lesson · tap to reveal</span><span class="txt" hidden><b>Key lesson</b>${fmt(d.lesson)}</span></button>
+    <button class="redact" type="button" aria-expanded="false"><span class="redact-bar">Classified lesson · tap to reveal</span><span class="txt" hidden><b>Key lesson</b>${fmt(d.lesson)}</span></button>
     <div class="term split"><div><small>Codex</small><b class="codex">${fmt(codex)}</b></div><div><small>Status</small><b class="status">${STAMP[d.status] || esc(d.status)}<span class="cursor" aria-hidden="true">_</span></b></div></div>
     <p class="rec-src">Source: ${fmt(d.source)}</p>
-    <div class="rec-ft"><span>Swipe ↑ next record</span><span>${blockMeter(0, total)}</span></div>
+    <div class="rec-ft"><span>Swipe ↑ full file</span><span>${blockMeter(0, total)}</span></div>
   </div>`;
 }
 function wireRedaction(card){
@@ -713,7 +720,7 @@ function wireRedaction(card){
   b.addEventListener("click", () => {
     const open = b.getAttribute("aria-expanded") === "true";
     b.setAttribute("aria-expanded", String(!open));
-    b.querySelector(".bar").hidden = !open; b.querySelector(".txt").hidden = open;
+    b.querySelector(".redact-bar").hidden = !open; b.querySelector(".txt").hidden = open;
   });
 }
 function interviewHtml(d, tagHtml){
@@ -759,7 +766,7 @@ function pickDeck(){
   // Skip recently shown decks and the last kind, then pick at random, weighted by your goal,
   // by how weak you are on that kind, and towards decks you've seen least.
   const all = FEED_DECKS.filter(FILTERS[feedState.filter]);
-  const avoid = feedState.recent.slice(-Math.min(6, all.length - 1));
+  const avoid = all.length > 1 ? feedState.recent.slice(-Math.min(6, all.length - 1)) : [];
   let pool = all.filter(d => !avoid.includes(d.id));
   const other = pool.filter(d => d.kind !== lastKind);
   if (other.length) pool = other;
@@ -893,7 +900,7 @@ addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, ht
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
   <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
-  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--amber"],["Splunk SPL","--amber"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["KQL","--k-kql"],["Quick-fire","--k-quick"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
+  <div class="legend">${["OWASP","Incidents","Splunk SPL","Essential Eight","Cloud","AU/NZ law","Triage","KQL","Quick-fire","Interview","Review"].map(t => `<span>${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
 function wireTarget(root){
   root.querySelectorAll(".target button").forEach(b => {
