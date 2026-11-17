@@ -1,10 +1,10 @@
-# Creates (or updates) a Windows Task Scheduler task that runs the Cyber Scroll weekly content
+# Creates (or updates) a Windows Task Scheduler task that runs the Cyber Bunker weekly content
 # workflow every Sunday at 7pm. Run it once from PowerShell in the project folder:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\register-weekly-task.ps1
 # Add -RunNow to start a test run straight away.
 param([switch]$RunNow)
 
-$TaskName = "Cyber Scroll weekly content"
+$TaskName = "Cyber Bunker weekly content"
 $Project  = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $Runner   = Join-Path $PSScriptRoot "run-weekly-content.ps1"
 

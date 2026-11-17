@@ -76,7 +76,7 @@ try {
   $r = Get-Content $JsonLog -Raw | ConvertFrom-Json
   $cost = if ($r.total_cost_usd) { "{0:N2}" -f $r.total_cost_usd } else { "n/a" }
   Write-Summary @"
-Cyber Scroll weekly content run: $(Get-Date -Format "dddd d MMMM yyyy, h:mm tt")
+Cyber Bunker weekly content run: $(Get-Date -Format "dddd d MMMM yyyy, h:mm tt")
 Exit code: $code   Result: $($r.subtype)   Minutes: $mins   Estimated cost (USD, not your bill): $cost
 Session id: $($r.session_id)   Permission denials: $(@($r.permission_denials).Count)
 Backup: $Backup

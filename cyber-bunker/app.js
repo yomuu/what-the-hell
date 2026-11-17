@@ -1,4 +1,4 @@
-/* Cyber Scroll app engine. index.html loads the content JSON into globals, then this file. */
+/* Cyber Bunker app engine. index.html loads the content JSON into globals, then this file. */
 document.getElementById("v-study").innerHTML = "";
 // Feed decks by id (looked up on every swipe, so a Map rather than a search).
 const DECK_INDEX = new Map(FEED_DECKS.map(d => [d.id, d]));
@@ -132,7 +132,7 @@ function wireCopy(scope, text){
 /* ---------- Run Python in the browser (Pyodide) ----------
    Downloaded only after you agree on the first tap (about 14 MB). The service worker keeps it, so later runs work offline.
    Content authors: examples run on the main thread with no time limit, so never mark a loop that doesn't end as runnable. */
-const PYODIDE_VERSION = "0.27.7", PYODIDE_URL = `https://cdn.jsdelivr.net/npm/pyodide@${PYODIDE_VERSION}/`, PYODIDE_CACHE = "cyber-scroll-pyodide-" + PYODIDE_VERSION;
+const PYODIDE_VERSION = "0.27.7", PYODIDE_URL = `https://cdn.jsdelivr.net/npm/pyodide@${PYODIDE_VERSION}/`, PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
 // Code that needs files, the network, arguments or AWS can't run here; those cards stay copy-only.
 const canRun = src => !/\b(socket|boto3|botocore|argparse|subprocess|requests)\b|\bopen\(|sys\.argv|input\(/.test(src);
 const RUN_HTML = label => `<div class="runbox"><button class="btn runBtn" type="button" style="--c:var(--good)" data-label="${label}">${label}</button><pre class="pyout" hidden></pre></div>`;
@@ -198,7 +198,7 @@ function refreshInstall(){
   const help = document.getElementById("installHelp");
   if (help) help.hidden = standalone;
   const done = store.get("cr2-installed", false), msg = document.getElementById("installMsg");
-  if (msg && done) msg.textContent = "Installed. Open Cyber Scroll from your home screen for full screen and offline use.";
+  if (msg && done) msg.textContent = "Installed. Open Cyber Bunker from your home screen for full screen and offline use.";
 }
 document.addEventListener("click", async e => {
   const btn = e.target.closest && e.target.closest(".installBtn");
@@ -209,7 +209,7 @@ document.addEventListener("click", async e => {
   refreshInstall();
 });
 window.addEventListener("installready", refreshInstall);
-window.addEventListener("appinstalled", () => { window.installPrompt = null; store.set("cr2-installed", true); refreshInstall(); toast("Installed. Open Cyber Scroll from your home screen."); });
+window.addEventListener("appinstalled", () => { window.installPrompt = null; store.set("cr2-installed", true); refreshInstall(); toast("Installed. Open Cyber Bunker from your home screen."); });
 
 // Two taps to confirm, inside the page (some hosts block confirm() dialogs).
 function twoTap(btn, armedText, action){
@@ -422,21 +422,21 @@ const S = TABS.study;
 const studyIntroCount = () => DAYS.reduce((s, d) => s + S.cardCount(d), 0);
 addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="tag"><span>Stages 1 and 2</span><i id="studyCount" style="font-style:normal"></i></div>
-  <h1>Cyber Scroll</h1>
+  <h1>Cyber Bunker</h1>
   <p>One idea per card: short lessons, a real incident, a lab task and a quiz each day. Swipe up ↑<span class="kb"> or press the down arrow</span>.</p>
   <div class="stats streakLine"></div>
-  <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
+  <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Level B${w.n}</b>${w.name}</div>`).join("")}</div>
   <button class="linkbtn" id="bkNudge" type="button" hidden>Back up your progress →</button>
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
   <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("study", DAYS, {
   answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 2, wrapped",
-  links:{9:{tab:"py", n:11, text:"Python Lesson 11: IPs and JSON"}, 11:{tab:"py", n:10, text:"Python Lesson 10: port checks"},
-         18:{tab:"py", n:7, text:"Python Lesson 7: reading logs"}, 19:{tab:"py", n:9, text:"Python Lesson 9: hashing"},
-         22:{tab:"py", n:10, text:"Python Lesson 10: port checker"}, 24:{tab:"py", n:14, text:"Python Lesson 14: detector"},
-         28:{tab:"py", n:14, text:"Python Lesson 14: capstone"}},
+  links:{9:{tab:"py", n:11, text:"Terminal Lesson 11: IPs and JSON"}, 11:{tab:"py", n:10, text:"Terminal Lesson 10: port checks"},
+         18:{tab:"py", n:7, text:"Terminal Lesson 7: reading logs"}, 19:{tab:"py", n:9, text:"Terminal Lesson 9: hashing"},
+         22:{tab:"py", n:10, text:"Terminal Lesson 10: port checker"}, 24:{tab:"py", n:14, text:"Terminal Lesson 14: detector"},
+         28:{tab:"py", n:14, text:"Terminal Lesson 14: capstone"}},
   id:(dn, n) => n === 0 ? "day-" + dn : "d" + dn + "-" + n,
-  groupOf:i => { const w = WEEKS[Math.floor(i/7)]; return {c:w.c, label:`Week ${w.n} · ${w.name}`}; }
+  groupOf:i => { const w = WEEKS[Math.floor(i/7)]; return {c:w.c, label:`Level B${w.n} · ${w.name}`}; }
 });
 const PORTFOLIO = [
   ["lab-ips", "Lab network with static IPs (Day 8)"],
@@ -533,7 +533,7 @@ document.getElementById("stDelete").addEventListener("click", () => {
 });
 document.getElementById("studyCount").textContent = `${DAYS.length} days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stages 1 and 2 complete</div><h1>That's all ${DAYS.length} days</h1>
-  <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears your Study quiz answers. Your review schedule and streak are kept.</p>
+  <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears your Training quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
 /* ---------- Python tab ---------- */
@@ -546,14 +546,14 @@ addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
   <div class="stats streakLine"></div>
   <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("py", PY_LESSONS, {
-  answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Python track, wrapped", codeLabel:"Python",
-  links:{7:{tab:"study", n:18, text:"Background: Study Day 18"}, 8:{tab:"study", n:24, text:"Background: Study Day 24"},
-         9:{tab:"study", n:19, text:"Background: Study Day 19"}, 10:{tab:"study", n:22, text:"Background: Study Day 22"},
-         11:{tab:"study", n:9, text:"Background: Study Day 9"}, 14:{tab:"study", n:25, text:"Try it in the Day 25 lab"}},
+  answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Terminal track, wrapped", codeLabel:"Python",
+  links:{7:{tab:"study", n:18, text:"Background: Training Day 18"}, 8:{tab:"study", n:24, text:"Background: Training Day 24"},
+         9:{tab:"study", n:19, text:"Background: Training Day 19"}, 10:{tab:"study", n:22, text:"Background: Training Day 22"},
+         11:{tab:"study", n:9, text:"Background: Training Day 9"}, 14:{tab:"study", n:25, text:"Try it in the Day 25 lab"}},
   id:(dn, n) => n === 0 ? "py-" + dn : "p" + dn + "-" + n,
   groupOf:i => { const l = PY_LEVELS.find(l => i >= l.from && i < l.to); return {c:"var(--t-py)", label:`Python · ${l.name}`}; }
 });
-addCard("py", {c:"var(--t-py)", id:"py-finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Python track complete</div><h1>You can script it</h1>
+addCard("py", {c:"var(--t-py)", id:"py-finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Terminal track complete</div><h1>You can script it</h1>
   <p class="endScore"></p><p class="small">Turn the capstone into a GitHub project with a README and sample output. Reset clears your Python quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
@@ -676,7 +676,7 @@ function appendDeck(forced, at){
       <h2>Nice run</h2>
       <p class="runScore"></p>
       <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
-      <div class="row"><button class="btn keep" type="button">Keep going</button><button class="btn ghost toStudy" type="button">Switch to Study</button></div>`});
+      <div class="row"><button class="btn keep" type="button">Keep going</button><button class="btn ghost toStudy" type="button">Switch to Training</button></div>`});
     wireTarget(pause);
     pause.querySelector(".keep").addEventListener("click", () => go("feed", F.cards.findIndex(c => c.el === pause) + 1));
     pause.querySelector(".toStudy").addEventListener("click", () => userSwitch("study"));
@@ -740,7 +740,7 @@ function reviewNow(){
   if (queued > 0) go("feed", queued); else toast("Nothing due for review right now");
 }
 addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, html:`
-  <div class="tag"><span>Feed</span>Never ends</div>
+  <div class="tag"><span>The Archive</span>Never ends</div>
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
   <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
@@ -835,7 +835,7 @@ function render(){
   if (active === "feed"){
     accent = c.el.style.getPropertyValue("--c") || T.accent;
     prog.style.width = c.total ? ((c.pos + 1) / c.total * 100) + "%" : "0%";
-    where.innerHTML = c.group >= 0 ? `<b>${esc(c.label)}</b>` : "<b>Feed</b>";
+    where.innerHTML = c.group >= 0 ? `<b>${esc(c.label)}</b>` : "<b>The Archive</b>";
     if (location.hash !== "#feed") history.replaceState(history.state, "", "#feed");
   } else {
     prog.style.width = (T.current / (T.cards.length - 1) * 100) + "%";
@@ -845,7 +845,7 @@ function render(){
       // The hash names the exact card, so a reload or a restored tab comes back to the same place.
       if (location.hash !== "#" + c.el.id) history.replaceState(history.state, "", "#" + c.el.id);
     } else {
-      where.textContent = c.group === -1 ? (active === "study" ? "Cyber Scroll" : "Python") : c.label;
+      where.textContent = c.group === -1 ? (active === "study" ? "Cyber Bunker" : "Python") : c.label;
       const h = c.group === -1 ? (active === "study" ? "#study" : "#python") : "#" + c.el.id;
       if (location.hash !== h) history.replaceState(history.state, "", h);
     }
@@ -859,7 +859,7 @@ function updateScore(tab, announce){
     if (active === "feed"){
       refreshDaily();
     }
-    F.el.querySelectorAll(".runScore").forEach(r => r.textContent = feedState.answered ? `You've got ${feedState.right} of ${feedState.answered} checks right so far. Keep going, or switch to your Study plan.` : "Keep going, or switch to your Study plan.");
+    F.el.querySelectorAll(".runScore").forEach(r => r.textContent = feedState.answered ? `You've got ${feedState.right} of ${feedState.answered} checks right so far. Keep going, or switch to your Training plan.` : "Keep going, or switch to your Training plan.");
     if (announce) live.textContent = `${feedState.right} of ${feedState.answered} feed checks right`;
     return;
   }
@@ -966,7 +966,7 @@ function renderSheet(){
   const tab = active === "py" ? "py" : "study", T = TABS[tab];
   const cur = T.cards[T.current] ? T.cards[T.current].group + 1 : 0;
   const groups = tab === "study"
-    ? WEEKS.map((w, wi) => ({title:`Week ${w.n} · ${w.name}`, c:w.c, from:wi*7, to:wi*7+7}))
+    ? WEEKS.map((w, wi) => ({title:`Level B${w.n} · ${w.name}`, c:w.c, from:wi*7, to:wi*7+7}))
     : PY_LEVELS.map(l => ({title:l.name, c:"var(--t-py)", from:l.from, to:l.to}));
   document.getElementById("sheetTitle").textContent = tab === "py" ? "Jump to a lesson" : "Jump to a day";
   const t = trackTotals(tab);
@@ -1048,7 +1048,7 @@ window.addEventListener("popstate", e => {
 function backupText(){
   const data = {};
   try { for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (k.startsWith("cr2-") && k !== "cr2-test") data[k] = localStorage.getItem(k); } } catch(e){}
-  return JSON.stringify({app:"cyber-scroll", v:1, at:new Date().toISOString(), data});
+  return JSON.stringify({app:"cyber-bunker", v:1, at:new Date().toISOString(), data});
 }
 const bkText = document.getElementById("bkText"), bkMsg = document.getElementById("bkMsg"), bkApplyRow = document.getElementById("bkApplyRow");
 if (!store.ok){
@@ -1071,7 +1071,7 @@ let bkArmed = null;
 bkText.addEventListener("input", () => { bkArmed = null; document.getElementById("bkApply").textContent = "Restore this backup"; });
 document.getElementById("bkApply").addEventListener("click", () => {
   let b; try { b = JSON.parse(bkText.value.trim()); } catch(e){ b = null; }
-  if (!b || b.app !== "cyber-scroll" || !b.data || typeof b.data !== "object"){ bkMsg.textContent = "That doesn't look like a Cyber Scroll backup. Copy the whole text, including the curly brackets."; return; }
+  if (!b || !["cyber-scroll","cyber-bunker"].includes(b.app) || !b.data || typeof b.data !== "object"){ bkMsg.textContent = "That doesn't look like a Cyber Bunker backup. Copy the whole text, including the curly brackets."; return; }
   if (!Object.keys(b.data).length){ bkMsg.textContent = "That backup is empty, so restoring it would only erase this device's progress."; return; }
   if (!store.ok){ bkMsg.textContent = "This browser is blocking storage, so a backup can't be restored here."; return; }
   if (bkArmed !== bkText.value){

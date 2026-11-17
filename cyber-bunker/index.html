@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0e1216">
-<title>Cyber Scroll</title>
+<title>Cyber Bunker</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -251,14 +251,14 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
 <body class="booting">
 <div class="top">
   <div class="bar" aria-hidden="true"><i id="prog"></i></div>
-  <div class="meta"><span id="where">Cyber Scroll</span><span id="count"></span><button class="hpick" id="hdrPick" type="button" aria-label="Choose a day">Days</button></div>
+  <div class="meta"><span id="where">Cyber Bunker</span><span id="count"></span><button class="hpick" id="hdrPick" type="button" aria-label="Choose a day">Days</button></div>
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="update" id="updateBar" role="region" aria-label="Update ready" hidden><button id="updateGo" type="button">New content this week, tap to refresh</button><button id="updateLater" type="button">Later</button></div>
 
 <main>
-  <div class="view" id="v-study" role="tabpanel" aria-labelledby="tab-study" tabindex="-1"><section class="card loading" style="--c:var(--w1)"><div class="in"><div class="tag"><span>Cyber Scroll</span></div><h2 id="loadMsg" role="status">Loading your cards…</h2><p class="small" id="loadDetail"></p><button class="btn" id="loadRetry" type="button" hidden>Try again</button></div></section></div>
+  <div class="view" id="v-study" role="tabpanel" aria-labelledby="tab-study" tabindex="-1"><section class="card loading" style="--c:var(--w1)"><div class="in"><div class="tag"><span>Cyber Bunker</span></div><h2 id="loadMsg" role="status">Loading your cards…</h2><p class="small" id="loadDetail"></p><button class="btn" id="loadRetry" type="button" hidden>Try again</button></div></section></div>
   <div class="view off" id="v-feed" role="tabpanel" aria-labelledby="tab-feed" tabindex="-1"></div>
   <div class="view off" id="v-py" role="tabpanel" aria-labelledby="tab-py" tabindex="-1"></div>
 </main>
@@ -270,9 +270,9 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
 </nav>
 
 <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
-  <button class="tab" role="tab" id="tab-study" data-tab="study" aria-controls="v-study" style="--tc:var(--t-study)"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Study</button>
-  <button class="tab" role="tab" id="tab-feed" data-tab="feed" aria-controls="v-feed" style="--tc:var(--t-feed)"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 10l3-3 3 3M12 7v10"/></svg>Feed<span class="badge" id="dueBadge" hidden></span></button>
-  <button class="tab" role="tab" id="tab-py" data-tab="py" aria-controls="v-py" style="--tc:var(--t-py)"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Python</button>
+  <button class="tab" role="tab" id="tab-study" data-tab="study" aria-controls="v-study" style="--tc:var(--t-study)"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Training Bunker</button>
+  <button class="tab" role="tab" id="tab-feed" data-tab="feed" aria-controls="v-feed" style="--tc:var(--t-feed)"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 10l3-3 3 3M12 7v10"/></svg>The Archive<span class="badge" id="dueBadge" hidden></span></button>
+  <button class="tab" role="tab" id="tab-py" data-tab="py" aria-controls="v-py" style="--tc:var(--t-py)"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Terminal</button>
 </nav>
 
 <div class="sheet" id="storySheet" role="dialog" aria-modal="true" aria-labelledby="storyTitle">

@@ -1,4 +1,4 @@
-# Cyber Scroll
+# Cyber Bunker
 
 A swipe-up study app for cyber and cloud security, built to replace scrolling Instagram Reels. It has three tabs:
 
@@ -24,7 +24,7 @@ It's an installable web app (PWA) that works offline. **To publish it on GitHub 
 | `.github/workflows/check.yml` | Runs `tools/check.js` on every pull request |
 | `tools/check.js` | Checks the JSON, dashes, scripts and versions |
 | `tools/bump-version.js` | Raises the content version after any change |
-| `cyber-reels-handoff.md` | Accuracy and style rules for all content |
+| `cyber-bunker-handoff.md` | Accuracy and style rules for all content |
 
 ## Updates
 

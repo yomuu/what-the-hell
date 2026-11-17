@@ -1,10 +1,10 @@
 # Weekly content task (Windows)
 
-Every Sunday at 7pm, Task Scheduler runs `/weekly-content` with Claude Code in headless mode. It researches new incidents, has them fact-checked, adds them to the Feed, raises the content version, checks the app, and opens a pull request called "Weekly content YYYY-MM-DD". When you merge the pull request, GitHub Pages publishes it, and the app on your phone shows "New content this week, tap to refresh" the next time you open it.
+Every Sunday at 7pm, Task Scheduler runs `/weekly-content` with Claude Code in headless mode. It researches new incidents, has them fact-checked, adds them to The Archive, raises the content version, checks the app, and opens a pull request called "Weekly content YYYY-MM-DD". When you merge the pull request, GitHub Pages publishes it, and the app on your phone shows "New content this week, tap to refresh" the next time you open it.
 
 ## One-time setup
 
-1. Clone the Cyber Scroll repository to your PC and open PowerShell in that folder.
+1. Clone the Cyber Bunker repository to your PC and open PowerShell in that folder.
 2. Make sure these work:
    ```powershell
    claude auth status   # should say "loggedIn": true
@@ -41,11 +41,11 @@ Each run writes to `content\logs\`. Start with the newest `YYYY-MM-DD_HHmm.summa
 Handy PowerShell commands:
 
 ```powershell
-Get-ScheduledTaskInfo -TaskName "Cyber Scroll weekly content" | Select-Object LastRunTime, LastTaskResult, NextRunTime
+Get-ScheduledTaskInfo -TaskName "Cyber Bunker weekly content" | Select-Object LastRunTime, LastTaskResult, NextRunTime
 Get-ChildItem .\content\logs\*.summary.txt | Sort-Object LastWriteTime | Select-Object -Last 1 | Get-Content
 gh pr list
-Start-ScheduledTask -TaskName "Cyber Scroll weekly content"
-Unregister-ScheduledTask -TaskName "Cyber Scroll weekly content" -Confirm:$false
+Start-ScheduledTask -TaskName "Cyber Bunker weekly content"
+Unregister-ScheduledTask -TaskName "Cyber Bunker weekly content" -Confirm:$false
 ```
 
 ## If something goes wrong

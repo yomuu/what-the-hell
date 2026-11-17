@@ -1,4 +1,4 @@
-# Cyber Scroll content changelog
+# Cyber Bunker content changelog
 
 The weekly content run appends an entry here each Sunday.
 
@@ -9,7 +9,7 @@ Added 10 Feed decks (all `added:"2026-11-16"`), drafted in `content/inbox/2026-1
 - Incident decks: `inc-qubole` (Qubole cross-account trust abuse), `inc-sshole` (SSHole OpenSSH password bypass, CVE-2026-123158), `inc-amadeus` (Amadeus airline booking data breach), `inc-maersk-lfl` (Maersk legacy system breach), `inc-fakejob-android` (fake job app malware, NCSC NZ, region NZ/AU).
 - Quick-fire: `qf-sshd-t`, `qf-trust-root`, `qf-s3-data-events`, `qf-nz-numbers`, `qf-kev`. These are the first `kind:"quick"` decks.
 - App tweaks from the UX review: Quick-fire colour changed to orange (`#fb923c`) so it stands apart from Essential Eight, inline code boxes keep their border when they wrap, and the content guide comment now documents `added`, `region`, `attack` and `quick`.
-- Not done: backup of `cyber-reels.html` and `tools/check.js`, because shell commands were blocked this run.
+- Not done: backup of `cyber-bunker.html` and `tools/check.js`, because shell commands were blocked this run.
 
 Ideas for future weeks (from content-scout):
 

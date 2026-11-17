@@ -1,10 +1,10 @@
-/* Cyber Scroll service worker.
+/* Cyber Bunker service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
 const VERSION = 4;
-const CACHE = "cyber-scroll-v" + VERSION;
+const CACHE = "cyber-bunker-v" + VERSION;
 const PYODIDE_VERSION = "0.27.7";   // keep in step with app.js
-const PYODIDE_CACHE = "cyber-scroll-pyodide-" + PYODIDE_VERSION;
+const PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
 const ASSETS = [
   "./", "index.html", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
   "content/study.json", "content/feed.json", "content/python.json", "content/version.json"
@@ -38,7 +38,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => (k.startsWith("cyber-scroll-v") && k !== CACHE) || (k.startsWith("cyber-scroll-pyodide") && k !== PYODIDE_CACHE)).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k.startsWith("cyber-scroll-") || (k.startsWith("cyber-bunker-v") && k !== CACHE) || (k.startsWith("cyber-bunker-pyodide") && k !== PYODIDE_CACHE)).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -84,7 +84,7 @@ self.addEventListener("fetch", event => {
   // Google Fonts (requested with CORS): serve from cache when there, refresh in the background.
   if (url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com") {
     event.respondWith(
-      caches.open("cyber-scroll-fonts").then(cache =>
+      caches.open("cyber-bunker-fonts").then(cache =>
         cache.match(req).then(hit => {
           const fresh = fetch(req).then(res => { if (res.ok) event.waitUntil(cache.put(req, res.clone()).catch(() => {})); return res; }).catch(() => hit);
           return hit || fresh;
