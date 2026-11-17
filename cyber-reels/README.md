@@ -4,9 +4,11 @@ A swipe-up study app for cyber and cloud security, built to replace scrolling In
 
 - **Study:** a 35-day plan (Stage 1 fundamentals plus a Stage 2 Microsoft and cloud identity week), with lessons, real incidents, lab tasks and quizzes.
 - **Feed:** an endless, shuffled feed of OWASP Top 10:2025, incident, Essential Eight, cloud, AU/NZ law, triage, KQL, interview and quick-fire decks, with spaced-repetition reviews mixed in.
-- **Python:** 14 lessons from a first script to log parsing, hashing, port checks, a boto3 audit and a brute-force detector.
+- **Python:** 14 lessons from a first script to log parsing, hashing, port checks, a boto3 audit and a brute-force detector. Most code examples have a **Run** button that runs real Python in the app (Pyodide, downloaded on first use and then kept for offline use).
 
 Progress, reviews, streaks and stories are saved in the browser. Use **Days → Back up your progress** to move them to another device.
+
+It's an installable web app (PWA) that works offline. **To publish it on GitHub Pages and install it on Android, follow [PUBLISH.md](PUBLISH.md).**
 
 ## How it's built
 

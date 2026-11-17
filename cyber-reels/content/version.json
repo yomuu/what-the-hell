@@ -1,5 +1,5 @@
 {
- "version": 2,
+ "version": 3,
  "date": "2026-11-17",
- "note": "Fact fixes: ATT&CK now has 15 tactics, SSHole detail, and app fixes."
+ "note": "Run Python code in the app, and an Install app button."
 }

@@ -1,7 +1,7 @@
 /* Cyber Scroll service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 2;
+const VERSION = 3;
 const CACHE = "cyber-scroll-v" + VERSION;
 const ASSETS = [
   "./", "index.html", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
@@ -59,6 +59,20 @@ self.addEventListener("fetch", event => {
           if (req.mode === "navigate") return cache.match("index.html").then(page => page || fetch(req));
           return fetch(req);
         })
+      )
+    );
+    return;
+  }
+
+  // Pyodide (Python for the Run buttons): downloaded the first time you run code, then served from this cache.
+  // The files never change for a given Pyodide version, so the cache is kept across app updates.
+  if (url.hostname === "cdn.jsdelivr.net" && url.pathname.startsWith("/npm/pyodide@")) {
+    event.respondWith(
+      caches.open("cyber-scroll-pyodide").then(cache =>
+        cache.match(req).then(hit => hit || fetch(req).then(res => {
+          if (res.ok || res.type === "opaque") cache.put(req, res.clone());
+          return res;
+        }))
       )
     );
     return;

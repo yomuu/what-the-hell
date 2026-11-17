@@ -126,6 +126,65 @@ function wireCopy(scope, text){
     catch(e){ fallback(); }
   });
 }
+/* ---------- Run Python in the browser (Pyodide) ----------
+   Loaded only the first time you tap Run (about 14 MB). The service worker keeps a copy, so later runs work offline. */
+const PYODIDE_URL = "https://cdn.jsdelivr.net/npm/pyodide@0.27.7/";
+// Code that needs files, the network, arguments or AWS can't run here; those cards stay copy-only.
+const canRun = src => !/\bopen\(|import (socket|boto3|argparse|subprocess|requests)|sys\.argv|input\(/.test(src);
+const RUN_HTML = label => `<div class="runbox"><button class="btn ghost runBtn" type="button">${label}</button><pre class="pyout" hidden aria-live="polite"></pre></div>`;
+let pyodideReady = null;
+function loadPython(){
+  if (pyodideReady) return pyodideReady;
+  pyodideReady = new Promise((resolve, reject) => {
+    if (window.loadPyodide) return resolve();
+    const s = document.createElement("script");
+    s.src = PYODIDE_URL + "pyodide.js"; s.crossOrigin = "anonymous";
+    s.onload = resolve; s.onerror = () => reject(new Error("offline"));
+    document.head.appendChild(s);
+  }).then(() => loadPyodide({indexURL: PYODIDE_URL}));
+  pyodideReady.catch(() => { pyodideReady = null; });
+  return pyodideReady;
+}
+document.addEventListener("click", async e => {
+  const btn = e.target.closest && e.target.closest(".runBtn");
+  if (!btn) return;
+  const card = btn.closest(".card"), out = btn.parentNode.querySelector(".pyout"), code = card && card.__runCode;
+  if (!code || btn.disabled) return;
+  const label = btn.textContent;
+  btn.disabled = true; out.hidden = false; out.className = "pyout";
+  out.textContent = pyodideReady ? "Running…" : "Loading Python… The first time downloads about 14 MB, then it works offline.";
+  try {
+    const py = await loadPython();
+    const lines = [];
+    py.setStdout({batched: t => lines.push(t)}); py.setStderr({batched: t => lines.push(t)});
+    try { py.runPython(code, {globals: py.globals.get("dict")()}); }
+    catch (err){ out.classList.add("err"); lines.push(String(err.message || err).trim().split("\n").filter(l => l.trim()).slice(-1)[0] || "Error"); }
+    out.textContent = lines.join("\n") || "(no output)";
+  } catch (err){
+    out.classList.add("err");
+    out.textContent = navigator.onLine ? "Python couldn't load. Try again in a moment." : "You're offline. Python needs a connection the first time you run code; after that it works offline.";
+  }
+  btn.disabled = false; btn.textContent = label === "Run it here" || label === "Run again" ? "Run again" : label;
+});
+
+/* ---------- Install button (Android Chrome and other browsers that support it) ---------- */
+function refreshInstall(){
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  document.querySelectorAll(".installBtn").forEach(b => b.hidden = standalone || !window.installPrompt);
+  const help = document.getElementById("installHelp");
+  if (help) help.hidden = standalone;
+}
+document.addEventListener("click", async e => {
+  const btn = e.target.closest && e.target.closest(".installBtn");
+  if (!btn || !window.installPrompt) return;
+  const ev = window.installPrompt; window.installPrompt = null;
+  ev.prompt();
+  try { const r = await ev.userChoice; if (r.outcome !== "accepted") toast("Not installed. You can install it later from the Days sheet."); } catch (err) {}
+  refreshInstall();
+});
+window.addEventListener("installready", refreshInstall);
+window.addEventListener("appinstalled", () => { window.installPrompt = null; refreshInstall(); toast("Installed. Open Cyber Scroll from your home screen."); });
+
 // Two taps to confirm, inside the page (some hosts block confirm() dialogs).
 function twoTap(btn, armedText, action){
   const label = btn.textContent; let armed = null;
@@ -208,7 +267,8 @@ function buildQuiz(card, q, persist, onChange){
       if (j === q.k){ b.classList.add("right"); mk.textContent = "✓"; st.textContent = j === pick ? " (your answer, correct)" : " (correct answer)"; }
       else if (j === pick){ b.classList.add("wrong"); mk.textContent = "✗"; st.textContent = " (your answer)"; }
     });
-    why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}`;
+    why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}${q.run && q.code && canRun(q.code) ? RUN_HTML("Run it to check") : ""}`;
+    if (q.run && q.code) card.__runCode = q.code;
     why.classList.add("show");
     if (retry) retry.classList.add("show");
     if (fromUser){ why.focus({preventScroll:true}); why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"}); }
@@ -274,6 +334,7 @@ function makeTrack(tab, items, cfg){
       const s = make("Learn " + (j+1) + "/" + d.learn.length,
         `${tag("Learn", (j+1) + " of " + d.learn.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, cfg.codeLabel || "", true) : ""}`);
       if (code) wireCopy(s, code);
+      if (code && tab === "py" && canRun(code)){ s.__runCode = code; s.querySelector(".code").insertAdjacentHTML("afterend", RUN_HTML("Run it here")); }
     });
 
     if (d.real) make(cfg.realLabel, `${tag(cfg.realLabel)}<h2>${fmt(d.real[0])}</h2><p>${fmt(d.real[1])}</p>`);
@@ -341,7 +402,8 @@ addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
   <button class="linkbtn" id="bkNudge" type="button" hidden>Back up your progress →</button>
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
-  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button></div>`});
+  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button></div>
+  <button class="btn ghost installBtn" type="button" hidden>Install app</button>`});
 makeTrack("study", DAYS, {
   answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 2, wrapped",
   links:{9:{tab:"py", n:11, text:"Python Lesson 11: IPs and JSON"}, 11:{tab:"py", n:10, text:"Python Lesson 10: port checks"},
@@ -1130,6 +1192,7 @@ document.getElementById("cvCopy").addEventListener("click", () => {
   try { navigator.clipboard.writeText(text).then(done, show); } catch(e){ show(); }
 });
 renderReady();
+refreshInstall();
 // A link to a card or tab wins; otherwise reopen the last tab used.
 const savedTab = store.get("cr2-tab", "study");
 switchTab(TABS[savedTab] ? savedTab : "study");
