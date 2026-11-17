@@ -1561,14 +1561,15 @@ function renderRadio(){
   }
   const fresh = new Set(radioNew());
   const live = (wire.sources || []).filter(s => String(s.status).startsWith("ok")).map(s => s.name);
-  list.innerHTML = radioNav() + `<p class="tx-meta">Updated ${esc(nzStamp(wire.updated))} NZ${wireState === "offline" ? " · offline copy" : ""}</p>
+  list.innerHTML = radioNav() + `<p class="tx-meta">Incoming transmissions · updated ${esc(nzStamp(wire.updated))} NZ${wireState === "offline" ? " · offline copy" : ""}</p>
     <p class="tx-note">Headlines and short summaries${live.length ? " from " + esc(live.join(", ")) : ""}. Tap through for the full story${wireState === "offline" ? " when you're back online" : ""}.</p>` +
     wire.items.map((it, i) => {
       const ok = /^https?:\/\//.test(it.link || ""), isNew = fresh.has(it);
       const rel = it.related && relatedName(it.related.to) ? it.related : null;
       return `<article class="tx${isNew ? " is-new" : ""}" aria-labelledby="tx${i}">
         <h4 class="tx-title" id="tx${i}">${isNew ? `<span class="sr">New: </span>` : ""}${esc(it.title)}</h4>
-        <div class="tx-hd"><span><span class="sr">From </span><span aria-hidden="true">RX · </span>${esc(it.source)}</span><span>${isNew ? `<b class="tx-new" aria-hidden="true">New</b> ` : ""}${esc(nzStamp(it.date))}</span></div>
+        <div class="tx-in" aria-hidden="true"><span>▶ Incoming transmission</span><span class="cursor">_</span>${isNew ? ` <b class="tx-new">New</b>` : ""}</div>
+        <div class="tx-hd"><span><span class="sr">Incoming transmission from </span><span aria-hidden="true">From </span>${esc(it.source)}</span><span>${esc(nzStamp(it.date))}</span></div>
         ${it.summary ? `<p class="tx-sum">${esc(it.summary)}</p>` : ""}
         ${(it.tags || []).length ? `<div class="tx-tags"><span class="sr">Tags: </span>${it.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
         <div class="row">${ok ? `<a class="btn ghost" href="${esc(it.link)}" target="_blank" rel="noopener noreferrer" aria-describedby="tx${i}">Full article <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${ok ? `<button class="btn ghost briefBtn" type="button" data-link="${esc(it.link)}" aria-describedby="tx${i}">${briefs[it.link] ? `<span aria-hidden="true">■ </span>Edit brief` : "Brief it"}</button>` : ""}${rel ? `<button class="btn ghost tx-rel" type="button" data-to="${esc(rel.to)}">Related: ${esc(rel.label)} <span aria-hidden="true">→</span></button>` : ""}</div>
