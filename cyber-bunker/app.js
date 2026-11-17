@@ -9,7 +9,7 @@ const deckById = id => DECK_INDEX.get(id);
 const initialHash = location.hash; // read before any tab renders and rewrites it
 // Load the fonts without blocking the first paint; system fonts show until they arrive (or if offline).
 (() => { const l = document.createElement("link"); l.rel = "stylesheet"; l.crossOrigin = "anonymous";
-  l.href = "https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap";
+  l.href = "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=IBM+Plex+Mono:wght@500;700&family=VT323&display=swap";
   document.head.appendChild(l); })();
 const store = {
   ok: (() => { try { localStorage.setItem("cr2-test", "1"); localStorage.removeItem("cr2-test"); return true; } catch(e){ return false; } })(),
@@ -25,7 +25,7 @@ const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
    Answering DAILY_GOAL questions in a day, in any tab, keeps the streak going. */
 const DAILY_GOAL = 5;
 const INTERVALS = [1, 3, 7, 16, 35];
-const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--w4)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", kql:"var(--k-kql)", quick:"var(--k-quick)"};
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--amber)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", kql:"var(--k-kql)", quick:"var(--k-quick)"};
 // Each deck gets a list of checks: its main one plus any extras. Interview decks have none.
 FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = (d.qs || (d.q ? [d.q] : [])).concat(FEED_EXTRA_Q[d.id] || []); });
 // Decks added by the weekly content run carry added:"YYYY-MM-DD" and count as new for seven days.
@@ -667,6 +667,37 @@ function pickCheck(d){
   if (fresh.length) return fresh[0];
   return idx.sort((a, b) => srs[keys[a]].box - srs[keys[b]].box)[0];
 }
+// Incident record card: header bar, hazard stripe, file line and stamp, name, entry point,
+// impact with a redacted lesson, a CODEX/STATUS terminal panel and a footer meter.
+const STAMP = {breached:"Breached", verified:"Verified", developing:"Developing"};
+function blockMeter(pos, total){
+  const n = Math.min(total, 10), on = Math.max(1, Math.round((pos + 1) / total * n));
+  return `<span aria-hidden="true">${"■".repeat(on)}${"□".repeat(n - on)}</span> ${pos + 1}/${total}`;
+}
+function recordHtml(d, total){
+  const no = String(FEED_DECKS.filter(x => x.kind === "incident").indexOf(d) + 1).padStart(3, "0");
+  const codex = String(d.maps || "Unmapped").split(" · ")[0];
+  return `<div class="rec">
+    <div class="rec-hd"><span>BUNKER ARCHIVE 07</span><span class="recno">REC ${no}</span></div>
+    <div class="hazard" aria-hidden="true"></div>
+    <div class="rec-row"><span class="rec-file">Incident file · ${esc(d.date)}${d.region ? " · " + esc(d.region) : ""}${isNew(d) ? ` · <span class="new">New this week</span>` : ""}</span><span class="stamp ${esc(d.status)}">${STAMP[d.status] || esc(d.status)}</span></div>
+    <h1 class="rec-name">${fmt(d.title)}</h1>
+    <p class="rec-entry"><b>Entry point</b>${fmt(d.entry)}</p>
+    <p class="rec-impact">${fmt(d.impact)}</p>
+    <button class="redact" type="button" aria-expanded="false"><span class="bar">Classified lesson · tap to reveal</span><span class="txt" hidden><b>Key lesson</b>${fmt(d.lesson)}</span></button>
+    <div class="term split"><div><small>Codex</small><b class="codex">${fmt(codex)}</b></div><div><small>Status</small><b class="status">${STAMP[d.status] || esc(d.status)}<span class="cursor" aria-hidden="true">_</span></b></div></div>
+    <p class="rec-src">Source: ${fmt(d.source)}</p>
+    <div class="rec-ft"><span>Swipe ↑ next record</span><span>${blockMeter(0, total)}</span></div>
+  </div>`;
+}
+function wireRedaction(card){
+  const b = card.querySelector(".redact");
+  b.addEventListener("click", () => {
+    const open = b.getAttribute("aria-expanded") === "true";
+    b.setAttribute("aria-expanded", String(!open));
+    b.querySelector(".bar").hidden = !open; b.querySelector(".txt").hidden = open;
+  });
+}
 function interviewHtml(d, tagHtml){
   return `${tagHtml}<h2 class="q">${fmt(d.title)}</h2>
     <p class="small">Answer out loud in about 30 seconds, as if you're in the interview. Then compare.</p>
@@ -737,7 +768,13 @@ function appendDeck(forced, at){
     // Which checks to show: triage decks show all; others show one, the most useful right now.
     const show = d.all ? d.qs.map((q, n) => n) : d.qs.length ? [pickCheck(d)] : [];
     const after = d.after || [];
-    const total = d.cards.length + show.length + after.length;
+    // Incident files open with a record card (design/wasteland-archive.md), then the detail cards.
+    const rec = d.kind === "incident" && d.entry ? 1 : 0;
+    const total = rec + d.cards.length + show.length + after.length;
+    if (rec){
+      const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:0, total, first:true}, html: recordHtml(d, total)});
+      wireRedaction(s);
+    }
     const tag = (i, extra) => `<div class="tag"><span>${esc(badge)}</span>${isNew(d) ? `<span class="new">New this week</span>` : ""}${esc(d.title)} · ${extra || (i+1) + " of " + total}</div>`;
     const card = ([h, p, code], i, last, chips) => {
       const evidence = d.kind === "triage" && i === 0;
@@ -746,11 +783,11 @@ function appendDeck(forced, at){
       if (code && !evidence) wireCopy(s, code);
     };
     // Labels that would give an answer away go after the questions on decks that ask about them.
-    d.cards.forEach((x, i) => card(x, i, i === d.cards.length - 1, !d.all && i === d.cards.length - 1));
+    d.cards.forEach((x, i) => card(x, i + rec, i === d.cards.length - 1, !d.all && i === d.cards.length - 1));
     show.forEach((n, j) => {
       const q = d.qs[n], key = checkKey(d, n);
-      const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:d.cards.length + j, total},
-        html: quizHtml(q, tag(d.cards.length + j, show.length > 1 ? "Check " + (j+1) + " of " + show.length : "Check"), false, Math.random() * 4294967296 >>> 0)});
+      const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:rec + d.cards.length + j, total},
+        html: quizHtml(q, tag(rec + d.cards.length + j, show.length > 1 ? "Check " + (j+1) + " of " + show.length : "Check"), false, Math.random() * 4294967296 >>> 0)});
       buildQuiz(s, q, null, (pick, sure) => {
         if (pick === null) return;
         srsRecord(key, pick === q.k, sure);
@@ -761,7 +798,7 @@ function appendDeck(forced, at){
         saveFeed(); updateScore("feed", true);
       });
     });
-    after.forEach((x, i) => card(x, d.cards.length + show.length + i, false, d.all && i === 0));
+    after.forEach((x, i) => card(x, rec + d.cards.length + show.length + i, false, d.all && i === 0));
   }
   // A natural pause every five decks, so the Feed isn't a bottomless scroll.
   if (at === undefined && ++decksAppended % 5 === 0){
@@ -922,8 +959,11 @@ function updateMore(){ const c = TABS[active].cards[TABS[active].current]; more.
 function setCurrent(tab, idx){
   const T = TABS[tab];
   if (idx < 0) return;
+  const changed = T.current !== idx;
   T.current = idx;
   const c = T.cards[idx];
+  // A brief CRT flicker as each new card settles (none with reduced motion; see the CSS).
+  if (changed && c){ c.el.classList.remove("flick"); void c.el.offsetWidth; c.el.classList.add("flick"); }
   if (tab === "feed"){
     if (c.first && !c.counted){ c.counted = true; feedState.seen[c.deck] = (feedState.seen[c.deck] || 0) + 1; feedState.decks++; saveFeed(); }
     if (idx >= T.cards.length - 4){ appendNext(); appendNext(); }

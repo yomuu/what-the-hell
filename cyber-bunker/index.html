@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#0e1216">
+<meta name="theme-color" content="#141414">
 <title>Cyber Bunker</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -261,6 +261,162 @@ body.typing .card{padding-bottom:28px}
 /* Until the app has started, the tabs and the Days button can't do anything */
 body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
 .loading .in{gap:12px}
+/* ==========================================================================
+   WASTELAND ARCHIVE (design/wasteland-archive.md). This layer restyles the app;
+   the layout above stays as it is. Change tokens here, not colours inline.
+   ========================================================================== */
+:root{
+  --bunker:#141414; --rust:#2b2722; --metal:#4a463d; --breach:#d4291c; --amber:#ffae1a;
+  --phosphor:#6cff8f; --dimgreen:#4a8f5c; --termbg:#0d1a10; --cyan:#4fd1d9;
+  --bone:#d9d6cc; --secondary:#b8b5ab; --ash:#8a877d;
+  --bg:var(--bunker); --surface:var(--rust); --sunk:var(--termbg); --line:var(--metal);
+  --text:var(--bone); --muted:var(--secondary); --good:var(--phosphor); --bad:var(--breach);
+  --w1:var(--amber); --w2:var(--cyan); --w3:var(--phosphor); --w4:var(--bone); --w5:var(--secondary);
+  --t-study:var(--amber); --t-feed:var(--cyan); --t-py:var(--phosphor);
+  --k-e8:var(--phosphor); --k-law:var(--bone); --k-triage:var(--amber); --k-int:var(--secondary);
+  --k-cloud:var(--cyan); --k-kql:var(--phosphor); --k-quick:var(--amber);
+  --display:"IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --crt:"VT323","IBM Plex Mono",ui-monospace,monospace;
+  --hazard:repeating-linear-gradient(-45deg,var(--amber) 0 9px,var(--bunker) 9px 18px);
+  --scan:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);
+  --control:var(--ash); /* borders of tappable things need 3:1; ash is 5.1:1 on bunker black */
+}
+*,*::before,*::after{border-radius:0!important}
+body{background:var(--bunker)}
+
+/* Type roles: headings Plex Sans 700 uppercase; body Plex Sans 400; labels and stamps Plex Mono; VT323 for short CRT text only */
+h1,h2,.panel h3{font-family:var(--body);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;line-height:1.05;hyphens:manual}
+h1{font-size:clamp(30px,8.6vw,52px)}
+h2{font-size:clamp(22px,6.3vw,34px)}
+.card h2.q{font-size:clamp(20px,5.4vw,28px);text-transform:none;letter-spacing:0}
+.card p{font-size:clamp(17px,4.6vw,19px)}
+.card p.small,.why,.recap li,.mf div,.model,.yours,.opt{font-size:16px}
+.tag,.hint,.lvl,.wk,.where,.score,.stats,.legend span,.conf,.dscore,.chip,.tab,.chips button,.btn,.x,.cp,.rate button,.linkbtn,.hpick,.rl{font-family:var(--mono);font-weight:500;text-transform:uppercase;letter-spacing:.1em}
+.tag{font-size:12px}
+.tag span{border-width:1px}
+.btn{font-size:14px;padding:13px 18px;color:var(--bunker)}
+.btn.ghost{color:var(--bone);border:2px solid var(--control);background:transparent}
+.linkbtn{font-size:13px;border:2px dashed var(--control)}
+.rate button,.conf button,.x,.cp,.hpick{border:2px solid var(--control)}
+button:focus-visible,a:focus-visible,.editor:focus-visible,.recall input:focus-visible,textarea:focus-visible{outline:3px solid var(--amber)!important;outline-offset:2px}
+
+/* Header bar: CRT amber */
+.top{background:var(--bunker);padding-bottom:6px;border-bottom:2px solid var(--metal)}
+.bar{height:4px;background:var(--rust)}
+.meta{font-family:var(--crt);font-size:20px;letter-spacing:.04em;color:var(--amber)}
+.meta b{color:var(--amber);font-weight:400}
+.hpick{font-size:12px;color:var(--bone);background:var(--bunker)}
+
+/* Cards: a metal frame with a rust-brown outer outline and a hazard stripe across the top */
+.card::before{display:none}
+.card{padding-left:16px;padding-right:16px}
+.card > .in{position:relative;background:var(--bunker);border:4px solid var(--metal);outline:3px solid var(--rust);padding:24px 16px 18px;gap:16px}
+.card > .in::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--hazard)}
+.card .in:has(> .rec)::before{display:none}
+.card .in:has(> .rec){padding-top:0}
+@media (min-width:700px){.card{padding-right:96px}}
+
+/* Quiz options and panels */
+.opt{background:var(--rust);border:2px solid var(--control)}
+.opt.right{border-color:var(--phosphor);background:color-mix(in srgb,var(--phosphor) 10%,var(--rust))}
+.opt.wrong{border-color:var(--breach);background:color-mix(in srgb,var(--breach) 14%,var(--rust))}
+.mf div,.hintBox,.solBox,.stories button,.day,.recall input,.form input[type=text],.form textarea,.backup textarea,#cvText{background:var(--rust);border:2px solid var(--metal)}
+.mf .m{border-color:var(--breach)} .mf .f{border-color:var(--dimgreen)}
+.mf .m b{color:var(--amber)}
+
+/* Terminal panels: code, output, quiz results. Scanlines live only here. */
+.code,.pyout,.editor,.why.show,.term{background:var(--scan),var(--termbg);border:2px solid var(--dimgreen);color:var(--phosphor)}
+.code .ch{border-bottom:2px solid var(--dimgreen)}
+.code .ch .where{color:var(--phosphor)}
+.code pre{color:var(--phosphor)}
+.code pre span.c{color:#7fbf8f}
+.card .code code{color:inherit}
+.cp{background:var(--termbg);color:var(--phosphor);border-color:var(--dimgreen)}
+.pyout{font-family:var(--crt);font-size:21px;line-height:1.2;border-left-width:6px}
+.pyout.err{border-color:var(--breach);color:var(--bone)}
+.pyout.pass{border-color:var(--phosphor)}
+.editor{caret-color:var(--phosphor)}
+.why.show{padding:12px 14px;color:var(--phosphor)}
+.why strong{color:var(--phosphor);font-family:var(--crt);font-size:22px;font-weight:400;letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
+.card code{background:var(--termbg);border:1px solid var(--dimgreen);color:var(--phosphor)}
+
+/* Hazard-stripe dividers */
+.hazard{height:10px;background:var(--hazard)}
+.recap{border-top:6px solid transparent;border-image:var(--hazard) 6;padding-top:12px}
+
+/* Incident record card */
+.rec{display:flex;flex-direction:column;gap:12px;margin:0 -16px}
+.rec > *:not(.hazard):not(.rec-hd){margin-left:16px;margin-right:16px}
+.rec-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px 6px 16px;font-family:var(--crt);font-size:22px;letter-spacing:.06em;color:var(--amber);background:var(--bunker)}
+.recno{border:2px solid var(--metal);padding:0 8px;font-size:20px;color:var(--amber)}
+.rec-row{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:52px;padding:6px 0}
+.rec-file{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);min-width:0}
+.rec-file .new{color:var(--phosphor)}
+.stamp{flex:none;font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:.12em;text-transform:uppercase;border:2.5px solid currentColor;padding:2px 8px;transform:rotate(-8deg);margin:6px 4px 6px 0}
+.stamp.breached{color:var(--breach)} .stamp.verified{color:var(--amber)} .stamp.developing{color:var(--cyan)}
+.rec-name{font-size:clamp(30px,9vw,48px);margin-top:2px}
+.card p.rec-entry{border-left:4px solid var(--breach);padding-left:12px;font-size:17px}
+.rec-entry b,.redact .txt b{display:block;font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:2px}
+.card p.rec-impact{color:var(--secondary);font-size:17px}
+.redact{display:block;width:auto;min-height:48px;text-align:left;cursor:pointer;background:none;border:0;padding:0;color:var(--bone)}
+.redact .bar{display:flex;align-items:center;min-height:48px;padding:0 12px;background:repeating-linear-gradient(90deg,#000 0 14px,#0a0a0a 14px 16px);border:2px solid var(--control);font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--secondary)}
+.redact .txt{display:block;font-size:17px;line-height:1.45;border-left:4px solid var(--amber);padding-left:12px}
+.term.split{display:grid;grid-template-columns:1fr 1fr;padding:0}
+.term.split > div{padding:10px 12px;min-width:0}
+.term.split > div + div{border-left:2px solid var(--dimgreen)}
+.term small{display:block;font-family:var(--crt);font-size:18px;letter-spacing:.08em;color:#7fbf8f;text-transform:uppercase}
+.term .codex{display:block;font-family:var(--mono);font-weight:500;font-size:13px;line-height:1.35;color:var(--phosphor);overflow-wrap:anywhere}
+.term .status{display:block;font-family:var(--crt);font-weight:400;font-size:24px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber)}
+.cursor{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.card p.rec-src{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ash);max-width:none}
+.rec-ft{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0 0;border-top:2px solid var(--metal);font-family:var(--crt);font-size:20px;letter-spacing:.05em;color:var(--amber);text-transform:uppercase}
+
+/* Tab bar and chips */
+.tabs{background:var(--bunker);border-top:0;box-shadow:0 -4px 0 var(--metal)}
+.tabs::before{content:"";position:absolute;left:0;right:0;top:-10px;height:6px;background:var(--hazard)}
+.tab{font-size:11px;letter-spacing:.08em;color:var(--secondary)}
+.tab[aria-selected="true"]{color:var(--tc);font-weight:500}
+.tab[aria-selected="true"] svg{background:color-mix(in srgb,var(--tc) 18%,transparent);border:2px solid var(--tc)}
+.badge{background:var(--amber);color:var(--bunker)}
+.chips{gap:5px}
+.chips button{font-size:11px;letter-spacing:.02em;padding:0 7px;border:2px solid var(--control);background:var(--bunker);color:var(--bone)}
+.chips button[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--bunker)}
+/* Toasts sit just above the tab bar, so they never cover the header, chips or record bar. */
+.toast{top:auto;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 20px);transform:translate(-50%,8px)}
+.toast.show{transform:translate(-50%,0)}
+body.has-update .toast{bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 84px)}
+
+/* Sheets, toast and banner */
+.panel{background:var(--bunker);border:4px solid var(--metal);border-bottom:0;outline:3px solid var(--rust);position:relative}
+.panel::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--hazard)}
+.toast{background:var(--bunker);border:2px solid var(--amber);font-family:var(--mono);color:var(--bone)}
+.update{background:var(--amber)}
+.more{background:var(--bunker);border:2px solid var(--metal);font-family:var(--crt);font-size:18px;color:var(--amber)}
+.day .n{border-width:2px}
+.weeks div{border-left-width:4px}
+.pyMeter{font-family:var(--crt);font-size:22px;color:var(--phosphor)}
+.pyMeter i{background:var(--metal);width:9px;height:16px}
+
+/* Terminal tab: a full green-screen console */
+#v-py{background:var(--scan),var(--termbg)}
+#v-py .card{--text:var(--phosphor);--muted:#8fd9a3;--c:var(--phosphor);color:var(--phosphor)}
+#v-py .card > .in{background:var(--termbg);border-color:var(--dimgreen);outline-color:#08110a}
+#v-py .card > .in::before{background:repeating-linear-gradient(-45deg,var(--phosphor) 0 9px,var(--termbg) 9px 18px)}
+#v-py .opt,#v-py .mf div,#v-py .hintBox,#v-py .solBox{background:#102414;border-color:var(--dimgreen);color:var(--phosphor)}
+#v-py .btn.ghost{color:var(--phosphor);border-color:var(--dimgreen)}
+#v-py .btn{--c:var(--phosphor)}
+#v-py .tag span{border-color:var(--phosphor)}
+#v-py .recap{border-image:repeating-linear-gradient(-45deg,var(--phosphor) 0 9px,var(--termbg) 9px 18px) 6}
+body[data-tab="py"] .top{background:var(--termbg);border-bottom-color:var(--dimgreen)}
+body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
+
+/* CRT flicker between cards, off for reduced motion */
+.card.flick > .in{animation:crt .22s steps(4,end)}
+@keyframes crt{0%{opacity:.55;filter:brightness(1.7)}35%{opacity:1;filter:brightness(1.1)}65%{opacity:.8}100%{opacity:1;filter:none}}
+@media (prefers-reduced-motion:reduce){.card.flick > .in{animation:none}.cursor{animation:none}}
 </style>
 </head>
 <body class="booting">

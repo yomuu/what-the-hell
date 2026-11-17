@@ -102,7 +102,7 @@
     }
    ],
    "challenge": {
-    "p": "Store the name of your lab target in a variable called `target`, then print `Target: win10`.",
+    "p": "Set `target` to `\"win10\"`, then print `Target: win10`.",
     "start": "target = \"\"\nprint(\"Target:\", target)",
     "hint": "Put the text between the quotes on the first line.",
     "solution": "target = \"win10\"\nprint(\"Target:\", target)",
@@ -273,7 +273,7 @@
       "user"
      ],
      "k": 0,
-     "w": "Both checks are written with `==`, and `role` equals \"admin\", so the first branch runs."
+     "w": "`role` equals \"admin\", so the `==` check is True and the first branch runs."
     }
    ],
    "challenge": {
@@ -296,8 +296,8 @@
    "learn": [
     [
      "Lists",
-     "A list holds items in order, in square brackets. Get an item by its index, starting at 0. `len()` gives the number of items and `.append()` adds one to the end.",
-     "ports = [22, 80, 443]\nports.append(3389)\nprint(ports[0], len(ports))"
+     "A list holds items in order, in square brackets. Get an item by its index, starting at 0.",
+     "ports = [22, 80, 443]\nprint(ports[0], ports[2])"
     ],
     [
      "Changing a list",
@@ -306,7 +306,7 @@
     ],
     [
      "Slicing",
-     "`ports[0:2]` gives the first two items. The start is included and the end isn't, just like `range`. `ports[-1]` is the last item.",
+     "`ports[0:2]` gives the first two items. The start is included and the end isn't; you'll see the same rule with `range` in the next lesson. `ports[-1]` is the last item.",
      "ports = [21, 22, 80, 443]\nprint(ports[0:2], ports[-1])"
     ]
    ],
@@ -316,7 +316,7 @@
    },
    "real": [
     "On the job",
-    "An asset list of 400 hosts is a list. Sorting it, removing decommissioned hosts and comparing it with what the scanner saw is where shadow IT gets found."
+    "A scanner reports the open ports on each host as a list. Comparing that list with the ports you expect, and appending anything unexpected to a findings list, is a daily vulnerability management job."
    ],
    "myth": [
     "The first item in a list is item 1.",
@@ -383,7 +383,7 @@
    "learn": [
     [
      "for loops",
-     "A for loop runs its indented block once for each item. This is how you check every host, every port or every log line.",
+     "A for loop runs its indented block once for each item. This is how you check every host, every port or every log line. To keep a running count, write `count += 1`, which is short for `count = count + 1`.",
      "for port in [22, 80, 443]:\n    print(\"checking\", port)"
     ],
     [
@@ -411,7 +411,7 @@
    "tryit": {
     "h": "Loop over hosts",
     "where": "Kali: python3",
-    "p": "Loop over your lab addresses and print a line for each. Then change it to skip the Kali address.",
+    "p": "Loop over your lab addresses and print a line for each. Then change it to skip the Kali address (10.10.10.10).",
     "code": "hosts = [\"10.10.10.10\", \"10.10.10.20\"]\nfor h in hosts:\n    print(\"would scan\", h)"
    },
    "quiz": [
@@ -494,7 +494,7 @@
    },
    "real": [
     "On the job",
-    "Parsed JSON from any security API arrives as dictionaries. Knowing how to reach `alert[\"src\"][\"ip\"]` safely is half of every automation script."
+    "Parsed JSON from any security API arrives as dictionaries. Knowing how to reach `alert[\"src\"][\"ip\"]` reliably is half of every automation script."
    ],
    "myth": [
     "Dictionaries are only for advanced code.",
@@ -526,17 +526,17 @@
      "w": "Square brackets on a missing key raise a KeyError. `.get` starts new keys at 0."
     },
     {
-     "d": 1,
-     "q": "What does this print?",
+     "d": 2,
      "run": true,
-     "code": "services = {22: \"ssh\"}\nprint(services.get(80, \"unknown\"))",
+     "q": "What does this print?",
+     "code": "services = {22: \"ssh\"}\ntry:\n    print(services[80])\nexcept KeyError:\n    print(\"KeyError\")",
      "o": [
-      "unknown",
+      "KeyError",
       "None",
-      "A KeyError"
+      "unknown"
      ],
      "k": 0,
-     "w": "`.get` returns the default you give it when the key is missing."
+     "w": "Square brackets raise a KeyError for a missing key. `.get()` is the safe way."
     }
    ],
    "challenge": {
@@ -718,7 +718,7 @@
       "False"
      ],
      "k": 0,
-     "w": "`.endswith` checks the end of the text exactly."
+     "w": "`.endswith` checks the end of the text exactly. The `@` matters: without it, `evilcontoso.com` would match too."
     }
    ],
    "challenge": {
@@ -800,9 +800,9 @@
     },
     {
      "d": 1,
-     "q": "What does this print?",
      "run": true,
-     "code": "log = \"Failed a\\nAccepted b\\nFailed c\"\nprint(sum(1 for l in log.splitlines() if \"Failed\" in l))",
+     "q": "What does this print?",
+     "code": "log = \"Failed a\\nAccepted b\\nFailed c\"\ncount = 0\nfor line in log.splitlines():\n    if \"Failed\" in line:\n        count += 1\nprint(count)",
      "o": [
       "2",
       "3",
@@ -813,7 +813,7 @@
     }
    ],
    "challenge": {
-    "p": "Print each source IP of a failed login, one per line. The IP is the word after `from`.",
+    "p": "Print the source IP of every failed login, one line per failed login (repeats included). The IP is the word after `from`.",
     "start": "LOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\nfor line in LOG.splitlines():\n    if \"Failed password\" in line:\n        parts = line.split()\n",
     "hint": "`parts.index(\"from\")` gives the position of `from`, so the IP is at that position plus 1.",
     "solution": "LOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\nfor line in LOG.splitlines():\n    if \"Failed password\" in line:\n        parts = line.split()\n        print(parts[parts.index(\"from\") + 1])",
@@ -933,7 +933,7 @@
    },
    "real": [
     "On the job",
-    "“Which IPs failed to log in the most last night?” is a daily SOC question. Read the log, pull out the IPs, put them in a Counter, print `most_common(10)`. Done."
+    "\"Which IPs failed to log in the most last night?\" is a daily SOC question. Read the log, pull out the IPs, put them in a Counter, print `most_common(10)`. Done."
    ],
    "tryit": {
     "h": "Count top talkers",
@@ -1019,7 +1019,7 @@
     ],
     [
      "findall",
-     "`re.findall` returns every match in the text as a list. It's the quickest way to pull all the IP addresses or numbers out of a line."
+     "`re.findall` returns every match in the text as a list. It's the quickest way to pull all the IP addresses or numbers out of a line. A simple IP pattern also matches impossible values like 999.999.999.999, so check results with the `ipaddress` module."
     ]
    ],
    "play": {
@@ -1093,11 +1093,11 @@
    "learn": [
     [
      "What makes a password strong",
-     "Length matters most. NIST's current guidance favours long passphrases and checking against lists of breached passwords over forced symbols and regular changes."
+     "Length matters most. NIST SP 800-63B-4 (2025) requires at least 15 characters when a password is the only factor, bans forced symbol rules and routine changes, and requires checks against breached-password lists."
     ],
     [
      "Checks with any()",
-     "`any(c.isdigit() for c in pw)` is True if at least one character is a digit. The same pattern works for `.isupper()` and `.islower()`."
+     "`any(c.isdigit() for c in pw)` is True if at least one character is a digit. The same pattern works for `.isupper()` and `.islower()`. Read it as: for each character c, is it a digit? `any()` says True if at least one is."
     ],
     [
      "Keep it honest",
@@ -1154,10 +1154,10 @@
     }
    ],
    "challenge": {
-    "p": "Write `strong(pw)` that returns True only if the password is at least 14 characters long. Print `strong(\"correct horse battery\")`.",
+    "p": "Write `strong(pw)` that returns True only if the password is at least 15 characters (NIST's minimum when a password is the only factor) long. Print `strong(\"correct horse battery\")`.",
     "start": "def strong(pw):\n    pass\n\nprint(strong(\"correct horse battery\"))",
-    "hint": "`return len(pw) >= 14`",
-    "solution": "def strong(pw):\n    return len(pw) >= 14\n\nprint(strong(\"correct horse battery\"))",
+    "hint": "`return len(pw) >= 15`",
+    "solution": "def strong(pw):\n    return len(pw) >= 15\n\nprint(strong(\"correct horse battery\"))",
     "expect": "True"
    },
    "recap": [
@@ -1255,12 +1255,12 @@
    ]
   },
   {
-   "t": "base64",
+   "t": "Base64",
    "sub": "Encoding you'll see in logs and phishing, and why it isn't security.",
    "learn": [
     [
      "Encoding isn't encryption",
-     "Base64 turns bytes into safe text for email or URLs. Anyone can reverse it with no key. Seeing Base64 in a script or config means obscured, not protected."
+     "Base64 turns bytes into plain text that's safe to send in email or JSON. Anyone can reverse it with no key. Seeing Base64 in a script or config means obscured, not protected."
     ],
     [
      "Encode and decode",
@@ -1269,7 +1269,7 @@
     ],
     [
      "Where you'll see it",
-     "Attackers use base64 to hide commands, for example `powershell -EncodedCommand`. Decoding it is often the first step in triaging a suspicious command line."
+     "Attackers use Base64 to hide commands, for example `powershell -EncodedCommand`. PowerShell encodes UTF-16LE text, so decode it with `base64.b64decode(s).decode(\"utf-16-le\")`. Decoding is often the first step in triaging a suspicious command line."
     ]
    ],
    "play": {
@@ -1278,7 +1278,7 @@
    },
    "real": [
     "On the job",
-    "An EDR alert shows `powershell -enc` followed by a long string. Decoding it (PowerShell's version is UTF-16LE base64) reveals the real command in seconds."
+    "An EDR alert shows `powershell -enc` followed by a long string. Decoding it with `.decode(\"utf-16-le\")` reveals the real command in seconds."
    ],
    "myth": [
     "Base64 hides secrets.",
@@ -1352,7 +1352,7 @@
     ],
     [
      "Fail safely",
-     "If a security check can't complete, decide what happens. A function that returns True for “allowed” when it hits an error is failing open, which is OWASP 2025 A10. Default to deny."
+     "If a security check can't complete, decide what happens. A function that returns True for \"allowed\" when it hits an error is failing open, which is A10:2025 Mishandling of Exceptional Conditions. Default to deny."
     ]
    ],
    "play": {
@@ -1393,17 +1393,17 @@
      "w": "When a check can't finish, deny by default. Failing open turns an outage into a breach."
     },
     {
-     "d": 2,
-     "q": "What does this print?",
+     "d": 1,
      "run": true,
-     "code": "try:\n    n = int(\"x\")\n    print(1)\nexcept ValueError:\n    print(\"skipped\")",
+     "q": "What does this print?",
+     "code": "try:\n    print(int(\"7\") * 2)\nexcept ValueError:\n    print(\"bad\")",
      "o": [
-      "skipped",
-      "1",
-      "An error"
+      "14",
+      "bad",
+      "77"
      ],
      "k": 0,
-     "w": "`int(\"x\")` raises ValueError, so the except block runs."
+     "w": "\"7\" converts cleanly, so no exception happens and the except block is skipped."
     }
    ],
    "challenge": {
@@ -1435,7 +1435,7 @@
     ],
     [
      "IAM policies are JSON",
-     "An AWS IAM policy is JSON with a list of `Statement` entries. `\"Action\": \"*\"` with `\"Resource\": \"*\"` means everything on everything, which breaks least privilege."
+     "An AWS IAM policy is JSON with a list of `Statement` entries. `\"Effect\": \"Allow\"` with `\"Action\": \"*\"` on `\"Resource\": \"*\"` allows everything on everything, which breaks least privilege. (With `\"Deny\"` it would block everything instead.)"
     ],
     [
      "Pretty printing",
@@ -1483,20 +1483,20 @@
     },
     {
      "d": 2,
-     "q": "Why is `\"Action\": \"*\"` on `\"Resource\": \"*\"` a problem?",
+     "q": "Why is `\"Effect\": \"Allow\"` with `\"Action\": \"*\"` on `\"Resource\": \"*\"` a problem?",
      "o": [
       "It allows every action on everything",
       "It denies everything",
       "It's invalid JSON"
      ],
      "k": 0,
-     "w": "It gives full admin rights, the opposite of least privilege."
+     "w": "It gives admin-level rights, the opposite of least privilege (still limited by any explicit Deny, permissions boundary or SCP)."
     }
    ],
    "challenge": {
     "p": "Print `WARNING: wildcard action` for every statement whose Action is `\"*\"`.",
     "start": "import json\npolicy = '{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": \"s3:GetObject\", \"Resource\": \"arn:aws:s3:::reports/*\"}, {\"Effect\": \"Allow\", \"Action\": \"*\", \"Resource\": \"*\"}]}'\ndoc = json.loads(policy)\n",
-    "hint": "Loop over `doc[\"Statement\"]` and check `st[\"Action\"] == \"*\"`.",
+    "hint": "Loop over `doc[\"Statement\"]` and check `st[\"Action\"] == \"*\"`. A real checker would also catch `[\"*\"]` and `\"s3:*\"`.",
     "solution": "import json\npolicy = '{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": \"s3:GetObject\", \"Resource\": \"arn:aws:s3:::reports/*\"}, {\"Effect\": \"Allow\", \"Action\": \"*\", \"Resource\": \"*\"}]}'\ndoc = json.loads(policy)\nfor st in doc[\"Statement\"]:\n    if st[\"Action\"] == \"*\":\n        print(\"WARNING: wildcard action\")",
     "expect": "WARNING: wildcard action"
    },
@@ -1522,8 +1522,8 @@
      "import ipaddress\nnet = ipaddress.ip_network(\"10.10.10.0/24\")\nprint(net.num_addresses, ipaddress.ip_address(\"10.10.10.20\") in net)"
     ],
     [
-     "Private isn't the same as safe",
-     "`is_private` also covers documentation ranges like 203.0.113.0/24. For \"is this on the internet?\", `is_global` is the stricter test."
+     "Private means more than RFC 1918",
+     "`is_private` also covers documentation ranges like 203.0.113.0/24, which this track uses for sample attackers. For \"is this on the internet?\", `is_global` is the stricter test, and documentation addresses fail it too."
     ]
    ],
    "play": {
@@ -1537,8 +1537,8 @@
    "tryit": {
     "h": "Filter alerts by source",
     "where": "Kali: python3",
-    "p": "Load a small list of alerts and print only the ones from public addresses. Note that documentation ranges like 203.0.113.0/24 also count as private; `is_global` is the stricter test.",
-    "code": "import json, ipaddress\ndata = '[{\"src\": \"10.10.10.10\"}, {\"src\": \"1.1.1.1\"}, {\"src\": \"8.8.8.8\"}]'\nfor alert in json.loads(data):\n    if not ipaddress.ip_address(alert[\"src\"]).is_private:\n        print(\"external:\", alert[\"src\"])"
+    "p": "Load a small list of alerts and print only the ones from internet addresses, using `is_global`.",
+    "code": "import json, ipaddress\ndata = '[{\"src\": \"10.10.10.10\"}, {\"src\": \"1.1.1.1\"}, {\"src\": \"8.8.8.8\"}]'\nfor alert in json.loads(data):\n    if ipaddress.ip_address(alert[\"src\"]).is_global:\n        print(\"external:\", alert[\"src\"])"
    },
    "myth": [
     "Working out subnets by hand is safer.",
@@ -1623,7 +1623,7 @@
    },
    "real": [
     "On the job",
-    "Turning 300 raw log lines into a clean list of external IPs is often one comprehension: `[ip for ip in ips if not ipaddress.ip_address(ip).is_private]`."
+    "Turning 300 raw log lines into a clean list of internet IPs is often one comprehension: `[ip for ip in ips if ipaddress.ip_address(ip).is_global]`."
    ],
    "quiz": [
     {
@@ -1706,7 +1706,7 @@
    ],
    "myth": [
     "A secret algorithm keeps data safe.",
-    "Security should rest on the key, not on hiding the method (Kerckhoffs's principle). Caesar fails both ways: the method is known and the key space is tiny."
+    "Security should rest on the key, not on hiding the method (Kerckhoffs's principle). Caesar's method being public is fine; it fails because its key space is tiny, so the key can't protect anything."
    ],
    "quiz": [
     {
@@ -1748,7 +1748,7 @@
     }
    ],
    "challenge": {
-    "p": "Brute-force it: print the shift that turns `khoor` into `hello`.",
+    "p": "Brute-force it: print the key (shift) that was used to encrypt `hello` into `khoor`.",
     "start": "def caesar(text, k):\n    return \"\".join(chr((ord(c) - 97 + k) % 26 + 97) for c in text)\n\nsecret = \"khoor\"\n",
     "hint": "Loop `for k in range(26):` and print k when `caesar(secret, -k) == \"hello\"`.",
     "solution": "def caesar(text, k):\n    return \"\".join(chr((ord(c) - 97 + k) % 26 + 97) for c in text)\n\nsecret = \"khoor\"\nfor k in range(26):\n    if caesar(secret, -k) == \"hello\":\n        print(k)",
@@ -1776,6 +1776,10 @@
     [
      "Why not split on commas",
      "A field like `\"Smith, Jane\"` contains a comma. The csv module handles quotes correctly; `.split(\",\")` doesn't."
+    ],
+    [
+     "CSV injection",
+     "A cell that starts with `=`, `+`, `-` or `@` can run as a formula when someone opens the CSV in Excel. If you export log data to CSV, attackers can plant those characters in usernames or URLs."
     ]
    ],
    "play": {
@@ -1784,7 +1788,7 @@
    },
    "real": [
     "On the job",
-    "Entra ID, Okta and most firewalls export sign-in logs as CSV. A short script that counts failures per user is often faster than building a SIEM query for a one-off question."
+    "Many tools, including Entra ID and Okta, can export sign-in logs as CSV. A short script that counts failures per user is often faster than building a SIEM query for a one-off question."
    ],
    "myth": [
     "CSV is just text, so `.split(\",\")` is enough.",
@@ -1867,7 +1871,7 @@
    },
    "real": [
     "On the job",
-    "Security tools and SDKs, boto3 included, hand you objects with methods. Writing a small class yourself makes their documentation far easier to read."
+    "Security tools and SDKs hand you objects with methods; boto3 gives you client and resource objects, for example. Writing a small class yourself makes their documentation far easier to read."
    ],
    "quiz": [
     {
@@ -1932,7 +1936,7 @@
     ],
     [
      "A tiny port check",
-     "Loop over a few ports and report the open ones. This is a TCP connect check: the full handshake completes, unlike Nmap's SYN scan.",
+     "Loop over a few ports and report the open ones. This is a TCP connect check: the full handshake completes, unlike Nmap's default SYN scan when run as root (without root, Nmap does a connect scan too).",
      "import socket\nhost = \"10.10.10.20\"\nfor port in [22, 135, 445, 3389]:\n    s = socket.socket()\n    s.settimeout(1)\n    if s.connect_ex((host, port)) == 0:\n        print(port, \"open\")\n    s.close()"
     ],
     [
@@ -1945,12 +1949,11 @@
     ],
     [
      "Credentials",
-     "boto3 finds credentials from `aws configure`, environment variables or an IAM role. Never put access keys in your code. Use a read-only role for audits, following least privilege."
+     "boto3 finds credentials from an IAM role, `aws configure sso` or environment variables. Prefer short-lived credentials over long-term access keys, and never put keys in your code. For audits, use a role with the AWS-managed SecurityAudit policy."
     ],
     [
-     "Command-line arguments",
-     "`argparse` turns `python3 tool.py ssh.log --threshold 5` into named values, with help text for free. It makes a script reusable without editing the code.",
-     "import argparse\np = argparse.ArgumentParser(description=\"Count failed logins\")\np.add_argument(\"logfile\")\np.add_argument(\"--threshold\", type=int, default=5)\nargs = p.parse_args()\nprint(args.logfile, args.threshold)"
+     "Files need a real machine too",
+     "The browser can't read your files either. On Kali, `open(path, \"w\")` replaces a file's contents and `\"a\"` appends to the end. Use `\"a\"` for logs you add to."
     ]
    ],
    "real": [
@@ -1964,7 +1967,7 @@
    "tryit": {
     "h": "Check your target's ports",
     "where": "Kali, against the Windows target",
-    "p": "Save the learn card's code as portcheck.py and run it. Then compare the result with `sudo nmap -sS -p 22,135,445,3389 10.10.10.20`.",
+    "p": "Only scan your own lab VMs. Save the learn card's code as portcheck.py and run it. Then compare the result with `sudo nmap -sS -p 22,135,445,3389 10.10.10.20`.",
     "code": "python3 portcheck.py\nsudo nmap -sS -p 22,135,445,3389 10.10.10.20"
    },
    "quiz": [
@@ -2043,11 +2046,16 @@
    "learn": [
     [
      "The goal",
-     "Read an SSH log, find failed logins, count them per source IP and print the IPs over a threshold. It uses files, regex, Counter, functions, error handling and argparse."
+     "Read an SSH log, find failed logins, count them per source IP and print the IPs over a threshold. It uses files, regex, Counter, error handling and argparse."
     ],
     [
      "The plan",
      "Break it into steps before writing code: get arguments, open the file safely, match each line, count, then report. Each step is a few lines you already know."
+    ],
+    [
+     "Command-line arguments",
+     "`argparse` turns `python3 tool.py ssh.log --threshold 5` into named values, with help text for free. It makes a script reusable without editing the code.",
+     "import argparse\np = argparse.ArgumentParser(description=\"Count failed logins\")\np.add_argument(\"logfile\")\np.add_argument(\"--threshold\", type=int, default=5)\nargs = p.parse_args()\nprint(args.logfile, args.threshold)"
     ],
     [
      "Practise here, then build it on Kali",
@@ -2060,7 +2068,7 @@
    },
    "real": [
     "On the job",
-    "Interviewers love a small, working tool you can explain line by line. “I wrote a script that finds brute-force sources in SSH logs” shows Python, log analysis and security thinking at once."
+    "Interviewers love a small, working tool you can explain line by line. \"I wrote a script that finds brute-force sources in SSH logs\" shows Python, log analysis and security thinking at once."
    ],
    "myth": [
     "Portfolio projects have to be big to count.",
@@ -2108,7 +2116,7 @@
     }
    ],
    "challenge": {
-    "p": "Extend the detector: also print `ALERT` before any IP with 3 or more failures, like `ALERT 203.0.113.7 3`.",
+    "p": "Print `ALERT <ip> <count>` for each IP with 3 or more failures, and nothing else, like `ALERT 203.0.113.7 3`.",
     "start": "import re\nfrom collections import Counter\nLOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\nfor line in LOG.splitlines():\n    m = pattern.search(line)\n    if m:\n        counts[m.group(1)] += 1\n",
     "hint": "Loop over `counts.items()` and print when `n >= 3`.",
     "solution": "import re\nfrom collections import Counter\nLOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\nfor line in LOG.splitlines():\n    m = pattern.search(line)\n    if m:\n        counts[m.group(1)] += 1\nfor ip, n in counts.items():\n    if n >= 3:\n        print(\"ALERT\", ip, n)",
