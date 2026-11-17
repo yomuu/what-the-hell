@@ -18,6 +18,12 @@ You'll do this once, in about 15 minutes, on a computer. Cloudflare's screens ch
 5. Click **Save and Deploy**. When it finishes, open the `.pages.dev` link once to check the app loads. (It's not protected yet, so do step 2 straight away.)
 6. In the project's **Settings**, find **Builds** (or "Builds & deployments") and turn **preview deployments** off (set them to **None**). Previews would otherwise publish pull request branches at extra, unprotected addresses.
 
+## If Cloudflare made a Worker instead of a Pages project
+
+Cloudflare sometimes sets the site up as a **Worker** (the address ends in `.workers.dev` and the build log runs `npx wrangler deploy`). That works too. `wrangler.jsonc` in this repository makes the Worker publish only `_site`, and turns off extra preview addresses. Keep **Build command** `bash tools/build-site.sh` and **Deploy command** `npx wrangler deploy`.
+
+To lock a Worker: open the Worker in the dashboard, go to **Settings**, then **Domains & Routes**, and on the `workers.dev` row turn on **Cloudflare Access**. Then follow step 2 to make sure its policy allows only your email.
+
 ## 2. Lock it to your email with Cloudflare Access
 
 1. Open **Zero Trust** from the Cloudflare dashboard (https://one.dash.cloudflare.com). The first time, it asks for a team name (anything) and a plan: choose **Free** (up to 50 users). It may ask for a payment card even for the free plan; you aren't charged on Free.
@@ -25,7 +31,7 @@ You'll do this once, in about 15 minutes, on a computer. Cloudflare's screens ch
 3. Set:
    - **Application name:** Cyber Bunker
    - **Session duration:** **1 month** (the longest), so you rarely need to sign in again.
-   - **Domain:** your `PROJECT-NAME.pages.dev` address.
+   - **Domain:** your `PROJECT-NAME.pages.dev` address (or your `.workers.dev` address). If you turned on Access from the Worker's settings, the application already exists: open it under **Access**, then **Applications**, and edit it instead.
 4. Add a policy: **Action: Allow**, **Include: Emails**, and enter your own email address. Save.
 5. Under authentication, keep **One-time PIN**: Cloudflare emails you a code when you sign in.
 6. Check it: open your `.pages.dev` address in a private browser window. You should see a Cloudflare sign-in page. Enter your email and the code, and the app opens.

@@ -1,5 +1,5 @@
 {
- "version": 10,
+ "version": 11,
  "date": "2026-11-17",
- "note": "Private hosting: sign-in notice."
+ "note": "Publish only the app on Cloudflare."
 }

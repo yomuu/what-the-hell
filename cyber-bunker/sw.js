@@ -1,7 +1,7 @@
 /* Cyber Bunker service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 10;
+const VERSION = 11;
 const CACHE = "cyber-bunker-v" + VERSION;
 const PYODIDE_VERSION = "0.27.7";   // keep in step with app.js
 const PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
@@ -29,7 +29,10 @@ self.addEventListener("install", event => {
       Number(ver.version) === VERSION;
     if (!ok) throw new Error(`Content for version ${VERSION} failed its check; keeping the current version.`);
     const cache = await caches.open(CACHE);
-    await Promise.all(responses.map(([u, res]) => cache.put(u, res)));
+    // Some hosts redirect index.html to "/". A redirected response can't answer a page load later,
+    // so store a clean copy of it.
+    const clean = async res => res.redirected ? new Response(await res.blob(), {status: res.status, statusText: res.statusText, headers: res.headers}) : res;
+    await Promise.all(responses.map(async ([u, res]) => cache.put(u, await clean(res))));
   })());
   // The very first install takes over straight away; later versions wait until you tap the banner.
   if (firstInstall) self.skipWaiting();
