@@ -580,7 +580,7 @@ const saveStories = () => store.set("cr2-stories", stories);
 const storyCard = addCard("study", {c:"var(--good)", id:"stories", label:"Stories", group:-3, html:`
   <div class="tag"><span>Interview stories</span>STAR: situation, task, action, result</div>
   <h2>Your stories</h2>
-  <p class="small">Interviewers want your examples, not textbook answers. Turn tickets and lab work into short stories, and link each one to the interview questions it answers.</p>
+  <p class="small">Interviewers want your examples, not textbook answers. Turn tickets and lab work into short stories you can tell.</p>
   <ul class="stories" id="storyList"></ul>
   <button class="btn" id="storyAdd" type="button">Add a story</button>`});
 function renderStories(){
@@ -755,7 +755,7 @@ function wireInterview(card, d, onRated){
   }));
 }
 // Your goal tilts the Feed: SOC leans towards triage, queries and incidents; Cloud towards cloud and app security.
-const TARGETS = {mixed:{}, soc:{triage:1.5, kql:1.5, spl:1.5, incident:0.75, interview:0.5}, cloud:{cloud:2, owasp:0.75, e8:0.5, kql:0.5}};
+const TARGETS = {mixed:{}, soc:{triage:1.5, kql:1.5, spl:1.5, incident:0.75}, cloud:{cloud:2, owasp:0.75, e8:0.5, kql:0.5}};
 let target = TARGETS[store.get("cr2-target", "mixed")] ? store.get("cr2-target", "mixed") : "mixed";
 // Share of a kind's answered checks that are still weak (box 1 or 2). Weak kinds come up more often.
 function weakShare(kind){
@@ -900,7 +900,7 @@ addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, ht
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
   <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
-  <div class="legend">${["OWASP","Incidents","Splunk SPL","Essential Eight","Cloud","AU/NZ law","Triage","KQL","Quick-fire","Interview","Review"].map(t => `<span>${t}</span>`).join("")}</div>
+  <div class="legend">${["OWASP","Incidents","Splunk SPL","Essential Eight","Cloud","AU/NZ law","Triage","KQL","Quick-fire","Review"].map(t => `<span>${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
 function wireTarget(root){
   root.querySelectorAll(".target button").forEach(b => {

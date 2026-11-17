@@ -1,5 +1,5 @@
 {
- "version": 11,
+ "version": 12,
  "date": "2026-11-17",
- "note": "Publish only the app on Cloudflare."
+ "note": "Removed the interview question cards."
 }
