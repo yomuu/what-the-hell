@@ -1,7 +1,7 @@
 /* Cyber Bunker service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 9;
+const VERSION = 10;
 const CACHE = "cyber-bunker-v" + VERSION;
 const PYODIDE_VERSION = "0.27.7";   // keep in step with app.js
 const PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
@@ -53,6 +53,9 @@ self.addEventListener("fetch", event => {
   const url = new URL(req.url);
 
   // App and content: from this version's cache, so it's consistent and works offline.
+  // ?signin and ?ping always go to the network, so a private host's sign-in page (Cloudflare Access) can appear.
+  if (url.origin === location.origin && (url.searchParams.has("signin") || url.searchParams.has("ping"))) return;
+
   if (url.origin === location.origin) {
     event.respondWith(
       caches.open(CACHE).then(cache =>

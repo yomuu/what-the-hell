@@ -1,9 +1,8 @@
-# Publishes the app to GitHub Pages whenever main changes (for example when you merge a weekly content PR).
-# Only the app's own files are published: no inbox drafts, logs, tools or agent settings.
-name: Deploy to GitHub Pages
+# Optional: publishes the app to GitHub Pages. It only runs when started by hand from the Actions tab,
+# because GitHub Pages on a free plan needs a public repository and makes the site public.
+# The app is hosted privately on Cloudflare Pages with Cloudflare Access instead (see PUBLISH.md).
+name: Deploy to GitHub Pages (manual)
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read

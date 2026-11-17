@@ -2,3 +2,4 @@
 backups/
 # Run logs stay on your PC (they can include local paths). The pull request has the summary.
 content/logs/
+_site/

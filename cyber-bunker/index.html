@@ -251,9 +251,11 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 @media (max-width:400px){.card{padding-left:16px}.code pre{padding:10px}}
 /* Update banner: shown when the service worker has downloaded new content */
 .update{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 12px);z-index:8;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 24px);padding:4px;border-radius:16px;background:var(--good);box-shadow:0 6px 24px rgba(0,0,0,.45)}
-.update button{min-height:44px;border:0;cursor:pointer;color:#0e1216}
+.update button,.update a{min-height:44px;border:0;cursor:pointer;color:#0e1216}
+.update a{display:flex;align-items:center;padding:0 14px;font-weight:600;text-decoration:none;font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:.06em}
+.update a:focus-visible{outline-color:var(--bunker)!important;outline-offset:-5px}
 #updateGo{padding:8px 12px;background:transparent;font-weight:600;font-size:14px;line-height:1.25;text-align:left}
-#updateLater{flex:none;min-width:44px;padding:8px 12px;border-radius:12px;background:rgba(14,18,22,.16);font-size:13px}
+#updateLater,#loginLater{flex:none;min-width:44px;padding:8px 12px;border-radius:12px;background:rgba(14,18,22,.16);font-size:13px}
 .update button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 body.has-update .card{padding-bottom:100px}
 body.has-update .more{bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 76px)}
@@ -445,6 +447,7 @@ body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
 <div class="toast" id="toast" role="status"></div>
+<div class="update" id="loginBar" role="region" aria-label="Sign in needed" hidden><a id="loginGo" href="./?signin" target="_blank" rel="noopener">Sign in again to get new content</a><button id="loginLater" type="button">Later</button></div>
 <div class="update" id="updateBar" role="region" aria-label="Update ready" hidden><button id="updateGo" type="button">New content this week, tap to refresh</button><button id="updateLater" type="button">Later</button></div>
 
 <main>
@@ -581,10 +584,23 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
   function say(text){ var live = document.getElementById("live"); if (live) live.textContent = text; }
   function show(worker){
     waiting = worker; bar.hidden = false; document.body.classList.add("has-update");
+    if (loginBar) loginBar.hidden = true;
     go.disabled = false; go.textContent = "New content this week, tap to refresh";
     say("New content is ready. The refresh button is at the bottom of the screen.");
   }
   function hide(){ bar.hidden = true; document.body.classList.remove("has-update"); }
+  // Private hosting (Cloudflare Access): when the sign-in has expired, the update check is redirected to a
+  // sign-in page and new content can't arrive. The app keeps working offline; this offers a way to sign in again.
+  var loginBar = document.getElementById("loginBar"), loginSkipped = false;
+  document.getElementById("loginLater").addEventListener("click", function(){ loginBar.hidden = true; loginSkipped = true; });
+  document.getElementById("loginGo").addEventListener("click", function(){ loginBar.hidden = true; });
+  function checkSignIn(){
+    if (!navigator.onLine || loginSkipped) return;
+    fetch("content/version.json?ping=" + Date.now(), {cache: "no-store", redirect: "manual", credentials: "include"}).then(function(res){
+      var blocked = res.type === "opaqueredirect" || res.status === 401 || res.status === 403;
+      loginBar.hidden = !blocked || !bar.hidden;
+    }, function(){});
+  }
   go.addEventListener("click", function(){
     if (!waiting) return location.reload();   // another open copy already switched versions
     go.textContent = "Updating…"; go.disabled = true; wantReload = true;
@@ -607,7 +623,8 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
     });
     // Check for new content every time the app is opened or brought back to the front.
     r.update().catch(function(){});
-    document.addEventListener("visibilitychange", function(){ if (!document.hidden) r.update().catch(function(){}); });
+    document.addEventListener("visibilitychange", function(){ if (!document.hidden){ r.update().catch(function(){}); checkSignIn(); } });
+    checkSignIn();
   }).catch(function(){});
 })();
 </script>

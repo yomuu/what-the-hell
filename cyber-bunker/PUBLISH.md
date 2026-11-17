@@ -1,55 +1,49 @@
-# Publish Cyber Bunker and install it on Android
+# Host Cyber Bunker privately and install it on Android
 
-GitHub Pages hosts the app for free at `https://YOUR-USERNAME.github.io/cyber-bunker/`. The workflow in `.github/workflows/pages.yml` checks the app and publishes only the app files every time `main` changes.
+The code stays in your **private** GitHub repository (yomuu/CyberBunker). Cloudflare Pages builds the site from it for free, and Cloudflare Access puts a sign-in in front of it that only your email address can pass. Everyone else sees a sign-in page, not the app.
 
-## 1. Create the repository (GitHub website)
+You'll do this once, in about 15 minutes, on a computer. Cloudflare's screens change from time to time; if a button has a slightly different name, look for the closest match.
 
-1. Sign in at https://github.com and click **+** (top right), then **New repository**.
-2. Repository name: `cyber-bunker`. Choose **Public**. GitHub Pages is free for public repositories on a free plan.
-   Public means anyone can read every file in it, including the agent settings in `.claude/`, the research drafts in `content/inbox/` and `cyber-bunker-handoff.md`. None of them hold passwords or personal details, but have a look first if you've added anything of your own. Run logs and backups are never uploaded.
-3. Leave **Add README** off, and set **.gitignore** and **license** to **None**, so the repository starts empty.
-4. Click **Create repository**.
+## 1. Create the site on Cloudflare Pages
 
-## 2. Turn on GitHub Pages
+1. Sign up (free) at https://dash.cloudflare.com.
+2. Go to **Workers & Pages**, click **Create**, choose the **Pages** tab, then **Connect to Git** (or "Import an existing Git repository").
+3. Connect GitHub. When GitHub asks which repositories Cloudflare may see, choose **Only select repositories** and pick **CyberBunker**.
+4. Select **CyberBunker** and set:
+   - **Project name:** something hard to guess, for example `cb-` plus a few random letters. It becomes your address: `https://PROJECT-NAME.pages.dev`.
+   - **Production branch:** `main`
+   - **Framework preset:** None
+   - **Build command:** `bash tools/build-site.sh`
+   - **Build output directory:** `_site`
+5. Click **Save and Deploy**. When it finishes, open the `.pages.dev` link once to check the app loads. (It's not protected yet, so do step 2 straight away.)
+6. In the project's **Settings**, find **Builds** (or "Builds & deployments") and turn **preview deployments** off (set them to **None**). Previews would otherwise publish pull request branches at extra, unprotected addresses.
 
-1. In the new repository, open **Settings**, then **Pages** in the left menu.
-2. Under **Build and deployment**, set **Source** to **GitHub Actions**. There's nothing else to choose.
+## 2. Lock it to your email with Cloudflare Access
 
-## 3. Upload the app
+1. Open **Zero Trust** from the Cloudflare dashboard (https://one.dash.cloudflare.com). The first time, it asks for a team name (anything) and a plan: choose **Free** (up to 50 users). It may ask for a payment card even for the free plan; you aren't charged on Free.
+2. Go to **Access**, then **Applications**, then **Add an application**, and choose **Self-hosted**.
+3. Set:
+   - **Application name:** Cyber Bunker
+   - **Session duration:** **1 month** (the longest), so you rarely need to sign in again.
+   - **Domain:** your `PROJECT-NAME.pages.dev` address.
+4. Add a policy: **Action: Allow**, **Include: Emails**, and enter your own email address. Save.
+5. Under authentication, keep **One-time PIN**: Cloudflare emails you a code when you sign in.
+6. Check it: open your `.pages.dev` address in a private browser window. You should see a Cloudflare sign-in page. Enter your email and the code, and the app opens.
 
-**Easiest:** tell Claude the repository exists (for example "I created yomuu/cyber-bunker"). Claude pushes the contents of the `cyber-bunker` folder as the top level of the repository, so `index.html` and `.github` sit at its root.
+## 3. Install on your Android phone
 
-**Doing it yourself with GitHub Desktop** (no command line):
+1. Open your `.pages.dev` address in **Chrome** on your phone and sign in with your email and the emailed code.
+2. Wait for the cards to load, then tap **Install app** on the first card, or tap the **⋮** menu, then **Add to Home screen**, then **Install** (not "Create shortcut").
+3. Open **Cyber Bunker** from your home screen. On Wi-Fi, tap Run once in the Terminal tab so Python is saved for offline use.
 
-1. Copy the `cyber-bunker` folder somewhere outside the `what-the-hell` folder, for example to `Documents\cyber-bunker`.
-2. Install GitHub Desktop from https://desktop.github.com and sign in with your GitHub account.
-3. **File > Add local repository**, choose the copied folder, and click **create a repository** when it offers to. Then click **Commit to main**.
-4. Click **Publish repository**. Untick **Keep this code private**, and pick the `cyber-bunker` repository you created (or let it create one with that name).
+## Day to day
 
-## 4. Check it published
+- **Offline:** the app and all its cards are kept on the phone, so it works without signal and without signing in.
+- **Updates:** when a change is merged into `main` (for example a weekly content pull request), Cloudflare rebuilds the site within a few minutes. The next time you open the app online, it shows **New content this week, tap to refresh**.
+- **Signing in again:** about once a month your Cloudflare sign-in expires. The app keeps working, and shows **Sign in again to get new content**. Tap it, enter the emailed code, then reopen the app.
+- **Your progress** stays on the phone. Now and then, tap **Days** (top right of the Training Bunker tab), then **Copy backup**, and keep the text somewhere safe.
+- **Version numbers:** phones only notice a change when the content version goes up. The weekly run does this. If you or Claude change app files by hand, run `node tools/bump-version.js "what changed"` before merging; the pull request check fails if you forget.
 
-1. Open the repository's **Actions** tab. "Deploy to GitHub Pages" should finish with a green tick in a minute or two.
-2. If it fails at **Check the app**, open the run to see what `tools/check.js` reported.
-3. **Settings > Pages** now shows "Your site is live at ...". Open that link on your PC to check it loads.
+## Why not GitHub Pages?
 
-## 5. Install on your Android phone
-
-1. Open the link in **Chrome** on your phone.
-2. Wait for the cards to load, then either:
-   - tap **Install app** on the first card of any tab, or in the Days sheet, then **Install**, or
-   - if there's no Install app button yet (Chrome sometimes waits until you've used the page for a bit), tap the **⋮** menu (top right), then **Add to Home screen** or **Install app**. If asked, choose **Install**, not **Create shortcut**: a shortcut opens as a normal browser tab.
-3. Open **Cyber Bunker** from your home screen. It opens full screen, without the browser bar.
-
-Samsung Internet also installs it: tap **≡**, then **Add page to**, then **Home screen**.
-
-## Working offline
-
-- **The app and all its cards** are saved in the background the first time it loads. Give it a few seconds on that first visit; after that it works offline. Fonts may look plain offline until your second visit.
-- **Python's Run buttons** ask before downloading Python (about 14 MB) the first time. Do that on Wi-Fi. A message tells you once it's saved, and then Run works offline too.
-- **Your progress** stays on the phone. Now and then, tap **Days** (top right of the Training Bunker tab), then **Copy backup**, and keep the text somewhere safe: uninstalling the app or clearing Chrome's data deletes your progress.
-
-## Updates
-
-When a change is merged into `main` (for example a weekly content pull request), GitHub publishes it within a few minutes. The next time you open the app online, after a few seconds it shows **New content this week, tap to refresh**. Tap it to switch to the new version, or **Later** to keep going.
-
-Phones only notice a change when the content version goes up. The weekly run does this for you. If you or Claude change any app file by hand, run `node tools/bump-version.js "what changed"` before merging; the pull request check fails if you forget.
+On a free GitHub plan, GitHub Pages only works from a public repository, and the site itself is always public. The workflow is still in `.github/workflows/pages.yml` but only runs if you start it by hand.

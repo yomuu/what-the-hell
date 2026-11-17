@@ -1,6 +1,6 @@
 # Weekly content task (Windows)
 
-Every Sunday at 7pm, Task Scheduler runs `/weekly-content` with Claude Code in headless mode. It researches new incidents, has them fact-checked, adds them to The Archive, raises the content version, checks the app, and opens a pull request called "Weekly content YYYY-MM-DD". When you merge the pull request, GitHub Pages publishes it, and the app on your phone shows "New content this week, tap to refresh" the next time you open it.
+Every Sunday at 7pm, Task Scheduler runs `/weekly-content` with Claude Code in headless mode. It researches new incidents, has them fact-checked, adds them to The Archive, raises the content version, checks the app, and opens a pull request called "Weekly content YYYY-MM-DD". When you merge the pull request, Cloudflare Pages publishes it to your private site, and the app on your phone shows "New content this week, tap to refresh" the next time you open it.
 
 ## One-time setup
 

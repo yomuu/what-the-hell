@@ -10,7 +10,7 @@ The main file is `index.html`. (The app started as a single file called cyber-re
 
 Progress, reviews, streaks and stories are saved in the browser. Use **Days → Back up your progress** to move them to another device.
 
-It's an installable web app (PWA) that works offline. **To publish it on GitHub Pages and install it on Android, follow [PUBLISH.md](PUBLISH.md).**
+It's an installable web app (PWA) that works offline. **To host it privately (only you can open it) and install it on Android, follow [PUBLISH.md](PUBLISH.md).**
 
 ## How it's built
 
@@ -22,7 +22,8 @@ It's an installable web app (PWA) that works offline. **To publish it on GitHub 
 | `content/version.json` | The content version and date |
 | `sw.js` | The service worker: caches everything for offline use and offers updates |
 | `manifest.webmanifest`, `icon*.png`, `icon.svg` | Lets you add it to your home screen as an app |
-| `.github/workflows/pages.yml` | Publishes only the app files to GitHub Pages when `main` changes |
+| `tools/build-site.sh` | Builds `_site/` with only the app files; Cloudflare Pages runs it on every change to `main` |
+| `.github/workflows/pages.yml` | Optional, manual-only GitHub Pages publish (needs a public repository) |
 | `.github/workflows/check.yml` | Runs `tools/check.js` on every pull request |
 | `tools/check.js` | Checks the JSON, dashes, scripts and versions |
 | `tools/bump-version.js` | Raises the content version after any change |
@@ -37,7 +38,7 @@ The version is also written into `sw.js`. Each time the app opens, the browser c
 
 ## Weekly content
 
-`/weekly-content` (in `.claude/commands/`) researches new incidents with the content-scout subagent, fact-checks them with content-reviewer, adds them to `content/feed.json`, bumps the version, checks the app and opens a pull request titled "Weekly content YYYY-MM-DD". Merging the pull request publishes it through GitHub Pages. See `tools/WEEKLY-TASK.md` to run it every Sunday with Windows Task Scheduler.
+`/weekly-content` (in `.claude/commands/`) researches new incidents with the content-scout subagent, fact-checks them with content-reviewer, adds them to `content/feed.json`, bumps the version, checks the app and opens a pull request titled "Weekly content YYYY-MM-DD". Merging the pull request publishes it through Cloudflare Pages. See `tools/WEEKLY-TASK.md` to run it every Sunday with Windows Task Scheduler.
 
 ## Run it locally
 
@@ -45,7 +46,7 @@ The version is also written into `sw.js`. Each time the app opens, the browser c
 python -m http.server 8000
 ```
 
-Then open http://localhost:8000. The app needs a web server (or GitHub Pages) because it loads its content with `fetch`. Opening `index.html` as a file won't work.
+Then open http://localhost:8000. The app needs a web server (or Cloudflare Pages) because it loads its content with `fetch`. Opening `index.html` as a file won't work.
 
 ## Content format
 
