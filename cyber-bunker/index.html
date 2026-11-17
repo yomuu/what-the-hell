@@ -57,6 +57,11 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--accent,var(--w1));o
 .meta b{color:var(--accent,var(--w1));font-weight:500}
 .meta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .meta #count{flex:none}
+.chips{display:flex;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none;pointer-events:auto}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;min-height:44px;padding:0 12px;background:var(--surface);border:1px solid var(--line);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--accent,var(--t-feed));border-color:var(--accent,var(--t-feed));color:#0e1216}
+body[data-tab="feed"] #v-feed .card{padding-top:calc(env(safe-area-inset-top) + 118px)}
 
 /* Each tab is its own scroll-snap feed. Inactive feeds are hidden but keep their scroll position. */
 .view{position:fixed;left:0;right:0;top:0;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom));overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
@@ -252,6 +257,7 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
 <div class="top">
   <div class="bar" aria-hidden="true"><i id="prog"></i></div>
   <div class="meta"><span id="where">Cyber Bunker</span><span id="count"></span><button class="hpick" id="hdrPick" type="button" aria-label="Choose a day">Days</button></div>
+  <div class="chips" id="chips" role="group" aria-label="Show in The Archive" hidden><button type="button" data-f="all">All</button><button type="button" data-f="codex">Codex</button><button type="button" data-f="incidents">Incidents</button><button type="button" data-f="nzau">NZ/AU</button><button type="button" data-f="quick">Quick-fire</button></div>
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
 <div class="toast" id="toast" role="status"></div>

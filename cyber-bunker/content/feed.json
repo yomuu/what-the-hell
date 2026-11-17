@@ -341,7 +341,13 @@
     ],
     "k": 0,
     "w": "The attackers didn't need an exploit. Valid credentials and no second factor were enough."
-   }
+   },
+   "date": "2024-02",
+   "status": "breached",
+   "entry": "Stolen credentials on a Citrix remote access portal with no MFA.",
+   "impact": "Claims processing across the US stalled for weeks. A US$22 million ransom was paid, and about 192.7 million people were affected.",
+   "lesson": "Every remote access portal needs MFA, with no exceptions for old systems.",
+   "source": "US HHS breach notification, 2025"
   },
   {
    "id": "inc-medibank",
@@ -380,7 +386,14 @@
     ],
     "k": 0,
     "w": "An infostealer harvested saved browser credentials. The VPN's lack of MFA turned that into a breach."
-   }
+   },
+   "date": "2022-10",
+   "status": "breached",
+   "region": "AU",
+   "entry": "A contractor's saved browser credentials, stolen by malware, used on a VPN without MFA.",
+   "impact": "Data on about 9.7 million current and former customers was stolen and published, including health claims.",
+   "lesson": "Require MFA on the VPN and keep work credentials off personal computers.",
+   "source": "Medibank and Australian Government, 2022 to 2025"
   },
   {
    "id": "inc-waikato",
@@ -418,7 +431,14 @@
     ],
     "k": 0,
     "w": "Double extortion hits confidentiality. Restoring brings systems back, but leaked data stays leaked."
-   }
+   },
+   "date": "2021-05",
+   "status": "breached",
+   "region": "NZ",
+   "entry": "Not published. Attackers stayed unnoticed long enough to steal data before encrypting.",
+   "impact": "A full IT outage across its hospitals. Patient and staff data was stolen and later posted online.",
+   "lesson": "Backups restore systems but don't undo data theft. Detect early and segment the network.",
+   "source": "Waikato DHB and Te Whatu Ora, 2021 to 2022"
   },
   {
    "id": "inc-latitude",
@@ -457,7 +477,14 @@
     ],
     "k": 0,
     "w": "Millions of affected records belonged to former customers whose data could have been deleted."
-   }
+   },
+   "date": "2023-03",
+   "status": "breached",
+   "region": "NZ/AU",
+   "entry": "A Latitude employee's login credentials, obtained through a major vendor.",
+   "impact": "About 14 million records stolen, including around 7.9 million driver licence numbers.",
+   "lesson": "Delete data you no longer need. Records from 2005 shouldn't still be there.",
+   "source": "Latitude Financial, 2023"
   },
   {
    "id": "inc-moveit",
@@ -495,7 +522,13 @@
     ],
     "k": 0,
     "w": "It was a SQL injection zero-day in the web application, so no patch existed when the attacks began."
-   }
+   },
+   "date": "2023-05",
+   "status": "breached",
+   "entry": "A SQL injection zero-day (CVE-2023-34362) in the MOVEit Transfer web app.",
+   "impact": "About 2,700 organisations and nearly 100 million people were affected, many through their suppliers.",
+   "lesson": "Patch internet-facing file transfer tools fast and know which suppliers hold your data.",
+   "source": "CISA advisory AA23-158A, 2023"
   },
   {
    "id": "inc-log4shell",
@@ -533,7 +566,13 @@
     ],
     "k": 0,
     "w": "Log4j was often a dependency of a dependency. Without an inventory, teams had to hunt for it system by system."
-   }
+   },
+   "date": "2021-12",
+   "status": "verified",
+   "entry": "Attacker-controlled text written to a log made Log4j load remote code (CVE-2021-44228).",
+   "impact": "A 10.0 severity flaw in countless Java apps, scanned for within hours of disclosure.",
+   "lesson": "Keep a software bill of materials (SBOM) so you can find a buried library in minutes.",
+   "source": "Apache and CISA, 2021"
   },
   {
    "id": "inc-xz",
@@ -571,7 +610,13 @@
     ],
     "k": 0,
     "w": "Curiosity about a small performance change caught one of the most serious supply chain attacks yet."
-   }
+   },
+   "date": "2024-03",
+   "status": "verified",
+   "entry": "A maintainer who spent about two years gaining trust hid a backdoor in xz utils build files.",
+   "impact": "Caught mostly in testing and rolling releases, before most stable Linux systems shipped it.",
+   "lesson": "Open source depends on a few maintainers. Pin versions and watch for odd changes.",
+   "source": "Openwall oss-security and CISA, 2024"
   },
   {
    "id": "inc-crowdstrike",
@@ -606,7 +651,13 @@
     ],
     "k": 0,
     "w": "Unexpected input caused an unhandled error. A10 is about handling exceptional conditions safely."
-   }
+   },
+   "date": "2024-07",
+   "status": "verified",
+   "entry": "Not an attack. A faulty Falcon content update crashed a Windows kernel driver.",
+   "impact": "About 8.5 million Windows computers stuck on a blue screen. Flights, hospitals and banks were disrupted.",
+   "lesson": "Roll out updates in stages and handle unexpected input instead of crashing.",
+   "source": "CrowdStrike root cause analysis and Microsoft, 2024"
   },
   {
    "id": "inc-uber",
@@ -645,7 +696,13 @@
     ],
     "k": 0,
     "w": "Secrets left in plain text let the attacker escalate quickly. Secrets belong in a vault, not in scripts."
-   }
+   },
+   "date": "2022-09",
+   "status": "breached",
+   "entry": "A contractor's stolen password plus MFA push spam until the contractor approved one.",
+   "impact": "Broad access to internal chat, cloud consoles and security tools.",
+   "lesson": "Use number matching or phishing-resistant MFA, and never hard-code admin credentials in scripts.",
+   "source": "Uber security update, 2022"
   },
   {
    "id": "inc-capitalone",
@@ -683,7 +740,13 @@
     ],
     "k": 0,
     "w": "The server fetched its own credentials on the attacker's behalf. Over-broad permissions did the rest."
-   }
+   },
+   "date": "2019-07",
+   "status": "breached",
+   "entry": "SSRF through a misconfigured web application firewall reached the EC2 metadata service.",
+   "impact": "Data on about 100 million people in the US and 6 million in Canada was copied.",
+   "lesson": "Enforce IMDSv2 and give every role least privilege.",
+   "source": "Capital One and US OCC, 2019 to 2020"
   },
   {
    "id": "e8-patch-apps",
@@ -1593,7 +1656,13 @@
     ],
     "k": 0,
     "w": "No AWS flaw was needed. Stale trust policies let anyone holding Qubole-side credentials assume the roles."
-   }
+   },
+   "date": "2026-10",
+   "status": "breached",
+   "entry": "Two hijacked Qubole IAM users assumed old customer roles that still trusted Qubole's AWS account.",
+   "impact": "Secrets and S3 data were read in more than a dozen customer organisations.",
+   "lesson": "Delete vendor roles you no longer use, and trust exact roles, not whole accounts.",
+   "source": "Wiz and SecurityWeek, 2026"
   },
   {
    "id": "inc-sshole",
@@ -1634,7 +1703,13 @@
     ],
     "k": 0,
     "w": "The bug needs musl, an OpenSSH built without PAM, password logins turned on and an account locked with `*`. glibc distros like Ubuntu and Debian weren't affected, and key-only logins block the bypass."
-   }
+   },
+   "date": "2026-11",
+   "status": "verified",
+   "entry": "An over-long password got through SSH password login on musl builds without PAM.",
+   "impact": "Exploited within days. Added to CISA's Known Exploited Vulnerabilities catalogue on 9 November.",
+   "lesson": "Use key-based SSH logins and patch anything on the KEV list fast.",
+   "source": "OpenSSH and CISA, 2026"
   },
   {
    "id": "inc-amadeus",
@@ -1674,7 +1749,13 @@
     ],
     "k": 0,
     "w": "Third-party risk means your data can leak from someone else's network. Only the Amadeus side has been reported as accessed."
-   }
+   },
+   "date": "2026-10",
+   "status": "developing",
+   "entry": "Amadeus says a vulnerability exposed booking data; Cathay says a system account's credentials were used.",
+   "impact": "About 53,000 Cathay Pacific bookings were affected. Qantas was also notified.",
+   "lesson": "Your customers' data is only as safe as your suppliers' systems.",
+   "source": "Cathay Pacific and Qantas statements, 2026"
   },
   {
    "id": "inc-maersk-lfl",
@@ -1711,7 +1792,13 @@
     ],
     "k": 0,
     "w": "Inherited legacy systems often sit outside your normal patching, monitoring and inventory, which makes them easy to forget."
-   }
+   },
+   "date": "2026-11",
+   "status": "developing",
+   "entry": "Not disclosed. A legacy system inherited through an acquisition was accessed.",
+   "impact": "A ransomware gang claims about 100 GB of data. Maersk says the incident is isolated.",
+   "lesson": "When you buy a company, you inherit its forgotten systems. Find and retire them.",
+   "source": "Maersk and BleepingComputer, 2026"
   },
   {
    "id": "inc-fakejob-android",
@@ -1753,7 +1840,13 @@
     ],
     "k": 0,
     "w": "NCSC warns that uninstalling may not remove the malware. The safe move is not to sideload it at all."
-   }
+   },
+   "date": "2026-11",
+   "status": "verified",
+   "entry": "A fake job app sideloaded from a link sent in a messaging app.",
+   "impact": "Malware with Accessibility access that can install more malware.",
+   "lesson": "Only install apps from the Play Store, and be wary of jobs that move to private chat.",
+   "source": "NCSC NZ, 2026"
   },
   {
    "id": "qf-sshd-t",
@@ -2043,6 +2136,308 @@
     ],
     "k": 0,
     "w": "An inner join keeps matches from both sides: many failures and at least one success, the shape of a guessed password."
+   }
+  },
+  {
+   "id": "inc-equifax",
+   "kind": "incident",
+   "tag": "2017",
+   "title": "Equifax",
+   "added": "2026-11-17",
+   "date": "2017-05",
+   "status": "breached",
+   "entry": "An unpatched Apache Struts flaw (CVE-2017-5638) in an online dispute portal.",
+   "impact": "Personal data on about 147 million people was stolen.",
+   "lesson": "Patch known, critical flaws on internet-facing apps within days, not months.",
+   "source": "US FTC and GAO, 2018 to 2019",
+   "cards": [
+    [
+     "What happened",
+     "Between May and July 2017 attackers stole personal data from credit agency Equifax, including names, birth dates and US Social Security numbers. About 147 million people were affected."
+    ],
+    [
+     "How they got in",
+     "They exploited CVE-2017-5638 in Apache Struts on a public dispute portal. A fix had been published in March 2017, but that system hadn't been patched."
+    ],
+    [
+     "Why it went unnoticed",
+     "An expired certificate on a device that inspected encrypted traffic meant that traffic wasn't being checked. Once it was renewed, staff saw suspicious traffic within a day."
+    ],
+    [
+     "Lessons",
+     "Know where every component runs so you can patch fast. Monitor certificate expiry on security tools, because a silent failure looks the same as no attack."
+    ]
+   ],
+   "maps": "A03 Software Supply Chain Failures · A09 Security Logging and Alerting Failures",
+   "q": {
+    "d": 1,
+    "q": "What let attackers into Equifax?",
+    "o": [
+     "An unpatched flaw in Apache Struts",
+     "A phishing email to the CEO",
+     "A stolen laptop"
+    ],
+    "k": 0,
+    "w": "The Struts fix had been out for about two months, but the dispute portal wasn't patched."
+   }
+  },
+  {
+   "id": "inc-solarwinds",
+   "kind": "incident",
+   "tag": "2020",
+   "title": "SolarWinds",
+   "added": "2026-11-17",
+   "date": "2020-12",
+   "status": "breached",
+   "entry": "Malicious code slipped into the SolarWinds Orion build process and shipped in signed updates.",
+   "impact": "About 18,000 customers installed the backdoored update, and a smaller number were targeted further.",
+   "lesson": "Protect the build pipeline as carefully as production, and watch what trusted software does.",
+   "source": "SolarWinds SEC filing and CISA, 2020 to 2021",
+   "cards": [
+    [
+     "What happened",
+     "In December 2020 security firm FireEye found it had been breached. The trail led to SolarWinds Orion, an IT monitoring product used by governments and large companies."
+    ],
+    [
+     "How they got in",
+     "Attackers got into SolarWinds' build system and inserted a backdoor, later called SUNBURST, into Orion updates. The updates were signed, so they looked legitimate."
+    ],
+    [
+     "Impact",
+     "SolarWinds said about 18,000 customers installed the affected updates. The attackers then picked a much smaller set of targets, including US government agencies, for deeper access. The US government attributed it to Russia's foreign intelligence service (SVR)."
+    ],
+    [
+     "Lessons",
+     "A signed update can still be malicious if the build itself is compromised. Lock down build systems, check what software you trust is doing, and limit what monitoring tools can reach."
+    ]
+   ],
+   "maps": "A03 Software Supply Chain Failures · A08 Software or Data Integrity Failures",
+   "q": {
+    "d": 2,
+    "q": "Why did customers trust the SolarWinds backdoor?",
+    "o": [
+     "It arrived in a normal, signed Orion update",
+     "It came from a phishing email",
+     "Customers turned off their antivirus"
+    ],
+    "k": 0,
+    "w": "The backdoor was added during the build, so the update carried SolarWinds' real signature."
+   }
+  },
+  {
+   "id": "inc-colonial",
+   "kind": "incident",
+   "tag": "2021",
+   "title": "Colonial Pipeline",
+   "added": "2026-11-17",
+   "date": "2021-05",
+   "status": "breached",
+   "entry": "A password for an old VPN account that didn't require MFA.",
+   "impact": "The largest fuel pipeline on the US East Coast shut down for about five days.",
+   "lesson": "Remove unused accounts and require MFA on every remote access path.",
+   "source": "US Senate testimony and US DOJ, 2021",
+   "cards": [
+    [
+     "What happened",
+     "In May 2021 the DarkSide ransomware group hit Colonial Pipeline. The company shut down its fuel pipeline as a precaution, causing fuel shortages and panic buying in the US South East."
+    ],
+    [
+     "How they got in",
+     "Colonial's CEO told the US Senate the attackers used the password for a legacy VPN account. The account was no longer in use but still active, and it didn't have MFA."
+    ],
+    [
+     "Impact",
+     "The pipeline was shut for about five days. Colonial paid a ransom of 75 bitcoin, about US$4.4 million at the time. The US Justice Department later recovered about 63.7 bitcoin of it."
+    ],
+    [
+     "Lessons",
+     "Ransomware hit IT systems, but the business shut down operations because it couldn't be sure they were safe. Separate IT from operational technology, and clean up old accounts."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · CSF PR.AA identity management",
+   "q": {
+    "d": 1,
+    "q": "What weakness let DarkSide into Colonial Pipeline?",
+    "o": [
+     "An unused VPN account with no MFA",
+     "An unpatched pipeline controller",
+     "A malicious USB stick"
+    ],
+    "k": 0,
+    "w": "The legacy VPN account was still active and only needed a password."
+   }
+  },
+  {
+   "id": "inc-optus",
+   "kind": "incident",
+   "tag": "2022",
+   "title": "Optus",
+   "added": "2026-11-17",
+   "date": "2022-09",
+   "status": "breached",
+   "region": "AU",
+   "entry": "An internet-facing API that returned customer data without asking for any authentication.",
+   "impact": "Personal data on about 9.5 million current and former customers was taken.",
+   "lesson": "Every API needs authentication and access control, including old or forgotten ones.",
+   "source": "Optus, ACMA and OAIC, 2022 to 2024",
+   "cards": [
+    [
+     "What happened",
+     "In September 2022 Australian telco Optus disclosed that customer data had been accessed, including names, birth dates, phone numbers and, for many, passport or driver licence numbers."
+    ],
+    [
+     "How they got in",
+     "The data came from an API that was reachable from the internet and didn't require authentication. The Australian Communications and Media Authority (ACMA) said a coding error had left its access control broken for years."
+    ],
+    [
+     "Impact",
+     "About 9.5 million current and former customers were affected. Many had to replace ID documents. ACMA and the Office of the Australian Information Commissioner (OAIC) both took Optus to court."
+    ],
+    [
+     "Lessons",
+     "Test access control on every endpoint, keep an inventory of APIs, and delete ID numbers once you no longer need them."
+    ]
+   ],
+   "maps": "A01 Broken Access Control",
+   "q": {
+    "d": 1,
+    "q": "What was wrong with the Optus API?",
+    "o": [
+     "It didn't require authentication",
+     "It used weak encryption",
+     "It ran on an old server"
+    ],
+    "k": 0,
+    "w": "Anyone who found it could request customer records. Access control was missing, not broken encryption."
+   }
+  },
+  {
+   "id": "inc-mgm",
+   "kind": "incident",
+   "tag": "2023",
+   "title": "MGM Resorts",
+   "added": "2026-11-17",
+   "date": "2023-09",
+   "status": "breached",
+   "entry": "A phone call to the IT help desk, pretending to be an employee, to get access reset.",
+   "impact": "Hotel and casino systems were disrupted for days. MGM put the cost at about US$100 million.",
+   "lesson": "Help desks need strong identity checks before resetting passwords or MFA.",
+   "source": "MGM Resorts SEC filing, 2023",
+   "cards": [
+    [
+     "What happened",
+     "In September 2023 a cyberattack disrupted MGM Resorts' hotels and casinos in Las Vegas. Digital room keys, slot machines and booking systems stopped working for days."
+    ],
+    [
+     "How they got in",
+     "The attackers, linked to the group known as Scattered Spider, used social engineering on MGM's IT help desk. Posing as an employee, they got access reset. The ALPHV/BlackCat ransomware group claimed involvement."
+    ],
+    [
+     "Impact",
+     "MGM said the attack would cost about US$100 million and that some customer personal data was taken. It didn't pay a ransom."
+    ],
+    [
+     "Lessons",
+     "Attackers don't always break in; sometimes they call in. Verify identity properly before any reset, for example with a call-back to a known number or a manager's approval."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · CSF PR.AT awareness and training",
+   "q": {
+    "d": 1,
+    "q": "How did the MGM attackers first get access?",
+    "o": [
+     "They tricked the IT help desk by phone",
+     "They exploited a slot machine",
+     "They guessed an admin password"
+    ],
+    "k": 0,
+    "w": "It was social engineering: a convincing call to the help desk got access reset."
+   }
+  },
+  {
+   "id": "inc-snowflake",
+   "kind": "incident",
+   "tag": "2024",
+   "title": "Snowflake customer breaches",
+   "added": "2026-11-17",
+   "date": "2024-05",
+   "status": "breached",
+   "entry": "Customer accounts logged in to with passwords stolen by infostealer malware, with no MFA.",
+   "impact": "Mandiant notified about 165 organisations, including AT&T, Ticketmaster and Santander.",
+   "lesson": "Cloud platforms are secured per customer. Turn on MFA and network rules yourself.",
+   "source": "Mandiant and Snowflake, 2024",
+   "cards": [
+    [
+     "What happened",
+     "In mid-2024 attackers stole large amounts of data from customers of Snowflake, a cloud data platform. Victims included AT&T, Ticketmaster and Santander."
+    ],
+    [
+     "How they got in",
+     "Mandiant found the attackers logged in to customer accounts with credentials stolen by infostealer malware, some dating back to 2020. The accounts didn't have MFA, and many had no network restrictions."
+    ],
+    [
+     "Impact",
+     "Mandiant said about 165 organisations were notified. Snowflake and its investigators found no evidence that Snowflake's own platform was breached."
+    ],
+    [
+     "Lessons",
+     "Under the shared responsibility model, protecting accounts is the customer's job. Require MFA, rotate old credentials and limit logins to known networks."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · cloud shared responsibility",
+   "q": {
+    "d": 2,
+    "q": "Was Snowflake's own platform hacked?",
+    "o": [
+     "No, customer accounts without MFA were logged in to",
+     "Yes, through a zero-day in Snowflake",
+     "Yes, through a malicious update"
+    ],
+    "k": 0,
+    "w": "Attackers used stolen passwords on customer accounts that had no MFA."
+   }
+  },
+  {
+   "id": "inc-wannacry",
+   "kind": "incident",
+   "tag": "2017",
+   "title": "WannaCry",
+   "added": "2026-11-17",
+   "date": "2017-05",
+   "status": "verified",
+   "entry": "A worm that spread through unpatched Windows SMBv1 (EternalBlue, fixed by MS17-010).",
+   "impact": "More than 200,000 computers in about 150 countries, including much of the UK NHS.",
+   "lesson": "Patch fast, turn off SMBv1 and never expose SMB to the internet.",
+   "source": "UK National Audit Office and US DOJ, 2017 to 2018",
+   "cards": [
+    [
+     "What happened",
+     "On 12 May 2017 WannaCry ransomware spread around the world in hours, encrypting files and demanding bitcoin. Hospitals, factories and telcos were hit."
+    ],
+    [
+     "How it spread",
+     "It was a worm. It used EternalBlue, an exploit for Windows SMBv1, to jump from computer to computer with no clicks needed. Microsoft had released the fix, MS17-010, in March 2017."
+    ],
+    [
+     "Impact",
+     "More than 200,000 computers in about 150 countries were hit. In the UK, NHS trusts cancelled thousands of appointments. Security researcher Marcus Hutchins slowed it by registering a domain that acted as a kill switch."
+    ],
+    [
+     "Lessons",
+     "Unpatched systems on a flat network let one infection reach everything. The US and UK governments later attributed WannaCry to North Korea."
+    ]
+   ],
+   "maps": "A03 Software Supply Chain Failures (unpatched components) · A02 Security Misconfiguration",
+   "q": {
+    "d": 1,
+    "q": "How did WannaCry spread so fast?",
+    "o": [
+     "As a worm through unpatched SMBv1",
+     "Through phishing emails only",
+     "Through a fake app store"
+    ],
+    "k": 0,
+    "w": "EternalBlue let it spread between computers on its own, with no user action."
    }
   }
  ],

@@ -612,7 +612,7 @@
    ]
   },
   {
-   "t": "Week 1 review",
+   "t": "Level B1 review",
    "sub": "Pull the week together, then test yourself.",
    "learn": [
     [
@@ -955,7 +955,7 @@
     ],
     [
      "The TCP handshake",
-     "TCP opens a connection with a three-way handshake: SYN, SYN-ACK, ACK. Only then does data flow. Port scanners take advantage of this handshake, as you'll see in Week 4."
+     "TCP opens a connection with a three-way handshake: SYN, SYN-ACK, ACK. Only then does data flow. Port scanners take advantage of this handshake, as you'll see in Level B4."
     ],
     [
      "TCP is reliable",
@@ -1067,7 +1067,7 @@
     ],
     [
      "Cleartext protocols",
-     "Telnet, FTP and plain HTTP send everything unencrypted, passwords included. Replace them with SSH, SFTP and HTTPS. In Week 4 you'll watch a cleartext request in Wireshark."
+     "Telnet, FTP and plain HTTP send everything unencrypted, passwords included. Replace them with SSH, SFTP and HTTPS. In Level B4 you'll watch a cleartext request in Wireshark."
     ]
    ],
    "real": [
@@ -1330,7 +1330,7 @@
    ]
   },
   {
-   "t": "Firewalls and Week 2 review",
+   "t": "Firewalls and Level B2 review",
    "sub": "Firewalls, then the whole week pulled together.",
    "learn": [
     [
@@ -2064,7 +2064,7 @@
    ]
   },
   {
-   "t": "Week 3 review",
+   "t": "Level B3 review",
    "sub": "Operating systems and crypto, pulled together.",
    "learn": [
     [
@@ -2708,19 +2708,19 @@
    },
    "review": [
     [
-     "Week 1",
+     "Level B1",
      "CIA, and double extortion hitting all three. Threats include insiders and accidents. Risk is likelihood and impact. Authorisation is checked on every request, with least privilege. SMS is MFA but weak; only FIDO2 keys and passkeys are phishing-resistant."
     ],
     [
-     "Week 2",
+     "Level B2",
      "Open means listening, not vulnerable. TCP has a handshake; UDP doesn't. DHCP, ARP, DNS, TCP and TLS get a laptop to a website. The padlock means encrypted, not honest."
     ],
     [
-     "Week 3",
+     "Level B3",
      "Config lives in /etc or the Registry. Read rwx and octal. Judge a process by its path and parent, not its name. Hash passwords with bcrypt or Argon2. Vulnerable VMs never go on bridged networks."
     ],
     [
-     "Week 4",
+     "Level B4",
      "Nmap finds hosts, ports and versions, with permission only. Wireshark shows the wire. Logs and a SIEM catch what attackers leave behind. Incident response now follows the CSF 2.0 functions. Defence in depth means no single control does everything."
     ],
     [
@@ -3485,7 +3485,7 @@
    ]
   },
   {
-   "t": "Week 5 review",
+   "t": "Level B5 review",
    "sub": "Microsoft and cloud identity, pulled together.",
    "learn": [
     [

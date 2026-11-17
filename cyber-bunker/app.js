@@ -559,9 +559,17 @@ addCard("py", {c:"var(--t-py)", id:"py-finish", label:"Finished", group:-2, html
 
 /* ---------- Feed tab: endless, shuffled decks ---------- */
 const F = TABS.feed;
+// Filter chips. Codex is the OWASP Top 10 decks; NZ/AU covers local incidents and AU/NZ law.
+const FILTERS = {
+  all: () => true,
+  codex: d => d.kind === "owasp",
+  incidents: d => d.kind === "incident",
+  nzau: d => !!d.region || d.kind === "law",
+  quick: d => d.kind === "quick"
+};
 const feedState = (() => {
   const s = asObj(store.get("cr2-feed", {}));
-  return {seen:asObj(s.seen), scored:asObj(s.scored), recent:Array.isArray(s.recent) ? s.recent : [], decks:+s.decks || 0, answered:+s.answered || 0, right:+s.right || 0};
+  return {seen:asObj(s.seen), scored:asObj(s.scored), recent:Array.isArray(s.recent) ? s.recent : [], decks:+s.decks || 0, answered:+s.answered || 0, right:+s.right || 0, filter:FILTERS[s.filter] ? s.filter : "all"};
 })();
 const saveFeed = () => store.set("cr2-feed", feedState);
 let feedSerial = 0, lastKind = null, decksAppended = 0;
@@ -616,8 +624,9 @@ function weakShare(kind){
 function pickDeck(){
   // Skip recently shown decks and the last kind, then pick at random, weighted by your goal,
   // by how weak you are on that kind, and towards decks you've seen least.
-  const avoid = feedState.recent.slice(-Math.min(6, FEED_DECKS.length - 1));
-  let pool = FEED_DECKS.filter(d => !avoid.includes(d.id));
+  const all = FEED_DECKS.filter(FILTERS[feedState.filter]);
+  const avoid = feedState.recent.slice(-Math.min(6, all.length - 1));
+  let pool = all.filter(d => !avoid.includes(d.id));
   const other = pool.filter(d => d.kind !== lastKind);
   if (other.length) pool = other;
   const weak = {}, boost = TARGETS[target];
@@ -728,7 +737,7 @@ function appendReview(at){
 }
 // Each new stretch of feed: a Review deck when questions are due (at most every third deck), otherwise a fresh deck.
 function appendNext(){
-  if (decksSinceReview >= 3 && appendReview()) return;
+  if (feedState.filter === "all" && decksSinceReview >= 3 && appendReview()) return;
   appendDeck(); decksSinceReview++;
 }
 function reviewNow(){
@@ -758,6 +767,19 @@ function wireTarget(root){
 }
 wireTarget(F.el);
 for (let i = 0; i < 3; i++) appendNext();
+// Changing the filter keeps the deck you're reading and replaces everything after it.
+const chips = document.getElementById("chips");
+function showFilter(){ chips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.f === feedState.filter ? "true" : "false")); }
+chips.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+  if (b.dataset.f === feedState.filter) return;
+  feedState.filter = b.dataset.f; saveFeed(); showFilter();
+  let end = F.current; const g = F.cards[end].group;
+  if (g !== -1) while (F.cards[end + 1] && F.cards[end + 1].group === g) end++;
+  F.cards.splice(end + 1).forEach(c => { F.io.unobserve(c.el); c.el.remove(); });
+  for (let i = 0; i < 3; i++) appendNext();
+  toast(b.dataset.f === "all" ? "Next up: everything" : `Next up: ${b.textContent} only`);
+}));
+showFilter();
 
 // Keep the DOM small on long sessions: drop whole decks well above the reader,
 // but only once scrolling has settled, so a fling isn't interrupted.
@@ -914,6 +936,8 @@ function switchTab(tab, focusView){
     b.tabIndex = on ? 0 : -1;
   });
   store.set("cr2-tab", tab);
+  document.body.dataset.tab = tab;
+  document.getElementById("chips").hidden = tab !== "feed";
   const pickWrap = document.getElementById("pickWrap");
   pickWrap.hidden = tab === "feed";
   document.getElementById("pickLabel").textContent = tab === "py" ? "Lessons" : "Days";

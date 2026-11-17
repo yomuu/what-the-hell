@@ -62,6 +62,12 @@ if (feed) {
     if (!d.title) problems.push(`${where}: title missing`);
     if (d.added && !/^\d{4}-\d{2}-\d{2}$/.test(d.added)) problems.push(`${where}: added must be YYYY-MM-DD`);
     if (d.kind === "interview") { if (!d.answer) problems.push(`${where}: interview deck needs answer`); return; }
+    if (d.kind === "incident") {
+      if (!/^\d{4}-\d{2}$/.test(d.date || "")) problems.push(`${where}: date must be YYYY-MM`);
+      if (!["breached", "verified", "developing"].includes(d.status)) problems.push(`${where}: status must be breached, verified or developing`);
+      ["entry", "impact", "lesson", "source"].forEach(k => { if (!d[k]) problems.push(`${where}: ${k} missing (incident record card)`); });
+    }
+    if (d.region && !["NZ", "AU", "NZ/AU"].includes(d.region)) problems.push(`${where}: region must be NZ, AU or NZ/AU`);
     if (!Array.isArray(d.cards) || !d.cards.length) problems.push(`${where}: needs at least one card`);
     else d.cards.forEach((c, j) => { if (!Array.isArray(c) || c.length < 2 || !c[0] || !c[1]) problems.push(`${where} card ${j + 1}: needs [heading, text]`); });
     if (d.kind !== "quick" && !d.q && !d.qs) problems.push(`${where}: needs a check question (q)`);
