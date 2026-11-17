@@ -1,6 +1,5 @@
 /* Cyber Scroll app engine. index.html loads the content JSON into globals, then this file. */
 document.getElementById("v-study").innerHTML = "";
-document.body.classList.remove("booting");
 /* ==========================================================================
    APP
    ========================================================================== */
@@ -410,7 +409,7 @@ function openStory(i, e){
   document.getElementById("stMsg").textContent = "";
   storySnap = storyFields(); discardArmed = false;
   storySheet.classList.add("open");
-  Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true;
+  Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true; document.getElementById("updateBar").inert = true;
   history.pushState({story:1}, "");
   // New story: start typing straight away. Existing story: don't pop the keyboard over it.
   if (i < 0) document.getElementById("stTitle").focus();
@@ -418,7 +417,7 @@ function openStory(i, e){
 }
 function hideStory(){
   storySheet.classList.remove("open");
-  Object.entries(TABS).forEach(([k, T]) => T.el.inert = k !== active); rail.inert = false; tabsBar.inert = false;
+  Object.entries(TABS).forEach(([k, T]) => T.el.inert = k !== active); rail.inert = false; tabsBar.inert = false; document.getElementById("updateBar").inert = false;
   if (storyOpener && storyOpener.isConnected) storyOpener.focus({preventScroll:true});
   renderStories();
 }
@@ -600,8 +599,12 @@ function appendDeck(forced, at){
 let decksSinceReview = 99;
 // A due question is "waiting" if an unanswered review card for it is still ahead of the reader.
 const waitingAhead = k => F.cards.some((c, j) => j > F.current && c.rkey === k && !c.answered);
+// Questions already put in a Review deck this session. Ones you swiped past wait until other due questions have had a turn.
+const shownThisSession = new Set();
 function appendReview(at){
-  const keys = dueKeys().filter(k => !waitingAhead(k)).slice(0, 5);
+  const due = dueKeys().filter(k => !waitingAhead(k));
+  const keys = due.filter(k => !shownThisSession.has(k)).concat(due.filter(k => shownThisSession.has(k))).slice(0, 5);
+  keys.forEach(k => shownThisSession.add(k));
   if (!keys.length) return false;
   decksSinceReview = 0;
   const c = DECK_COLOUR.review, serial = ++feedSerial, total = keys.length + 1;
@@ -691,14 +694,15 @@ function trimFeed(){
 
 /* ---------- Streak, due count and toasts ---------- */
 let toastTimer = null;
-function toast(msg){
+function toast(msg, ms){
   const t = document.getElementById("toast");
-  clearTimeout(toastTimer); t.textContent = msg; t.classList.add("show");
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+  clearTimeout(toastTimer); t.textContent = msg; t.classList.toggle("long", msg.length > 40); t.classList.add("show");
+  toastTimer = setTimeout(() => t.classList.remove("show"), ms || (msg.length > 60 ? 6000 : 2800));
 }
 function refreshDaily(){
   const d = today(), streak = currentStreak(), due = dueKeys().length;
-  count.textContent = d.qs >= DAILY_GOAL ? `Streak ${streak} · done` : `Streak ${streak} · ${d.qs}/${DAILY_GOAL}`;
+  // Short, so the card label beside it fits on a 375px screen; screen readers get the full words.
+  count.innerHTML = `<span aria-hidden="true">${streak}d · ${d.qs >= DAILY_GOAL ? "done" : d.qs + "/" + DAILY_GOAL}</span><span class="sr">Streak ${streak} day${streak === 1 ? "" : "s"}, ${Math.min(d.qs, DAILY_GOAL)} of ${DAILY_GOAL} questions today</span>`;
   const badge = document.getElementById("dueBadge");
   badge.hidden = due === 0; badge.innerHTML = `${due > 99 ? "99+" : due}<span class="sr"> reviews due</span>`;
   document.querySelectorAll(".streakLine").forEach(l => l.innerHTML =
@@ -732,6 +736,7 @@ function setCurrent(tab, idx){
     if (c.first) scheduleTrim();
   } else if (c.group >= 0){
     if (c.el.id === "ready") renderReady();
+    if (T.detour && c.group !== T.detourGroup) T.detour = false;
     if (!T.detour){ store.set(tab === "study" ? "cr2-pos" : "cr2-py-pos", c.el.id); updateResume(tab); }
   }
   if (tab === active) render();
@@ -837,7 +842,7 @@ function navigateTo(tab, n, detour){
   const there = () => goGroup(tab, n - 1);
   if (detour){
     history.pushState({tab:1}, "", location.hash);
-    TABS[tab].detour = true; switchTab(tab); there(); return;
+    TABS[tab].detour = true; TABS[tab].detourGroup = n - 1; switchTab(tab); there(); return;
   }
   if (tab === "study" && active !== "study" && history.state && history.state.tab){ pendingNav = there; userSwitch("study"); }
   else { userSwitch(tab); there(); }
@@ -897,7 +902,7 @@ function renderSheet(){
   document.querySelectorAll(".weakBtn:not(.slip)").forEach(b => { if (slipDays.has(b.dataset.n)) b.remove(); });
   const rs = document.getElementById("reviewSurprises");
   if (rs) rs.addEventListener("click", () => closeSheet(() => reviewNow()));
-  document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { S.detour = false; goGroup(tab, n - 1); }); }));
+  document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { TABS[tab].detour = false; goGroup(tab, n - 1); }); }));
   // 4. quick links to the cards after the last day
   if (tab === "study") document.getElementById("score").insertAdjacentHTML("beforeend",
     `<div class="weak">${[["portfolio","Portfolio"],["stories","Stories"],["ready","Readiness"]].map(([id, t]) => `<button class="x jump" type="button" data-id="${id}">${t}</button>`).join("")}</div>`);
@@ -915,7 +920,7 @@ function openSheet(e){
   opener = (e && e.currentTarget) || document.activeElement;
   renderSheet();
   sheet.classList.add("open");
-  Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true;
+  Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true; document.getElementById("updateBar").inert = true;
   more.classList.remove("show");
   history.pushState({sheet:1}, "");
   const cur = dayList.querySelector('[aria-current="true"]');
@@ -924,7 +929,7 @@ function openSheet(e){
 }
 function hideSheet(){
   sheet.classList.remove("open");
-  Object.entries(TABS).forEach(([k, T]) => T.el.inert = k !== active); rail.inert = false; tabsBar.inert = false;
+  Object.entries(TABS).forEach(([k, T]) => T.el.inert = k !== active); rail.inert = false; tabsBar.inert = false; document.getElementById("updateBar").inert = false;
   if (opener && opener.isConnected && opener !== document.body) opener.focus({preventScroll:true}); else TABS[active].el.focus({preventScroll:true});
   const f = afterClose; afterClose = null;
   if (f) f();
@@ -1130,6 +1135,11 @@ const savedTab = store.get("cr2-tab", "study");
 switchTab(TABS[savedTab] ? savedTab : "study");
 if (initialHash) requestAnimationFrame(() => setTimeout(() => fromHash(initialHash), 50));
 else if (active === "feed") requestAnimationFrame(() => go("feed", 1));
+else if (resumeLabels[active]) requestAnimationFrame(() => {
+  // Opening the app from its icon has no #link: go straight back to the card you were on.
+  const T = TABS[active], i = T.cards.findIndex(c => c.el.id === store.get(resumeLabels[active].posKey, ""));
+  if (i > 0 && T.cards[i].group >= 0) go(active, i);
+});
 
 
 // Content version, shown in the Days sheet.
@@ -1148,3 +1158,11 @@ else if (active === "feed") requestAnimationFrame(() => go("feed", 1));
   }
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
 })();
+
+// While typing an answer the keyboard is up, so hide the tab bar and banner that would sit over the input.
+document.addEventListener("focusin", e => { if (e.target.matches && e.target.matches("input, textarea")) document.body.classList.add("typing"); });
+document.addEventListener("focusout", () => document.body.classList.remove("typing"));
+
+// Started: show the app. If anything above had thrown, the loader in index.html shows its error card instead.
+document.body.classList.remove("booting");
+window.APP_READY = true;

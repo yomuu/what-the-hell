@@ -39,7 +39,17 @@ if (study) {
     (d.quiz || []).forEach((q, j) => checkQ(q, `Day ${i + 1} quiz ${j + 1}`));
   });
 }
-if (py) (py.lessons || []).forEach((d, i) => (d.quiz || []).forEach((q, j) => checkQ(q, `Python lesson ${i + 1} quiz ${j + 1}`)));
+// Shapes the app relies on at start-up: a day or lesson outside its week or level stops the app loading.
+if (study && Array.isArray(study.weeks) && Array.isArray(study.days) && study.days.length > study.weeks.length * 7)
+  problems.push(`study.json: ${study.days.length} days but only ${study.weeks.length} weeks (7 days each). Add a week to "weeks".`);
+if (py) {
+  if (!Array.isArray(py.levels) || !Array.isArray(py.lessons)) problems.push("python.json: needs levels and lessons");
+  else py.lessons.forEach((d, i) => {
+    if (!d.t || !Array.isArray(d.learn) || !Array.isArray(d.quiz) || !Array.isArray(d.recap)) problems.push(`Python lesson ${i + 1}: missing t, learn, quiz or recap`);
+    if (!py.levels.some(l => i >= l.from && i < l.to)) problems.push(`Python lesson ${i + 1}: not inside any level's from/to range`);
+    (d.quiz || []).forEach((q, j) => checkQ(q, `Python lesson ${i + 1} quiz ${j + 1}`));
+  });
+}
 const ids = new Set();
 if (feed) {
   const KINDS = ["owasp", "incident", "e8", "cloud", "law", "triage", "interview", "kql", "quick"];

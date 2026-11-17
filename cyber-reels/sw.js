@@ -1,7 +1,7 @@
 /* Cyber Scroll service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 1;
+const VERSION = 2;
 const CACHE = "cyber-scroll-v" + VERSION;
 const ASSETS = [
   "./", "index.html", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png",

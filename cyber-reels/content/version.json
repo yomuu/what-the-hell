@@ -1,5 +1,5 @@
 {
- "version": 1,
+ "version": 2,
  "date": "2026-11-17",
- "note": "Content moved into JSON files."
+ "note": "Fact fixes: ATT&CK now has 15 tactics, SSHole detail, and app fixes."
 }

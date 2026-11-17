@@ -161,6 +161,7 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .stats b{color:var(--text);font-weight:500}
 .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 48px);transform:translate(-50%,-8px);z-index:9;max-width:calc(100% - 32px);background:var(--surface);border:1px solid var(--w3);border-radius:999px;padding:8px 16px;font-family:var(--mono);font-size:13px;letter-spacing:.03em;color:var(--text);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.long{border-radius:16px;line-height:1.4}
 .model{display:none;font-size:17px;line-height:1.5;max-width:440px;border-left:3px solid var(--c);padding:4px 0 4px 14px}
 .model.show{display:block}
 .rate{display:none;gap:8px;flex-wrap:wrap}
@@ -234,7 +235,11 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 #updateGo{padding:8px 12px;background:transparent;font-weight:600;font-size:14px;line-height:1.25;text-align:left}
 #updateLater{flex:none;min-width:44px;padding:8px 12px;border-radius:12px;background:rgba(14,18,22,.16);font-size:13px}
 .update button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
-body.has-update .more{display:none}
+body.has-update .card{padding-bottom:100px}
+body.has-update .more{bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 76px)}
+/* While typing an answer, the keyboard is up: hide everything fixed to the bottom so it can't cover the input. */
+body.typing .tabs,body.typing .update,body.typing .more{display:none}
+body.typing .card{padding-bottom:28px}
 /* Until the app has started, the tabs and the Days button can't do anything */
 body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
 .loading .in{gap:12px}
@@ -327,7 +332,9 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
       window.FEED_DECKS = res[1].decks; window.FEED_EXTRA_Q = res[1].extraQuestions || {};
       window.PY_LEVELS = res[2].levels; window.PY_LESSONS = res[2].lessons;
       window.CONTENT_VERSION = res[3];
-      var s = document.createElement("script"); s.src = "app.js"; document.body.appendChild(s);
+      var s = document.createElement("script"); s.src = "app.js";
+      s.onerror = function(){ bootFail(new Error("app.js didn't load")); };
+      document.body.appendChild(s);
     }).catch(function(err){
       failed = true;
       msg.textContent = "Couldn't load the cards";
@@ -337,6 +344,19 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
       retry.hidden = location.protocol === "file:";
     });
   }
+  // If the app itself fails while starting (for example a broken content update), put the error card back
+  // with Try again, instead of leaving a blank screen. app.js sets window.APP_READY once it has started.
+  var loadCard = msg.closest(".card");
+  function bootFail(err){
+    if (window.APP_READY || failed) return;
+    failed = true;
+    var v = document.getElementById("v-study"); v.innerHTML = ""; v.appendChild(loadCard);
+    document.body.classList.add("booting");
+    msg.textContent = "This week's content didn't load";
+    detail.textContent = "Something in the latest update is broken. Try again in a little while; a fix will reach you the same way updates do. (" + ((err && err.message) || "app error") + ")";
+    retry.hidden = false; retry.disabled = false;
+  }
+  window.addEventListener("error", function(e){ if (started) bootFail(e.error || e); });
   // Try again: switch to a waiting update if there is one, otherwise check for one and reload.
   retry.addEventListener("click", function(){
     retry.disabled = true; msg.textContent = "Trying again…";
@@ -344,7 +364,7 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
     var next = function(){ location.reload(); };
     if (reg) reg.update().then(next, next); else next();
   });
-  window.addEventListener("online", function(){ if (failed) load(); });
+  window.addEventListener("online", function(){ if (failed && !started) load(); });
   load();
 
   // ---------- Service worker: offline copy and update banner ----------
@@ -360,8 +380,9 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
   }
   function hide(){ bar.hidden = true; document.body.classList.remove("has-update"); }
   go.addEventListener("click", function(){
+    if (!waiting) return location.reload();   // another open copy already switched versions
     go.textContent = "Updating…"; go.disabled = true; wantReload = true;
-    if (waiting) waiting.postMessage({type: "SKIP_WAITING"});
+    waiting.postMessage({type: "SKIP_WAITING"});
     setTimeout(function(){ location.reload(); }, 3000);   // in case the switch already happened elsewhere
   });
   later.addEventListener("click", function(){ hide(); say("Update postponed until you next open the app."); });

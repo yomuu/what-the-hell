@@ -1183,7 +1183,7 @@
    "cards": [
     [
      "Tactics are the why",
-     "MITRE ATT&CK is a free catalogue of real attacker behaviour. Tactics are the attacker's goals. The Enterprise matrix has 14, including Initial Access, Execution, Persistence, Privilege Escalation, Credential Access, Lateral Movement and Exfiltration."
+     "MITRE ATT&CK is a free catalogue of real attacker behaviour. Tactics are the attacker's goals. The Enterprise matrix has 15 since v19 (April 2026), including Initial Access, Execution, Persistence, Privilege Escalation, Stealth, Credential Access, Lateral Movement and Exfiltration."
     ],
     [
      "Techniques are the how",
@@ -1579,7 +1579,7 @@
     ],
     [
      "Lessons",
-     "Remove vendor roles you no longer use. Trust the vendor's exact IAM role, not their whole account (`:root`), and limit it to the vendor's published IP addresses. Turn on S3 data events for sensitive buckets. Don't treat the External ID as a secret."
+     "Remove vendor roles you no longer use. Trust the vendor's exact IAM role, not their whole account (`:root`), and if the vendor publishes fixed IP addresses, allow only those. Turn on S3 data events for sensitive buckets. Don't treat the External ID as a secret."
     ]
    ],
    "maps": "A01 Broken Access Control · A09 Security Logging and Alerting Failures · CSF GV.SC supply chain",
@@ -1612,7 +1612,7 @@
     ],
     [
      "How they got in",
-     "On Linux systems that use the musl C library and an OpenSSH built without PAM, a very long password could get through SSH password login. Alpine Linux is the main example. Distros built on glibc, like Debian, Ubuntu, Red Hat and SUSE, aren't affected."
+     "On Linux systems that use the musl C library and an OpenSSH built without PAM, a very long password could get through SSH password login. Alpine Linux is the main example. It only worked on accounts locked with `*` in the password file, such as key-only accounts: musl returned `*` for the over-long password, which matched. glibc distros like Debian and Ubuntu aren't affected."
     ],
     [
      "Impact",
@@ -1628,12 +1628,12 @@
     "d": 2,
     "q": "Which servers were exposed to SSHole?",
     "o": [
-     "Alpine and other musl builds without PAM that allow password logins",
+     "Alpine and other musl builds without PAM, on accounts locked with `*`",
      "Ubuntu and Debian servers that allow password logins",
      "Any server that uses SSH keys only"
     ],
     "k": 0,
-    "w": "The bug needs musl, an OpenSSH built without PAM, and password logins turned on. glibc distros like Ubuntu and Debian weren't affected, and key-only logins block the bypass."
+    "w": "The bug needs musl, an OpenSSH built without PAM, password logins turned on and an account locked with `*`. glibc distros like Ubuntu and Debian weren't affected, and key-only logins block the bypass."
    }
   },
   {
@@ -1721,7 +1721,7 @@
    ],
    "kind": "incident",
    "tag": "2026",
-   "region": "NZ/AU",
+   "region": "NZ",
    "title": "Fake job app malware (NCSC NZ warning)",
    "added": "2026-11-16",
    "cards": [
@@ -1777,7 +1777,7 @@
    "cards": [
     [
      "Spot the mistake: a trust policy",
-     "A role trusts `arn:aws:iam::111122223333:root` (a vendor's account) with no conditions. The mistake is that it trusts the vendor's whole account. Name the vendor's exact role, limit it to the vendor's IP addresses, and delete the role once you stop using the vendor."
+     "A role trusts `arn:aws:iam::111122223333:root` (a vendor's account) with no conditions. The mistake is that it trusts the vendor's whole account. Name the vendor's exact role, allow only the vendor's IP addresses if they publish fixed ones, and delete the role once you stop using the vendor."
     ]
    ]
   },
@@ -1803,7 +1803,7 @@
    "cards": [
     [
      "NZ by the numbers (2025/26)",
-     "NCSC NZ logged 4,673 reports in 2025/26. It flagged 369 incidents of potential national significance, up from 331, and recorded 4 \"highly significant\" C2 incidents. That's as many as in the previous ten years combined."
+     "In 2025/26 NCSC NZ flagged 369 incidents of potential national significance, up from 331, and recorded 4 \"highly significant\" C2 incidents. That's as many as in the previous ten years combined."
     ]
    ]
   },
@@ -2356,7 +2356,7 @@
      "Impact"
     ],
     "k": 0,
-    "w": "Valid Accounts appears under Initial Access, Persistence, Privilege Escalation and Defense Evasion."
+    "w": "Valid Accounts appears under Initial Access, Persistence, Privilege Escalation and Stealth (called Defense Evasion before ATT&CK v19)."
    }
   ],
   "inc-capitalone": [

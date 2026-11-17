@@ -3318,7 +3318,7 @@
     ],
     [
      "Working an incident",
-     "Assign yourself, set it to Active, check the severity, investigate the entities and evidence, then close it with a classification: true positive, benign positive, false positive or undetermined. Good notes help the next analyst."
+     "Assign yourself, set it to Active, check the severity, investigate the entities and evidence, then close it with a classification: true positive, benign positive, false positive or undetermined. The Defender portal words them slightly differently. Good notes help the next analyst."
     ],
     [
      "Automation",
