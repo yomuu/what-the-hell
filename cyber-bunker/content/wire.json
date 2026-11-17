@@ -1,12 +1,12 @@
 {
- "updated": "2026-11-17T21:52:20+13:00",
- "note": "Headlines and short feed descriptions only, with links to the full articles. Written by tools/fetch-wire.js.",
+ "updated": "2026-11-17T22:01:00+13:00",
+ "note": "Headlines and short feed descriptions only, each credited to its publisher (who owns the text) with a link to the full article. Written by tools/fetch-wire.js.",
  "sources": [
   {
    "name": "BleepingComputer",
    "status": "ok",
    "url": "https://www.bleepingcomputer.com/feed/",
-   "kept": 15
+   "kept": 14
   },
   {
    "name": "The Record",
@@ -24,7 +24,7 @@
    "name": "iTnews",
    "status": "ok",
    "url": "https://www.itnews.com.au/RSS/rss.ashx",
-   "kept": 7
+   "kept": 6
   },
   {
    "name": "NCSC NZ",
@@ -51,14 +51,15 @@
    "summary": "In breach notification letters, the rideshare company said it was notified by a third party service provider on October 9 that internal credentials were stolen and used to access Uber’s account.",
    "link": "https://therecord.media/uber-says-150000-impacted-third-party-breach",
    "source": "The Record",
-   "date": "2026-11-18T14:20:00+13:00",
+   "date": "2026-11-17T22:00:50+13:00",
    "tags": [
     "Breach"
    ],
    "related": {
     "to": "study:26",
     "label": "Day 26: Defence in depth and incident response"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Uber notifies drivers of data breach affecting nearly 150,000 people",
@@ -73,7 +74,8 @@
    "related": {
     "to": "study:26",
     "label": "Day 26: Defence in depth and incident response"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Ransomware affiliate suspect extradited to US, faces 27 years in prison",
@@ -87,7 +89,8 @@
    "related": {
     "to": "deck:e8-backups",
     "label": "Essential Eight: regular backups"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Optimizely hack infected CNN, Fox News, BBC, Salesforce sites with malware",
@@ -96,13 +99,14 @@
    "source": "BleepingComputer",
    "date": "2026-11-17T15:12:17+13:00",
    "tags": [
-    "Vulnerability",
-    "Malware"
+    "Malware",
+    "Cloud"
    ],
    "related": {
     "to": "deck:owasp-a03",
     "label": "OWASP A03: Software Supply Chain Failures"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Vulnerabilities are moving quickly, so patch, protect, prevent",
@@ -115,9 +119,10 @@
     "NZ/AU"
    ],
    "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   }
+    "to": "study:11",
+    "label": "Day 11: Ports and services"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Gemini AI agents repeatedly bypassed safeguards to attack real website",
@@ -128,7 +133,8 @@
    "tags": [
     "AI"
    ],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "California sues OpenAI for Hugging Face and other incidents, alleging deception and recklessness",
@@ -139,7 +145,8 @@
    "tags": [
     "AI"
    ],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Google Project Zero cuts bug disclosures to 30 days amid AI threats",
@@ -154,7 +161,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "California sues OpenAI over AI agents escaping sandboxes, hacking firms",
@@ -163,13 +171,10 @@
    "source": "BleepingComputer",
    "date": "2026-11-17T09:59:44+13:00",
    "tags": [
-    "Breach",
     "AI"
    ],
-   "related": {
-    "to": "study:26",
-    "label": "Day 26: Defence in depth and incident response"
-   }
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Match fined $10 million for alleged Tinder privacy violations",
@@ -178,7 +183,8 @@
    "source": "The Record",
    "date": "2026-11-17T09:15:00+13:00",
    "tags": [],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Barracuda links cloud breach to ARTEX AI-powered cyberattack",
@@ -188,13 +194,13 @@
    "date": "2026-11-17T08:57:13+13:00",
    "tags": [
     "Breach",
-    "AI",
-    "Cloud"
+    "AI"
    ],
    "related": {
-    "to": "deck:cloud-iam",
-    "label": "Cloud: identity and access"
-   }
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Italian regulator fines Meta $886 million for violating data privacy law",
@@ -203,7 +209,8 @@
    "source": "The Record",
    "date": "2026-11-17T07:05:00+13:00",
    "tags": [],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "King Charles opens new HQ for National Cyber Force, UK’s offensive hacking unit",
@@ -212,7 +219,8 @@
    "source": "The Record",
    "date": "2026-11-17T06:22:00+13:00",
    "tags": [],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Microsoft says months-old bug caused global Microsoft 365 outage",
@@ -221,13 +229,10 @@
    "source": "BleepingComputer",
    "date": "2026-11-17T05:43:24+13:00",
    "tags": [
-    "Vulnerability",
     "Cloud"
    ],
-   "related": {
-    "to": "study:29",
-    "label": "Day 29: Microsoft Entra ID"
-   }
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Fandango says hackers stole payment card details from checkout pages",
@@ -241,19 +246,8 @@
    "related": {
     "to": "study:26",
     "label": "Day 26: Defence in depth and incident response"
-   }
-  },
-  {
-   "title": "7 Tips For Complying with CJIS Password and MFA Requirements",
-   "summary": "The FBI's latest CJIS Security Policy requires law enforcement agencies to strengthen password protections and enforce MFA across privileged and non-privileged accounts. Specops Software outlines…",
-   "link": "https://www.bleepingcomputer.com/news/security/7-tips-for-complying-with-cjis-password-and-mfa-requirements",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T04:01:11+13:00",
-   "tags": [],
-   "related": {
-    "to": "study:4",
-    "label": "Day 4: Multi-factor authentication"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Google warns that fully-automated AI attacks are coming soon",
@@ -268,7 +262,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Scans for LiteLLM/Starlette (CVE-2026-42271, CVE-2026-48710), (Mon, Nov 16th)",
@@ -283,7 +278,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Microsoft: Windows Server 2016 reaches end of support in 60 days",
@@ -294,7 +290,8 @@
    "tags": [
     "Vulnerability"
    ],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Microsoft says three-month-old bug behind global M365 outage",
@@ -307,9 +304,10 @@
     "Cloud"
    ],
    "related": {
-    "to": "study:29",
-    "label": "Day 29: Microsoft Entra ID"
-   }
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Australian retail giant Coles investigates cybersecurity incident",
@@ -318,13 +316,13 @@
    "source": "BleepingComputer",
    "date": "2026-11-17T00:18:09+13:00",
    "tags": [
-    "Breach",
     "NZ/AU"
    ],
    "related": {
     "to": "study:26",
     "label": "Day 26: Defence in depth and incident response"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Anthropic’s Claude Fable 5.2 blocks fewer security tasks, while Mythos gets better at finding bugs",
@@ -335,7 +333,8 @@
    "tags": [
     "AI"
    ],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "New NoisyTCP vulnerability lets attackers crash Linux servers",
@@ -347,9 +346,10 @@
     "Vulnerability"
    ],
    "related": {
-    "to": "study:11",
-    "label": "Day 11: Ports and services"
-   }
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Microsoft pushes Windows emergency updates to fix activation failures",
@@ -360,7 +360,8 @@
    "tags": [
     "Vulnerability"
    ],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Kernel-crashing NoisyTCP bug sat in Linux for 11 years",
@@ -368,10 +369,9 @@
    "link": "https://www.itnews.com.au/news/kernel-crashing-noisytcp-bug-sat-in-linux-for-11-years-630369",
    "source": "iTnews",
    "date": "2026-11-16T15:55:00+13:00",
-   "tags": [
-    "Vulnerability"
-   ],
-   "related": null
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Coles Group investigating a cyber incident",
@@ -380,27 +380,13 @@
    "source": "iTnews",
    "date": "2026-11-16T12:11:00+13:00",
    "tags": [
-    "Breach"
+    "NZ/AU"
    ],
    "related": {
     "to": "study:26",
     "label": "Day 26: Defence in depth and incident response"
-   }
-  },
-  {
-   "title": "FBI warns ARTEX AI hacking tool is powering global cyberattacks",
-   "summary": "The FBI is warning that hackers are using an AI-powered penetration testing framework called ARTEX to automate cyberattacks against organizations worldwide, including a recent ConnectWise…",
-   "link": "https://www.bleepingcomputer.com/news/security/fbi-warns-artex-ai-hacking-tool-is-powering-global-cyberattacks",
-   "source": "BleepingComputer",
-   "date": "2026-11-16T07:29:53+13:00",
-   "tags": [
-    "Breach",
-    "AI"
-   ],
-   "related": {
-    "to": "study:26",
-    "label": "Day 26: Defence in depth and incident response"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "YARA-X 1.23.0 Release, (Sun, Nov 15th)",
@@ -409,7 +395,8 @@
    "source": "SANS ISC",
    "date": "2026-11-16T07:17:27+13:00",
    "tags": [],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Phishers quick to exploit extended M365 outage",
@@ -422,9 +409,10 @@
     "Cloud"
    ],
    "related": {
-    "to": "study:29",
-    "label": "Day 29: Microsoft Entra ID"
-   }
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
@@ -438,7 +426,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "In Pictures: Benchmark Security Saviynt roundtable",
@@ -447,11 +436,12 @@
    "source": "iTnews",
    "date": "2026-11-13T17:46:00+13:00",
    "tags": [],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Macfinger ClickFix campaign sends DownTheDRAIN infostealer for macOS, (Fri, Nov 13th)",
-   "summary": "Introduction",
+   "summary": "",
    "link": "https://isc.sans.edu/diary/rss/33518",
    "source": "SANS ISC",
    "date": "2026-11-13T16:41:41+13:00",
@@ -461,7 +451,8 @@
    "related": {
     "to": "study:6",
     "label": "Day 6: Common attacks"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Exploit Attempts for GPUStack Authentication Bypass (CVE-2026-102895), (Thu, Nov 12th)",
@@ -476,7 +467,8 @@
    "related": {
     "to": "deck:owasp-a07",
     "label": "OWASP A07: Authentication Failures"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Microsoft Patch Tuesday November 2026, (Tue, Nov 10th)",
@@ -491,7 +483,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "In pictures: The 2026 iTnews Benchmark Security Awards winners",
@@ -500,19 +493,8 @@
    "source": "iTnews",
    "date": "2026-11-12T07:09:00+13:00",
    "tags": [],
-   "related": null
-  },
-  {
-   "title": "App hoster Railway attackers ran up US$740,000 on stolen AI keys",
-   "summary": "AI model gateway OpenRouter declines refunds.",
-   "link": "https://www.itnews.com.au/news/app-hoster-railway-attackers-ran-up-us740000-on-stolen-ai-keys-630277",
-   "source": "iTnews",
-   "date": "2026-11-11T16:31:00+13:00",
-   "tags": [
-    "Breach",
-    "AI"
-   ],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds Six Known Exploited Vulnerabilities to Catalog",
@@ -524,9 +506,10 @@
     "Vulnerability"
    ],
    "related": {
-    "to": "deck:owasp-a05",
-    "label": "OWASP A05: Injection"
-   }
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds Four Known Exploited Vulnerabilities to Catalog",
@@ -540,7 +523,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
@@ -554,7 +538,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "US Government Partners Urge Hardening Industrial Refrigeration and Cold Chain Monitoring Systems",
@@ -562,14 +547,9 @@
    "link": "https://www.cisa.gov/resources-tools/resources/us-government-partners-urge-hardening-industrial-refrigeration-and-cold-chain-monitoring-systems",
    "source": "CISA",
    "date": "2026-11-06T01:00:00+13:00",
-   "tags": [
-    "Breach",
-    "Vulnerability"
-   ],
-   "related": {
-    "to": "deck:owasp-a03",
-    "label": "OWASP A03: Software Supply Chain Failures"
-   }
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Post-Quantum Questions to Ask Your Vendors",
@@ -578,14 +558,13 @@
    "source": "CISA",
    "date": "2026-11-06T01:00:00+13:00",
    "tags": [
-    "Vulnerability",
-    "Cloud",
     "NZ/AU"
    ],
    "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   }
+    "to": "study:19",
+    "label": "Day 19: Encryption vs hashing"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
@@ -599,7 +578,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
@@ -613,7 +593,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
@@ -627,7 +608,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
@@ -641,7 +623,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
@@ -655,7 +638,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
@@ -669,7 +653,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
@@ -683,7 +668,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
@@ -695,9 +681,10 @@
     "Vulnerability"
    ],
    "related": {
-    "to": "deck:owasp-a05",
-    "label": "OWASP A05: Injection"
-   }
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
@@ -709,9 +696,10 @@
     "Vulnerability"
    ],
    "related": {
-    "to": "deck:owasp-a05",
-    "label": "OWASP A05: Injection"
-   }
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Critical vulnerabilities in Fortinet products",
@@ -726,7 +714,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Critical vulnerabilities in PHP",
@@ -741,7 +730,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Protecting operational technology and edge devices",
@@ -752,7 +742,8 @@
    "tags": [
     "NZ/AU"
    ],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Critical vulnerabilities in Citrix NetScaler ADC and Citrix NetScaler Gateway products",
@@ -767,7 +758,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Risks of AI misalignment to Australian organisations",
@@ -779,7 +771,8 @@
     "AI",
     "NZ/AU"
    ],
-   "related": null
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Active exploitation of Adobe Commerce and Magento Open Source vulnerability",
@@ -794,7 +787,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Critical vulnerabilities in Citrix NetScaler Application Delivery Controller (ADC) and Citrix NetScaler Gateway products",
@@ -809,7 +803,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Active exploitation of a software development platform within Australia",
@@ -824,7 +819,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Active exploitation of a software development platform within Australia",
@@ -839,7 +835,8 @@
    "related": {
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
-   }
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   },
   {
    "title": "Active exploitation of remote monitoring and management platform within Australia",
@@ -849,13 +846,13 @@
    "date": "2026-08-19T16:44:29+12:00",
    "tags": [
     "Vulnerability",
-    "Cloud",
     "NZ/AU"
    ],
    "related": {
-    "to": "study:29",
-    "label": "Day 29: Microsoft Entra ID"
-   }
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
   }
  ]
 }

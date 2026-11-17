@@ -1,13 +1,13 @@
 /* Cyber Bunker service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 14;
+const VERSION = 19;
 const CACHE = "cyber-bunker-v" + VERSION;
 const PYODIDE_VERSION = "0.27.7";   // keep in step with app.js
 const PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
 const ASSETS = [
   "./", "index.html", "app.js", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png", "icon-maskable-512.png",
-  "content/study.json", "content/feed.json", "content/python.json", "content/version.json"
+  "content/study.json", "content/feed.json", "content/python.json", "content/version.json", "content/certs.json"
 ];
 
 self.addEventListener("install", event => {

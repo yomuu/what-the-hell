@@ -102,6 +102,27 @@ if (fs.existsSync(path.join(root, "content/wire.json"))) {
   (w && w.items || []).forEach((it, i) => { if (!it.title || !/^https?:\/\//.test(it.link || "") || !it.source || !it.date) problems.push(`wire.json item ${i + 1}: needs title, link, source and date`); });
 }
 
+// Certification readiness: every exam has its source details, and every mapping points at real content.
+try {
+  const certs = JSON.parse(read("content/certs.json"));
+  if (!Array.isArray(certs.exams) || !certs.exams.length) problems.push("certs.json: exams must be a non-empty list");
+  const KIND_SET = new Set((feed && feed.decks || []).map(d => d.kind));
+  (certs.exams || []).forEach(e => {
+    ["id", "name", "code", "status", "verified", "source", "checked", "url"].forEach(k => { if (!e[k]) problems.push(`certs.json ${e.code || e.id}: ${k} missing`); });
+    if (!/^[a-z0-9]+$/.test(e.id || "")) problems.push(`certs.json ${e.code}: id must be lower-case letters and digits`);
+    if (!Array.isArray(e.domains) || !e.domains.length) problems.push(`certs.json ${e.code}: domains must be a non-empty list`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(e.checked || "")) problems.push(`certs.json ${e.code}: checked must be YYYY-MM-DD`);
+    if (!/^https:\/\//.test(e.url || "")) problems.push(`certs.json ${e.code}: url must be https`);
+    (e.domains || []).forEach(d => {
+      if (!d.name || !d.weight) problems.push(`certs.json ${e.code}: a domain needs name and weight`);
+      (d.s || []).forEach(n => { if (!study || !study.days[n - 1]) problems.push(`certs.json ${e.code} ${d.name}: no Training day ${n}`); });
+      (d.p || []).forEach(n => { if (!py || !py.lessons[n - 1]) problems.push(`certs.json ${e.code} ${d.name}: no Terminal lesson ${n}`); });
+      (d.decks || []).forEach(id => { if (!ids.has(id)) problems.push(`certs.json ${e.code} ${d.name}: no deck ${id}`); });
+      (d.kinds || []).forEach(k => { if (!KIND_SET.has(k)) problems.push(`certs.json ${e.code} ${d.name}: no decks of kind ${k}`); });
+    });
+  });
+} catch (e) { problems.push(`content/certs.json: ${e.message}`); }
+
 // Versions agree.
 try {
   const m = read("sw.js").match(/const VERSION = (\d+);/);

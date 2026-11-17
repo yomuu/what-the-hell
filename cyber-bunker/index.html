@@ -286,6 +286,7 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
   --hazard:repeating-linear-gradient(-45deg,var(--amber) 0 9px,var(--bunker) 9px 18px);
   --scan:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);
   --control:var(--ash); /* borders of tappable things need 3:1; ash is 5.1:1 on bunker black */
+  --rx:#7fbf8f;         /* soft phosphor for labels inside terminal panels (about 8:1 on terminal black) */
   --alarm:#ff6b6b;      /* small warning text: breach red is too dark for it (about 6:1 on bunker black) */
 }
 *,*::before,*::after{border-radius:0!important}
@@ -341,7 +342,7 @@ h2{font-size:clamp(22px,6.3vw,34px)}
 .code .ch{border-bottom:2px solid var(--dimgreen)}
 .code .ch .where{color:var(--phosphor)}
 .code pre{color:var(--phosphor)}
-.code pre span.c{color:#7fbf8f}
+.code pre span.c{color:var(--rx)}
 .card .code code{color:inherit}
 .cp{background:var(--termbg);color:var(--phosphor);border-color:var(--dimgreen)}
 .pyout{font-family:var(--crt);font-size:21px;line-height:1.2;border-left-width:6px}
@@ -379,7 +380,7 @@ h2{font-size:clamp(22px,6.3vw,34px)}
 .term.split{display:grid;grid-template-columns:1fr 1fr;padding:0}
 .term.split > div{padding:10px 12px;min-width:0}
 .term.split > div + div{border-left:2px solid var(--dimgreen)}
-.term small{display:block;font-family:var(--crt);font-size:18px;letter-spacing:.08em;color:#7fbf8f;text-transform:uppercase}
+.term small{display:block;font-family:var(--crt);font-size:18px;letter-spacing:.08em;color:var(--rx);text-transform:uppercase}
 .term .codex{display:block;font-family:var(--mono);font-weight:500;font-size:13px;line-height:1.35;color:var(--phosphor);overflow-wrap:anywhere}
 .term .status{display:block;font-family:var(--crt);font-weight:400;font-size:24px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber)}
 .cursor{animation:blink 1s steps(1) infinite}
@@ -441,7 +442,7 @@ body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
 .tx-title{order:1}.tx-hd{order:0}.tx-sum{order:2}.tx-tags{order:3}.tx .row{order:4}
 .tx{background:var(--scan),var(--termbg);border:2px solid var(--dimgreen);border-left-width:6px;padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
 .tx.is-new{border-left-color:var(--amber)}
-.tx-hd{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;font-family:var(--crt);font-size:19px;letter-spacing:.05em;text-transform:uppercase;color:#7fbf8f}
+.tx-hd{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;font-family:var(--crt);font-size:19px;letter-spacing:.05em;text-transform:uppercase;color:var(--rx)}
 .tx-hd > span:last-child{white-space:nowrap}
 .tx-new{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.12em;color:var(--bunker);background:var(--amber);padding:1px 6px;vertical-align:2px}
 .tx-title{margin:0;font-family:var(--body);font-weight:700;font-size:18px;line-height:1.3;color:var(--phosphor);overflow-wrap:anywhere}
@@ -452,6 +453,85 @@ body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
 .tx .btn{font-size:12px;padding:10px 12px;min-height:44px;text-align:left}
 .tx a.btn{text-decoration:none;display:inline-flex;align-items:center;color:var(--phosphor);border-color:var(--dimgreen)}
 .tx .tx-rel{color:var(--amber);border-color:var(--amber)}
+
+/* Brief it */
+.radioNav{margin-bottom:2px}
+.radioNav button[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--bunker)}
+.radio-status{margin:0;min-height:0;font-size:16px;color:var(--phosphor)}
+.radio-status:empty{display:none}
+.brief-title{margin:0;font-family:var(--body);font-weight:700;font-size:18px;line-height:1.3;color:var(--bone);overflow-wrap:anywhere}
+.brief-title:focus{outline:none}
+.form.brief textarea{min-height:72px;width:100%;background:var(--rust);color:var(--bone);border:2px solid var(--ash);padding:10px 12px;font-family:var(--body);font-size:16px;line-height:1.4;resize:vertical}
+.form.brief ::placeholder{color:var(--secondary)}
+.form.brief .warn{margin:-8px 0 0}
+/* Square checkboxes and radio buttons, to match "no rounded corners" */
+.form.brief input[type=checkbox],.form.brief input[type=radio]{appearance:none;-webkit-appearance:none;width:22px;height:22px;flex:none;margin:0;border:2px solid var(--ash);background:var(--bunker);display:grid;place-content:center;cursor:pointer}
+.form.brief input[type=checkbox]::before,.form.brief input[type=radio]::before{content:"";width:12px;height:12px;background:var(--amber);transform:scale(0)}
+.form.brief input:checked::before{transform:scale(1)}
+.form.brief input[type=checkbox]:checked,.form.brief input[type=radio]:checked{border-color:var(--amber)}
+.radioNav button{flex:1 1 0}
+.form.brief{gap:16px}
+.form.brief legend,.form.brief label{font-size:16px;color:var(--bone);line-height:1.4}
+.form.brief select{min-height:48px;width:100%;background:var(--rust);color:var(--bone);border:2px solid var(--ash);padding:0 10px;font-family:var(--body);font-size:16px}
+.form.brief input[type=text]{min-height:48px;border:2px solid var(--ash)}
+.form.brief fieldset{border:2px solid var(--metal);padding:8px 12px 10px}
+.form.brief .checks label{min-height:44px}
+.brief-line{color:var(--phosphor)!important}
+.brief-dl{order:3}
+.brief-card .brief-line{order:2}
+.brief-dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:16px;line-height:1.4}
+.brief-dl dt{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--rx);padding-top:2px}
+.brief-dl dd{margin:0;color:var(--bone)}
+
+/* Guess first */
+.tag .guessMark{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+.tag .guessMark:empty{display:none}
+.tag .guessMark.skim{color:var(--phosphor);border-color:var(--dimgreen);background:var(--termbg)}
+.tag .guessMark.study{color:var(--bunker);background:var(--amber);border-color:var(--amber)}
+#v-py .tag .guessMark.skim{color:var(--bunker);background:var(--phosphor);border-color:var(--phosphor)}
+.tag .notscored{color:var(--secondary);border-color:var(--ash)}
+.card.guess .lvl{display:none}
+.guess-intro{margin:0}
+
+/* Certification readiness */
+.cert-name{margin:0}
+.cert-verified{align-self:flex-start;margin:0;font-family:var(--mono);font-weight:500;font-size:12px!important;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border:1px solid var(--ash);color:var(--bone)}
+.cert-verified.search{color:var(--secondary);border-style:dashed}
+.cert-note{color:var(--amber)!important}
+.card p.cert-overall{margin:0;font-size:16px}
+.cert-overall b{font-family:var(--crt);font-weight:400;font-size:28px;color:var(--amber);margin-right:4px}
+.cert-domains li > .cert-dom{grid-column:1 / -1;font-size:16px}
+.cert-domains .cert-meta{font-family:var(--mono);font-size:14px;color:var(--secondary);align-self:end}
+.cert-domains small{font-family:var(--mono);font-size:14px;color:var(--secondary);white-space:nowrap}
+.cert-domains .pct{font-size:14px}
+.cert-domains small.partial{display:block;white-space:normal;font-family:var(--body);font-size:14px;color:var(--amber);margin-top:2px}
+.cert-domains li.none .cert-dom,.cert-domains li.none .cert-meta,.cert-domains li.none .pct{color:var(--ash)}
+.cert-domains .meter{background:var(--bunker);border:1px solid var(--ash)}
+.cert-domains li.none .meter,.cert-domains li.thin .meter{background:repeating-linear-gradient(90deg,var(--metal) 0 4px,transparent 4px 8px)}
+.cert-more{border:2px solid var(--metal);padding:0 12px}
+.cert-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+.cert-more[open]{padding-bottom:12px}
+.cert-more[open] > *:not(summary){margin:8px 0 0}
+.cert-link{text-decoration:none;display:inline-flex;align-items:center}
+
+/* Today plan */
+.card p.todayMeter{margin:0;font-family:var(--crt);font-size:24px;line-height:1.2;letter-spacing:.06em;color:var(--amber)}
+.todayMeter:focus,.orders b:focus{outline:none}
+.orders{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-width:460px}
+.orders li{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--metal);background:var(--rust);padding:12px}
+.orders li.ok{border-color:var(--dimgreen);background:var(--termbg)}
+.orders .tick{font-size:22px;line-height:1;color:var(--amber);flex:none;padding-top:2px}
+.orders li.ok .tick{color:var(--phosphor)}
+.orders li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.orders a.btn{text-decoration:none}
+.orders b{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+.orders li.ok b{color:var(--phosphor)}
+.orders li > div > span{font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.orders .btn{margin-top:2px}
+.sealed{display:flex;flex-direction:column;gap:14px;border:2px solid var(--dimgreen);background:var(--scan),var(--termbg);padding:0 16px 18px}
+.sealed-hd{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:space-between;margin:0 -16px;padding:8px 16px;font-family:var(--crt);font-size:22px;letter-spacing:.06em;text-transform:uppercase;color:var(--bunker);background:var(--phosphor)}
+.sealed h2{color:var(--phosphor);font-size:clamp(28px,8vw,44px)}
+.sealed-streak{font-family:var(--crt);font-size:34px!important;letter-spacing:.06em;text-transform:uppercase;color:var(--amber)}
 
 /* CRT flicker between cards, off for reduced motion */
 .card.flick > .in{animation:crt .22s steps(4,end)}
@@ -538,7 +618,7 @@ body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
    here rather than in app.js so updates still arrive even if a content file ever fails to load. */
 window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); window.installPrompt = e; window.dispatchEvent(new Event("installready")); });
 (function(){
-  var files = ["study", "feed", "python", "version"];
+  var files = ["study", "feed", "python", "version", "certs"];
   var msg = document.getElementById("loadMsg"), detail = document.getElementById("loadDetail"), retry = document.getElementById("loadRetry");
   var started = false, failed = false, reg = null, wantReload = false;
 
@@ -554,14 +634,15 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
     failed = false; retry.hidden = true;
     msg.textContent = "Loading your cards…"; detail.textContent = "";
     var done = 0;
-    Promise.all(files.map(function(n){ return fetchJson(n).then(function(j){ done++; detail.textContent = done + " of " + files.length + " files loaded"; return j; }); }))
+    // certs.json is optional: without it the certification cards just don't appear.
+    Promise.all(files.map(function(n){ return fetchJson(n).catch(function(e){ if (n === "certs") return null; throw e; }).then(function(j){ done++; detail.textContent = done + " of " + files.length + " files loaded"; return j; }); }))
     .then(function(res){
       if (started) return;
       started = true;
       window.WEEKS = res[0].weeks; window.DAYS = res[0].days;
       window.FEED_DECKS = res[1].decks; window.FEED_EXTRA_Q = res[1].extraQuestions || {};
       window.PY_LEVELS = res[2].levels; window.PY_LESSONS = res[2].lessons; window.PY_MIGRATE = res[2].migrate;
-      window.CONTENT_VERSION = res[3];
+      window.CONTENT_VERSION = res[3]; window.CERTS = res[4] || null;
       var s = document.createElement("script"); s.src = "app.js";
       s.onerror = function(){ bootFail(new Error("app.js didn't load")); };
       document.body.appendChild(s);

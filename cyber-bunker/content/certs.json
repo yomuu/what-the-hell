@@ -1,0 +1,291 @@
+{
+ "note": "Certification readiness. Each domain maps to Training Bunker days (s), Terminal lessons (p), Archive deck kinds (kinds) and deck ids (decks). Weightings and status were checked on the date shown; check the official page before relying on them. A domain with nothing mapped shows as 'No content yet'.",
+ "exams": [
+  {
+   "id": "secplus",
+   "name": "CompTIA Security+",
+   "code": "SY0-801",
+   "status": "Current. Launched 17 November 2026. SY0-701 stays available until 11 June 2027 (English).",
+   "verified": "Verified from official guide",
+   "source": "CompTIA, Security+ V8 page and exam objectives summary",
+   "checked": "2026-11-17",
+   "url": "https://www.comptia.org/en-us/certifications/security/v8/",
+   "domains": [
+    {
+     "name": "General Security Concepts",
+     "weight": "16%",
+     "s": [
+      1,
+      2,
+      3,
+      4,
+      19,
+      26
+     ],
+     "decks": [
+      "owasp-a04"
+     ]
+    },
+    {
+     "name": "Threats, Vulnerabilities, and Attacks",
+     "weight": "24%",
+     "s": [
+      2,
+      6,
+      34
+     ],
+     "kinds": [
+      "owasp",
+      "incident"
+     ],
+     "decks": [
+      "e8-patch-apps",
+      "e8-patch-os"
+     ]
+    },
+    {
+     "name": "Security Architecture",
+     "weight": "19%",
+     "s": [
+      9,
+      13,
+      14,
+      20,
+      30
+     ],
+     "kinds": [
+      "cloud"
+     ],
+     "decks": [
+      "e8-hardening",
+      "e8-appcontrol"
+     ]
+    },
+    {
+     "name": "Security Operations",
+     "weight": "27%",
+     "s": [
+      5,
+      16,
+      22,
+      23,
+      24,
+      25,
+      26,
+      29,
+      32,
+      33,
+      34
+     ],
+     "p": [
+      9,
+      12,
+      24
+     ],
+     "kinds": [
+      "triage",
+      "kql",
+      "spl"
+     ],
+     "decks": [
+      "qf-eventids",
+      "e8-admin",
+      "e8-backups"
+     ]
+    },
+    {
+     "name": "Security Program Management and Oversight",
+     "weight": "14%",
+     "kinds": [
+      "law"
+     ],
+     "decks": [
+      "e8-maturity"
+     ],
+     "s": [
+      2
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sc900",
+   "name": "Microsoft Security, Compliance, and Identity Fundamentals",
+   "code": "SC-900",
+   "status": "Active. Skills measured as of 21 October 2026.",
+   "verified": "Verified from search results, official page not reachable",
+   "source": "Microsoft Learn study guide for Exam SC-900 (via search results)",
+   "checked": "2026-11-17",
+   "url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/sc-900",
+   "domains": [
+    {
+     "name": "Describe the concepts of security, compliance, and identity",
+     "weight": "10 to 15%",
+     "s": [
+      1,
+      3,
+      4,
+      19,
+      26
+     ],
+     "decks": [
+      "cloud-shared"
+     ]
+    },
+    {
+     "name": "Describe the capabilities of Microsoft Entra",
+     "weight": "25 to 30%",
+     "s": [
+      29,
+      30,
+      31
+     ]
+    },
+    {
+     "name": "Describe the capabilities of Microsoft security solutions",
+     "weight": "35 to 40%",
+     "s": [
+      9,
+      14,
+      32,
+      33
+     ]
+    },
+    {
+     "name": "Describe the capabilities of Microsoft compliance solutions",
+     "weight": "20 to 25%"
+    }
+   ]
+  },
+  {
+   "id": "sc200",
+   "name": "Microsoft Security Operations Analyst",
+   "code": "SC-200",
+   "status": "Active, with no retirement announced as at the check date. Skills measured as of 21 October 2026.",
+   "verified": "Verified from search results, official page not reachable",
+   "note": "An earlier version of this outline was dated 16 April 2026, and some translated guides show 28 July 2026. The English guide gave 21 October 2026 when checked.",
+   "source": "Microsoft Learn study guide for Exam SC-200 (via search results)",
+   "checked": "2026-11-17",
+   "url": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/sc-200",
+   "domains": [
+    {
+     "name": "Manage a security operations environment",
+     "weight": "40 to 45%",
+     "s": [
+      32,
+      33
+     ],
+     "partial": "Light coverage: configuring data connectors, analytics rules and Defender settings isn't taught yet."
+    },
+    {
+     "name": "Respond to security incidents",
+     "weight": "35 to 40%",
+     "s": [
+      26,
+      32,
+      33
+     ],
+     "kinds": [
+      "triage"
+     ],
+     "decks": [
+      "qf-eventids",
+      "kql-process"
+     ]
+    },
+    {
+     "name": "Perform threat hunting",
+     "weight": "20 to 25%",
+     "s": [
+      24
+     ],
+     "kinds": [
+      "kql"
+     ],
+     "decks": [
+      "kql-roles"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "awsscs",
+   "name": "AWS Certified Security - Specialty",
+   "code": "SCS-C03",
+   "status": "Active. Replaced SCS-C02 on 2 December 2025.",
+   "verified": "Verified from official guide",
+   "source": "AWS, SCS-C03 exam guide",
+   "checked": "2026-11-17",
+   "url": "https://docs.aws.amazon.com/aws-certification/latest/security-specialty-03/security-specialty-03.html",
+   "domains": [
+    {
+     "name": "Detection",
+     "weight": "16%",
+     "decks": [
+      "cloud-logging",
+      "tri-cloudtrail"
+     ]
+    },
+    {
+     "name": "Incident Response",
+     "weight": "14%",
+     "decks": [
+      "tri-cloudtrail",
+      "inc-capitalone",
+      "inc-snowflake",
+      "inc-qubole"
+     ],
+     "s": [
+      26
+     ],
+     "partial": "Light coverage: case studies and one triage deck, not AWS response steps such as isolating instances and rotating keys."
+    },
+    {
+     "name": "Infrastructure Security",
+     "weight": "18%",
+     "decks": [
+      "cloud-imds",
+      "cloud-shared"
+     ],
+     "s": [
+      9,
+      14
+     ]
+    },
+    {
+     "name": "Identity and Access Management",
+     "weight": "20%",
+     "p": [
+      17,
+      23
+     ],
+     "decks": [
+      "cloud-iam"
+     ]
+    },
+    {
+     "name": "Data Protection",
+     "weight": "18%",
+     "s": [
+      19
+     ],
+     "decks": [
+      "cloud-storage",
+      "owasp-a04"
+     ],
+     "p": [
+      14
+     ]
+    },
+    {
+     "name": "Security Foundations and Governance",
+     "weight": "14%",
+     "decks": [
+      "cloud-shared"
+     ],
+     "partial": "Light coverage: shared responsibility only, not Organizations, SCPs, Control Tower or Config."
+    }
+   ]
+  }
+ ]
+}

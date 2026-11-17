@@ -14,7 +14,7 @@ const initialHash = location.hash; // read before any tab renders and rewrites i
 const store = {
   ok: (() => { try { localStorage.setItem("cr2-test", "1"); localStorage.removeItem("cr2-test"); return true; } catch(e){ return false; } })(),
   get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
-  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } },
   del(k){ try { localStorage.removeItem(k); } catch(e){} }
 };
 const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
@@ -73,7 +73,7 @@ function dueKeys(){
   const t = dayNum();
   // Surprises (confidently wrong) first, then the most overdue, then the weakest.
   return Object.keys(srs).filter(k => srs[k].due <= t && srsItem(k))
-    .sort((a, b) => (srs[b].flag ? 1 : 0) - (srs[a].flag ? 1 : 0) || srs[a].due - srs[b].due || srs[a].box - srs[b].box);
+    .sort((a, b) => (srs[b].flag ? 1 : 0) - (srs[a].flag ? 1 : 0) || (srs[b].rolled || 0) - (srs[a].rolled || 0) || srs[a].due - srs[b].due || srs[a].box - srs[b].box);
 }
 // Missed on three different days and still not mastered.
 const isSlipping = e => !!e && (e.lapses || 0) >= 3 && e.box <= 2;
@@ -91,7 +91,7 @@ function srsRecord(key, correct, sure){
     delete e.flag;
   }
   // A lucky guess keeps its box and comes back tomorrow.
-  e.due = t + (correct && !sure ? 1 : INTERVALS[e.box - 1]); e.last = t; e.n = (e.n || 0) + 1;
+  e.due = t + (correct && !sure ? 1 : INTERVALS[e.box - 1]); e.last = t; e.n = (e.n || 0) + 1; delete e.rolled;
   srs[key] = e; saveSrs();
   if (!srsRecord.asked && navigator.storage && navigator.storage.persist){ srsRecord.asked = true; navigator.storage.persist().catch(() => {}); }
   // Each question counts once a day towards the goal, so retrying one can't fill it.
@@ -101,7 +101,7 @@ function srsRecord(key, correct, sure){
   if (d.qs === DAILY_GOAL){
     daily.streak = daily.lastDone === t - 1 ? daily.streak + 1 : daily.lastDone === t ? daily.streak : 1;
     daily.lastDone = t; daily.best = Math.max(daily.best, daily.streak);
-    toast(`Daily goal done · ${daily.streak}-day streak`);
+    if (!(window.TODAY_READY && todaySealed())) toast(`Daily goal done · ${daily.streak}-day streak`);
   }
   saveDaily(); refreshDaily();
 }
@@ -245,7 +245,7 @@ function markLessonDone(dn){
   pyDone[dn] = new Date().toLocaleDateString("en-CA"); store.set("cr2-py-done", pyDone);
   const s = TABS.py.challenges && TABS.py.challenges[dn];
   if (s) s.querySelector(".doneNote").textContent = `Lesson ${dn} complete.`;
-  renderPyMeter();
+  renderPyMeter(); if (window.TODAY_READY) renderToday();
   if (first) toast(`Lesson ${dn} complete · ${Object.keys(pyDone).length} of ${PY_LESSONS.length}`);
 }
 function renderPyMeter(){
@@ -275,6 +275,152 @@ document.getElementById("remAdd").addEventListener("click", () => {
   document.getElementById("remMsg").textContent = `Downloaded. Open the file and choose your calendar app to add a daily ${pad(h)}:${pad(m)} reminder.`;
 });
 
+/* ---------- Today plan: up to 15 reviews, 1 new lesson, 1 Bunker Radio item, then done ----------
+   Reviews over the cap move to the next 1 or 2 days (alternating) and keep their place in the queue,
+   so missed days never pile up and old reviews aren't pushed back forever. */
+const REVIEW_CAP = 15;
+let todayPlan = asObj(store.get("cr2-today", {}));
+const saveToday = () => store.set("cr2-today", todayPlan);
+const radioDoneSet = asObj(store.get("cr2-radio-done", {}));
+let lastTodayHtml = "", lastTodayDone = -1;
+const todaySealed = () => !!todayPlan.finished && todayPlan.day === dayNum();
+// Finishing the plan counts for the streak too, even on a day with fewer than five questions.
+function creditStreak(){
+  const t = dayNum();
+  if (daily.lastDone === t) return;
+  daily.streak = daily.lastDone === t - 1 ? daily.streak + 1 : 1;
+  daily.lastDone = t; daily.best = Math.max(daily.best, daily.streak); saveDaily();
+}
+function capReviews(){
+  const t = dayNum(), due = dueKeys();
+  if (due.length <= REVIEW_CAP) return due;
+  due.slice(REVIEW_CAP).forEach((k, i) => { srs[k].due = t + 1 + (i % 2); srs[k].rolled = (srs[k].rolled || 0) + 1; });
+  saveSrs();
+  return due.slice(0, REVIEW_CAP);
+}
+// The next lesson: where you're up to (Continue), or the one after it once that's finished.
+function nextLesson(){
+  const finished = (tab, n) => { const st = trackStats(tab, n); return st.done >= st.total || (tab === "py" && !!pyDone[n]); };
+  const at = /^(?:day-|d|g)(\d+)/.exec(store.get("cr2-pos", ""));
+  if (at){ const n = +at[1]; if (!finished("study", n)) return {tab:"study", n}; if (n < DAYS.length && !finished("study", n + 1)) return {tab:"study", n:n + 1}; }
+  const s = DAYS.findIndex((d, i) => !finished("study", i + 1));
+  if (s >= 0) return {tab:"study", n:s + 1};
+  const p = PY_LESSONS.findIndex((d, i) => !finished("py", i + 1));
+  return p >= 0 ? {tab:"py", n:p + 1} : null;
+}
+function pickRadio(){
+  if (!wire || !wire.items.length) return null;
+  const week = Date.now() - 7 * 864e5, briefed = window.BRIEFS || {};
+  const pool = wire.items.filter(it => wireTime(it.date) > week && !briefed[it.link] && !radioDoneSet[it.link] && /^https?:\/\//.test(it.link || ""));
+  const best = pool.find(it => (it.tags || []).includes("NZ/AU") && it.related) || pool.find(it => it.related) || pool[0];
+  return best ? {link:best.link, title:best.title, source:best.source} : null;
+}
+function ensurePlan(){
+  const t = dayNum();
+  if (todayPlan.day !== t){
+    todayPlan = {day:t, keys:capReviews(), lesson:nextLesson(), radio:undefined, radioDone:false, finished:false};
+    saveToday();
+  }
+  // Pick today's Radio item once the wire is in (never after the day is done).
+  if (todayPlan.radio === undefined && !todayPlan.finished && wireState !== "loading"){ todayPlan.radio = pickRadio(); saveToday(); }
+  return todayPlan;
+}
+function planStatus(){
+  const p = ensurePlan(), t = dayNum();
+  const keys = (p.keys || []).filter(k => srs[k]);
+  const revDone = keys.filter(k => srs[k].last === t).length;
+  let lessonDone = true, lessonName = "";
+  if (p.lesson){
+    const st = trackStats(p.lesson.tab, p.lesson.n);
+    lessonDone = st.done >= st.total || (p.lesson.tab === "py" && !!pyDone[p.lesson.n]);
+    lessonName = p.lesson.tab === "study" ? `Day ${p.lesson.n}: ${DAYS[p.lesson.n - 1].t}` : `Lesson ${p.lesson.n}: ${PY_LESSONS[p.lesson.n - 1].t}`;
+  }
+  const radioPending = p.radio === undefined;
+  const radioDone = !radioPending && (!p.radio || !!p.radioDone || !!(window.BRIEFS || {})[p.radio.link]);
+  const n = (keys.length ? 1 : 0) + (p.lesson ? 1 : 0) + (p.radio ? 1 : 0);
+  const done = (keys.length && revDone >= keys.length ? 1 : 0) + (p.lesson && lessonDone ? 1 : 0) + (p.radio && radioDone ? 1 : 0);
+  return {p, keys, revDone, lessonDone, lessonName, radioPending, radioDone, n, done, all: n > 0 && done === n && !radioPending};
+}
+function sealedHtml(p, date){
+  const did = [p.keys && p.keys.length ? "reviews" : "", p.lesson ? "a new lesson" : "", p.radio ? "Bunker Radio" : ""].filter(Boolean);
+  const list = did.length > 1 ? did.slice(0, -1).join(", ") + " and " + did[did.length - 1] : did[0];
+  const streak = currentStreak();
+  return `<div class="tag"><span>Today</span>${esc(date)}</div>
+    <div class="sealed"><div class="sealed-hd"><span>Bunker status</span><span>Sealed</span></div>
+      <h2>Done for today</h2>
+      <p class="sealed-streak"><span class="sr">Streak: </span>${streak} day${streak === 1 ? "" : "s"}<span aria-hidden="true"> streak</span></p>
+      <p>${list ? esc(list.charAt(0).toUpperCase() + list.slice(1)) + (did.length > 1 || did[0] === "reviews" ? " are" : " is") + " logged." : "All logged."} Come back tomorrow for fresh orders.</p>
+      <p class="small">The tabs are still open if you want to browse, but there's nothing more you need to do today.</p></div>`;
+}
+function renderToday(focusAfter){
+  const box = document.querySelector("#today .todayBox");
+  if (!box) return;
+  const date = new Date().toLocaleDateString("en-NZ", {weekday:"short", day:"numeric", month:"short"});
+  const warn = store.ok ? "" : `<p class="warn">Storage is blocked in this browser, so today's plan and streak won't be kept after you close the app.</p>`;
+  let html, st = null;
+  ensurePlan();
+  if (todaySealed()) html = sealedHtml(todayPlan, date) + warn;
+  else {
+    st = planStatus();
+    const p = st.p;
+    if (st.all){ p.finished = true; saveToday(); creditStreak(); html = sealedHtml(p, date) + warn; setTimeout(refreshDaily, 0); }
+    else {
+      const row = (ok, id, label, detail, action) => `<li class="${ok ? "ok" : ""}"><span class="tick" aria-hidden="true">${ok ? "■" : "□"}</span><div><b id="ord-${id}" tabindex="-1">${label}</b><span>${detail}</span><span class="sr">${ok ? " Done." : " To do."}</span>${ok ? "" : action}</div></li>`;
+      const it = p.radio, link = it && /^https?:\/\//.test(it.link || "") ? it.link : "";
+      html = `<div class="tag"><span>Today</span>${esc(date)}</div>
+        <h2 class="todayH">Today's orders</h2>
+        <p class="todayMeter" id="todayMeter" tabindex="-1"><span aria-hidden="true">${"■".repeat(st.done)}${"□".repeat(Math.max(0, st.n - st.done))} ${st.done}/${st.n}</span><span class="sr">${st.done} of ${st.n} orders done</span></p>
+        <ul class="orders">
+          ${st.keys.length ? row(st.revDone >= st.keys.length, "rev", "Reviews", `${st.revDone} of ${st.keys.length} answered`, `<button class="btn" type="button" data-go="reviews">Start reviews</button>`) : ""}
+          ${p.lesson ? row(st.lessonDone, "lesson", "New lesson", esc(st.lessonName), `<button class="btn ghost" type="button" data-go="lesson">Open ${p.lesson.tab === "study" ? "Day" : "Lesson"} ${p.lesson.n}</button>`) : ""}
+          ${it ? row(st.radioDone, "radio", "Bunker Radio", `${esc(it.source)}: ${esc(it.title)}`, `<div class="row">${link ? `<a class="btn ghost" href="${esc(link)}" target="_blank" rel="noopener noreferrer" data-go="radio-read">Read <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${link ? `<button class="btn ghost" type="button" data-go="radio-brief">Brief it</button>` : ""}<button class="btn ghost" type="button" data-go="radio-done">Mark Radio done</button></div>`) : ""}
+          ${st.radioPending ? `<li><span class="tick" aria-hidden="true">□</span><div><b>Bunker Radio</b><span>Tuning in…</span></div></li>` : ""}
+        </ul>
+        ${!st.n && !st.radioPending ? `<p>Nothing scheduled today: no reviews due and every lesson finished. Browse the tabs if you like.</p>` : ""}
+        <p class="small">Reviews over ${REVIEW_CAP} move to the next day or two and keep their place in the queue.</p>${warn}`;
+    }
+  }
+  if (html === lastTodayHtml) return;
+  lastTodayHtml = html; box.innerHTML = html;
+  // Say only what changed, not the whole card.
+  const nowDone = todaySealed() ? 99 : st ? st.done : 0;
+  if (lastTodayDone >= 0 && nowDone !== lastTodayDone) live.textContent = todaySealed() ? `Done for today. Streak ${currentStreak()} day${currentStreak() === 1 ? "" : "s"}.` : `${st.done} of ${st.n} orders done.`;
+  lastTodayDone = nowDone;
+  if (focusAfter){ const f = box.querySelector("#" + focusAfter) || box.querySelector("#todayMeter") || box.querySelector("h2"); if (f){ if (!f.hasAttribute("tabindex")) f.tabIndex = -1; f.focus({preventScroll:true}); } }
+  box.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => {
+    const g = b.dataset.go, p = todayPlan;
+    if (g === "reviews"){
+      const left = (p.keys || []).filter(k => srs[k] && srs[k].last !== dayNum());
+      userSwitch("feed");
+      let i = F.current; const grp = F.cards[i].group;
+      if (grp !== -1) while (F.cards[i + 1] && F.cards[i + 1].group === grp) i++;
+      if (appendReview(i + 1, left)){ requestAnimationFrame(() => go("feed", i + 1)); return; }
+      // Already queued in The Archive: jump to the first of today's reviews.
+      const q = F.cards.findIndex((c, j) => j > F.current && c.rkey && left.includes(c.rkey) && !c.answered);
+      if (q > 0){ const start = F.cards.findIndex(c => c.group === F.cards[q].group); requestAnimationFrame(() => go("feed", start)); }
+      else toast("Today's reviews are all done");
+    } else if (g === "lesson") navigateTo(p.lesson.tab, p.lesson.n);
+    else if (g === "radio-brief"){ userSwitch("feed"); openSheet(); openBrief(p.radio.link, "list"); }
+    else {
+      p.radioDone = true; if (p.radio) { radioDoneSet[p.radio.link] = dayNum(); store.set("cr2-radio-done", radioDoneSet); }
+      saveToday(); setTimeout(() => renderToday(todaySealed() ? null : "ord-radio"), 0);
+    }
+  }));
+}
+// Coming back to the app on a new day (Android often resumes it from memory) lands on Today too.
+function landOnTodayIfNewDay(){
+  if (+store.get("cr2-today-open", 0) === dayNum() || sheet.classList.contains("open")) return;
+  store.set("cr2-today-open", dayNum());
+  if (active !== "study") switchTab("study");
+  renderToday(); go("study", 0);
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden){ renderToday(); landOnTodayIfNewDay(); } });
+window.addEventListener("pageshow", e => { if (e.persisted){ renderToday(); landOnTodayIfNewDay(); } });
+(function midnight(){
+  const now = new Date(), next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
+  setTimeout(() => { renderToday(); midnight(); }, next - now);
+})();
+
 /* ---------- Install button (Android Chrome and other browsers that support it) ---------- */
 function refreshInstall(){
   const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
@@ -296,12 +442,15 @@ window.addEventListener("installready", refreshInstall);
 window.addEventListener("appinstalled", () => { window.installPrompt = null; store.set("cr2-installed", true); refreshInstall(); toast("Installed. Open Cyber Bunker from your home screen."); });
 
 // Two taps to confirm, inside the page (some hosts block confirm() dialogs).
-function twoTap(btn, armedText, action){
+function twoTap(btn, armedText, action, say){
   const label = btn.textContent; let armed = null;
   btn.addEventListener("click", () => {
-    if (!armed){ btn.textContent = armedText; armed = setTimeout(() => { armed = null; btn.textContent = label; }, 4000); return; }
+    if (!armed){
+      btn.textContent = armedText; (say || (t => { live.textContent = t; }))(armedText + ". It resets in 8 seconds.");
+      armed = setTimeout(() => { armed = null; if (btn.isConnected) btn.textContent = label; }, 8000); return;
+    }
     clearTimeout(armed); armed = null; action();
-    btn.textContent = "Done"; setTimeout(() => btn.textContent = label, 1800);
+    if (btn.isConnected){ btn.textContent = "Done"; setTimeout(() => { if (btn.isConnected) btn.textContent = label; }, 1800); }
   });
 }
 
@@ -374,11 +523,12 @@ function buildQuiz(card, q, persist, onChange){
     btns.forEach(b => {
       const j = +b.dataset.j, mk = b.querySelector(".mk"), st = b.querySelector(".st");
       b.setAttribute("aria-disabled", "true");
-      if (j === q.k){ b.classList.add("right"); mk.textContent = "✓"; st.textContent = j === pick ? " (your answer, correct)" : " (correct answer)"; }
+      if (j === q.k && (j === pick || !card.__noReveal)){ b.classList.add("right"); mk.textContent = "✓"; st.textContent = j === pick ? " (your answer, correct)" : " (correct answer)"; }
       else if (j === pick){ b.classList.add("wrong"); mk.textContent = "✗"; st.textContent = " (your answer)"; }
     });
     why.classList.toggle("miss", pick !== q.k);
-    why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}${q.run && q.code && canRun(q.code) ? RUN_HTML("Run it to check") : ""}`;
+    if (card.__guess) why.innerHTML = card.__guess(pick === q.k);
+    else why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}${q.run && q.code && canRun(q.code) ? RUN_HTML("Run it to check") : ""}`;
     if (q.run && q.code) card.__runCode = q.code;
     why.classList.add("show");
     if (retry) retry.classList.add("show");
@@ -424,12 +574,34 @@ function quizHtml(q, tagHtml, withRetry, seed, recall){
 }
 
 /* ---------- Study and Python tracks (same card engine) ---------- */
+/* Guess-first results: {"study:5": pick index}. Right means skim; wrong means study carefully. */
+const guesses = asObj(store.get("cr2-guess", {}));      // "study:5" -> option picked
+const guessMeta = asObj(store.get("cr2-guess-meta", {})); // "study:5" -> {qi, h, sure}
+const saveGuesses = () => { store.set("cr2-guess", guesses); store.set("cr2-guess-meta", guessMeta); };
+// The guess question: the day's hardest (first one if tied).
+const guessIndex = d => d.quiz.reduce((best, q, qi) => (q.d || 1) > (d.quiz[best].d || 1) ? qi : best, 0);
+// Skim only when the guess was right and you were sure; a lucky guess or a miss means study carefully.
+// A guess saved against a different question (after a content update) is ignored.
+function guessVerdict(tab, dn){
+  const key = tab + ":" + dn, pick = guesses[key], m = guessMeta[key], d = TABS[tab].items && TABS[tab].items[dn - 1];
+  if (!Number.isInteger(pick) || !d) return null;
+  const gi = guessIndex(d), q = d.quiz[gi];
+  if (m && (m.qi !== gi || m.h !== seedOf(q.q + (q.code || "")))) return null;
+  return pick === q.k && (!m || m.sure !== false) ? "skim" : "study";
+}
+function markGuess(tab, dn){
+  const v = guessVerdict(tab, dn);
+  document.querySelectorAll(`.guessMark[data-g="${tab}:${dn}"]`).forEach(m => {
+    m.className = "guessMark" + (v ? " " + v : "");
+    m.innerHTML = v ? `<span class="sr">Your guess result: </span>${v === "skim" ? "Skim" : "Study carefully"}` : "";
+  });
+}
 function makeTrack(tab, items, cfg){
   const answers = asObj(store.get(cfg.answersKey, {}));
   const save = () => store.set(cfg.answersKey, answers);
   const T = TABS[tab];
   Object.assign(T, {items, cfg, answers, recapScores:{}, resetters:{}});
-  T.cardCount = d => 2 + d.learn.length + (d.play ? 1 : 0) + (d.challenge ? 1 : 0) + (d.real ? 1 : 0) + (d.myth ? 1 : 0) + (d.tryit ? 1 : 0) + (d.review ? d.review.length : 0) + d.quiz.length;
+  T.cardCount = d => 3 + d.learn.length + (d.play ? 1 : 0) + (d.challenge ? 1 : 0) + (d.real ? 1 : 0) + (d.myth ? 1 : 0) + (d.tryit ? 1 : 0) + (d.review ? d.review.length : 0) + d.quiz.length;
 
   items.forEach((d, i) => {
     const g = cfg.groupOf(i), dn = i + 1, c = g.c;
@@ -441,9 +613,31 @@ function makeTrack(tab, items, cfg){
       ${d.sub ? `<p>${fmt(d.sub)}</p>` : ""}
       <div class="hint">${T.cardCount(d)} cards · ${d.quiz.length} questions · swipe up ↑</div>`);
 
+    // Guess first: one question (the day's hardest) before reading. Not scored. It has its own id (g5 / pg5),
+    // so the ids of the cards after it don't change. Options are shuffled differently from the quiz copy.
+    const gi = guessIndex(d), gq = d.quiz[gi], gkey = tab + ":" + dn;
+    {
+      const gs = addCard(tab, {c, id:(tab === "study" ? "g" : "pg") + dn, label:"Guess first", group:i,
+        html: quizHtml(gq, `<div class="tag"><span>Guess first</span><span class="notscored">Not scored</span>${cfg.word} ${dn}</div><p class="small guess-intro">Have a go before you read. It isn't scored and doesn't change your reviews.</p>`, false, seedOf("guess:" + gq.q))});
+      gs.classList.add("guess");
+      gs.__noReveal = true;
+      gs.__guess = ok => {
+        const m = guessMeta[gkey], sure = m && m.at === "saved" ? m.sure !== false : (gs.querySelector(".conf button") || {getAttribute: () => "true"}).getAttribute("aria-pressed") === "true";
+        if (ok && sure) return `<strong>Got it.</strong> You can <b>skim</b> this ${cfg.word.toLowerCase()}: read the cards quickly, then do the quiz as usual.`;
+        if (ok) return `<strong>Right, but a guess.</strong> <b>Study this ${cfg.word.toLowerCase()} carefully</b> so you know it next time. This one comes up again in the quiz.`;
+        return `<strong>Not this time.</strong> Good to know now: <b>study this ${cfg.word.toLowerCase()} carefully</b>. This one comes up again in the quiz.`;
+      };
+      T.guessReset = T.guessReset || {};
+      T.guessReset[dn] = buildQuiz(gs, gq, {obj:guesses, key:gkey, save:saveGuesses}, (pick, sure) => {
+        if (pick === null) return;
+        guessMeta[gkey] = {qi:gi, h:seedOf(gq.q + (gq.code || "")), sure:!!sure, at:"saved"};
+        saveGuesses(); markGuess(tab, dn);
+      });
+    }
+
     d.learn.forEach(([h, p, code], j) => {
       const s = make("Learn " + (j+1) + "/" + d.learn.length,
-        `${tag("Learn", (j+1) + " of " + d.learn.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, cfg.codeLabel || "", true) : ""}`);
+        `${tag("Learn", (j+1) + " of " + d.learn.length).replace("</div>", `<span class="guessMark" data-g="${tab}:${dn}"></span></div>`)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, cfg.codeLabel || "", true) : ""}`);
       if (code) wireCopy(s, code);
       if (code && tab === "py" && canRun(code)){ s.__runCode = code; s.querySelector(".code").insertAdjacentHTML("afterend", RUN_HTML("Run it here")); }
     });
@@ -472,7 +666,7 @@ function makeTrack(tab, items, cfg){
     d.quiz.forEach((q, qi) => {
       const s = make("Quiz " + (qi+1) + "/" + d.quiz.length, quizHtml(q, tag("Quiz", (qi+1) + " of " + d.quiz.length), true));
       T.resetters[dn].push(buildQuiz(s, q, {obj:answers, key:dn + "." + qi, save}, (pick, sure) => {
-        if (pick !== null) srsRecord((tab === "study" ? "s:" : "p:") + dn + "." + qi, pick === q.k, sure);
+        if (pick !== null) srsRecord((tab === "study" ? "s:" : "p:") + dn + "." + qi, pick === q.k, sure && !(qi === gi && Number.isInteger(guesses[gkey])));
         updateScore(tab, pick !== null);
       }));
     });
@@ -509,6 +703,8 @@ function makeTrack(tab, items, cfg){
     rc.querySelector(".redo").addEventListener("click", () => {
       d.quiz.forEach((q, qi) => delete answers[dn + "." + qi]);
       save();
+      delete guesses[gkey]; delete guessMeta[gkey]; saveGuesses(); markGuess(tab, dn);
+      if (T.guessReset && T.guessReset[dn]) T.guessReset[dn]();
       T.resetters[dn].forEach(f => f());
       updateScore(tab, false);
       go(tab, T.cards.findIndex(c => c.group === i && c.label.startsWith("Quiz 1/")));
@@ -529,6 +725,7 @@ function trackTotals(tab){
 /* ---------- Study tab ---------- */
 const S = TABS.study;
 const studyIntroCount = () => DAYS.reduce((s, d) => s + S.cardCount(d), 0);
+addCard("study", {c:"var(--w1)", id:"today", label:"Today", group:-1, html:`<div class="todayBox"></div>`});
 addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="tag"><span>Stages 1 and 2</span><i id="studyCount" style="font-style:normal"></i></div>
   <h1>Cyber Bunker</h1>
@@ -844,9 +1041,9 @@ let decksSinceReview = 99;
 const waitingAhead = k => F.cards.some((c, j) => j > F.current && c.rkey === k && !c.answered);
 // Questions already put in a Review deck this session. Ones you swiped past wait until other due questions have had a turn.
 const shownThisSession = new Set();
-function appendReview(at){
-  const due = dueKeys().filter(k => !waitingAhead(k));
-  const keys = due.filter(k => !shownThisSession.has(k)).concat(due.filter(k => shownThisSession.has(k))).slice(0, 5);
+function appendReview(at, only){
+  const due = (only || dueKeys()).filter(k => !waitingAhead(k));
+  const keys = due.filter(k => !shownThisSession.has(k)).concat(due.filter(k => shownThisSession.has(k))).slice(0, only ? REVIEW_CAP : 5);
   keys.forEach(k => shownThisSession.add(k));
   if (!keys.length) return false;
   decksSinceReview = 0;
@@ -956,13 +1153,15 @@ function toast(msg, ms){
   toastTimer = setTimeout(() => t.classList.remove("show"), ms || (msg.length > 60 ? 6000 : 2800));
 }
 function refreshDaily(){
+  if (window.TODAY_READY) renderToday();
   const d = today(), streak = currentStreak(), due = dueKeys().length;
+  const sealed = window.TODAY_READY && todaySealed();
   // Short, so the card label beside it fits on a 375px screen; screen readers get the full words.
-  count.innerHTML = `<span aria-hidden="true">${streak}d · ${d.qs >= DAILY_GOAL ? "done" : d.qs + "/" + DAILY_GOAL}</span><span class="sr">Streak ${streak} day${streak === 1 ? "" : "s"}, ${Math.min(d.qs, DAILY_GOAL)} of ${DAILY_GOAL} questions today</span>`;
+  count.innerHTML = `<span aria-hidden="true">${streak}d · ${sealed || d.qs >= DAILY_GOAL ? "done" : d.qs + "/" + DAILY_GOAL}</span><span class="sr">Streak ${streak} day${streak === 1 ? "" : "s"}, ${sealed ? "done for today" : Math.min(d.qs, DAILY_GOAL) + " of " + DAILY_GOAL + " questions today"}</span>`;
   const badge = document.getElementById("dueBadge");
   badge.hidden = due === 0; badge.innerHTML = `${due > 99 ? "99+" : due}<span class="sr"> reviews due</span>`;
   document.querySelectorAll(".streakLine").forEach(l => l.innerHTML =
-    `<span>Streak <b>${streak} day${streak === 1 ? "" : "s"}</b></span><span>Best <b>${daily.best}</b></span><span>Today <b>${Math.min(d.qs, DAILY_GOAL)}/${DAILY_GOAL}</b></span><span>Due <b>${due}</b></span>`);
+    `<span>Streak <b>${streak} day${streak === 1 ? "" : "s"}</b></span><span>Best <b>${daily.best}</b></span><span>Today <b>${sealed ? "done" : Math.min(d.qs, DAILY_GOAL) + "/" + DAILY_GOAL}</b></span><span>Due <b>${due}</b></span>`);
   document.querySelectorAll(".reviewNow").forEach(b => { b.hidden = due === 0; b.textContent = `Review ${due} due`; });
   // Backup reminder: once there's real progress and no backup in the last 7 days.
   const last = +store.get("cr2-lastbackup", 0), age = last ? Math.floor((Date.now() - last) / 864e5) : null;
@@ -989,12 +1188,14 @@ function setCurrent(tab, idx){
   const c = T.cards[idx];
   // A brief CRT flicker as each new card settles (none with reduced motion; see the CSS).
   if (changed && c){ c.el.classList.remove("flick"); void c.el.offsetWidth; c.el.classList.add("flick"); }
+  // Readiness and certification cards refresh when you reach them (only the one you're on).
+  if (tab === "study" && c && c.el.id === "ready") renderReady();
+  if (tab === "study" && c && c.el.id.startsWith("cert-")) renderCerts(c.el.id.slice(5));
   if (tab === "feed"){
     if (c.first && !c.counted){ c.counted = true; feedState.seen[c.deck] = (feedState.seen[c.deck] || 0) + 1; feedState.decks++; saveFeed(); }
     if (idx >= T.cards.length - 4){ appendNext(); appendNext(); }
     if (c.first) scheduleTrim();
   } else if (c.group >= 0){
-    if (c.el.id === "ready") renderReady();
     if (T.detour && c.group !== T.detourGroup) T.detour = false;
     if (!T.detour){ store.set(tab === "study" ? "cr2-pos" : "cr2-py-pos", c.el.id); updateResume(tab); }
   }
@@ -1166,12 +1367,12 @@ function renderSheet(){
   document.querySelectorAll(".weakBtn").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { TABS[tab].detour = false; goGroup(tab, n - 1); }); }));
   // 4. quick links to the cards after the last day
   if (tab === "study") document.getElementById("score").insertAdjacentHTML("beforeend",
-    `<div class="weak">${[["portfolio","Portfolio"],["stories","Stories"],["ready","Readiness"]].map(([id, t]) => `<button class="x jump" type="button" data-id="${id}">${t}</button>`).join("")}</div>`);
+    `<div class="weak">${[["portfolio","Portfolio"],["stories","Stories"],["ready","Readiness"]].concat(CERT_EXAMS.length ? [["cert-" + CERT_EXAMS[0].id, "Certifications"]] : []).map(([id, t]) => `<button class="x jump" type="button" data-id="${id}">${t}</button>`).join("")}</div>`);
   document.querySelectorAll(".jump").forEach(b => b.addEventListener("click", () => closeSheet(() => go("study", S.cards.findIndex(c => c.el.id === b.dataset.id)))));
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
       const st = s.done === 0 ? "" : s.right < s.done ? "miss" : s.done === s.total ? "ok" : "part";
-      const label = (s.done ? "first try " + s.right + "/" + s.total + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions") + (tab === "py" && pyDone[n] ? " · challenge done" : "");
+      const label = (s.done ? "first try " + s.right + "/" + s.total + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions") + (tab === "py" && pyDone[n] ? " · challenge done" : "") + (guessVerdict(tab, n) === "skim" ? " · skim" : guessVerdict(tab, n) === "study" ? " · study carefully" : "");
       return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
   }</div>`).join("");
   dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { T.detour = false; goGroup(tab, n - 1); }); }));
@@ -1185,7 +1386,7 @@ const wireTime = d => new Date(d).getTime() || 0;
 let radioSeenMem = wireTime(store.get(RADIO_SEEN, ""));
 const itemSeen = it => wireTime(it.seen || it.date);
 function radioNew(){ return wire ? wire.items.filter(it => itemSeen(it) > radioSeenMem) : []; }
-function radioLabel(){ const n = radioNew().length; return n ? `Radio · ${n > 9 ? "9+" : n}` : "Radio"; }
+function radioLabel(){ const n = window.TODAY_READY && todaySealed() ? 0 : radioNew().length; return n ? `Radio · ${n > 9 ? "9+" : n}` : "Radio"; }
 function radioAria(){ const n = radioNew().length; return n ? `Bunker Radio, ${n} new transmission${n === 1 ? "" : "s"}` : "Bunker Radio"; }
 function refreshRadioButton(){
   const hp = document.getElementById("hdrPick");
@@ -1218,17 +1419,149 @@ function openRelated(to){
     requestAnimationFrame(() => TABS[active].el.focus({preventScroll:true}));
   });
 }
+/* ---------- Brief it: turn a headline into three quick answers and a line in your own words ---------- */
+const briefs = asObj(store.get("cr2-briefs", {}));
+window.BRIEFS = briefs;
+const saveBriefs = () => store.set("cr2-briefs", briefs);
+const CIA = ["Confidentiality", "Integrity", "Availability"];
+const CONTROLS = ["MFA (phishing-resistant is best)", "Patch applications", "Patch operating systems", "Restrict admin privileges", "Application control",
+  "Office macro settings", "User application hardening", "Regular backups", "Least privilege and access control", "Network segmentation",
+  "Logging and monitoring", "Security awareness training", "Supplier and third-party checks", "Encryption of data", "Secure configuration",
+  "Input validation", "Secrets management", "Not sure"];
+const LAWS = [["nz", "NZ Privacy Act (notifiable privacy breach)"], ["au", "Australian Notifiable Data Breaches scheme"], ["both", "Both"], ["neither", "Neither"], ["unsure", "Unsure"]];
+let radioView = "list", briefLink = null, briefFrom = "list", briefDraft = null, briefWarned = false, briefPopSilent = false, radioStatus = "";
+const storageNote = () => store.ok ? "" : `<p class="warn">Storage is blocked in this browser, so briefs last only until you close the app.</p>`;
+// Messages shown inside the sheet (a toast would sit under it and may not be announced).
+function radioSay(msg){ radioStatus = msg; const el = document.getElementById("radioStatus"); if (el) el.textContent = msg; }
+function briefFormHtml(it){
+  const d = briefDraft;
+  return `<button class="linkbtn backToRadio" type="button"><span aria-hidden="true">←</span> Back to ${briefFrom === "briefs" ? "My briefs" : "Radio"}</button>
+    <p class="radio-status" id="radioStatus" role="status">${esc(radioStatus)}</p>
+    <form class="form brief" novalidate aria-labelledby="briefTitle">
+      <p class="tx-meta">Brief · ${esc(it.source || "")}</p>
+      <h4 class="brief-title" id="briefTitle" tabindex="-1">${esc(it.title)}</h4>
+      <p class="small">Only question 4 is required.</p>${storageNote()}
+      <fieldset><legend>1. Which part of the CIA triad was hit? Pick any that apply.</legend>
+        <ul class="checks">${CIA.concat("Not clear yet").map(c => `<li><label><input type="checkbox" name="cia" value="${c}"${d.cia.includes(c) ? " checked" : ""}>${c}</label></li>`).join("")}</ul></fieldset>
+      <label>2. Which control would have helped most?
+        <select name="control"><option value="">Choose one</option>${CONTROLS.map(c => `<option${d.control === c ? " selected" : ""}>${c}</option>`).join("")}</select></label>
+      <fieldset><legend>3. Would breach reporting likely apply? Both laws need personal information and serious harm that has happened or is likely (in NZ, losing access to the information counts too). Australia's scheme doesn't cover most small businesses, and quick action that removes the likely harm can mean no report is needed.</legend>
+        <ul class="checks">${LAWS.map(([v, l]) => `<li><label><input type="radio" name="law" value="${v}"${d.law === v ? " checked" : ""}>${l}</label></li>`).join("")}</ul></fieldset>
+      <label for="briefLine">4. The lesson in one line, in your own words (required)</label>
+      <p class="small" id="briefHint">For example: One unpatched VPN let them in; patch internet-facing kit first.</p>
+      <textarea id="briefLine" name="line" rows="2" maxlength="200" required aria-required="true" aria-describedby="briefHint briefErr">${esc(d.line)}</textarea>
+      <p class="warn" id="briefErr" hidden></p>
+      <div class="row"><button class="btn" type="submit">Save brief</button>${briefs[it.link] ? `<button class="btn ghost delBrief" type="button">Delete</button>` : ""}</div>
+    </form>`;
+}
+function myBriefsHtml(){
+  const list = Object.entries(briefs).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || ""));
+  if (!list.length) return storageNote() + `<p class="tx-note">No briefs yet. Tap "Brief it" on any transmission to save one. Your briefs are good talking points for "What's a breach you've followed recently?"</p>`;
+  const law = v => (LAWS.find(l => l[0] === v) || [, "Not answered"])[1];
+  return storageNote() + `<p class="tx-note">${list.length} brief${list.length === 1 ? "" : "s"}. Skim these before an interview.</p>` + list.map(([link, b], i) => `
+    <article class="tx brief-card" aria-labelledby="bf${i}">
+      <h4 class="tx-title" id="bf${i}">${esc(b.title)}</h4>
+      <div class="tx-hd"><span>${esc(b.source || "")}</span><span>${esc(nzStamp(b.date || ""))}</span></div>
+      ${b.line ? `<p class="tx-sum brief-line">${esc(b.line)}</p>` : ""}
+      <dl class="brief-dl"><dt>CIA</dt><dd>${esc((b.cia || []).join(", ") || "Not answered")}</dd><dt>Control</dt><dd>${esc(b.control || "Not answered")}</dd><dt>Reporting</dt><dd>${esc(law(b.law))}</dd></dl>
+      <div class="row">${/^https?:\/\//.test(link) ? `<a class="btn ghost" href="${esc(link)}" target="_blank" rel="noopener noreferrer" aria-describedby="bf${i}">Full article <span aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a>` : ""}<button class="btn ghost editBrief" type="button" data-link="${esc(link)}" aria-describedby="bf${i}">Edit</button><button class="btn ghost delBriefList" type="button" data-link="${esc(link)}" aria-describedby="bf${i} radioStatus">Delete</button></div>
+    </article>`).join("");
+}
+function radioNav(){
+  const n = Object.keys(briefs).length;
+  return `<div class="conf radioNav" role="group" aria-label="Bunker Radio view"><button type="button" data-v="list" aria-pressed="${radioView === "list"}">Transmissions</button><button type="button" data-v="briefs" aria-pressed="${radioView === "briefs"}">My briefs${n ? " (" + n + ")" : ""}</button></div>
+    <p class="radio-status" id="radioStatus" role="status">${esc(radioStatus)}</p>`;
+}
+function openBrief(link, from){
+  briefFrom = from || (radioView === "briefs" ? "briefs" : "list");
+  const b = briefs[link] || {};
+  briefDraft = {cia: (b.cia || []).slice(), control: b.control || "", law: b.law || "", line: b.line || "", dirty: false};
+  radioView = "brief"; briefLink = link; briefWarned = false; radioStatus = "";
+  history.pushState({brief:1}, "");
+  renderRadio();
+  const t = document.getElementById("briefTitle"); if (t) t.focus({preventScroll:true});
+  sheet.querySelector(".panel").scrollTop = 0;
+}
+// Leave the form: back to where it was opened, focusing that item's button (or a sensible neighbour).
+function closeBriefView(link, deleted){
+  radioView = briefFrom; briefDraft = null;
+  renderRadio();
+  const list = document.getElementById("radioList"), sel = CSS.escape(link || "");
+  let f = list.querySelector(`.editBrief[data-link="${sel}"], .briefBtn[data-link="${sel}"]`);
+  if (!f && deleted) f = list.querySelector(".editBrief, .briefBtn");
+  if (!f) f = list.querySelector(`.radioNav [data-v="${radioView}"]`);
+  if (f){ f.scrollIntoView({block:"center"}); f.focus({preventScroll:true}); }
+}
+function leaveBrief(link, deleted){
+  if (history.state && history.state.brief){ briefPopSilent = true; history.back(); }
+  closeBriefView(link, deleted);
+}
+function wireBriefForm(list, it){
+  const form = list.querySelector("form.brief"), err = form.querySelector("#briefErr"), line = form.line;
+  const sync = () => {
+    if (!briefDraft || !form.isConnected) return;
+    briefDraft.cia = [...form.querySelectorAll("input[name=cia]:checked")].map(x => x.value);
+    briefDraft.control = form.control.value; briefDraft.law = (form.querySelector("input[name=law]:checked") || {}).value || "";
+    briefDraft.line = line.value; briefDraft.dirty = true; briefWarned = false;
+  };
+  form.addEventListener("input", sync); form.addEventListener("change", sync);
+  // "Not clear yet" and the three pillars exclude each other.
+  form.querySelectorAll("input[name=cia]").forEach(cb => cb.addEventListener("change", () => {
+    if (!cb.checked) return;
+    form.querySelectorAll("input[name=cia]").forEach(o => { if (o !== cb && ((cb.value === "Not clear yet") !== (o.value === "Not clear yet"))) o.checked = false; });
+    sync();
+  }));
+  line.addEventListener("input", () => { err.hidden = true; err.textContent = ""; line.removeAttribute("aria-invalid"); });
+  list.querySelector(".backToRadio").addEventListener("click", () => leaveBrief(it.link));
+  form.addEventListener("submit", e => {
+    e.preventDefault(); sync();
+    const text = line.value.trim();
+    if (!text){ err.textContent = "Add your one-line lesson, then save."; err.hidden = false; line.setAttribute("aria-invalid", "true"); line.focus(); return; }
+    briefs[it.link] = {title: it.title, source: it.source, date: it.date, cia: briefDraft.cia, control: briefDraft.control, law: briefDraft.law, line: text, at: new Date().toISOString()};
+    const kept = saveBriefs() && store.ok;
+    radioStatus = kept ? "Brief saved to My briefs." : "Brief kept for this session only (storage is blocked).";
+    if (window.TODAY_READY) renderToday();
+    leaveBrief(it.link);
+  });
+  const del = form.querySelector(".delBrief");
+  if (del) twoTap(del, "Tap Delete again to delete this brief", () => {
+    delete briefs[it.link]; saveBriefs(); radioStatus = "Brief deleted.";
+    if (window.TODAY_READY) renderToday();
+    leaveBrief(it.link, true);
+  }, radioSay);
+}
 function renderRadio(){
   const list = document.getElementById("radioList");
   document.getElementById("sheetTitle").textContent = "Bunker Radio";
-  if (wireState === "loading" && !wire){ list.innerHTML = `<p class="tx-note" role="status">Tuning in…</p>`; return; }
-  if (!wire || !wire.items.length){
-    list.innerHTML = `<p class="tx-note">Bunker Radio is off the air. It needs a connection the first time; after that the latest wire is kept for offline use.</p>`;
+  const wireNav = () => list.querySelectorAll(".radioNav button").forEach(b => b.addEventListener("click", () => {
+    radioView = b.dataset.v; renderRadio(); const f = list.querySelector(`.radioNav [data-v="${radioView}"]`); if (f) f.focus();
+  }));
+  if (radioView === "briefs"){
+    list.innerHTML = radioNav() + myBriefsHtml(); wireNav();
+    list.querySelectorAll(".editBrief").forEach(b => b.addEventListener("click", () => openBrief(b.dataset.link, "briefs")));
+    list.querySelectorAll(".delBriefList").forEach(b => twoTap(b, "Tap Delete again to delete this brief", () => {
+      const all = [...list.querySelectorAll(".delBriefList")], idx = all.indexOf(b);
+      delete briefs[b.dataset.link]; saveBriefs(); radioStatus = "Brief deleted.";
+      if (window.TODAY_READY) renderToday();
+      renderRadio();
+      const edits = list.querySelectorAll(".editBrief"), f = edits[Math.min(idx, edits.length - 1)] || list.querySelector('.radioNav [data-v="briefs"]');
+      if (f) f.focus();
+    }, radioSay));
     return;
+  }
+  if (radioView === "brief"){
+    const it = (briefs[briefLink] && Object.assign({link: briefLink}, briefs[briefLink])) || (wire && wire.items.find(x => x.link === briefLink));
+    if (it && briefDraft){ list.innerHTML = briefFormHtml(it); wireBriefForm(list, it); return; }
+    radioView = "list";
+  }
+  if (wireState === "loading" && !wire){ list.innerHTML = radioNav() + `<p class="tx-note" role="status">Tuning in…</p>`; wireNav(); return; }
+  if (!wire || !wire.items.length){
+    list.innerHTML = radioNav() + `<p class="tx-note">Bunker Radio is off the air. It needs a connection the first time; after that the latest wire is kept for offline use.</p>`;
+    wireNav(); return;
   }
   const fresh = new Set(radioNew());
   const live = (wire.sources || []).filter(s => String(s.status).startsWith("ok")).map(s => s.name);
-  list.innerHTML = `<p class="tx-meta">Updated ${esc(nzStamp(wire.updated))} NZ${wireState === "offline" ? " · offline copy" : ""}</p>
+  list.innerHTML = radioNav() + `<p class="tx-meta">Updated ${esc(nzStamp(wire.updated))} NZ${wireState === "offline" ? " · offline copy" : ""}</p>
     <p class="tx-note">Headlines and short summaries${live.length ? " from " + esc(live.join(", ")) : ""}. Tap through for the full story${wireState === "offline" ? " when you're back online" : ""}.</p>` +
     wire.items.map((it, i) => {
       const ok = /^https?:\/\//.test(it.link || ""), isNew = fresh.has(it);
@@ -1238,10 +1571,12 @@ function renderRadio(){
         <div class="tx-hd"><span><span class="sr">From </span><span aria-hidden="true">RX · </span>${esc(it.source)}</span><span>${isNew ? `<b class="tx-new" aria-hidden="true">New</b> ` : ""}${esc(nzStamp(it.date))}</span></div>
         ${it.summary ? `<p class="tx-sum">${esc(it.summary)}</p>` : ""}
         ${(it.tags || []).length ? `<div class="tx-tags"><span class="sr">Tags: </span>${it.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
-        <div class="row">${ok ? `<a class="btn ghost" href="${esc(it.link)}" target="_blank" rel="noopener noreferrer" aria-describedby="tx${i}">Full article <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${rel ? `<button class="btn ghost tx-rel" type="button" data-to="${esc(rel.to)}">Related: ${esc(rel.label)} <span aria-hidden="true">→</span></button>` : ""}</div>
+        <div class="row">${ok ? `<a class="btn ghost" href="${esc(it.link)}" target="_blank" rel="noopener noreferrer" aria-describedby="tx${i}">Full article <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${ok ? `<button class="btn ghost briefBtn" type="button" data-link="${esc(it.link)}" aria-describedby="tx${i}">${briefs[it.link] ? `<span aria-hidden="true">■ </span>Edit brief` : "Brief it"}</button>` : ""}${rel ? `<button class="btn ghost tx-rel" type="button" data-to="${esc(rel.to)}">Related: ${esc(rel.label)} <span aria-hidden="true">→</span></button>` : ""}</div>
       </article>`;
     }).join("");
+  wireNav();
   list.querySelectorAll(".tx-rel").forEach(b => b.addEventListener("click", () => openRelated(b.dataset.to)));
+  list.querySelectorAll(".briefBtn").forEach(b => b.addEventListener("click", () => openBrief(b.dataset.link, "list")));
   // Everything shown now counts as seen next time.
   radioSeenMem = Math.max(radioSeenMem, ...wire.items.map(itemSeen));
   store.set(RADIO_SEEN, new Date(radioSeenMem).toISOString());
@@ -1258,7 +1593,8 @@ function loadWire(){
     else if (!wire) wireState = "failed";
   }, () => { if (!wire) wireState = "failed"; }).then(() => {
     refreshRadioButton();
-    if (sheet.classList.contains("open") && sheet.classList.contains("radio-mode")) renderRadio();
+    if (sheet.classList.contains("open") && sheet.classList.contains("radio-mode") && radioView !== "brief") renderRadio();
+    if (window.TODAY_READY) renderToday();
   });
   return wireLoad;
 }
@@ -1267,7 +1603,7 @@ function openSheet(e){
   opener = (e && e.currentTarget) || document.activeElement;
   sheet.classList.toggle("radio-mode", active === "feed");
   document.getElementById("radioList").hidden = active !== "feed";
-  if (active === "feed") renderRadio(); else renderSheet();
+  if (active === "feed"){ radioView = openSheet.view || "list"; openSheet.view = null; radioStatus = ""; briefDraft = null; renderRadio(); } else renderSheet();
   sheet.classList.add("open");
   Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true; document.getElementById("updateBar").inert = true;
   more.classList.remove("show");
@@ -1299,6 +1635,13 @@ window.addEventListener("popstate", e => {
     // Back with unsaved changes: stay open once and warn; a second Back discards.
     if (storyDirty() && !discardArmed){ discardArmed = true; history.pushState({story:1}, ""); document.getElementById("stMsg").textContent = "You have unsaved changes. Save, or go back again to discard them."; return; }
     hideStory(); return;
+  }
+  // Leaving the brief form with its own buttons also steps history back; that step is not a Back press.
+  if (briefPopSilent){ briefPopSilent = false; return; }
+  if (sheet.classList.contains("open") && radioView === "brief"){
+    // Back with an unsaved brief: stay once and warn; a second Back discards it.
+    if (briefDraft && briefDraft.dirty && !briefWarned){ briefWarned = true; history.pushState({brief:1}, ""); radioSay("Unsaved brief. Save, or go back again to discard it."); return; }
+    closeBriefView(briefLink); return;
   }
   if (sheet.classList.contains("open")){ ignoreHash = true; hideSheet(); setTimeout(() => { ignoreHash = false; }, 100); return; }
   // Back (or any history move) shows whatever the restored address points to; Study's entry holds a Study card.
@@ -1391,6 +1734,7 @@ wireResume("py", "pyResume", "cr2-py-pos", "Lesson");
 
 document.addEventListener("keydown", e => {
   if (storySheet.classList.contains("open")){ if (e.key === "Escape") closeStory(); return; }
+  if (sheet.classList.contains("open") && radioView === "brief" && e.key === "Escape"){ history.back(); return; }
   if (e.target.closest && e.target.closest("input, textarea")) return;
   if (sheet.classList.contains("open")){ if (e.key === "Escape") closeSheet(); return; }
   if (e.target.closest && e.target.closest("button") && (e.key === " " || e.key === "Enter")) return;
@@ -1402,7 +1746,12 @@ document.addEventListener("keydown", e => {
    #day-5 or #d5-7 open Study, #py-3 or #p3-2 open Python, #feed opens the Feed,
    #study and #python open a tab at its current card. */
 function fromHash(hash){
-  const id = (hash || location.hash).slice(1);
+  let id = (hash || location.hash).slice(1);
+  if (id === "briefs" || id === "radio"){
+    const view = id === "briefs" ? "briefs" : "list";
+    if (sheet.classList.contains("open") && sheet.classList.contains("radio-mode")){ radioView = view; renderRadio(); return true; }
+    openSheet.view = view; id = "radio";
+  }
   if (id === "radio"){ switchTab("feed"); history.replaceState(history.state, "", "#feed"); requestAnimationFrame(() => openSheet()); return true; }
   if (id === "review"){ switchTab("feed"); requestAnimationFrame(() => reviewNow()); history.replaceState(history.state, "", "#feed"); return true; }
   if (id === "feed" || id === "study" || id === "python"){
@@ -1412,7 +1761,7 @@ function fromHash(hash){
   }
   for (const tab of ["study","py"]){
     const idx = TABS[tab].cards.findIndex(c => c.el.id === id);
-    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|start|finish|py-start|py-finish|portfolio|portfolio-2|stories|ready)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
+    if (idx >= 0 && /^(day-\d+|d\d+-\d+|py-\d+|p\d+-\d+|g\d+|pg\d+|cert-[a-z0-9]+|today|start|finish|py-start|py-finish|portfolio|portfolio-2|stories|ready)$/.test(id)){ switchTab(tab); go(tab, idx); return true; }
   }
   return false;
 }
@@ -1461,13 +1810,61 @@ function skillScore(sk){
   const did = !!sk.did && (sk.need || []).every(id => portfolio[id]);
   return {pct:Math.round(mastered / n * 100), answered:Math.round(answered / n * 100), labs, line: did ? sk.did : mastered / n >= .3 ? sk.know : null};
 }
-const readyCard = addCard("study", {c:"var(--w2)", id:"ready", label:"Readiness", group:-3, at:S.cards.findIndex(c => c.el.id === "finish"), html:`
+const readyCard = addCard("study", {c:"var(--w1)", id:"ready", label:"Readiness", group:-3, at:S.cards.findIndex(c => c.el.id === "finish"), html:`
   <div class="tag"><span>Job-ad readiness</span>Skills entry-level ads ask for</div>
   <h2>How ready are you?</h2>
   <ul class="skills" id="skillList"></ul>
   <div class="row"><button class="btn" id="cvCopy" type="button">Copy CV lines</button></div>
   <textarea id="cvText" readonly hidden aria-label="CV lines"></textarea>
   <p class="small" id="cvMsg" aria-live="polite">Bars show the share of each skill's questions you've got right on two separate days.</p>`});
+/* ---------- Certification readiness: one card per exam, a bar per official domain ----------
+   Data and sources in content/certs.json (optional: without it these cards simply don't appear).
+   The headline is exam-wide: domains the app doesn't cover count as 0. */
+const CERT_EXAMS = (window.CERTS && Array.isArray(window.CERTS.exams)) ? window.CERTS.exams.filter(e => e && Array.isArray(e.domains) && e.domains.length && /^[a-z0-9]+$/.test(e.id || "")) : [];
+const CERT_MIN_QUESTIONS = 5;
+function certDomainScore(dom){
+  const keys = skillKeys(dom);
+  if (!keys.length) return null;
+  const mastered = keys.filter(k => srs[k] && srs[k].box >= 3).length;
+  return {pct: Math.round(mastered / keys.length * 100), n: keys.length};
+}
+const midWeight = w => { const m = String(w).match(/\d+/g) || [0]; return m.reduce((a, b) => a + +b, 0) / m.length; };
+const checkedDate = d => { const x = new Date(d + "T00:00:00"); return isNaN(x) ? d : x.toLocaleDateString("en-NZ", {day:"numeric", month:"short", year:"numeric"}); };
+CERT_EXAMS.forEach(e => addCard("study", {c:"var(--w1)", id:"cert-" + e.id, label:"Cert · " + e.code, group:-3, at:S.cards.findIndex(c => c.el.id === "finish"), html:`
+  <div class="tag"><span>Certification</span>${esc(e.code)}</div>
+  <h2>${esc(e.code)}</h2>
+  <p class="small cert-name">${esc(e.name)}</p>
+  <p class="cert-overall" data-cert="${esc(e.id)}"></p>
+  <ul class="skills cert-domains" data-cert="${esc(e.id)}" aria-label="Exam domains"></ul>
+  <details class="cert-more"><summary>Source and status</summary>
+    <p class="cert-verified ${/official guide/i.test(e.verified) ? "official" : "search"}">${esc(e.verified)}</p>
+    <p class="small">${esc(e.status)}</p>
+    ${e.note ? `<p class="small cert-note">${esc(e.note)}</p>` : ""}
+    <p class="small">Checked ${esc(checkedDate(e.checked))}. Source: ${esc(e.source)}.</p>
+    <a class="btn ghost cert-link" href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">Official objectives <span aria-hidden="true">↗</span><span class="sr"> for ${esc(e.code)} (opens in a new tab, needs internet)</span></a>
+  </details>`}));
+function renderCerts(onlyId){
+  CERT_EXAMS.forEach(e => {
+    if (onlyId && onlyId !== e.id) return;
+    const list = document.querySelector(`.cert-domains[data-cert="${CSS.escape(e.id)}"]`);
+    if (!list) return;
+    let total = 0, coveredW = 0, score = 0;
+    list.innerHTML = e.domains.map(d => {
+      const w = midWeight(d.weight), r = certDomainScore(d);
+      total += w;
+      const name = `<span class="cert-dom">${esc(d.name)}${d.partial ? `<small class="partial">${esc(d.partial)}</small>` : ""}</span>`;
+      const meta = n => `<span class="cert-meta"><span class="sr">exam weight </span>${esc(d.weight)}${n ? ` · ${n} question${n === 1 ? "" : "s"}` : ""}</span>`;
+      if (!r) return `<li class="none">${name}${meta(0)}<span class="pct">No content yet</span><span class="meter" aria-hidden="true"><i style="width:0"></i></span></li>`;
+      coveredW += w; score += w * r.pct;
+      if (r.n < CERT_MIN_QUESTIONS) return `<li class="thin">${name}${meta(r.n)}<span class="pct">Too few to judge</span><span class="meter" aria-hidden="true"><i style="width:0"></i></span></li>`;
+      return `<li>${name}${meta(r.n)}<span class="pct"><span class="sr">mastered </span>${r.pct}%</span><span class="meter" aria-hidden="true"><i style="width:${Math.max(r.pct, 2)}%"></i></span></li>`;
+    }).join("");
+    const out = document.querySelector(`.cert-overall[data-cert="${CSS.escape(e.id)}"]`);
+    out.innerHTML = !coveredW ? "No content for this exam yet."
+      : `<b>${Math.round(score / total)}%</b> mastered across the whole exam. This app covers ${Math.round(coveredW / total * 100)}% of the exam's weight; uncovered domains count as 0.`;
+  });
+}
+
 function renderReady(){
   document.getElementById("skillList").innerHTML = SKILLS.map(sk => { const r = skillScore(sk);
     return `<li><span>${esc(sk.name)}</span><span class="pct">${r.pct}%${r.labs ? ` · ${r.labs} lab${r.labs === 1 ? "" : "s"}` : ""}</span><span class="meter" role="img" aria-label="${r.pct}% mastered"><i style="width:${Math.max(r.pct, 2)}%"></i></span></li>`; }).join("");
@@ -1482,15 +1879,23 @@ document.getElementById("cvCopy").addEventListener("click", () => {
   try { navigator.clipboard.writeText(text).then(done, show); } catch(e){ show(); }
 });
 renderReady();
+renderCerts();
 refreshInstall();
+window.TODAY_READY = true;
+renderToday();
+DAYS.forEach((d, i) => markGuess("study", i + 1)); PY_LESSONS.forEach((d, i) => markGuess("py", i + 1));
 loadWire();
 document.addEventListener("visibilitychange", () => { if (!document.hidden) loadWire(); });
 
 renderPyMeter();
 // A link to a card or tab wins; otherwise reopen the last tab used.
 const savedTab = store.get("cr2-tab", "study");
-switchTab(TABS[savedTab] ? savedTab : "study");
-if (initialHash) requestAnimationFrame(() => setTimeout(() => fromHash(initialHash), 50));
+// The first time you open the app each day (from its icon, with no #link) it starts on Today.
+const firstOpenToday = !initialHash && +store.get("cr2-today-open", 0) !== dayNum();
+store.set("cr2-today-open", dayNum());
+switchTab(firstOpenToday ? "study" : TABS[savedTab] ? savedTab : "study");
+if (firstOpenToday){ renderToday(); requestAnimationFrame(() => go("study", 0)); }
+else if (initialHash) requestAnimationFrame(() => setTimeout(() => fromHash(initialHash), 50));
 else if (active === "feed") requestAnimationFrame(() => go("feed", 1));
 else if (resumeLabels[active]) requestAnimationFrame(() => {
   // Opening the app from its icon has no #link: go straight back to the card you were on.
