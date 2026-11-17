@@ -174,6 +174,8 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .pyout.pass{border-left-color:var(--good)}
 .hintBox,.solBox{max-width:540px;padding:10px 12px;border:1px solid var(--line);background:var(--surface);font-size:16px;line-height:1.5}
 .solBox .btn{margin-top:10px}
+.remTime{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary)}
+.remTime input{min-height:44px;background:var(--rust);color:var(--bone);border:2px solid var(--ash);padding:0 10px;font-family:var(--mono);font-size:16px}
 .pyMeter{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px}
 .pyMeter .segs{display:flex;gap:2px;flex-wrap:wrap}
 .pyMeter i{width:9px;height:14px;background:var(--line)}
@@ -471,6 +473,12 @@ body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
       <p id="installMsg">Installed, it opens full screen from your home screen and works offline.</p>
       <div class="row"><button class="btn installBtn" type="button" hidden>Install app</button></div>
       <p class="small">No button? In Chrome, tap the ⋮ menu, then <b>Add to Home screen</b> or <b>Install app</b>. If asked, choose <b>Install</b>, not Create shortcut.</p>
+    </section>
+    <section class="backup" aria-labelledby="remTitle">
+      <div class="wk" id="remTitle">Daily reminder</div>
+      <p>Add a repeating event to your phone's calendar, so it nudges you to open Cyber Bunker instead of Reels.</p>
+      <div class="row"><label class="remTime">Time <input type="time" id="remAt" value="19:30"></label><button class="btn ghost" id="remAdd" type="button">Add to calendar</button></div>
+      <p id="remMsg" aria-live="polite"></p>
     </section>
     <section class="backup" aria-labelledby="bkTitle">
       <div class="wk" id="bkTitle">Back up your progress</div>

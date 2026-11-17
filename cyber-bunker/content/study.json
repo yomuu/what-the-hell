@@ -622,7 +622,7 @@
    ],
    "real": [
     "Medibank, 2022",
-    "In October 2022 attackers used a contractor's stolen credentials to log in to Medibank's network through a VPN that didn't require a second factor. They took data on about 9.7 million current and former customers. When Medibank refused to pay, they published some of it."
+    "In August 2022 attackers used a contractor's stolen credentials to log in to Medibank's network through a VPN that didn't require a second factor. They took data for weeks before Medibank noticed in October: about 9.7 million current and former customers. When Medibank refused to pay, they published some of it."
    ],
    "myth": [
     "One good control, like MFA or backups, solves the whole problem.",
@@ -1177,8 +1177,8 @@
    "tryit": {
     "h": "Follow a lookup",
     "where": "Your host machine (needs internet)",
-    "p": "Your lab network is internal and has no DNS or DHCP, which is why you set static IPs on Day 8. So do this on your host. Watch the chain from the root down (some work networks block it), then look up mail and TXT records.",
-    "code": "# Linux, macOS or WSL\ndig +trace example.com\ndig gmail.com MX +short\ndig gmail.com TXT +short\n\n# Windows\nnslookup -type=MX gmail.com\nipconfig /displaydns"
+    "p": "Your lab network is internal and has no DNS or DHCP, which is why you set static IPs on Day 8. So do this on your host. Watch the chain from the root down (some work networks block it), then look up mail and TXT records. DMARC lives at its own name, _dmarc.<domain>, so it needs its own lookup.",
+    "code": "# Linux, macOS or WSL\ndig +trace example.com\ndig gmail.com MX +short\ndig gmail.com TXT +short\ndig _dmarc.gmail.com TXT +short\n\n# Windows\nnslookup -type=MX gmail.com\nipconfig /displaydns"
    },
    "quiz": [
     {
@@ -1247,7 +1247,7 @@
     ],
     [
      "Certificates",
-     "A certificate binds a domain name to a public key, signed by a certificate authority (CA) your device trusts. Your browser checks the name matches, the dates are valid and the chain leads to a trusted root."
+     "A certificate binds a domain name to a public key, signed by a certificate authority (CA) your device trusts. Your browser checks the name matches, the dates are valid and the chain leads to a trusted root. Certificates are getting shorter-lived (a 200-day maximum from March 2026, falling to 47 days by 2029), so renewal has to be automated."
     ],
     [
      "The handshake, simply",
@@ -2698,7 +2698,7 @@
     "In March 2023 an attack through a major vendor gave attackers a Latitude Financial employee's login. They took about 14 million Australian and NZ records, including millions of driver licence numbers, some kept since 2005. Latitude refused to pay. Third-party access and keeping too much data, in one story."
    ],
    "myth": [
-    "Once you've finished Stage 1, the basics are done.",
+    "Once you've finished Levels B1 to B4, the basics are done.",
     "The basics are what most breaches exploit: missing MFA, unpatched systems, weak access control and ignored alerts. You'll use these ideas at every level."
    ],
    "tryit": {
@@ -2834,7 +2834,7 @@
     "You can explain CIA, risk, AAA and MFA strength.",
     "You can trace a connection from DHCP to TLS.",
     "You can read permissions, processes, hashes and logs.",
-    "Score 80% or more across all days before moving to intermediate."
+    "Score 80% or more across all days before moving on to Level B5."
    ]
   },
   {
@@ -2927,10 +2927,10 @@
     }
    ],
    "recap": [
-    "Stage 1 done: fundamentals, networking, OS, crypto, hands-on analysis.",
+    "Levels B1 to B4 done: fundamentals, networking, OS, crypto, hands-on analysis.",
     "Grow the lab with a vulnerable VM and a SIEM, kept internal.",
     "Write up everything on GitHub.",
-    "Next: the intermediate stage."
+    "Next: Level B5, then the intermediate stage."
    ]
   },
   {

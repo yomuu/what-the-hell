@@ -25,13 +25,13 @@ const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
    Answering DAILY_GOAL questions in a day, in any tab, keeps the streak going. */
 const DAILY_GOAL = 5;
 const INTERVALS = [1, 3, 7, 16, 35];
-const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--amber)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", kql:"var(--k-kql)", quick:"var(--k-quick)"};
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--amber)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", kql:"var(--k-kql)", spl:"var(--amber)", quick:"var(--k-quick)"};
 // Each deck gets a list of checks: its main one plus any extras. Interview decks have none.
 FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = (d.qs || (d.q ? [d.q] : [])).concat(FEED_EXTRA_Q[d.id] || []); });
 // Decks added by the weekly content run carry added:"YYYY-MM-DD" and count as new for seven days.
 const isNew = d => !!d.added && dayNum() - dayNum(new Date(d.added + "T00:00:00")) < 7;
 const checkKey = (d, n) => n ? `f:${d.id}#${n}` : `f:${d.id}`;
-function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag + (d.region ? " · " + d.region : ""), quick:"Quick-fire", e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview", kql:"KQL"}[d.kind] || d.tag; }
+function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag + (d.region ? " · " + d.region : ""), quick:"Quick-fire", e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview", kql:"KQL", spl:"Splunk SPL"}[d.kind] || d.tag; }
 function deckName(d){ return d.kind === "owasp" ? d.tag + " " + d.title : d.kind === "incident" ? d.title + " " + d.tag : d.kind === "interview" ? "Interview practice" : d.title; }
 function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
 // One-time move of saved Python answers from the old 14-lesson track to the 24-lesson Terminal track.
@@ -250,6 +250,24 @@ function renderPyMeter(){
   });
   Object.keys(pyDone).forEach(dn => { const s = TABS.py.challenges && TABS.py.challenges[dn]; if (s) s.querySelector(".doneNote").textContent = `Lesson ${dn} complete.`; });
 }
+
+/* ---------- Daily reminder: a repeating calendar event (.ics), since a static site can't send reliable notifications ---------- */
+document.getElementById("remAdd").addEventListener("click", () => {
+  const [h, m] = (document.getElementById("remAt").value || "19:30").split(":");
+  const d = new Date(), pad = n => String(n).padStart(2, "0");
+  const day = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+  const url = location.href.split("#")[0];
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Cyber Bunker//Reminder//EN", "BEGIN:VEVENT",
+    `UID:cyber-bunker-daily-${stamp}`, `DTSTAMP:${stamp}`, `DTSTART:${day}T${pad(h)}${pad(m)}00`, "DURATION:PT10M",
+    "RRULE:FREQ=DAILY", "SUMMARY:Cyber Bunker: 10 minutes of study", `DESCRIPTION:Open Cyber Bunker instead of Reels: ${url}`, `URL:${url}`,
+    "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:Cyber Bunker", "TRIGGER:PT0M", "END:VALARM", "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([ics], {type: "text/calendar"}));
+  a.download = "cyber-bunker-reminder.ics"; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  document.getElementById("remMsg").textContent = `Downloaded. Open the file and choose your calendar app to add a daily ${pad(h)}:${pad(m)} reminder.`;
+});
 
 /* ---------- Install button (Android Chrome and other browsers that support it) ---------- */
 function refreshInstall(){
@@ -532,8 +550,8 @@ const PORTFOLIO = [
   ["scan-watch", "Scan and watch lab write-up (Day 25)"],
   ["playbook", "Phishing playbook (Day 26)"],
   ["repo", "GitHub homelab repo with a README (Day 28)"],
-  ["py-detector", "Python brute-force detector (Python 14)"],
-  ["py-s3", "Python S3 audit script (Python 13)"]
+  ["py-detector", "Python brute-force detector (Terminal Lesson 24)"],
+  ["py-s3", "Python S3 audit script (Terminal Lesson 23)"]
 ];
 const portfolio = asObj(store.get("cr2-portfolio", {}));
 const checkList = items => `<ul class="checks">${items.map(([id, t]) => `<li><label><input type="checkbox" data-id="${id}"${portfolio[id] ? " checked" : ""}>${esc(t)}</label></li>`).join("")}</ul>`;
@@ -730,7 +748,7 @@ function wireInterview(card, d, onRated){
   }));
 }
 // Your goal tilts the Feed: SOC leans towards triage, queries and incidents; Cloud towards cloud and app security.
-const TARGETS = {mixed:{}, soc:{triage:1.5, kql:1.5, incident:0.75, interview:0.5}, cloud:{cloud:2, owasp:0.75, e8:0.5, kql:0.5}};
+const TARGETS = {mixed:{}, soc:{triage:1.5, kql:1.5, spl:1.5, incident:0.75, interview:0.5}, cloud:{cloud:2, owasp:0.75, e8:0.5, kql:0.5}};
 let target = TARGETS[store.get("cr2-target", "mixed")] ? store.get("cr2-target", "mixed") : "mixed";
 // Share of a kind's answered checks that are still weak (box 1 or 2). Weak kinds come up more often.
 function weakShare(kind){
@@ -875,7 +893,7 @@ addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, ht
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
   <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
-  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--w4"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["KQL","--k-kql"],["Quick-fire","--k-quick"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
+  <div class="legend">${[["OWASP","--t-feed"],["Incidents","--amber"],["Splunk SPL","--amber"],["Essential Eight","--k-e8"],["Cloud","--k-cloud"],["AU/NZ law","--k-law"],["Triage","--k-triage"],["KQL","--k-kql"],["Quick-fire","--k-quick"],["Interview","--k-int"],["Review","--w3"]].map(([t, v]) => `<span style="color:var(${v})">${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
 function wireTarget(root){
   root.querySelectorAll(".target button").forEach(b => {
@@ -1289,6 +1307,7 @@ document.addEventListener("keydown", e => {
    #study and #python open a tab at its current card. */
 function fromHash(hash){
   const id = (hash || location.hash).slice(1);
+  if (id === "review"){ switchTab("feed"); requestAnimationFrame(() => reviewNow()); history.replaceState(history.state, "", "#feed"); return true; }
   if (id === "feed" || id === "study" || id === "python"){
     switchTab(id === "python" ? "py" : id);
     if (id === "feed" && F.current === 0) requestAnimationFrame(() => go("feed", 1));
@@ -1307,7 +1326,7 @@ renderStories();
    Mastered = share of the skill's questions answered right on two separate days (box 3+).
    A CV line unlocks at 30% mastered, or once a linked lab is ticked in the portfolio. */
 const SKILLS = [
-  {name:"SIEM and log analysis", s:[22,23,24,25,33], p:[7,8,14], kinds:["triage","kql"], pf:["logons","scan-watch","wireshark"], need:["logons","scan-watch"],
+  {name:"SIEM and log analysis", s:[22,23,24,25,33], p:[9,11,12,21,24], kinds:["triage","kql","spl"], decks:["qf-eventids"], pf:["logons","scan-watch","wireshark"], need:["logons","scan-watch"],
    did:"Investigated failed logons and a port scan in Windows Security and firewall logs in a home lab, and practised KQL in Microsoft's Log Analytics demo.",
    know:"Understand SIEM triage, Windows logon events and KQL for Microsoft Sentinel and Defender."},
   {name:"Identity and access", s:[3,4,29,30,31], decks:["cloud-iam","e8-admin","e8-mfa","owasp-a01","owasp-a07"], pf:["perm-proof"], need:["perm-proof"],
@@ -1319,12 +1338,12 @@ const SKILLS = [
   {name:"Networking", s:[8,9,10,11,12,13,14], pf:["lab-ips","fw-rule","nmap"], need:["lab-ips","nmap"],
    did:"Built an isolated VirtualBox lab with static addressing and scanned it with Nmap.",
    know:"Understand TCP/IP, subnetting, DNS, DHCP, TLS and firewall rules."},
-  {name:"Cloud security", p:[13], s:[29,30,31], kinds:["cloud"], pf:["py-s3"], need:["py-s3"],
+  {name:"Cloud security", p:[17,18,23], s:[29,30,31], kinds:["cloud"], pf:["py-s3"], need:["py-s3"],
    did:"Wrote a Python (boto3) script that flags S3 buckets without a bucket-level public access block.",
    know:"Understand the cloud shared responsibility model, identity-based access and cloud logging in AWS and Azure."},
   {name:"Vulnerability management", s:[2,5,11,22,34], decks:["owasp-a03","e8-patch-apps","e8-patch-os"], pf:["nmap"],
    know:"Understand vulnerability prioritisation with CVSS, EPSS and CISA KEV, and the Essential Eight patching timeframes."},
-  {name:"Scripting", p:[1,2,3,4,5,6,7,8,9,10,11,12,13,14], pf:["py-detector","py-s3"], need:["py-detector"],
+  {name:"Scripting", p:Array.from({length:24}, (x, i) => i + 1), pf:["py-detector","py-s3"], need:["py-detector"],
    did:"Wrote a Python tool that finds brute-force sources in SSH logs using regex, Counter and argparse.",
    know:"Write Python for security tasks such as log parsing, regex, hashing and port checks."},
   {name:"Frameworks and compliance", kinds:["e8","law","owasp"], pf:[],
