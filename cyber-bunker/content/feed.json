@@ -528,7 +528,7 @@
    "entry": "A SQL injection zero-day (CVE-2023-34362) in the MOVEit Transfer web app.",
    "impact": "About 2,700 organisations and nearly 100 million people were affected, many through their suppliers.",
    "lesson": "Patch internet-facing file transfer tools fast and know which suppliers hold your data.",
-   "source": "CISA advisory AA23-158A, 2023"
+   "source": "CISA AA23-158A and Emsisoft, 2023"
   },
   {
    "id": "inc-log4shell",
@@ -1657,7 +1657,7 @@
     "k": 0,
     "w": "No AWS flaw was needed. Stale trust policies let anyone holding Qubole-side credentials assume the roles."
    },
-   "date": "2026-10",
+   "date": "2026-11",
    "status": "breached",
    "entry": "Two hijacked Qubole IAM users assumed old customer roles that still trusted Qubole's AWS account.",
    "impact": "Secrets and S3 data were read in more than a dozen customer organisations.",
@@ -1731,7 +1731,7 @@
     ],
     [
      "Impact",
-     "Cathay Pacific says about 53,000 bookings were affected. Qantas says its own systems weren't affected and it doesn't yet know which of its customers, if any, had data accessed. Amadeus says it has no evidence that payment or financial data was accessed."
+     "Cathay Pacific says about 53,000 bookings were affected. Qantas says its own systems weren't affected and it doesn't yet know which of its customers, if any, had data accessed. Cathay says it has no evidence that payment or financial data was accessed."
     ],
     [
      "Lessons",
@@ -1753,7 +1753,7 @@
    "date": "2026-10",
    "status": "developing",
    "entry": "Amadeus says a vulnerability exposed booking data; Cathay says a system account's credentials were used.",
-   "impact": "About 53,000 Cathay Pacific bookings were affected. Qantas was also notified.",
+   "impact": "About 53,000 Cathay Pacific bookings were affected. Qantas, Japan Airlines and Asiana were also notified.",
    "lesson": "Your customers' data is only as safe as your suppliers' systems.",
    "source": "Cathay Pacific and Qantas statements, 2026"
   },
@@ -2144,7 +2144,7 @@
    "tag": "2017",
    "title": "Equifax",
    "added": "2026-11-17",
-   "date": "2017-05",
+   "date": "2017-09",
    "status": "breached",
    "entry": "An unpatched Apache Struts flaw (CVE-2017-5638) in an online dispute portal.",
    "impact": "Personal data on about 147 million people was stolen.",
@@ -2161,7 +2161,7 @@
     ],
     [
      "Why it went unnoticed",
-     "An expired certificate on a device that inspected encrypted traffic meant that traffic wasn't being checked. Once it was renewed, staff saw suspicious traffic within a day."
+     "An expired certificate on a device that inspected encrypted traffic meant that traffic wasn't being checked. It had been expired for about 19 months. Once it was renewed, staff saw suspicious traffic within a day."
     ],
     [
      "Lessons",
@@ -2179,7 +2179,10 @@
     ],
     "k": 0,
     "w": "The Struts fix had been out for about two months, but the dispute portal wasn't patched."
-   }
+   },
+   "attack": [
+    "T1190 Exploit Public-Facing Application"
+   ]
   },
   {
    "id": "inc-solarwinds",
@@ -2190,7 +2193,7 @@
    "date": "2020-12",
    "status": "breached",
    "entry": "Malicious code slipped into the SolarWinds Orion build process and shipped in signed updates.",
-   "impact": "About 18,000 customers installed the backdoored update, and a smaller number were targeted further.",
+   "impact": "Up to about 18,000 customers may have installed the backdoored update, and a much smaller number were targeted further.",
    "lesson": "Protect the build pipeline as carefully as production, and watch what trusted software does.",
    "source": "SolarWinds SEC filing and CISA, 2020 to 2021",
    "cards": [
@@ -2204,7 +2207,7 @@
     ],
     [
      "Impact",
-     "SolarWinds said about 18,000 customers installed the affected updates. The attackers then picked a much smaller set of targets, including US government agencies, for deeper access. The US government attributed it to Russia's foreign intelligence service (SVR)."
+     "SolarWinds told the US Securities and Exchange Commission that fewer than 18,000 customers may have installed the affected updates. The attackers then picked a much smaller set of targets, including US government agencies, for deeper access. The attackers had been inside since late 2019. The US government attributed it to Russia's foreign intelligence service (SVR)."
     ],
     [
      "Lessons",
@@ -2222,7 +2225,10 @@
     ],
     "k": 0,
     "w": "The backdoor was added during the build, so the update carried SolarWinds' real signature."
-   }
+   },
+   "attack": [
+    "T1195.002 Compromise Software Supply Chain"
+   ]
   },
   {
    "id": "inc-colonial",
@@ -2247,7 +2253,7 @@
     ],
     [
      "Impact",
-     "The pipeline was shut for about five days. Colonial paid a ransom of 75 bitcoin, about US$4.4 million at the time. The US Justice Department later recovered about 63.7 bitcoin of it."
+     "The pipeline was shut for about five days. DarkSide also stole about 100 GB of data before encrypting, so this was double extortion. Colonial paid a ransom of 75 bitcoin, about US$4.4 million at the time. The US Justice Department later recovered about 63.7 bitcoin of it."
     ],
     [
      "Lessons",
@@ -2265,7 +2271,12 @@
     ],
     "k": 0,
     "w": "The legacy VPN account was still active and only needed a password."
-   }
+   },
+   "attack": [
+    "T1133 External Remote Services",
+    "T1078 Valid Accounts",
+    "T1486 Data Encrypted for Impact"
+   ]
   },
   {
    "id": "inc-optus",
@@ -2279,7 +2290,7 @@
    "entry": "An internet-facing API that returned customer data without asking for any authentication.",
    "impact": "Personal data on about 9.5 million current and former customers was taken.",
    "lesson": "Every API needs authentication and access control, including old or forgotten ones.",
-   "source": "Optus, ACMA and OAIC, 2022 to 2024",
+   "source": "Optus, ACMA and OAIC, 2022 to 2025",
    "cards": [
     [
      "What happened",
@@ -2287,7 +2298,7 @@
     ],
     [
      "How they got in",
-     "The data came from an API that was reachable from the internet and didn't require authentication. The Australian Communications and Media Authority (ACMA) said a coding error had left its access control broken for years."
+     "The data came from an API that was reachable from the internet and didn't require authentication. In its court case, the Australian Communications and Media Authority (ACMA) alleged that a 2018 coding error left the API's access control broken for years."
     ],
     [
      "Impact",
@@ -2295,7 +2306,7 @@
     ],
     [
      "Lessons",
-     "Test access control on every endpoint, keep an inventory of APIs, and delete ID numbers once you no longer need them."
+     "Optus reportedly fixed the same error on its main domain in 2021 but missed a dormant subdomain. Keep an inventory of every API and domain, test access control on each one, and delete ID numbers once you no longer need them."
     ]
    ],
    "maps": "A01 Broken Access Control",
@@ -2309,7 +2320,10 @@
     ],
     "k": 0,
     "w": "Anyone who found it could request customer records. Access control was missing, not broken encryption."
-   }
+   },
+   "attack": [
+    "T1190 Exploit Public-Facing Application"
+   ]
   },
   {
    "id": "inc-mgm",
@@ -2319,8 +2333,8 @@
    "added": "2026-11-17",
    "date": "2023-09",
    "status": "breached",
-   "entry": "A phone call to the IT help desk, pretending to be an employee, to get access reset.",
-   "impact": "Hotel and casino systems were disrupted for days. MGM put the cost at about US$100 million.",
+   "entry": "A phone call to the IT help desk, pretending to be an employee, to get their login and MFA reset.",
+   "impact": "Hotel and casino systems were disrupted for days. MGM expected a hit to earnings of about US$100 million.",
    "lesson": "Help desks need strong identity checks before resetting passwords or MFA.",
    "source": "MGM Resorts SEC filing, 2023",
    "cards": [
@@ -2330,11 +2344,11 @@
     ],
     [
      "How they got in",
-     "The attackers, linked to the group known as Scattered Spider, used social engineering on MGM's IT help desk. Posing as an employee, they got access reset. The ALPHV/BlackCat ransomware group claimed involvement."
+     "The attackers, linked to the group known as Scattered Spider, called MGM's IT help desk posing as an employee and got the help desk to reset that employee's login and MFA. The ALPHV/BlackCat ransomware group claimed involvement."
     ],
     [
      "Impact",
-     "MGM said the attack would cost about US$100 million and that some customer personal data was taken. It didn't pay a ransom."
+     "MGM said it expected a hit to earnings of about US$100 million and that some customer personal data was taken. Reports say it refused to pay a ransom. Caesars Entertainment was hit by the same group weeks earlier and reportedly paid."
     ],
     [
      "Lessons",
@@ -2352,7 +2366,11 @@
     ],
     "k": 0,
     "w": "It was social engineering: a convincing call to the help desk got access reset."
-   }
+   },
+   "attack": [
+    "T1656 Impersonation",
+    "T1078 Valid Accounts"
+   ]
   },
   {
    "id": "inc-snowflake",
@@ -2363,8 +2381,8 @@
    "date": "2024-05",
    "status": "breached",
    "entry": "Customer accounts logged in to with passwords stolen by infostealer malware, with no MFA.",
-   "impact": "Mandiant notified about 165 organisations, including AT&T, Ticketmaster and Santander.",
-   "lesson": "Cloud platforms are secured per customer. Turn on MFA and network rules yourself.",
+   "impact": "Snowflake and Mandiant notified about 165 organisations, including AT&T, Ticketmaster and Santander.",
+   "lesson": "Under shared responsibility, securing your own cloud accounts is your job. Turn on MFA and network rules.",
    "source": "Mandiant and Snowflake, 2024",
    "cards": [
     [
@@ -2377,11 +2395,11 @@
     ],
     [
      "Impact",
-     "Mandiant said about 165 organisations were notified. Snowflake and its investigators found no evidence that Snowflake's own platform was breached."
+     "Snowflake and Mandiant notified about 165 organisations. Snowflake and its investigators found no evidence that Snowflake's own platform was breached."
     ],
     [
      "Lessons",
-     "Under the shared responsibility model, protecting accounts is the customer's job. Require MFA, rotate old credentials and limit logins to known networks."
+     "Under the shared responsibility model, protecting accounts is the customer's job. Require MFA, rotate old credentials and limit logins to known networks. Snowflake later made MFA the default for new accounts."
     ]
    ],
    "maps": "A07 Authentication Failures · cloud shared responsibility",
@@ -2389,13 +2407,16 @@
     "d": 2,
     "q": "Was Snowflake's own platform hacked?",
     "o": [
-     "No, customer accounts without MFA were logged in to",
+     "No. Attackers logged in to customer accounts that had no MFA.",
      "Yes, through a zero-day in Snowflake",
      "Yes, through a malicious update"
     ],
     "k": 0,
     "w": "Attackers used stolen passwords on customer accounts that had no MFA."
-   }
+   },
+   "attack": [
+    "T1078.004 Valid Accounts: Cloud Accounts"
+   ]
   },
   {
    "id": "inc-wannacry",
@@ -2406,7 +2427,7 @@
    "date": "2017-05",
    "status": "verified",
    "entry": "A worm that spread through unpatched Windows SMBv1 (EternalBlue, fixed by MS17-010).",
-   "impact": "More than 200,000 computers in about 150 countries, including much of the UK NHS.",
+   "impact": "More than 200,000 computers in about 150 countries, including about a third of NHS trusts in England.",
    "lesson": "Patch fast, turn off SMBv1 and never expose SMB to the internet.",
    "source": "UK National Audit Office and US DOJ, 2017 to 2018",
    "cards": [
@@ -2416,18 +2437,18 @@
     ],
     [
      "How it spread",
-     "It was a worm. It used EternalBlue, an exploit for Windows SMBv1, to jump from computer to computer with no clicks needed. Microsoft had released the fix, MS17-010, in March 2017."
+     "It was a worm. It used EternalBlue, an NSA exploit leaked by the Shadow Brokers in April 2017, to attack Windows SMBv1 and jump between computers with no clicks needed. Microsoft had released the fix, MS17-010, in March 2017."
     ],
     [
      "Impact",
-     "More than 200,000 computers in about 150 countries were hit. In the UK, NHS trusts cancelled thousands of appointments. Security researcher Marcus Hutchins slowed it by registering a domain that acted as a kill switch."
+     "More than 200,000 computers in about 150 countries were hit. In England, at least 81 of 236 NHS trusts were affected and about 19,000 appointments were cancelled. The US and UK governments later attributed WannaCry to North Korea."
     ],
     [
      "Lessons",
-     "Unpatched systems on a flat network let one infection reach everything. The US and UK governments later attributed WannaCry to North Korea."
+     "Unpatched systems on a flat network let one infection reach everything. Patch fast, turn off SMBv1, segment the network and never expose SMB to the internet. Researcher Marcus Hutchins slowed it by registering a domain that acted as a kill switch."
     ]
    ],
-   "maps": "A03 Software Supply Chain Failures (unpatched components) · A02 Security Misconfiguration",
+   "maps": "Essential Eight: patch operating systems · A02 Security Misconfiguration (SMBv1 left on)",
    "q": {
     "d": 1,
     "q": "How did WannaCry spread so fast?",
@@ -2438,7 +2459,11 @@
     ],
     "k": 0,
     "w": "EternalBlue let it spread between computers on its own, with no user action."
-   }
+   },
+   "attack": [
+    "T1210 Exploitation of Remote Services",
+    "T1486 Data Encrypted for Impact"
+   ]
   }
  ],
  "extraQuestions": {

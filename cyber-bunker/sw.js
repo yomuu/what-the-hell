@@ -1,7 +1,7 @@
 /* Cyber Bunker service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 4;
+const VERSION = 5;
 const CACHE = "cyber-bunker-v" + VERSION;
 const PYODIDE_VERSION = "0.27.7";   // keep in step with app.js
 const PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
@@ -68,7 +68,7 @@ self.addEventListener("fetch", event => {
 
   // Pyodide (Python for the Run buttons): downloaded the first time you run code, then served from this cache.
   // The files never change for a given Pyodide version, so the cache is kept across app updates.
-  if (url.hostname === "cdn.jsdelivr.net" && url.pathname.startsWith("/npm/pyodide@" + PYODIDE_VERSION + "/")) {
+  if (url.hostname === "cdn.jsdelivr.net" && url.pathname.startsWith("/pyodide/v" + PYODIDE_VERSION + "/full/")) {
     event.respondWith(
       caches.open(PYODIDE_CACHE).then(cache =>
         cache.match(req).then(hit => hit || fetch(req).then(res => {

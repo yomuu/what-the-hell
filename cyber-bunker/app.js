@@ -34,6 +34,20 @@ const checkKey = (d, n) => n ? `f:${d.id}#${n}` : `f:${d.id}`;
 function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag + (d.region ? " · " + d.region : ""), quick:"Quick-fire", e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview", kql:"KQL"}[d.kind] || d.tag; }
 function deckName(d){ return d.kind === "owasp" ? d.tag + " " + d.title : d.kind === "incident" ? d.title + " " + d.tag : d.kind === "interview" ? "Interview practice" : d.title; }
 function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
+// One-time move of saved Python answers from the old 14-lesson track to the 24-lesson Terminal track.
+(function migratePython(){
+  const m = window.PY_MIGRATE;
+  if (!m || +store.get("cr2-py-track", 0) >= 24) return;
+  const old = asObj(store.get("cr2-py-answers", {})), moved = {};
+  Object.entries(old).forEach(([k, v]) => { if (m.quiz[k]) moved[m.quiz[k]] = v; });
+  store.set("cr2-py-answers", moved);
+  const s = asObj(store.get("cr2-srs", {}));
+  Object.keys(s).filter(k => k.startsWith("p:")).forEach(k => { const v = s[k]; delete s[k]; const to = m.quiz[k.slice(2)]; if (to) s["p:" + to] = v; });
+  store.set("cr2-srs", s);
+  const pos = /^p(\d+)-|^py-(\d+)$/.exec(store.get("cr2-py-pos", ""));
+  if (pos){ const to = m.lessons[pos[1] || pos[2]]; store.set("cr2-py-pos", to ? "py-" + to : ""); }
+  store.set("cr2-py-track", 24);
+})();
 const srs = asObj(store.get("cr2-srs", {}));
 const saveSrs = () => store.set("cr2-srs", srs);
 const daily = (() => { const s = asObj(store.get("cr2-daily", {})); return {day:+s.day || 0, qs:+s.qs || 0, keys:Array.isArray(s.keys) ? s.keys : [], streak:+s.streak || 0, best:+s.best || 0, lastDone:+s.lastDone || 0}; })();
@@ -132,7 +146,7 @@ function wireCopy(scope, text){
 /* ---------- Run Python in the browser (Pyodide) ----------
    Downloaded only after you agree on the first tap (about 14 MB). The service worker keeps it, so later runs work offline.
    Content authors: examples run on the main thread with no time limit, so never mark a loop that doesn't end as runnable. */
-const PYODIDE_VERSION = "0.27.7", PYODIDE_URL = `https://cdn.jsdelivr.net/npm/pyodide@${PYODIDE_VERSION}/`, PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
+const PYODIDE_VERSION = "0.27.7", PYODIDE_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`, PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
 // Code that needs files, the network, arguments or AWS can't run here; those cards stay copy-only.
 const canRun = src => !/\b(socket|boto3|botocore|argparse|subprocess|requests)\b|\bopen\(|sys\.argv|input\(/.test(src);
 const RUN_HTML = label => `<div class="runbox"><button class="btn runBtn" type="button" style="--c:var(--good)" data-label="${label}">${label}</button><pre class="pyout" hidden></pre></div>`;
@@ -164,7 +178,7 @@ function loadPython(){
 document.addEventListener("click", async e => {
   const btn = e.target.closest && e.target.closest(".runBtn");
   if (!btn) return;
-  const card = btn.closest(".card"), out = btn.parentNode.querySelector(".pyout"), code = card && card.__runCode;
+  const card = btn.closest(".card"), box = btn.closest(".runbox"), out = box.querySelector(".pyout"), ed = box.querySelector(".editor"), code = ed ? ed.value : card && card.__runCode;
   if (!code || btn.disabled) return;
   const say = text => { out.hidden = false; out.textContent = text; live.textContent = text; };
   // First time: ask before downloading 14 MB.
@@ -183,13 +197,59 @@ document.addEventListener("click", async e => {
     py.setStdout({batched: t => lines.push(t)}); py.setStderr({batched: t => lines.push(t)});
     try { py.runPython(code, {globals: py.globals.get("dict")()}); }
     catch (err){ out.classList.add("err"); lines.push(String(err.message || err).trim().split("\n").filter(l => l.trim()).slice(-1)[0] || "Error"); }
-    say(lines.join("\n") || "(no output)");
+    const text = lines.join("\n");
+    say(text || "(no output)");
+    if (box.dataset.expect !== undefined && !out.classList.contains("err")){
+      const ok = text.trim() === box.dataset.expect.trim();
+      out.classList.toggle("pass", ok);
+      if (ok) markLessonDone(+box.dataset.dn);
+      else card.querySelector(".doneNote").textContent = "Not quite. Compare your output with the task, or show the hint.";
+    }
   } catch (err){
     out.classList.add("err");
     say(navigator.onLine ? "Python couldn't load. Try again in a moment." : "You're offline. Python needs a connection the first time you run code; after that it works offline.");
   }
-  btn.disabled = false; btn.textContent = loaded ? "Run again" : btn.dataset.label;
+  btn.disabled = false; btn.textContent = loaded && !ed ? "Run again" : btn.dataset.label;
 });
+
+/* ---------- Code editor (Terminal tab) ---------- */
+const EDITOR_HTML = (code, label, dn, expect) => `<div class="runbox"${expect !== undefined ? ` data-dn="${dn}" data-expect="${esc(expect)}"` : ""}>
+  <textarea class="editor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="soft" aria-label="Python code you can edit">${esc(code)}</textarea>
+  <div class="row"><button class="btn runBtn" type="button" style="--c:var(--good)" data-label="${label}">${label}</button><button class="btn ghost resetCode" type="button">Reset code</button></div>
+  <pre class="pyout" hidden></pre></div>`;
+// Rows for the visible lines, counting long lines that wrap at about 36 characters on a phone.
+function sizeEditor(ed){ const rows = ed.value.split("\n").reduce((n, l) => n + Math.max(1, Math.ceil(l.length / 36)), 0); ed.rows = Math.min(Math.max(rows + 1, 3), 18); }
+function wireEditor(card, original){
+  const ed = card.querySelector(".editor");
+  sizeEditor(ed);
+  ed.addEventListener("input", () => sizeEditor(ed));
+  // Tab indents by four spaces instead of leaving the editor (Shift+Tab or Esc then Tab still moves on).
+  let escaped = false;
+  ed.addEventListener("keydown", e => {
+    if (e.key === "Escape"){ escaped = true; return; }
+    if (e.key === "Tab" && !e.shiftKey && !escaped){ e.preventDefault(); ed.setRangeText("    ", ed.selectionStart, ed.selectionEnd, "end"); }
+    escaped = false;
+  });
+  card.querySelector(".resetCode").addEventListener("click", () => { ed.value = original; sizeEditor(ed); const o = card.querySelector(".pyout"); o.hidden = true; });
+}
+/* ---------- Lessons completed (a challenge passed, or marked done) ---------- */
+const pyDone = asObj(store.get("cr2-py-done", {}));
+function markLessonDone(dn){
+  const first = !pyDone[dn];
+  pyDone[dn] = new Date().toLocaleDateString("en-CA"); store.set("cr2-py-done", pyDone);
+  const s = TABS.py.challenges && TABS.py.challenges[dn];
+  if (s) s.querySelector(".doneNote").textContent = `Lesson ${dn} complete.`;
+  renderPyMeter();
+  if (first) toast(`Lesson ${dn} complete · ${Object.keys(pyDone).length} of ${PY_LESSONS.length}`);
+}
+function renderPyMeter(){
+  const n = Object.keys(pyDone).filter(k => +k >= 1 && +k <= PY_LESSONS.length).length;
+  document.querySelectorAll(".pyMeter").forEach(m => {
+    m.setAttribute("aria-label", `${n} of ${PY_LESSONS.length} lessons complete`);
+    m.innerHTML = `<span class="segs">${PY_LESSONS.map((d, i) => `<i${pyDone[i + 1] ? ' class="on"' : ""}></i>`).join("")}</span><span class="mnum">${n}/${PY_LESSONS.length}</span>`;
+  });
+  Object.keys(pyDone).forEach(dn => { const s = TABS.py.challenges && TABS.py.challenges[dn]; if (s) s.querySelector(".doneNote").textContent = `Lesson ${dn} complete.`; });
+}
 
 /* ---------- Install button (Android Chrome and other browsers that support it) ---------- */
 function refreshInstall(){
@@ -344,7 +404,7 @@ function makeTrack(tab, items, cfg){
   const save = () => store.set(cfg.answersKey, answers);
   const T = TABS[tab];
   Object.assign(T, {items, cfg, answers, recapScores:{}, resetters:{}});
-  T.cardCount = d => 2 + d.learn.length + (d.real ? 1 : 0) + (d.myth ? 1 : 0) + (d.tryit ? 1 : 0) + (d.review ? d.review.length : 0) + d.quiz.length;
+  T.cardCount = d => 2 + d.learn.length + (d.play ? 1 : 0) + (d.challenge ? 1 : 0) + (d.real ? 1 : 0) + (d.myth ? 1 : 0) + (d.tryit ? 1 : 0) + (d.review ? d.review.length : 0) + d.quiz.length;
 
   items.forEach((d, i) => {
     const g = cfg.groupOf(i), dn = i + 1, c = g.c;
@@ -362,6 +422,11 @@ function makeTrack(tab, items, cfg){
       if (code) wireCopy(s, code);
       if (code && tab === "py" && canRun(code)){ s.__runCode = code; s.querySelector(".code").insertAdjacentHTML("afterend", RUN_HTML("Run it here")); }
     });
+
+    if (d.play){
+      const s = make("Try it here", `${tag("Try it here")}<h2>Edit and run</h2><p>${fmt(d.play.p)}</p>${EDITOR_HTML(d.play.code, "Run")}`);
+      wireEditor(s, d.play.code);
+    }
 
     if (d.real) make(cfg.realLabel, `${tag(cfg.realLabel)}<h2>${fmt(d.real[0])}</h2><p>${fmt(d.real[1])}</p>`);
 
@@ -386,6 +451,25 @@ function makeTrack(tab, items, cfg){
         updateScore(tab, pick !== null);
       }));
     });
+
+    if (d.challenge){
+      const ch = d.challenge;
+      const s = make("Challenge", `${tag("Challenge")}<h2>Your turn</h2><p>${fmt(ch.p)}</p>
+        ${ch.think ? "" : EDITOR_HTML(ch.start, "Run and check", dn, ch.expect)}
+        <div class="row reveals"><button class="btn ghost hintBtn" type="button" aria-expanded="false">Show hint</button><button class="btn ghost solBtn" type="button" aria-expanded="false">${ch.think ? "Show answer" : "Show solution"}</button></div>
+        <div class="hintBox" hidden>${fmt(ch.hint)}</div>
+        <div class="solBox" hidden>${ch.think ? `<p>${fmt(ch.solution)}</p><button class="btn markDone" type="button">Mark lesson done</button>` : codeBlock(ch.solution, "Solution", false) + `<button class="btn ghost useSol" type="button">Put it in the editor</button>`}</div>
+        <p class="small doneNote" aria-live="polite"></p>`);
+      if (!ch.think) wireEditor(s, ch.start);
+      const toggle = (btn, box) => btn.addEventListener("click", () => { const open = box.hidden; box.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
+      toggle(s.querySelector(".hintBtn"), s.querySelector(".hintBox"));
+      toggle(s.querySelector(".solBtn"), s.querySelector(".solBox"));
+      const use = s.querySelector(".useSol");
+      if (use) use.addEventListener("click", () => { const ed = s.querySelector(".editor"); ed.value = ch.solution; sizeEditor(ed); ed.focus(); });
+      const md = s.querySelector(".markDone");
+      if (md) md.addEventListener("click", () => markLessonDone(dn));
+      T.challenges = T.challenges || {}; T.challenges[dn] = s;
+    }
 
     const last = dn === items.length;
     const rc = make("Recap", `${tag("Recap")}<h2>${last ? cfg.lastRecap : cfg.word + " " + dn + " in a nutshell"}</h2>
@@ -431,10 +515,10 @@ addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("study", DAYS, {
   answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 2, wrapped",
-  links:{9:{tab:"py", n:11, text:"Terminal Lesson 11: IPs and JSON"}, 11:{tab:"py", n:10, text:"Terminal Lesson 10: port checks"},
-         18:{tab:"py", n:7, text:"Terminal Lesson 7: reading logs"}, 19:{tab:"py", n:9, text:"Terminal Lesson 9: hashing"},
-         22:{tab:"py", n:10, text:"Terminal Lesson 10: port checker"}, 24:{tab:"py", n:14, text:"Terminal Lesson 14: detector"},
-         28:{tab:"py", n:14, text:"Terminal Lesson 14: capstone"}},
+  links:{9:{tab:"py", n:18, text:"Terminal Lesson 18: IP addresses"}, 11:{tab:"py", n:23, text:"Terminal Lesson 23: sockets"},
+         18:{tab:"py", n:9, text:"Terminal Lesson 9: parse a log"}, 19:{tab:"py", n:14, text:"Terminal Lesson 14: hashing"},
+         22:{tab:"py", n:23, text:"Terminal Lesson 23: port checks"}, 24:{tab:"py", n:24, text:"Terminal Lesson 24: detector"},
+         28:{tab:"py", n:24, text:"Terminal Lesson 24: final project"}},
   id:(dn, n) => n === 0 ? "day-" + dn : "d" + dn + "-" + n,
   groupOf:i => { const w = WEEKS[Math.floor(i/7)]; return {c:w.c, label:`Level B${w.n} · ${w.name}`}; }
 });
@@ -541,20 +625,21 @@ const P = TABS.py;
 addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
   <div class="tag"><span>Python</span>${PY_LESSONS.length} lessons · ${PY_LESSONS.reduce((s,d)=>s+d.quiz.length,0)} questions</div>
   <h1>Python for security</h1>
-  <p>Short lessons that build up to real tools: log parsing, regex, hashing, port checks and a cloud audit script. Tap <b>Run it here</b> to try the short examples in the app; run the bigger tools in Kali.</p>
+  <p>Short lessons that build up to real tools: log parsing, regex, hashing, an IAM policy check and a brute-force detector. Edit and run the code right here, then finish each lesson's challenge. Run the bigger tools in Kali.</p>
   <div class="weeks">${PY_LEVELS.map(l=>`<div style="--wc:var(--t-py)"><b>${esc(l.name)}</b>Lessons ${l.from+1} to ${l.to}</div>`).join("")}</div>
+  <div class="pyMeter" role="img"></div>
   <div class="stats streakLine"></div>
   <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("py", PY_LESSONS, {
   answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Terminal track, wrapped", codeLabel:"Python",
-  links:{7:{tab:"study", n:18, text:"Background: Training Day 18"}, 8:{tab:"study", n:24, text:"Background: Training Day 24"},
-         9:{tab:"study", n:19, text:"Background: Training Day 19"}, 10:{tab:"study", n:22, text:"Background: Training Day 22"},
-         11:{tab:"study", n:9, text:"Background: Training Day 9"}, 14:{tab:"study", n:25, text:"Try it in the Day 25 lab"}},
+  links:{9:{tab:"study", n:18, text:"Background: Training Day 18"}, 12:{tab:"study", n:24, text:"Background: Training Day 24"},
+         14:{tab:"study", n:19, text:"Background: Training Day 19"}, 23:{tab:"study", n:22, text:"Background: Training Day 22"},
+         18:{tab:"study", n:9, text:"Background: Training Day 9"}, 24:{tab:"study", n:25, text:"Try it in the Day 25 lab"}},
   id:(dn, n) => n === 0 ? "py-" + dn : "p" + dn + "-" + n,
-  groupOf:i => { const l = PY_LEVELS.find(l => i >= l.from && i < l.to); return {c:"var(--t-py)", label:`Python · ${l.name}`}; }
+  groupOf:i => { const l = PY_LEVELS.find(l => i >= l.from && i < l.to); return {c:"var(--t-py)", label:`Terminal · ${l.name}`}; }
 });
 addCard("py", {c:"var(--t-py)", id:"py-finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Terminal track complete</div><h1>You can script it</h1>
-  <p class="endScore"></p><p class="small">Turn the capstone into a GitHub project with a README and sample output. Reset clears your Python quiz answers. Your review schedule and streak are kept.</p>
+  <p class="endScore"></p><p class="small">Turn the final project into a GitHub project with a README and sample output. Reset clears your Python quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
 /* ---------- Feed tab: endless, shuffled decks ---------- */
@@ -1021,7 +1106,7 @@ function renderSheet(){
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
       const st = s.done === 0 ? "" : s.right < s.done ? "miss" : s.done === s.total ? "ok" : "part";
-      const label = s.done ? "first try " + s.right + "/" + s.total + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions";
+      const label = (s.done ? "first try " + s.right + "/" + s.total + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions") + (tab === "py" && pyDone[n] ? " · challenge done" : "");
       return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
   }</div>`).join("");
   dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { T.detour = false; goGroup(tab, n - 1); }); }));
@@ -1242,6 +1327,7 @@ document.getElementById("cvCopy").addEventListener("click", () => {
 });
 renderReady();
 refreshInstall();
+renderPyMeter();
 // A link to a card or tab wins; otherwise reopen the last tab used.
 const savedTab = store.get("cr2-tab", "study");
 switchTab(TABS[savedTab] ? savedTab : "study");

@@ -168,6 +168,16 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .runbox{max-width:540px;margin-top:10px}
 .pyout{margin:10px 0 0;background:var(--sunk);border:1px solid var(--line);border-left:3px solid var(--good);border-radius:10px;padding:10px 12px;font-family:var(--mono);font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text)}
+.editor{display:block;width:100%;max-width:540px;margin-top:4px;background:var(--sunk);color:var(--text);border:1px solid var(--line);padding:10px 12px;font-family:var(--mono);font-size:14px;line-height:1.5;tab-size:4;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto}
+.editor:focus-visible{outline:2px solid var(--accent,var(--good));outline-offset:2px}
+.runbox .row{margin-top:10px}
+.pyout.pass{border-left-color:var(--good)}
+.hintBox,.solBox{max-width:540px;padding:10px 12px;border:1px solid var(--line);background:var(--surface);font-size:16px;line-height:1.5}
+.solBox .btn{margin-top:10px}
+.pyMeter{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px}
+.pyMeter .segs{display:flex;gap:2px;flex-wrap:wrap}
+.pyMeter i{width:9px;height:14px;background:var(--line)}
+.pyMeter i.on{background:var(--good)}
 .pyout.err{border-left-color:var(--bad)}
 .toast.long{border-radius:16px;line-height:1.4}
 .model{display:none;font-size:17px;line-height:1.5;max-width:440px;border-left:3px solid var(--c);padding:4px 0 4px 14px}
@@ -346,7 +356,7 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
       started = true;
       window.WEEKS = res[0].weeks; window.DAYS = res[0].days;
       window.FEED_DECKS = res[1].decks; window.FEED_EXTRA_Q = res[1].extraQuestions || {};
-      window.PY_LEVELS = res[2].levels; window.PY_LESSONS = res[2].lessons;
+      window.PY_LEVELS = res[2].levels; window.PY_LESSONS = res[2].lessons; window.PY_MIGRATE = res[2].migrate;
       window.CONTENT_VERSION = res[3];
       var s = document.createElement("script"); s.src = "app.js";
       s.onerror = function(){ bootFail(new Error("app.js didn't load")); };

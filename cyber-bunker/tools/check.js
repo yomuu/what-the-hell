@@ -47,6 +47,10 @@ if (py) {
   else py.lessons.forEach((d, i) => {
     if (!d.t || !Array.isArray(d.learn) || !Array.isArray(d.quiz) || !Array.isArray(d.recap)) problems.push(`Python lesson ${i + 1}: missing t, learn, quiz or recap`);
     if (!py.levels.some(l => i >= l.from && i < l.to)) problems.push(`Python lesson ${i + 1}: not inside any level's from/to range`);
+    const ch = d.challenge;
+    if (!ch || !ch.p || !ch.hint || !ch.solution) problems.push(`Python lesson ${i + 1}: challenge needs p, hint and solution`);
+    else if (!ch.think && (typeof ch.start !== "string" || typeof ch.expect !== "string")) problems.push(`Python lesson ${i + 1}: challenge needs start and expect (or think: true)`);
+    if (d.play && typeof d.play.code !== "string") problems.push(`Python lesson ${i + 1}: play needs code`);
     (d.quiz || []).forEach((q, j) => checkQ(q, `Python lesson ${i + 1} quiz ${j + 1}`));
   });
 }
