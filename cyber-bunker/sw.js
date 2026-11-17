@@ -1,7 +1,7 @@
 /* Cyber Bunker service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 20;
+const VERSION = 21;
 const CACHE = "cyber-bunker-v" + VERSION;
 const PYODIDE_VERSION = "0.27.7";   // keep in step with app.js
 const PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;

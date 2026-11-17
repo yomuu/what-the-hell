@@ -504,7 +504,7 @@ function buildQuiz(card, q, persist, onChange){
   confBtns.forEach((b, i) => b.addEventListener("click", () => setSure(i === 0)));
   // Recall first: options stay hidden until you've tried to answer from memory.
   const recall = card.querySelector(".recall");
-  const showOpts = () => { if (recall) recall.hidden = true; opts.hidden = false; card.querySelector(".conf").hidden = false; };
+  const showOpts = () => { if (recall) recall.hidden = true; opts.hidden = false; };
   if (recall){
     const input = recall.querySelector("input"), msg = recall.querySelector(".recallMsg"), answers = typedAnswers(q);
     recall.querySelector(".showOpts").addEventListener("click", () => { showOpts(); btns[0].focus({preventScroll:true}); });
@@ -567,10 +567,9 @@ function quizHtml(q, tagHtml, withRetry, seed, recall){
       <p class="small">${typed ? "Type the answer from memory, or think it through first." : "Think of the answer before you look at the options."}</p>
       ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"${typed.every(a => /^[0-9.]+$/.test(a)) ? ' inputmode="decimal"' : ""} aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">Check</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
       <p class="small recallMsg" aria-live="polite"></p></div>` : ""}
-    <div class="conf" role="group" aria-label="How sure are you?"${recall ? " hidden" : ""}>How sure? <button type="button" aria-pressed="true">Sure</button><button type="button" aria-pressed="false">Guessing</button></div>
     <div class="opts${q.code ? " out" : ""}" role="group" aria-label="Answers"${recall ? " hidden" : ""}>${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
     <div class="why" tabindex="-1"></div>
-    ${withRetry ? `<button class="btn ghost retry" type="button">Try again</button>` : ""}`;
+`;
 }
 
 /* ---------- Study and Python tracks (same card engine) ---------- */
@@ -691,7 +690,7 @@ function makeTrack(tab, items, cfg){
     }
 
     const last = dn === items.length;
-    const rc = make("Recap", `${tag("Recap")}<h2>${last ? cfg.lastRecap : cfg.word + " " + dn + " in a nutshell"}</h2>
+    const rc = make("Summary", `${tag("Summary")}<h2>${last ? cfg.lastRecap : cfg.word + " " + dn + " summary"}</h2>
       <ul class="recap">${d.recap.map(r => `<li>${fmt(r)}</li>`).join("")}</ul>
       <div class="dscore"></div>
       <div class="row"><button class="btn nx">${last ? "Finish" : "Start " + cfg.word + " " + (dn+1)}</button><button class="btn ghost redo" type="button">Redo this quiz</button></div>
@@ -736,7 +735,7 @@ addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
   <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("study", DAYS, {
-  answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Stage 2, wrapped",
+  answersKey:"cr2-answers", word:"Day", realLabel:"Real world", lastRecap:"Training Bunker summary",
   links:{9:{tab:"py", n:18, text:"Terminal Lesson 18: IP addresses"}, 11:{tab:"py", n:23, text:"Terminal Lesson 23: sockets"},
          18:{tab:"py", n:9, text:"Terminal Lesson 9: parse a log"}, 19:{tab:"py", n:14, text:"Terminal Lesson 14: hashing"},
          22:{tab:"py", n:23, text:"Terminal Lesson 23: port checks"}, 24:{tab:"py", n:24, text:"Terminal Lesson 24: detector"},
@@ -839,7 +838,7 @@ document.getElementById("stDelete").addEventListener("click", () => {
 });
 document.getElementById("studyCount").textContent = `${DAYS.length} days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stages 1 and 2 complete</div><h1>That's all ${DAYS.length} days</h1>
-  <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears your Training quiz answers. Your review schedule and streak are kept.</p>
+  <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its summary card. Reset clears your Training quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
 /* ---------- Python tab ---------- */
@@ -853,7 +852,7 @@ addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
   <div class="stats streakLine"></div>
   <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("py", PY_LESSONS, {
-  answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Terminal track, wrapped", codeLabel:"Python",
+  answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Terminal summary", codeLabel:"Python",
   links:{9:{tab:"study", n:18, text:"Background: Training Day 18"}, 12:{tab:"study", n:24, text:"Background: Training Day 24"},
          14:{tab:"study", n:19, text:"Background: Training Day 19"}, 23:{tab:"study", n:22, text:"Background: Training Day 22"},
          18:{tab:"study", n:9, text:"Background: Training Day 9"}, 24:{tab:"study", n:25, text:"Try it in the Day 25 lab"}},
