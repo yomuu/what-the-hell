@@ -1092,8 +1092,8 @@ function switchTab(tab, focusView){
   pickWrap.hidden = tab === "feed";
   document.getElementById("pickLabel").textContent = tab === "py" ? "Lessons" : "Days";
   const hp = document.getElementById("hdrPick");
-  hp.hidden = tab === "feed"; hp.textContent = tab === "py" ? "Lessons" : "Days";
-  hp.setAttribute("aria-label", tab === "py" ? "Choose a lesson" : "Choose a day");
+  hp.hidden = false; hp.textContent = tab === "py" ? "Lessons" : tab === "feed" ? radioLabel() : "Days";
+  hp.setAttribute("aria-label", tab === "py" ? "Choose a lesson" : tab === "feed" ? radioAria() : "Choose a day");
   document.getElementById("openDays").setAttribute("aria-label", tab === "py" ? "Choose a lesson" : "Choose a day");
   render();
   if (focusView) TABS[tab].el.focus({preventScroll:true});
@@ -1176,16 +1176,105 @@ function renderSheet(){
   }</div>`).join("");
   dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { T.detour = false; goGroup(tab, n - 1); }); }));
 }
+/* ---------- Bunker Radio: the news wire (content/wire.json, refreshed every 6 hours by a GitHub Action) ---------- */
+let wire = null, wireState = "loading", wireLoad = null;
+const RADIO_SEEN = "cr2-radio-seen";
+const wireTime = d => new Date(d).getTime() || 0;
+// NEW = picked up by the wire after your last visit (by the wire's "seen" time, not the publish date,
+// so late or oddly dated feed items still count). Kept in memory too, in case storage is blocked.
+let radioSeenMem = wireTime(store.get(RADIO_SEEN, ""));
+const itemSeen = it => wireTime(it.seen || it.date);
+function radioNew(){ return wire ? wire.items.filter(it => itemSeen(it) > radioSeenMem) : []; }
+function radioLabel(){ const n = radioNew().length; return n ? `Radio · ${n > 9 ? "9+" : n}` : "Radio"; }
+function radioAria(){ const n = radioNew().length; return n ? `Bunker Radio, ${n} new transmission${n === 1 ? "" : "s"}` : "Bunker Radio"; }
+function refreshRadioButton(){
+  const hp = document.getElementById("hdrPick");
+  if (active === "feed"){ hp.textContent = radioLabel(); hp.setAttribute("aria-label", radioAria()); }
+}
+// Dates arrive in NZ time (with their offset); show them as written, whatever the phone's time zone.
+function nzStamp(d){
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(d || "");
+  return m ? `${+m[3]} ${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m[2] - 1]} ${m[4]}:${m[5]}` : "";
+}
+function relatedName(to){
+  const [kind, id] = String(to).split(":");
+  if (kind === "study" && DAYS[+id - 1]) return true;
+  if (kind === "py" && PY_LESSONS[+id - 1]) return true;
+  return kind === "deck" && !!deckById(id);
+}
+function openRelated(to){
+  const [kind, id] = String(to).split(":");
+  closeSheet(() => {
+    if (kind === "study") navigateTo("study", +id, true);
+    else if (kind === "py") navigateTo("py", +id, true);
+    else {
+      const cur = F.cards[F.current];
+      if (cur && cur.deck === id){ go("feed", F.cards.findIndex(c => c.group === cur.group)); return; }
+      let e = F.current; const g = cur.group;
+      if (g !== -1) while (F.cards[e + 1] && F.cards[e + 1].group === g) e++;
+      if (!(F.cards[e + 1] && F.cards[e + 1].deck === id)) appendDeck(deckById(id), e + 1);
+      go("feed", e + 1);
+    }
+    requestAnimationFrame(() => TABS[active].el.focus({preventScroll:true}));
+  });
+}
+function renderRadio(){
+  const list = document.getElementById("radioList");
+  document.getElementById("sheetTitle").textContent = "Bunker Radio";
+  if (wireState === "loading" && !wire){ list.innerHTML = `<p class="tx-note" role="status">Tuning in…</p>`; return; }
+  if (!wire || !wire.items.length){
+    list.innerHTML = `<p class="tx-note">Bunker Radio is off the air. It needs a connection the first time; after that the latest wire is kept for offline use.</p>`;
+    return;
+  }
+  const fresh = new Set(radioNew());
+  const live = (wire.sources || []).filter(s => String(s.status).startsWith("ok")).map(s => s.name);
+  list.innerHTML = `<p class="tx-meta">Updated ${esc(nzStamp(wire.updated))} NZ${wireState === "offline" ? " · offline copy" : ""}</p>
+    <p class="tx-note">Headlines and short summaries${live.length ? " from " + esc(live.join(", ")) : ""}. Tap through for the full story${wireState === "offline" ? " when you're back online" : ""}.</p>` +
+    wire.items.map((it, i) => {
+      const ok = /^https?:\/\//.test(it.link || ""), isNew = fresh.has(it);
+      const rel = it.related && relatedName(it.related.to) ? it.related : null;
+      return `<article class="tx${isNew ? " is-new" : ""}" aria-labelledby="tx${i}">
+        <h4 class="tx-title" id="tx${i}">${isNew ? `<span class="sr">New: </span>` : ""}${esc(it.title)}</h4>
+        <div class="tx-hd"><span><span class="sr">From </span><span aria-hidden="true">RX · </span>${esc(it.source)}</span><span>${isNew ? `<b class="tx-new" aria-hidden="true">New</b> ` : ""}${esc(nzStamp(it.date))}</span></div>
+        ${it.summary ? `<p class="tx-sum">${esc(it.summary)}</p>` : ""}
+        ${(it.tags || []).length ? `<div class="tx-tags"><span class="sr">Tags: </span>${it.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
+        <div class="row">${ok ? `<a class="btn ghost" href="${esc(it.link)}" target="_blank" rel="noopener noreferrer" aria-describedby="tx${i}">Full article <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${rel ? `<button class="btn ghost tx-rel" type="button" data-to="${esc(rel.to)}">Related: ${esc(rel.label)} <span aria-hidden="true">→</span></button>` : ""}</div>
+      </article>`;
+    }).join("");
+  list.querySelectorAll(".tx-rel").forEach(b => b.addEventListener("click", () => openRelated(b.dataset.to)));
+  // Everything shown now counts as seen next time.
+  radioSeenMem = Math.max(radioSeenMem, ...wire.items.map(itemSeen));
+  store.set(RADIO_SEEN, new Date(radioSeenMem).toISOString());
+  refreshRadioButton();
+}
+function loadWire(){
+  // The service worker answers from its offline copy (marked x-wire-offline) when the network fails.
+  wireLoad = fetch("content/wire.json", {cache: "no-store"}).then(r => {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const offline = r.headers.get("x-wire-offline") === "1";
+    return r.json().then(w => ({w, offline}));
+  }).then(({w, offline}) => {
+    if (w && Array.isArray(w.items) && w.items.length){ wire = w; wireState = offline || !navigator.onLine ? "offline" : "ok"; }
+    else if (!wire) wireState = "failed";
+  }, () => { if (!wire) wireState = "failed"; }).then(() => {
+    refreshRadioButton();
+    if (sheet.classList.contains("open") && sheet.classList.contains("radio-mode")) renderRadio();
+  });
+  return wireLoad;
+}
+
 function openSheet(e){
-  if (active === "feed") return;
   opener = (e && e.currentTarget) || document.activeElement;
-  renderSheet();
+  sheet.classList.toggle("radio-mode", active === "feed");
+  document.getElementById("radioList").hidden = active !== "feed";
+  if (active === "feed") renderRadio(); else renderSheet();
   sheet.classList.add("open");
   Object.values(TABS).forEach(T => T.el.inert = true); rail.inert = true; tabsBar.inert = true; document.getElementById("updateBar").inert = true;
   more.classList.remove("show");
   history.pushState({sheet:1}, "");
-  const cur = dayList.querySelector('[aria-current="true"]');
+  const cur = active !== "feed" && dayList.querySelector('[aria-current="true"]');
   if (cur) cur.scrollIntoView({block:"center"});
+  if (active === "feed") sheet.querySelector(".panel").scrollTop = 0;
   document.getElementById("closeDays").focus();
 }
 function hideSheet(){
@@ -1314,6 +1403,7 @@ document.addEventListener("keydown", e => {
    #study and #python open a tab at its current card. */
 function fromHash(hash){
   const id = (hash || location.hash).slice(1);
+  if (id === "radio"){ switchTab("feed"); history.replaceState(history.state, "", "#feed"); requestAnimationFrame(() => openSheet()); return true; }
   if (id === "review"){ switchTab("feed"); requestAnimationFrame(() => reviewNow()); history.replaceState(history.state, "", "#feed"); return true; }
   if (id === "feed" || id === "study" || id === "python"){
     switchTab(id === "python" ? "py" : id);
@@ -1393,6 +1483,9 @@ document.getElementById("cvCopy").addEventListener("click", () => {
 });
 renderReady();
 refreshInstall();
+loadWire();
+document.addEventListener("visibilitychange", () => { if (!document.hidden) loadWire(); });
+
 renderPyMeter();
 // A link to a card or tab wins; otherwise reopen the last tab used.
 const savedTab = store.get("cr2-tab", "study");

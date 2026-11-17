@@ -84,6 +84,24 @@ if (feed) {
   });
 }
 
+// Bunker Radio: rules must compile and point at real lessons; wire.json (if present) must be well formed.
+try {
+  const rules = JSON.parse(read("content/wire-rules.json"));
+  new RegExp(rules.skip, "i");
+  rules.tags.forEach(t => new RegExp(t.match, "i"));
+  rules.related.forEach((r, i) => {
+    new RegExp(r.match, "i");
+    const [kind, id] = String(r.to).split(":");
+    const ok = kind === "study" ? study && study.days[+id - 1] : kind === "py" ? py && py.lessons[+id - 1] : kind === "deck" ? ids.has(id) : false;
+    if (!ok) problems.push(`wire-rules.json related ${i + 1}: "${r.to}" doesn't match a day, lesson or deck`);
+  });
+} catch (e) { problems.push(`content/wire-rules.json: ${e.message}`); }
+if (fs.existsSync(path.join(root, "content/wire.json"))) {
+  const w = json("content/wire.json");
+  if (w && !Array.isArray(w.items)) problems.push("wire.json: items missing");
+  (w && w.items || []).forEach((it, i) => { if (!it.title || !/^https?:\/\//.test(it.link || "") || !it.source || !it.date) problems.push(`wire.json item ${i + 1}: needs title, link, source and date`); });
+}
+
 // Versions agree.
 try {
   const m = read("sw.js").match(/const VERSION = (\d+);/);

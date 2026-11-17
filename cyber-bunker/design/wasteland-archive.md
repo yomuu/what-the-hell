@@ -61,6 +61,12 @@ Loaded from Google Fonts: IBM Plex Sans (400, 700), IBM Plex Mono (500, 700) and
 
 Data comes from the incident deck's fields: `date`, `status`, `region`, `entry`, `impact`, `lesson`, `source`, `maps` and `title`.
 
+## Bunker Radio (news wire)
+
+- Opened from the header button on The Archive tab ("Radio · 3" when there are new items). It uses the Days sheet in a radio mode.
+- Each item is a terminal transmission: terminal-black panel with scanlines and a dim-green border; an RX row in VT323 (source and NZ time); a NEW marker (bunker black on amber) and an amber left edge for items new since the last visit; the headline in IBM Plex Sans 700; the summary in bone, 16px; tags as small mono labels; a Full article link and an amber Related lesson button.
+- Exception: Radio headlines stay in normal case, not uppercase, because they're long publisher headlines (the same exception as quiz questions).
+
 ## Reusing the template
 
 Copy the token table and type roles. Build cards as a framed panel with a hazard stripe, put anything machine-like in a terminal panel, keep VT323 to a few words, and check every text colour against its background (AA: 4.5:1 for body text, 3:1 for large text and control borders).

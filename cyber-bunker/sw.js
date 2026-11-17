@@ -1,7 +1,7 @@
 /* Cyber Bunker service worker.
    VERSION changes whenever the app or its content changes (tools/bump-version.js does this),
    which makes the browser install this worker again and download the new files. */
-const VERSION = 12;
+const VERSION = 14;
 const CACHE = "cyber-bunker-v" + VERSION;
 const PYODIDE_VERSION = "0.27.7";   // keep in step with app.js
 const PYODIDE_CACHE = "cyber-bunker-pyodide-" + PYODIDE_VERSION;
@@ -33,6 +33,11 @@ self.addEventListener("install", event => {
     // so store a clean copy of it.
     const clean = async res => res.redirected ? new Response(await res.blob(), {status: res.status, statusText: res.statusText, headers: res.headers}) : res;
     await Promise.all(responses.map(async ([u, res]) => cache.put(u, await clean(res))));
+    // Also keep a first copy of Bunker Radio's wire for offline use (optional: no wire, no problem).
+    try {
+      const w = await fetch(new Request("content/wire.json", {cache: "no-store"}));
+      if (w.ok && !w.redirected && /json/.test(w.headers.get("content-type") || "")) await (await caches.open("cyber-bunker-wire")).put("content/wire.json", w);
+    } catch (e) {}
   })());
   // The very first install takes over straight away; later versions wait until you tap the banner.
   if (firstInstall) self.skipWaiting();
@@ -58,6 +63,22 @@ self.addEventListener("fetch", event => {
   // App and content: from this version's cache, so it's consistent and works offline.
   // ?signin and ?ping always go to the network, so a private host's sign-in page (Cloudflare Access) can appear.
   if (url.origin === location.origin && (url.searchParams.has("signin") || url.searchParams.has("ping"))) return;
+
+  // Bunker Radio's wire changes every few hours without a new app version: network first, last copy offline.
+  if (url.origin === location.origin && url.pathname.endsWith("/content/wire.json")) {
+    event.respondWith(caches.open("cyber-bunker-wire").then(cache =>
+      fetch(req, {cache: "no-store"}).then(res => {
+        // Only keep real JSON (never a redirected sign-in page) as the offline copy.
+        if (res.ok && !res.redirected && /json/.test(res.headers.get("content-type") || "")) event.waitUntil(cache.put("content/wire.json", res.clone()).catch(() => {}));
+        return res;
+      }).catch(() => cache.match("content/wire.json").then(hit => {
+        if (!hit) return new Response(null, {status: 503});
+        const h = new Headers(hit.headers); h.set("x-wire-offline", "1");
+        return hit.blob().then(b => new Response(b, {status: 200, headers: h}));
+      }))
+    ));
+    return;
+  }
 
   if (url.origin === location.origin) {
     event.respondWith(
