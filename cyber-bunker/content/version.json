@@ -1,5 +1,5 @@
 {
- "version": 22,
+ "version": 23,
  "date": "2026-11-18",
- "note": "Clearer OWASP A09 card."
+ "note": "Bold text support for the style guide."
 }

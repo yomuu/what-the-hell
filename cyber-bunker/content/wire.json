@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-17T22:01:00+13:00",
+ "updated": "2026-11-18T20:28:13+13:00",
  "note": "Headlines and short feed descriptions only, each credited to its publisher (who owns the text) with a link to the full article. Written by tools/fetch-wire.js.",
  "sources": [
   {
@@ -24,7 +24,7 @@
    "name": "iTnews",
    "status": "ok",
    "url": "https://www.itnews.com.au/RSS/rss.ashx",
-   "kept": 6
+   "kept": 7
   },
   {
    "name": "NCSC NZ",
@@ -42,16 +42,90 @@
    "name": "CISA",
    "status": "ok",
    "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
-   "kept": 15
+   "kept": 12
   }
  ],
  "items": [
+  {
+   "title": "Hijacked website testing tool plants card skimmer on Australian brands’ sites",
+   "summary": "Telco, bank and super fund sites among 178 hit through Optimizely breach.",
+   "link": "https://www.itnews.com.au/news/hijacked-website-testing-tool-plants-card-skimmer-on-australian-brands-sites-630407",
+   "source": "iTnews",
+   "date": "2026-11-18T16:01:00+13:00",
+   "tags": [
+    "Breach",
+    "NZ/AU"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "Critical Java4Shell flaw allows RCE attacks on major Java applications",
+   "summary": "A critical vulnerability dubbed Java4Shell in OpenJDK, the open-source implementation of Java, can allow unauthenticated attackers to remotely execute code on popular enterprise applications…",
+   "link": "https://www.bleepingcomputer.com/news/security/critical-java4shell-flaw-allows-rce-attacks-on-major-java-applications",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T12:04:21+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "Cloud keys leaked in Docker Hub images are stolen within seconds",
+   "summary": "Credentials and access secrets exposed in public Docker Hub images are being extracted and exploited by attackers within as little as eight seconds of publication. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/cloud-keys-leaked-in-docker-hub-images-are-stolen-within-seconds",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T10:27:17+13:00",
+   "tags": [
+    "Breach",
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "Website management platform Optimizely confirms hackers put malicious code into customer sites",
+   "summary": "Researchers said they found malicious JavaScript code on 178 different widely visited websites run through the Optimizely Web experimentation platform. The company confirmed the breach.",
+   "link": "https://therecord.media/optimizely-malicious-code-customer-sites",
+   "source": "The Record",
+   "date": "2026-11-18T10:20:00+13:00",
+   "tags": [
+    "Breach"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "Microsoft unveils AI models for coding and cyber security",
+   "summary": "To challenge rivals such as Anthropic and OpenAI.",
+   "link": "https://www.itnews.com.au/news/microsoft-unveils-ai-models-for-coding-and-cyber-security-630419",
+   "source": "iTnews",
+   "date": "2026-11-18T10:11:00+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
   {
    "title": "Uber says nearly 150,000 impacted by third-party breach",
    "summary": "In breach notification letters, the rideshare company said it was notified by a third party service provider on October 9 that internal credentials were stolen and used to access Uber’s account.",
    "link": "https://therecord.media/uber-says-150000-impacted-third-party-breach",
    "source": "The Record",
-   "date": "2026-11-17T22:00:50+13:00",
+   "date": "2026-11-18T09:55:30+13:00",
    "tags": [
     "Breach"
    ],
@@ -60,6 +134,182 @@
     "label": "Day 26: Defence in depth and incident response"
    },
    "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Japan takes Fugaku supercomputer offlline after cyberattack",
+   "summary": "The Fugaku supercomputer operated by Japan's RIKEN Center for Computational Science has been taken offline following a security breach. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/japan-takes-fugaku-supercomputer-offlline-after-cyberattack",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T09:51:21+13:00",
+   "tags": [
+    "Breach"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Apple reports outages affecting iCloud Mail, AppleCare and more",
+   "summary": "Apple is reporting service disruptions affecting several of its services, including iCloud Mail, iCloud Account & Sign In, Apple School Manager, and Schoolwork. [...]",
+   "link": "https://www.bleepingcomputer.com/news/apple/apple-reports-outages-affecting-icloud-mail-applecare-and-more",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T08:24:07+13:00",
+   "tags": [
+    "Cloud"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Kazakh ransomware hacking suspect extradited from Italy",
+   "summary": "The U.S. accused Roman Khlynovskiy of participating in ransomware attacks against healthcare organizations, schools and companies as part of the \"8 Digits Team\" connected with INC and Lynx.",
+   "link": "https://therecord.media/kazakh-suspected-extradited-charges-8-digits-team-inc-lynx",
+   "source": "The Record",
+   "date": "2026-11-18T08:09:00+13:00",
+   "tags": [
+    "Malware"
+   ],
+   "related": {
+    "to": "deck:e8-backups",
+    "label": "Essential Eight: regular backups"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Chinese state group developing automated attack tool for cyber espionage, Google says",
+   "summary": "Google released its latest AI Threat Tracker report on Monday, writing that threat actors are rapidly evolving their use of artificial intelligence in attacks, now leaning more heavily on autonomous…",
+   "link": "https://therecord.media/chinese-state-group-developing-automated-attack-tool-espionage",
+   "source": "The Record",
+   "date": "2026-11-18T07:50:00+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Researchers hijack Hugging Face account for popular Kokoro AI model",
+   "summary": "A Lack of ownership verification on the Hugging Face platform allowed researchers to take control of Kokoro, a text-to-speech model used in projects from Google, NVIDIA, AMD, Intel, and Amazon Web…",
+   "link": "https://www.bleepingcomputer.com/news/security/researchers-hijack-hugging-face-account-for-popular-kokoro-ai-model",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T07:21:24+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Tor releases emergency update amid ongoing DDoS attack",
+   "summary": "The Tor Project has released a security update for its network relay software to increase defenses against an ongoing distributed denial-of-service attack that it says has overwhelmed relays and…",
+   "link": "https://www.bleepingcomputer.com/news/security/tor-releases-emergency-update-amid-ongoing-ddos-attack",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T07:04:15+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "California fines Hertz $1.5 million for breaking state data privacy law",
+   "summary": "Hertz agreed to the fine and said it would change its business practices, according to a court filing shared by the regulator, the California Privacy Protection Agency (CPPA).",
+   "link": "https://therecord.media/california-fines-hertz-state-data-privacy-law",
+   "source": "The Record",
+   "date": "2026-11-18T06:13:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "NSA Net, agency’s classified internal network, faces unspecified disruptions",
+   "summary": "The NSA has ordered staggered arrivals at its headquarters at Fort Meade, Maryland, as technicians work to fully restore the classified internal network NSA Net.",
+   "link": "https://therecord.media/nsa-net-disruptions",
+   "source": "The Record",
+   "date": "2026-11-18T05:21:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Flipper Devices launches $399 ‘Flipper One’ Linux-based multi-tool",
+   "summary": "Flipper Devices, the company behind the popular Flipper Zero pentesting device, has launched a crowdfunding campaign for Flipper One, a portable Linux computer and networking multi-tool. [...]",
+   "link": "https://www.bleepingcomputer.com/news/hardware/flipper-devices-launches-399-flipper-one-linux-based-multi-tool",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T05:00:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Critical Java Vulnerability Requires Immediate Patching",
+   "summary": "Purpose CISA strongly urges organizations to immediately patch the recently disclosed Oracle Java vulnerability CVE-2026-114938. This critical memory-corruption vulnerability, known as “Java4Shell,”…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching",
+   "source": "CISA",
+   "date": "2026-11-18T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
+   "summary": "CISA has added one new vulnerability to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-115731 Perforce Puppet Enterprise Deserialization of…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/17/cisa-adds-one-known-exploited-vulnerability-catalog",
+   "source": "CISA",
+   "date": "2026-11-18T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Microsoft testing Remote Lock for lost or stolen Windows devices",
+   "summary": "Microsoft is testing a new feature that lets enterprise IT administrators remotely lock stolen or lost Windows devices without wiping them. [...]",
+   "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-testing-remote-lock-for-lost-or-stolen-windows-devices",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T00:19:51+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "A phishing page interested in MX records, (Tue, Nov 17th)",
+   "summary": "I&#x26;#xe2;&#x26;#x80;&#x26;#x99;ve mentioned before in some of my diaries that it can be instructive to look at what appear to be…",
+   "link": "https://isc.sans.edu/diary/rss/33526",
+   "source": "SANS ISC",
+   "date": "2026-11-17T23:56:38+13:00",
+   "tags": [],
+   "related": {
+    "to": "study:6",
+    "label": "Day 6: Common attacks"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Court clears brothers of $25 million Ethereum crypto heist charges",
+   "summary": "US District Judge Jessica Clarke has acquitted two brothers accused of stealing $25 million in cryptocurrency in about 12 seconds through a scheme that exploited a bug in the Ethereum blockchain…",
+   "link": "https://www.bleepingcomputer.com/news/security/court-clears-brothers-of-25-million-ethereum-crypto-heist-charges",
+   "source": "BleepingComputer",
+   "date": "2026-11-17T22:44:22+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
   },
   {
    "title": "Uber notifies drivers of data breach affecting nearly 150,000 people",
@@ -187,22 +437,6 @@
    "seen": "2026-11-17T21:52:20+13:00"
   },
   {
-   "title": "Barracuda links cloud breach to ARTEX AI-powered cyberattack",
-   "summary": "Hackers who breached the cloud environment of network and email security company Barracuda earlier this month used a stolen cloud access key and the ARTEX AI penetration testing framework. [...]",
-   "link": "https://www.bleepingcomputer.com/news/security/barracuda-links-cloud-breach-to-artex-ai-powered-cyberattack",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T08:57:13+13:00",
-   "tags": [
-    "Breach",
-    "AI"
-   ],
-   "related": {
-    "to": "study:26",
-    "label": "Day 26: Defence in depth and incident response"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
    "title": "Italian regulator fines Meta $886 million for violating data privacy law",
    "summary": "The crackdown on Meta’s Facebook platform involved the company’s alleged use of its “camera roll” suggestions option, launched in 2023, to browse Android users’ photo galleries to recommend posts…",
    "link": "https://therecord.media/italian-regulator-fines-meta-886-million-privacy",
@@ -223,49 +457,6 @@
    "seen": "2026-11-17T21:52:20+13:00"
   },
   {
-   "title": "Microsoft says months-old bug caused global Microsoft 365 outage",
-   "summary": "Microsoft says a software bug introduced in July caused last week's worldwide Microsoft 365 outage, triggering a cascading failure that left more than 80% of its networking gateway servers…",
-   "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-says-months-old-bug-caused-global-microsoft-365-outage",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T05:43:24+13:00",
-   "tags": [
-    "Cloud"
-   ],
-   "related": null,
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Fandango says hackers stole payment card details from checkout pages",
-   "summary": "Ticket seller Fandango Media is notifying customers about a data breach that exposed payment card details entered on its checkout pages. [...]",
-   "link": "https://www.bleepingcomputer.com/news/security/fandango-says-hackers-stole-payment-card-details-from-checkout-pages",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T04:44:21+13:00",
-   "tags": [
-    "Breach"
-   ],
-   "related": {
-    "to": "study:26",
-    "label": "Day 26: Defence in depth and incident response"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Google warns that fully-automated AI attacks are coming soon",
-   "summary": "Threat actors are now relying on agentic workflows powered by AI-based offensive frameworks to automate vulnerability discovery and exploitation, accelerating attacks to machine speed. [...]",
-   "link": "https://www.bleepingcomputer.com/news/security/google-warns-that-fully-automated-ai-attacks-are-coming-soon",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T03:00:00+13:00",
-   "tags": [
-    "Vulnerability",
-    "AI"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
    "title": "Scans for LiteLLM/Starlette (CVE-2026-42271, CVE-2026-48710), (Mon, Nov 16th)",
    "summary": "This weekend, we started seeing requests for /mcp-rest/test/tools/list hitting our honeypots. These requests appear to attempt to exploit CVE-2026-42271 and CVE-2026-48710. Horizon3.ai published a…",
    "link": "https://isc.sans.edu/diary/rss/33522",
@@ -282,18 +473,6 @@
    "seen": "2026-11-17T21:52:20+13:00"
   },
   {
-   "title": "Microsoft: Windows Server 2016 reaches end of support in 60 days",
-   "summary": "Microsoft has reminded customers again that Windows Server 2016 will stop receiving security updates after it reaches the end of support in two months. [...]",
-   "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-windows-server-2016-reaches-end-of-support-in-60-days",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T01:53:18+13:00",
-   "tags": [
-    "Vulnerability"
-   ],
-   "related": null,
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
    "title": "Microsoft says three-month-old bug behind global M365 outage",
    "summary": "Newer servers proved more vulnerable than those in test labs.",
    "link": "https://www.itnews.com.au/news/microsoft-says-three-month-old-bug-behind-global-m365-outage-630382",
@@ -307,60 +486,6 @@
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
    },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Australian retail giant Coles investigates cybersecurity incident",
-   "summary": "Coles Group Limited, Australia's second-largest retailer, is investigating what it described as a \"cyber security incident\" that has not impacted the company's stores. [...]",
-   "link": "https://www.bleepingcomputer.com/news/security/australian-retail-giant-coles-investigates-cybersecurity-incident",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T00:18:09+13:00",
-   "tags": [
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:26",
-    "label": "Day 26: Defence in depth and incident response"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Anthropic’s Claude Fable 5.2 blocks fewer security tasks, while Mythos gets better at finding bugs",
-   "summary": "Anthropic recently rolled out Claude Mythos 5.2 to selected partners and Fable 5.2 to regular users, with improvements to coding and reasoning. But we also noticed some interesting cybersecurity…",
-   "link": "https://www.bleepingcomputer.com/news/artificial-intelligence/anthropics-claude-fable-52-blocks-fewer-security-tasks-while-mythos-gets-better-at-finding-bugs",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T00:00:00+13:00",
-   "tags": [
-    "AI"
-   ],
-   "related": null,
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "New NoisyTCP vulnerability lets attackers crash Linux servers",
-   "summary": "An 11-year-old Linux kernel vulnerability, dubbed NoisyTCP, affects almost all Linux distributions and lets attackers crash systems running Nginx, Apache, and SSH servers with default configurations…",
-   "link": "https://www.bleepingcomputer.com/news/linux/new-noisytcp-linux-kernel-flaw-lets-attackers-crash-servers",
-   "source": "BleepingComputer",
-   "date": "2026-11-16T22:30:04+13:00",
-   "tags": [
-    "Vulnerability"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Microsoft pushes Windows emergency updates to fix activation failures",
-   "summary": "Microsoft has released emergency out-of-band updates to fix Windows activation and licensing failures caused by this month's security updates. [...]",
-   "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-new-windows-emergency-updates-fix-activation-licensing-failures",
-   "source": "BleepingComputer",
-   "date": "2026-11-16T21:26:52+13:00",
-   "tags": [
-    "Vulnerability"
-   ],
-   "related": null,
    "seen": "2026-11-17T21:52:20+13:00"
   },
   {
@@ -672,36 +797,6 @@
    "seen": "2026-11-17T21:52:20+13:00"
   },
   {
-   "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
-   "summary": "CISA has added one new vulnerability to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-114625 Arista VeloCloud Orchestrator SQL Injection…",
-   "link": "https://www.cisa.gov/news-events/alerts/2026/10/23/cisa-adds-one-known-exploited-vulnerability-catalog",
-   "source": "CISA",
-   "date": "2026-10-24T01:00:00+13:00",
-   "tags": [
-    "Vulnerability"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
-   "summary": "CISA has added one new vulnerability to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-110447 Collabora Online, Built-in CODE Server OS Command…",
-   "link": "https://www.cisa.gov/news-events/alerts/2026/10/23/cisa-adds-one-known-exploited-vulnerability-catalog-0",
-   "source": "CISA",
-   "date": "2026-10-24T01:00:00+13:00",
-   "tags": [
-    "Vulnerability"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
    "title": "Critical vulnerabilities in Fortinet products",
    "summary": "Fortinet have announced critical vulnerabilities in Fortinet products, and are releasing security updates which customers should implement as a priority.",
    "link": "https://www.cyber.gov.au/alert/critical-vulnerabilities-in-fortinet-products",
@@ -772,86 +867,6 @@
     "NZ/AU"
    ],
    "related": null,
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Active exploitation of Adobe Commerce and Magento Open Source vulnerability",
-   "summary": "Alert on active exploitation of a critical vulnerability in Adobe Commerce and Magento Open Source.",
-   "link": "https://www.cyber.gov.au/alert/active-exploitation-of-adobe-commerce-and-magento-open-source-vulnerability",
-   "source": "ACSC",
-   "date": "2026-09-09T14:58:57+12:00",
-   "tags": [
-    "Vulnerability",
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Critical vulnerabilities in Citrix NetScaler Application Delivery Controller (ADC) and Citrix NetScaler Gateway products",
-   "summary": "Alert on critical vulnerabilities affecting Citrix NetScaler ADC and Gateway products. Assess exposure and update all affected products.",
-   "link": "https://www.cyber.gov.au/alert/critical-vulnerabilities-in-citrix-netscaler-application-delivery-controller-adc-and-citrix-netscaler-gateway-products",
-   "source": "ACSC",
-   "date": "2026-09-08T15:34:40+12:00",
-   "tags": [
-    "Vulnerability",
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Active exploitation of a software development platform within Australia",
-   "summary": "Alert on actively exploited vulnerabilities affecting TeamCity On-Premise servers. Assess exposure and apply vendor mitigations for CVE 2026 63077 (Critical, 9.8).",
-   "link": "https://www.cyber.gov.au/node/1215",
-   "source": "ACSC",
-   "date": "2026-09-02T14:05:23+12:00",
-   "tags": [
-    "Vulnerability",
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Active exploitation of a software development platform within Australia",
-   "summary": "Alert on actively exploited vulnerabilities affecting TeamCity On-Premise servers. Assess exposure and apply vendor mitigations for CVE 2026 63077 (Critical, 9.8).",
-   "link": "https://www.cyber.gov.au/alert/active-exploitation-of-a-software-development-platform-within-australia",
-   "source": "ACSC",
-   "date": "2026-08-24T18:03:59+12:00",
-   "tags": [
-    "Vulnerability",
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Active exploitation of remote monitoring and management platform within Australia",
-   "summary": "Alert on active exploitation in Australia of N-able and N-central vulnerabilities CVE-2026-18556 and CVE-2026-18577. Assess exposure and apply mitigations.",
-   "link": "https://www.cyber.gov.au/alert/active-exploitation-of-remote-monitoring-and-management-platform-within-australia",
-   "source": "ACSC",
-   "date": "2026-08-19T16:44:29+12:00",
-   "tags": [
-    "Vulnerability",
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
    "seen": "2026-11-17T21:52:20+13:00"
   }
  ]
