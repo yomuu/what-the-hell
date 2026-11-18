@@ -252,7 +252,7 @@
    "cards": [
     [
      "What it is",
-     "Not logging security events, not alerting on them, or not acting on the alerts. The 2025 name stresses alerting: logs nobody watches don't stop anything. It was called Security Logging and Monitoring Failures in 2021."
+     "Not logging security events, not alerting on them, or not acting on the alerts. Its 2025 name is Security Logging and Alerting Failures. In 2021 it was Security Logging and Monitoring Failures: \"Alerting\" replaced \"Monitoring\" because logs nobody acts on don't stop anything."
     ],
     [
      "Real example",
