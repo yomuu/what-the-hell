@@ -370,7 +370,7 @@
    "cards": [
     [
      "Key terms",
-     "Exceptional condition: an error or unusual situation, such as bad input or a failed connection.\nFailing open: allowing access when a security check breaks.\nFailing safe: denying access when a security check breaks.\nOut-of-bounds memory read: a program reading memory outside the area it's allowed to use."
+     "Exceptional condition: an error or unusual situation, such as bad input or a failed connection.\nFailing open: allowing access when a security check breaks.\nFailing closed: denying access when a security check breaks.\nOut-of-bounds memory read: a program reading memory outside the area it's allowed to use."
     ],
     [
      "What it is",
@@ -381,8 +381,8 @@
      "On 19 July 2024 a faulty CrowdStrike content update triggered an out-of-bounds memory read. The Falcon sensor didn't handle it, and about 8.5 million Windows computers crashed. It wasn't an attack, but airlines, banks and hospitals went down."
     ],
     [
-     "Prevent it: fail safely",
-     "Fail safely: when something goes wrong, deny access rather than allow it."
+     "Prevent it: fail closed",
+     "Fail closed: when something goes wrong, deny access rather than allow it."
     ],
     [
      "Prevent it: handle errors",
@@ -420,7 +420,7 @@
     ],
     [
      "What happened",
-     "In February 2024, the ALPHV/BlackCat ransomware gang hit Change Healthcare. The company processes a huge share of US medical claims. Its systems went offline. For weeks, pharmacies and providers struggled to process claims and payments."
+     "In February 2024, the ALPHV/BlackCat ransomware gang hit Change Healthcare. The company processes a huge share of US medical claims. Its systems went offline. For weeks, claims and payments for pharmacies and providers were disrupted."
     ],
     [
      "How they got in",
@@ -453,7 +453,7 @@
    "date": "2024-02",
    "status": "breached",
    "entry": "Stolen credentials on a Citrix remote access portal with no MFA.",
-   "impact": "Claims processing across the US stalled for weeks. A US$22 million ransom was paid, and about 192.7 million people were affected.",
+   "impact": "Claims processing across the US was disrupted for weeks. A US$22 million ransom was paid, and about 192.7 million people were affected.",
    "lesson": "Every remote access portal needs MFA, with no exceptions for old systems.",
    "source": "US HHS breach notification, 2025"
   },
@@ -1201,7 +1201,7 @@
     ],
     [
      "Know its limits",
-     "The Essential Eight is a baseline designed for internet-connected Windows networks. It's not a complete security programme."
+     "The Essential Eight is a baseline designed for internet-connected Windows networks. It's not a complete security programme. In October 2026, ASD began replacing it with ASD Essentials. The current model still applies for now."
     ],
     [
      "It's in Australian job ads",
@@ -1846,7 +1846,7 @@
     "k": 0,
     "w": "The customers' roles still trusted Qubole's AWS account. Old trust policies let anyone holding Qubole-side credentials assume the roles. Not public buckets: the attacker got in through the roles. Not an AWS flaw: none was needed."
    },
-   "date": "2026-11",
+   "date": "2026-10",
    "status": "breached",
    "entry": "Two hijacked Qubole IAM users took on old customer roles that trusted Qubole.",
    "impact": "The attacker read secrets and S3 data at more than a dozen customers.",
@@ -1940,7 +1940,7 @@
     ],
     [
      "Impact",
-     "Cathay Pacific says about 53,000 bookings were affected. It says it has no evidence that payment or financial data was accessed. Qantas says its own systems weren't affected. It doesn't yet know which of its customers, if any, had data accessed. Japan Airlines and Asiana were also notified."
+     "Cathay Pacific says about 53,000 bookings were affected. It says it has no evidence that payment or financial data was accessed. Qantas says its own systems weren't affected. It doesn't yet know which of its customers, if any, had data accessed. Japan Airlines and Asiana were also affected. Japan Airlines reported about 92,000 affected customers."
     ],
     [
      "Lesson: suppliers hold your data",
@@ -1970,7 +1970,7 @@
    "date": "2026-10",
    "status": "developing",
    "entry": "Amadeus cites a flaw. Cathay says a system account's login was used.",
-   "impact": "About 53,000 Cathay Pacific bookings. Qantas, Japan Airlines and Asiana also notified.",
+   "impact": "About 53,000 Cathay Pacific bookings. About 92,000 Japan Airlines customers. Qantas and Asiana also notified.",
    "lesson": "Your customers' data is only as safe as your suppliers' systems.",
    "source": "Cathay Pacific and Qantas statements, 2026"
   },
@@ -2208,7 +2208,7 @@
     ],
     [
      "The count_ column",
-     "`count()` makes a column named `count_`. To see the biggest first, use `top 10 by count_` or `sort by count_ desc`. In Splunk, the rough equivalent is `index=wineventlog EventCode=4625 | stats count by src_ip`."
+     "`count()` makes a column named `count_`. To see the biggest first, use `top 10 by count_` or `sort by count_ desc`. In Splunk, the rough equivalent is `index=wineventlog EventCode=4625 | stats count by src`."
     ]
    ],
    "q": {

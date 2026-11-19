@@ -392,7 +392,7 @@
   },
   {
    "term": "Socket",
-   "definition": "An IP address and port together.",
+   "definition": "One end of a network connection, identified by an IP address and port.",
    "spelling": "socket"
   },
   {
@@ -1171,9 +1171,9 @@
    "spelling": "failing open (fail open)"
   },
   {
-   "term": "Failing safe",
+   "term": "Failing closed",
    "definition": "Denying access when a security check breaks.",
-   "spelling": "failing safe (fail safely)"
+   "spelling": "failing closed (fail closed)"
   },
   {
    "term": "Out-of-bounds memory read",

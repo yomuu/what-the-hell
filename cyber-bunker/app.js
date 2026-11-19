@@ -500,7 +500,8 @@ function typedAnswers(q){
   return /^[0-9./:\- ]{1,16}$/.test(right) || /^[A-Z0-9]{2,6}$/.test(right) ? [normAns(right)] : null;
 }
 function normAns(x){ return String(x).toLowerCase().replace(/[\s`'"]/g, ""); }
-function buildQuiz(card, q, persist, onChange){
+/* exam: {done()} for Training Bunker and Terminal quizzes. Answers lock in, and right or wrong shows only once every question is answered. */
+function buildQuiz(card, q, persist, onChange, exam){
   const btns = [...card.querySelectorAll(".opt")], why = card.querySelector(".why"), retry = card.querySelector(".retry");
   const confBtns = [...card.querySelectorAll(".conf button")], opts = card.querySelector(".opts");
   let forcedGuess = false;
@@ -517,20 +518,45 @@ function buildQuiz(card, q, persist, onChange){
     if (check) {
       const run = () => {
         if (!input.value.trim()){ msg.textContent = "Type an answer, or tap Show options."; return; }
-        if (answers.includes(normAns(input.value))){ showOpts(); setSure(true); btns.find(b => +b.dataset.j === q.k).click(); }
+        if (exam){
+          // Exam mode never says right or wrong early. A typed option locks in; anything else is just "not an option".
+          const j = q.o.findIndex(o => normAns(o) === normAns(input.value));
+          if (j >= 0){ showOpts(); btns.find(b => +b.dataset.j === j).click(); }
+          else msg.textContent = "That isn't one of the options. Check it, or tap Show options.";
+        }
+        else if (answers.includes(normAns(input.value))){ showOpts(); setSure(true); btns.find(b => +b.dataset.j === q.k).click(); }
         else { forcedGuess = true; showOpts(); setSure(false); confBtns.forEach(x => x.disabled = true); msg.textContent = ""; why.innerHTML = "<strong>Not quite.</strong> Pick from the options. This one will count as a guess."; why.classList.add("show"); }
       };
       check.addEventListener("click", run);
       input.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); run(); } });
     }
   }
-  const reveal = (pick, fromUser) => {
+  const lvl = card.querySelector(".lvl");
+  const lock = (pick, fromUser) => {
+    showOpts();
     btns.forEach(b => {
+      const j = +b.dataset.j;
+      b.setAttribute("aria-disabled", "true");
+      b.classList.toggle("picked", j === pick);
+      b.querySelector(".mk").textContent = j === pick ? "●" : "";
+      b.querySelector(".st").textContent = j === pick ? " (your answer, locked in)" : "";
+    });
+    why.classList.remove("miss"); why.classList.add("locked");
+    why.innerHTML = "<strong>Locked in.</strong> You'll see the answer and your score once you've answered every question.";
+    why.classList.add("show");
+    if (fromUser) why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
+  };
+  const reveal = (pick, fromUser) => {
+    showOpts();
+    if (lvl) lvl.hidden = false;
+    btns.forEach(b => {
+      b.classList.remove("picked");
       const j = +b.dataset.j, mk = b.querySelector(".mk"), st = b.querySelector(".st");
       b.setAttribute("aria-disabled", "true");
       if (j === q.k && (j === pick || !card.__noReveal)){ b.classList.add("right"); mk.textContent = "✓"; st.textContent = j === pick ? " (your answer, correct)" : " (correct answer)"; }
       else if (j === pick){ b.classList.add("wrong"); mk.textContent = "✗"; st.textContent = " (your answer)"; }
     });
+    why.classList.remove("locked");
     why.classList.toggle("miss", pick !== q.k);
     if (card.__guess) why.innerHTML = card.__guess(pick === q.k);
     else why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}${q.run && q.code && canRun(q.code) ? RUN_HTML("Run it to check") : ""}`;
@@ -540,14 +566,16 @@ function buildQuiz(card, q, persist, onChange){
     if (fromUser){ why.focus({preventScroll:true}); why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"}); }
   };
   const clear = () => {
-    btns.forEach(b => { b.removeAttribute("aria-disabled"); b.classList.remove("right","wrong"); b.querySelector(".mk").textContent = ""; b.querySelector(".st").textContent = ""; });
-    why.classList.remove("show"); why.innerHTML = ""; if (retry) retry.classList.remove("show");
+    btns.forEach(b => { b.removeAttribute("aria-disabled"); b.classList.remove("right","wrong","picked"); b.querySelector(".mk").textContent = ""; b.querySelector(".st").textContent = ""; });
+    why.classList.remove("show","miss","locked"); why.innerHTML = ""; if (retry) retry.classList.remove("show");
+    if (lvl) lvl.hidden = true;
+    if (recall){ recall.hidden = false; opts.hidden = true; const i = recall.querySelector("input"); if (i) i.value = ""; recall.querySelector(".recallMsg").textContent = ""; }
   };
   btns.forEach(b => b.addEventListener("click", () => {
     if (b.getAttribute("aria-disabled") === "true") return;
     const pick = +b.dataset.j;
     if (persist){ persist.obj[persist.key] = pick; persist.save(); }
-    reveal(pick, true);
+    if (exam && !exam.done()) lock(pick, true); else reveal(pick, true);
     confBtns.forEach(x => x.disabled = true);
     onChange(pick, sure());
   }));
@@ -558,19 +586,28 @@ function buildQuiz(card, q, persist, onChange){
     card.scrollTo({top:0, behavior: reduceMotion() ? "auto" : "smooth"});
   });
   // A saved answer doesn't record how sure you were, so neither button shows as chosen.
-  if (persist && Number.isInteger(persist.obj[persist.key])){ reveal(persist.obj[persist.key], false); confBtns.forEach(x => { x.disabled = true; x.setAttribute("aria-pressed", "false"); }); }
-  return () => { clear(); confBtns.forEach(x => x.disabled = false); setSure(true); };
+  if (persist && Number.isInteger(persist.obj[persist.key])){
+    const p = persist.obj[persist.key];
+    if (exam && !exam.done()) lock(p, false); else reveal(p, false);
+    confBtns.forEach(x => { x.disabled = true; x.setAttribute("aria-pressed", "false"); });
+  }
+  const reset = () => { clear(); confBtns.forEach(x => x.disabled = false); setSure(true); forcedGuess = false; };
+  // Show the result once the whole quiz is answered.
+  reset.show = () => { if (persist && Number.isInteger(persist.obj[persist.key])) reveal(persist.obj[persist.key], false); };
+  // A retake shuffles the options again.
+  reset.reorder = seed => order(btns.length, seed).forEach(j => opts.appendChild(btns.find(b => +b.dataset.j === j)));
+  return reset;
 }
 function quizHtml(q, tagHtml, withRetry, seed, recall){
   const ord = order(q.o.length, seed || seedOf(q.q + (q.code || "")));
   const typed = recall && typedAnswers(q);
   return `${tagHtml}
-    ${q.d ? `<div class="lvl">${LEVEL[q.d]}</div>` : ""}
+    ${q.d ? `<div class="lvl" hidden>${LEVEL[q.d]}</div>` : ""}
     <h2 class="q">${fmt(q.q)}</h2>
     ${q.code ? codeBlock(q.code, "", false) : ""}
     ${recall ? `<div class="recall">
       <p class="small">${typed ? "Type the answer from memory, or think it through first." : "Think of the answer before you look at the options."}</p>
-      ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"${typed.every(a => /^[0-9.]+$/.test(a)) ? ' inputmode="decimal"' : ""} aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">Check answer</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
+      ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"${typed.every(a => /^[0-9.]+$/.test(a)) ? ' inputmode="decimal"' : ""} aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">${recall === "exam" ? "Lock in answer" : "Check answer"}</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
       <p class="small recallMsg" aria-live="polite"></p></div>` : ""}
     <div class="opts${q.code ? " out" : ""}" role="group" aria-label="Answers"${recall ? " hidden" : ""}>${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
     <div class="why" tabindex="-1"></div>
@@ -604,7 +641,10 @@ function makeTrack(tab, items, cfg){
   const answers = asObj(store.get(cfg.answersKey, {}));
   const save = () => store.set(cfg.answersKey, answers);
   const T = TABS[tab];
-  Object.assign(T, {items, cfg, answers, recapScores:{}, resetters:{}});
+  // Exam attempts per day: {att, best, last, day, practice}. A retake on the day of an attempt is practice and skips reviews.
+  const exam = asObj(store.get(cfg.answersKey.replace("answers", "exam"), {}));
+  const saveExam = () => store.set(cfg.answersKey.replace("answers", "exam"), exam);
+  Object.assign(T, {items, cfg, answers, exam, recapScores:{}, resetters:{}});
   T.cardCount = d => 3 + d.learn.length + (d.play ? 1 : 0) + (d.challenge ? 1 : 0) + (d.real ? 1 : 0) + (d.myth ? 1 : 0) + (d.tryit ? 1 : 0) + (d.review ? d.review.length : 0) + d.quiz.length;
 
   items.forEach((d, i) => {
@@ -667,12 +707,28 @@ function makeTrack(tab, items, cfg){
       `${tag("Review", (j+1) + " of " + d.review.length)}<h2>${fmt(h)}</h2>${termsOrPara(h, p)}`));
 
     T.resetters[dn] = [];
+    const allDone = () => d.quiz.every((q, qi) => Number.isInteger(answers[dn + "." + qi]));
+    const attSeed = qi => { const q = d.quiz[qi], a = (exam[dn] || {}).att || 1; return seedOf(q.q + (q.code || "") + (a > 1 ? ":" + a : "")); };
     d.quiz.forEach((q, qi) => {
-      const s = make("Quiz " + (qi+1) + "/" + d.quiz.length, quizHtml(q, tag("Quiz", (qi+1) + " of " + d.quiz.length), true));
+      const s = make("Quiz " + (qi+1) + "/" + d.quiz.length, quizHtml(q, tag("Quiz", (qi+1) + " of " + d.quiz.length), true, attSeed(qi), typedAnswers(q) ? "exam" : false));
       T.resetters[dn].push(buildQuiz(s, q, {obj:answers, key:dn + "." + qi, save}, (pick, sure) => {
-        if (pick !== null) srsRecord((tab === "study" ? "s:" : "p:") + dn + "." + qi, pick === q.k, sure && !(qi === gi && Number.isInteger(guesses[gkey])));
-        updateScore(tab, pick !== null);
-      }));
+        if (pick === null){ updateScore(tab, false); return; }
+        const e = exam[dn] || (exam[dn] = {att:1});
+        // Hold how sure you were; reviews are recorded only at the end, so nothing hints at right or wrong mid-quiz.
+        e.sure = e.sure || {}; e.sure[qi] = sure && !(qi === gi && Number.isInteger(guesses[gkey])); saveExam();
+        if (allDone()){
+          if (e.practice !== dayNum()) d.quiz.forEach((qq, j) => srsRecord((tab === "study" ? "s:" : "p:") + dn + "." + j, answers[dn + "." + j] === qq.k, e.sure[j] !== false));
+          delete e.sure;
+          const st = trackStats(tab, dn);
+          e.last = st.right; e.best = Math.max(e.best || 0, st.right); e.day = dayNum(); saveExam();
+          T.resetters[dn].forEach(f => f.show());
+          updateScore(tab, false);
+          live.textContent = `Quiz finished: ${st.right} of ${st.total} right. Results are on the Summary card.`;
+          return;
+        }
+        updateScore(tab, false);
+        live.textContent = "Answer locked in";
+      }, {done: allDone}));
     });
 
     if (d.challenge){
@@ -698,18 +754,22 @@ function makeTrack(tab, items, cfg){
     const rc = make("Summary", `${tag("Summary")}<h2>${last ? cfg.lastRecap : cfg.word + " " + dn + " summary"}</h2>
       <ul class="recap">${d.recap.map(r => `<li>${fmt(r)}</li>`).join("")}</ul>
       <div class="dscore"></div>
-      <div class="row"><button class="btn nx">${last ? "Finish" : "Start " + cfg.word + " " + (dn+1)}</button><button class="btn ghost redo" type="button">Redo this quiz</button></div>
+      <div class="row"><button class="btn nx">${last ? "Finish" : "Start " + cfg.word + " " + (dn+1)}</button><button class="btn ghost redo" type="button">Retake quiz</button></div>
       ${cfg.links && cfg.links[dn] ? `<button class="linkbtn" type="button">${esc(cfg.links[dn].text)} →</button>` : ""}`);
     T.recapScores[dn] = rc.querySelector(".dscore");
     const lb = rc.querySelector(".linkbtn");
     if (lb) lb.addEventListener("click", () => navigateTo(cfg.links[dn].tab, cfg.links[dn].n));
     rc.querySelector(".nx").addEventListener("click", () => last ? go(tab, Math.max(T.cards.findIndex(c => c.group <= -2), 0) || T.cards.length-1) : goGroup(tab, dn));
     rc.querySelector(".redo").addEventListener("click", () => {
+      // Only the first attempt each day counts towards reviews, so a same-day retake is practice.
+      const e = exam[dn] || (exam[dn] = {att:1});
+      if (trackStats(tab, dn).fin){ if (e.day === dayNum()) e.practice = dayNum(); e.att = (e.att || 1) + 1; }
+      delete e.sure; saveExam();
       d.quiz.forEach((q, qi) => delete answers[dn + "." + qi]);
       save();
       delete guesses[gkey]; delete guessMeta[gkey]; saveGuesses(); markGuess(tab, dn);
       if (T.guessReset && T.guessReset[dn]) T.guessReset[dn]();
-      T.resetters[dn].forEach(f => f());
+      T.resetters[dn].forEach((f, qi) => { f(); f.reorder(attSeed(qi)); });
       updateScore(tab, false);
       go(tab, T.cards.findIndex(c => c.group === i && c.label.startsWith("Quiz 1/")));
     });
@@ -718,12 +778,13 @@ function makeTrack(tab, items, cfg){
 function trackStats(tab, dn){
   const T = TABS[tab], d = T.items[dn-1]; let done = 0, right = 0;
   d.quiz.forEach((q, qi) => { const a = T.answers[dn + "." + qi]; if (Number.isInteger(a)){ done++; if (a === q.k) right++; } });
-  return {done, right, total: d.quiz.length};
+  return {done, right, total: d.quiz.length, fin: done === d.quiz.length};
 }
 function trackTotals(tab){
-  const T = TABS[tab]; let done = 0, right = 0, total = 0;
-  T.items.forEach((d, i) => { const s = trackStats(tab, i+1); done += s.done; right += s.right; total += s.total; });
-  return {done, right, total};
+  // right and checked only count finished quizzes, so a score never gives away an answer early.
+  const T = TABS[tab]; let done = 0, right = 0, total = 0, checked = 0, passed = 0, finished = 0;
+  T.items.forEach((d, i) => { const s = trackStats(tab, i+1); done += s.done; total += s.total; if (s.fin){ right += s.right; checked += s.total; finished++; if (s.right / s.total >= PASS_MARK) passed++; } });
+  return {done, right, total, checked, passed, finished};
 }
 
 /* ---------- Study tab ---------- */
@@ -843,7 +904,7 @@ document.getElementById("stDelete").addEventListener("click", () => {
 });
 document.getElementById("studyCount").textContent = `${DAYS.length} days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stages 1 and 2 complete</div><h1>That's all ${DAYS.length} days</h1>
-  <p class="endScore"></p><p class="small">Missed some? Tap Days, pick a red day, then tap “Redo this quiz” on its Summary card. Reset answers clears your Training Bunker quiz answers. Your review schedule and streak are kept.</p>
+  <p class="endScore"></p><p class="small">Missed some? Tap Days, pick a red day, then tap “Retake quiz” on its Summary card. Reset answers clears your Training Bunker quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
 /* ---------- Python tab ---------- */
@@ -1231,6 +1292,19 @@ function render(){
   updateScore(active, false);
   updateMore();
 }
+const PASS_MARK = 0.8;
+function examSummary(tab, dn, d, s){
+  if (!s.done) return "Quiz: not answered yet";
+  if (!s.fin) return `Quiz: <b>${s.done} of ${s.total}</b> answered. Your score shows when you finish.`;
+  const T = TABS[tab], e = T.exam[dn] || {}, pct = Math.round(s.right / s.total * 100), pass = s.right / s.total >= PASS_MARK;
+  const items = d.quiz.map((q, qi) => {
+    const a = T.answers[dn + "." + qi], ok = a === q.k;
+    return `<li class="${ok ? "ok" : "miss"}"><b><span class="dmk" aria-hidden="true">${ok ? "✓" : "✗"}</span> <span class="sr">${ok ? "Right: " : "Wrong: "}</span>${fmt(q.q)}</b>${q.d ? ` <span class="lvl">${LEVEL[q.d]}</span>` : ""}
+      ${ok ? "" : `<span>Your answer: ${fmt(q.o[a])}</span>`}<span>Right answer: ${fmt(q.o[q.k])}</span><span>${fmt(q.w)}</span></li>`;
+  }).join("");
+  return `<details class="debrief exam ${pass ? "pass" : "notyet"}"><summary><b>${pass ? "Passed" : "Not passed yet"}</b>&nbsp;· ${s.right}/${s.total} · Debrief</summary>` +
+    `<p>You got ${pct}%. The pass mark is 80%.${(e.att || 1) > 1 && e.best !== undefined ? ` Best: ${e.best} of ${s.total}, attempt ${e.att}.` : ""}${e.practice === dayNum() ? " Practice attempt: your reviews aren&#39;t changed." : ""}</p><ol>${items}</ol></details>`;
+}
 function updateScore(tab, announce){
   if (tab === "feed"){
     if (active === "feed"){
@@ -1243,13 +1317,13 @@ function updateScore(tab, announce){
   const T = TABS[tab];
   T.items.forEach((d, i) => {
     const s = trackStats(tab, i+1), r = T.recapScores[i+1];
-    if (r) r.innerHTML = s.done ? `Quiz: <b>${s.right} of ${s.total}</b> right${s.done < s.total ? ` · ${s.total - s.done} unanswered` : ""}` : `Quiz: not answered yet`;
+    // Only rewrite when it changes, so an open debrief stays open.
+    if (r){ const h = examSummary(tab, i+1, d, s); if (r.__h !== h){ r.__h = h; r.innerHTML = h; } }
   });
   const t = trackTotals(tab);
   if (tab === active) refreshDaily();
-  if (announce) live.textContent = `${t.right} of ${t.done} correct so far`;
   const es = T.el.querySelector(".endScore");
-  if (es) es.textContent = t.done ? `You got ${t.right} of ${t.done} questions right${t.done < t.total ? `, with ${t.total - t.done} still to do` : ""}.` : "You haven't answered any questions yet.";
+  if (es) es.textContent = t.finished ? `You've finished ${t.finished} of ${T.items.length} quizzes and passed ${t.passed}. You got ${t.right} of ${t.checked} questions right.` : t.done ? "Finish a quiz to see your score." : "You haven't answered any questions yet.";
   if (sheet.classList.contains("open")) renderSheet();
 }
 
@@ -1355,8 +1429,8 @@ function renderSheet(){
   const mastery = n => { const qs = T.items[n-1].quiz; return Math.round(qs.filter((q, qi) => ((srs[pre + n + "." + qi] || {}).box || 0) >= 3).length / qs.length * 100); };
   const missed = n => T.items[n-1].quiz.some((q, qi) => (srs[pre + n + "." + qi] || {}).box === 1);
   const started = T.items.map((d, i) => i + 1).filter(n => T.items[n-1].quiz.some((q, qi) => srs[pre + n + "." + qi]));
-  const weakest = started.filter(missed).sort((a, b) => mastery(a) - mastery(b)).slice(0, 3);
-  document.getElementById("score").innerHTML = `<div>Mastered means right on two separate days.</div>${t.done} of ${t.total} questions answered · ${t.right} correct${tab === "study" ? ` · portfolio ${pfScore()} of ${PORTFOLIO.length}` : ""}` +
+  const weakest = started.filter(n => trackStats(tab, n).fin && missed(n)).sort((a, b) => mastery(a) - mastery(b)).slice(0, 3);
+  document.getElementById("score").innerHTML = `<div>Mastered means right on two separate days.</div>${t.done} of ${t.total} questions answered${t.finished ? ` · ${t.passed} of ${t.finished} quizzes passed` : ""}${tab === "study" ? ` · portfolio ${pfScore()} of ${PORTFOLIO.length}` : ""}` +
     (weakest.length ? `<div class="weak">${weakest.map(n => `<button class="x weakBtn" type="button" data-n="${n}">Needs work: ${T.cfg.word} ${n}</button>`).join("")}</div>` : "");
   const mine = Object.keys(srs).filter(k => k.startsWith(pre));
   const surprises = mine.filter(k => srs[k].flag).length, slipping = mine.filter(k => isSlipping(srs[k]));
@@ -1375,8 +1449,8 @@ function renderSheet(){
   document.querySelectorAll(".jump").forEach(b => b.addEventListener("click", () => closeSheet(() => go("study", S.cards.findIndex(c => c.el.id === b.dataset.id)))));
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
-      const st = s.done === 0 ? "" : s.right < s.done ? "miss" : s.done === s.total ? "ok" : "part";
-      const label = (s.done ? "first try " + s.right + "/" + s.total + (started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions") + (tab === "py" && pyDone[n] ? " · challenge done" : "") + (guessVerdict(tab, n) === "skim" ? " · skim" : guessVerdict(tab, n) === "study" ? " · study carefully" : "");
+      const st = s.done === 0 ? "" : !s.fin ? "part" : s.right / s.total < PASS_MARK ? "miss" : "ok";
+      const label = (s.done ? (s.fin ? s.right + "/" + s.total + " right" : s.done + "/" + s.total + " answered") + (s.fin && started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions") + (tab === "py" && pyDone[n] ? " · challenge done" : "") + (guessVerdict(tab, n) === "skim" ? " · skim" : guessVerdict(tab, n) === "study" ? " · study carefully" : "");
       return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
   }</div>`).join("");
   dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { T.detour = false; goGroup(tab, n - 1); }); }));

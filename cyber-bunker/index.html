@@ -143,6 +143,23 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .recap li::before{content:"";position:absolute;left:2px;top:.45em;width:12px;height:7px;border-left:2px solid var(--c);border-bottom:2px solid var(--c);transform:rotate(-45deg)}
 .dscore{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em}
 .dscore b{color:var(--text);font-weight:500}
+.opt.picked{border-color:var(--c)}
+.opt.picked .mk{display:inline;color:var(--c)}
+#v-py .opt.picked{border-color:var(--phosphor);border-width:3px}
+.dscore .exam.pass summary b{color:var(--good)}
+.dscore .exam.notyet summary b{color:var(--bad)}
+.debrief summary b{font-weight:500}
+.debrief > p{margin:4px 0 0;color:var(--muted)}
+.debrief{font-family:var(--body);text-transform:none;letter-spacing:normal;font-size:15px;color:var(--text)}
+.debrief summary{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:13px;min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--c)}
+.debrief ol{margin:6px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:12px}
+.debrief li{line-height:1.45}
+.debrief li > span{display:block;color:var(--muted)}
+.debrief li b{font-weight:600}
+.debrief li b{color:var(--text)}
+.debrief li b span.dmk{display:inline;color:var(--good)}
+.debrief li.miss b span.dmk{color:var(--bad)}
+.debrief .lvl{display:inline;font-size:11px}
 
 .more{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 10px);z-index:4;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;pointer-events:none;opacity:0;transition:opacity .2s}
 .more.show{opacity:1}
@@ -352,6 +369,8 @@ h2{font-size:clamp(22px,6.3vw,34px)}
 .editor{caret-color:var(--phosphor)}
 .why.show{padding:12px 14px;color:var(--phosphor)}
 .why.miss > strong:first-child{color:var(--amber)}
+.why.locked.show{border-color:var(--metal);color:var(--bone);background:var(--rust)}
+.why.locked > strong:first-child{color:var(--bone)}
 .why strong:not(:first-child){font:inherit;font-weight:700;color:var(--bone);text-transform:none;letter-spacing:0;margin:0}
 .why > strong:first-child{color:var(--phosphor);font-family:var(--crt);font-size:22px;font-weight:400;letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
 .card code{background:var(--termbg);border:1px solid var(--dimgreen);color:var(--phosphor)}
@@ -560,7 +579,7 @@ body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
 .in:has(> .opts) .opt{padding:7px 10px}
 .why.show{padding:8px 10px;line-height:1.38}
 .why > strong:first-child{font-size:18px;line-height:1}
-.in:has(> .why.show) > .lvl{display:none}
+.in:has(> .why.locked.show) > .lvl{display:none}
 .card{padding-bottom:12px}
 body.has-update .card{padding-bottom:100px}
 .code .ch{padding:0 0 0 12px}

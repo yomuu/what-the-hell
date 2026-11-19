@@ -1455,7 +1455,7 @@
      "Catch only the errors you expect, such as ValueError. A bare `except:` catches everything, so it hides real bugs."
     ],
     [
-     "Fail safely",
+     "Fail closed",
      "If a security check can't finish, decide what happens. A check that returns True (\"allowed\") when it hits an error is failing open. The Open Worldwide Application Security Project (OWASP) lists this as A10:2025 Mishandling of Exceptional Conditions. Default to deny."
     ]
    ],
@@ -1521,7 +1521,7 @@
     "Exceptions stop scripts unless handled.",
     "Catch specific errors, not everything.",
     "A bare `except:` hides real bugs.",
-    "Security checks should fail safe: deny on error.",
+    "Security checks should fail closed: deny on error.",
     "Skip bad lines and keep going."
    ]
   },
@@ -2076,7 +2076,7 @@
    "learn": [
     [
      "Key terms",
-     "Sandbox: a protected area where code runs without access to the rest of your computer.\nSocket: an IP address and port together.\nTimeout: how long code waits for a reply before it gives up.\nboto3: the official Amazon Web Services (AWS) software development kit (SDK) for Python."
+     "Sandbox: a protected area where code runs without access to the rest of your computer.\nSocket: one end of a network connection, identified by an IP address and port.\nTimeout: how long code waits for a reply before it gives up.\nboto3: the official Amazon Web Services (AWS) software development kit (SDK) for Python."
     ],
     [
      "The browser sandbox",
@@ -2089,7 +2089,7 @@
     ],
     [
      "Connect scans and SYN scans",
-     "When run as root, Nmap's default is a SYN scan, which never finishes the handshake. Without root, Nmap does a connect scan too, like this script."
+     "When run as root, Nmap's default is a SYN scan. It sends only the first packet (SYN) and never finishes the handshake. Without root, Nmap does a connect scan too, like this script."
     ],
     [
      "Always set a timeout",
