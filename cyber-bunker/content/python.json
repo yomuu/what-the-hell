@@ -22,26 +22,30 @@
    "sub": "Why security people use Python, and how to store a value.",
    "learn": [
     [
+     "Key terms",
+     "Script: a short program saved in a file that automates a task.\nInterpreter: the program that reads your Python code and runs it.\nVariable: a name that stores a value so you can use it later.\nComment: a note in your code that Python ignores."
+    ],
+    [
      "Why Python",
-     "Python is the most common scripting language in security. Analysts use it to parse logs, call APIs, automate checks and glue tools together. Kali already has Python 3 installed."
+     "Python is one of the most popular scripting languages in security. Analysts use it to read logs, automate checks and connect tools. They also call application programming interfaces (APIs), which let programs ask other systems for data. Kali already has Python 3 installed."
     ],
     [
      "Two ways to run it",
-     "Type `python3` to open the interactive prompt and try lines one at a time. Or save code in a file ending in .py and run `python3 hello.py`. Leave the prompt with `exit()`."
+     "You can run Python in two ways. Type `python3` to open the interactive prompt, where you try one line at a time. Leave it with `exit()`. Or save your code in a file ending in .py, then run `python3 hello.py`."
     ],
     [
      "print and comments",
-     "`print()` shows output. Anything after `#` is a comment that Python ignores. Use comments to explain why, not what.",
+     "`print()` shows output on screen. Python ignores anything after `#`, so you can use it to write a comment. Use comments to explain why the code does something, not what it does.",
      "# Say hello to the SOC\nprint(\"Hello, SOC\")\nprint(2 + 3)"
     ],
     [
      "Variables",
-     "A variable is a name for a value. You create one by assigning to it with `=`. Pick names that say what the value is, like `target_ip`, not `x`.",
+     "A variable is a name for a value. You create one with `=`, which assigns the value to the name. Choose names that say what the value is, like `target_ip`, not `x`.",
      "target_ip = \"10.10.10.20\"\nport = 445\nprint(target_ip, port)"
     ],
     [
      "The core types",
-     "`str` is text, `int` is a whole number, `float` has a decimal point and `bool` is True or False. `type()` tells you which one you have."
+     "Every value has a type, which is the kind of value it is. `str` is text, `int` is a whole number, `float` has a decimal point and `bool` is True or False. `type()` tells you which one you have."
     ]
    ],
    "play": {
@@ -50,11 +54,11 @@
    },
    "real": [
     "On the job",
-    "A SOC analyst gets 2,000 alerts exported to a file. Reading them by hand takes a day. A 15-line script sorts and counts them in a second. That's why so many security job ads mention Python."
+    "A security operations centre (SOC) analyst gets 2,000 alerts exported to a file. Reading them by hand takes a day. A 15-line script sorts and counts them in a second. That's why so many security job ads mention Python."
    ],
    "myth": [
     "You have to be a programmer to use Python in security.",
-    "Most security scripts are short: read something, filter it, count it, print it. You'll write useful ones by the end of this track."
+    "Most security scripts are short. They read something, filter it, count it and print it. You'll write useful ones by the end of this track."
    ],
    "tryit": {
     "h": "Run a script",
@@ -69,12 +73,12 @@
      "q": "What does this print?",
      "code": "print(2 + 3)\n# print(10)",
      "o": [
+      "2 + 3",
       "5",
-      "10",
-      "2 + 3"
+      "10"
      ],
-     "k": 0,
-     "w": "The second line is a comment, so only `print(2 + 3)` runs."
+     "k": 1,
+     "w": "5. The second line is a comment, so only `print(2 + 3)` runs. Not 2 + 3: print shows the result, not the sum as written. Not 10: Python ignores the commented line."
     },
     {
      "d": 2,
@@ -82,23 +86,23 @@
      "q": "What does this print?",
      "code": "print(type(3.0))",
      "o": [
-      "<class 'float'>",
+      "3",
       "<class 'int'>",
-      "3"
+      "<class 'float'>"
      ],
-     "k": 0,
-     "w": "The decimal point makes it a float, even though the value is a whole number."
+     "k": 2,
+     "w": "<class 'float'>. The decimal point makes it a float, even though the value is a whole number. Not int: 3.0 has a decimal point. Not 3: `type()` gives the type, not the value."
     },
     {
      "d": 1,
      "q": "How do you run a script saved as scan.py?",
      "o": [
-      "python3 scan.py",
       "run scan.py",
-      "print scan.py"
+      "print scan.py",
+      "python3 scan.py"
      ],
-     "k": 0,
-     "w": "Give the file to the python3 interpreter."
+     "k": 2,
+     "w": "python3 scan.py. Give the file to the python3 interpreter, which runs it. Not run or print: neither of these starts the Python interpreter."
     }
    ],
    "challenge": {
@@ -109,10 +113,11 @@
     "expect": "Target: win10"
    },
    "recap": [
-    "Python is the security team's glue language.",
+    "Python is one of the most popular scripting languages in security.",
     "Run it with `python3` or `python3 file.py`.",
     "`print()` shows output; `#` starts a comment.",
-    "Assign with `=` and use descriptive names."
+    "Assign with `=` and use descriptive names.",
+    "`type()` shows whether a value is str, int, float or bool."
    ]
   },
   {
@@ -120,30 +125,34 @@
    "sub": "Text, numbers, and building readable output.",
    "learn": [
     [
+     "Key terms",
+     "String: a piece of text, such as a username or a log line.\nInteger: a whole number, such as a port number.\nf-string: a string with an f before the quotes, which fills in values from braces."
+    ],
+    [
      "Text isn't a number",
-     "Anything you read from a file, a log or user input arrives as text. \"22\" + \"1\" joins text into \"221\"; it doesn't add. Convert with `int()` before doing maths."
+     "Anything you read from a file, a log or user input arrives as text. Adding text joins it, so \"22\" + \"1\" gives \"221\". Convert with `int()` before doing maths."
     ],
     [
      "Converting",
-     "`int(\"22\")` turns text into a number and `str(22)` turns a number into text. Converting text that isn't a number, like `int(\"ssh\")`, raises a ValueError."
+     "`int(\"22\")` turns text into a number, and `str(22)` turns a number into text. Converting text that isn't a number, like `int(\"ssh\")`, raises a ValueError."
     ],
     [
      "f-strings",
-     "Put an f before the quotes and you can drop variables straight into text with braces. They're the clearest way to build output and messages.",
+     "Put an f before the opening quote. Python then replaces any variable inside braces with its value. f-strings are the clearest way to build output and messages.",
      "ip = \"10.10.10.20\"\nopen_ports = 3\nprint(f\"{ip} has {open_ports} open ports\")"
     ]
    ],
    "play": {
-    "p": "Edit the values and run it again. Try putting a calculation inside the curly brackets.",
+    "p": "Edit the values and run it again. Then try a calculation inside the braces.",
     "code": "ip = \"10.10.10.20\"\nopen_ports = 3\nprint(f\"{ip} has {open_ports} open ports\")\nprint(f\"Next port: {22 + 1}\")"
    },
    "real": [
     "On the job",
-    "A firewall export lists ports as text. A script that checks `\"80\" > \"443\"` says True, because text compares character by character and 8 beats 4. As numbers, 80 > 443 is False. Converting to int first fixes it."
+    "A firewall export lists ports as text. A script that checks `\"80\" > \"443\"` says True. Text compares one character at a time, and 8 comes after 4. As numbers, 80 > 443 is False, so converting to int first fixes it."
    ],
    "myth": [
     "Python works out what you meant, so types don't matter.",
-    "Python won't guess. Mixing text and numbers either raises an error or quietly does the wrong thing."
+    "Python won't guess. Mixing text and numbers either raises an error or quietly gives the wrong result."
    ],
    "tryit": {
     "h": "Try types in the prompt",
@@ -158,12 +167,12 @@
      "q": "What does this print?",
      "code": "port = \"22\"\nprint(port + \"1\")",
      "o": [
-      "221",
       "23",
+      "221",
       "An error"
      ],
-     "k": 0,
-     "w": "Both values are text, so `+` joins them."
+     "k": 1,
+     "w": "221. Both values are text, so `+` joins them. Not 23: that needs `int()` to turn the text into a number first. Not an error: joining two strings is allowed."
     },
     {
      "d": 2,
@@ -176,7 +185,7 @@
       "An error"
      ],
      "k": 0,
-     "w": "`int()` converts the text to a number first, so this is real addition."
+     "w": "23. `int()` converts the text to a number first, so this is real addition. Not 221: that's what joining two strings gives. Not an error: \"22\" is valid number text, so the conversion works."
     },
     {
      "d": 1,
@@ -184,26 +193,26 @@
      "q": "What does this print?",
      "code": "ip = \"10.10.10.20\"\nprint(f\"Scanning {ip}\")",
      "o": [
-      "Scanning 10.10.10.20",
       "Scanning {ip}",
-      "f\"Scanning {ip}\""
+      "f\"Scanning {ip}\"",
+      "Scanning 10.10.10.20"
      ],
-     "k": 0,
-     "w": "The f prefix fills in the braces with the variable's value."
+     "k": 2,
+     "w": "Scanning 10.10.10.20. The f prefix fills in the braces with the variable's value. Not Scanning {ip}: you'd only see the braces without the f. Not the version with the f and quotes: print shows the text, not the code."
     }
    ],
    "challenge": {
-    "p": "The log gives the port as text. Add 1 to it as a number and print `next port: 23` using an f-string.",
+    "p": "The log gives the port as text. Add 1 to it as a number, then use an f-string to print `next port: 23`.",
     "start": "port = \"22\"\nprint(f\"next port: {port}\")",
-    "hint": "Convert with `int(port)` inside the curly brackets.",
+    "hint": "Convert with `int(port)` inside the braces.",
     "solution": "port = \"22\"\nprint(f\"next port: {int(port) + 1}\")",
     "expect": "next port: 23"
    },
    "recap": [
-    "Input from files and logs is text.",
+    "Input from files, logs and users arrives as text.",
     "Convert with `int()` and `str()` before mixing.",
     "f-strings put values inside `{}`.",
-    "You can do maths inside the brackets."
+    "You can do maths inside the braces."
    ]
   },
   {
@@ -211,17 +220,21 @@
    "sub": "Make decisions in code.",
    "learn": [
     [
+     "Key terms",
+     "Condition: a check that is either True or False.\nBlock: the indented lines that belong to an if, a loop or a function.\nBranch: one of the paths code can take, such as the if or the else.\nIndentation: spaces at the start of a line that show which block it belongs to."
+    ],
+    [
      "if, elif, else",
-     "An if runs its block only when the condition is true. elif checks the next condition and else catches everything left. Only the first matching branch runs.",
+     "An if runs its block only when its condition is true. elif checks the next condition, and else catches everything left. Only the first matching branch runs.",
      "fails = 7\nif fails > 10:\n    print(\"block\")\nelif fails > 5:\n    print(\"warn\")\nelse:\n    print(\"ok\")"
     ],
     [
      "Comparisons",
-     "`==` means equal and `!=` means not equal. `<`, `>`, `<=` and `>=` compare numbers. Combine conditions with `and`, `or` and `not`. A single `=` assigns; it never compares."
+     "`==` means equal and `!=` means not equal. `<`, `>`, `<=` and `>=` compare numbers. Combine conditions with `and`, `or` and `not`."
     ],
     [
      "Indentation is syntax",
-     "Python groups code by indentation, not braces. Lines inside an if or a loop are indented, usually by four spaces. What Python requires is consistency; getting it wrong is an error, not a style issue.",
+     "Python groups code by indentation, not braces. Lines inside an if or a loop are indented, usually by four spaces. Python needs the indentation to be consistent. Getting it wrong is an error, not a style issue.",
      "if 2 > 1:\n    print(\"indented, so inside the if\")\nprint(\"back outside\")"
     ]
    ],
@@ -231,7 +244,7 @@
    },
    "real": [
     "On the job",
-    "Every alert rule is an if statement underneath: if failed logins from one IP go over a threshold in five minutes, raise an alert. Tuning the threshold is a daily SOC job."
+    "Every alert rule is an if statement underneath. For example, if failed logins from one IP go over a threshold in five minutes, raise an alert. Tuning that threshold is a daily job in a security operations centre (SOC)."
    ],
    "myth": [
     "`=` and `==` mean the same thing.",
@@ -245,23 +258,23 @@
      "code": "fails = 3\nif fails > 10:\n    print(\"block\")\nelif fails > 5:\n    print(\"warn\")\nelse:\n    print(\"ok\")",
      "o": [
       "ok",
-      "block",
-      "warn"
+      "warn",
+      "block"
      ],
      "k": 0,
-     "w": "3 isn't over 10 or over 5, so neither the if nor the elif runs, and the else branch prints ok."
+     "w": "ok. 3 isn't over 5 or 10, so the else branch runs. Not warn or block: those need more than 5 or 10."
     },
     {
      "d": 2,
      "q": "What happens when you run this?",
      "code": "if True:\nprint(\"hi\")",
      "o": [
-      "An IndentationError",
       "It prints hi",
-      "It prints nothing"
+      "It prints nothing",
+      "An IndentationError"
      ],
-     "k": 0,
-     "w": "The body of an if must be indented. Python refuses to run the file."
+     "k": 2,
+     "w": "An IndentationError. The body of an if must be indented, so Python refuses to run the file. Not hi or nothing: Python stops before it runs any line."
     },
     {
      "d": 2,
@@ -269,15 +282,16 @@
      "run": true,
      "code": "role = \"admin\"\nif role == \"admin\":\n    print(\"admin\")\nelse:\n    print(\"user\")",
      "o": [
+      "user",
       "admin",
-      "user"
+      "Nothing"
      ],
-     "k": 0,
-     "w": "`role` equals \"admin\", so the `==` check is True and the first branch runs."
+     "k": 1,
+     "w": "admin. `role` equals \"admin\", so the `==` check is True and the first branch runs. Not user: else only runs when the check is False. Not nothing: with an else, one branch runs."
     }
    ],
    "challenge": {
-    "p": "Print `high` if `cvss` is 7.0 or more, otherwise print `low`.",
+    "p": "`cvss` holds a Common Vulnerability Scoring System (CVSS) score from 0 to 10. Print `high` if it's 7.0 or more, otherwise print `low`.",
     "start": "cvss = 8.1\n",
     "hint": "Use `if cvss >= 7.0:` with an `else:`. Indent each print by four spaces.",
     "solution": "cvss = 8.1\nif cvss >= 7.0:\n    print(\"high\")\nelse:\n    print(\"low\")",
@@ -286,6 +300,7 @@
    "recap": [
     "if, elif and else choose one branch.",
     "`==` compares; `=` assigns.",
+    "Combine conditions with and, or and not.",
     "Indentation decides what's inside the if.",
     "Rules and alerts are conditions underneath."
    ]
@@ -295,19 +310,27 @@
    "sub": "Keep many values in order.",
    "learn": [
     [
+     "Key terms",
+     "List: an ordered collection of items inside square brackets.\nIndex: an item's position in a list, counting from 0.\nSlice: a part of a list, picked out by a start and an end position."
+    ],
+    [
      "Lists",
-     "A list holds items in order, in square brackets. Get an item by its index, starting at 0.",
+     "A list holds items in order, inside square brackets. You get an item by its index, which starts at 0.",
      "ports = [22, 80, 443]\nprint(ports[0], ports[2])"
     ],
     [
      "Changing a list",
-     "`.append(x)` adds to the end and `.remove(x)` takes the first match out. `len(ports)` tells you how many items there are.",
+     "`.append(x)` adds an item to the end. `.remove(x)` takes out the first item that matches. `len(ports)` tells you how many items there are.",
      "ports = [22, 80]\nports.append(443)\nports.remove(80)\nprint(ports, len(ports))"
     ],
     [
      "Slicing",
-     "`ports[0:2]` gives the first two items. The start is included and the end isn't; you'll see the same rule with `range` in the next lesson. `ports[-1]` is the last item.",
+     "`ports[0:2]` gives the first two items. The start is included and the end isn't. You'll see the same rule with `range` in the next lesson.",
      "ports = [21, 22, 80, 443]\nprint(ports[0:2], ports[-1])"
+    ],
+    [
+     "Counting from the end",
+     "A negative index counts back from the end of the list. `ports[-1]` is the last item."
     ]
    ],
    "play": {
@@ -316,7 +339,7 @@
    },
    "real": [
     "On the job",
-    "A scanner reports the open ports on each host as a list. Comparing that list with the ports you expect, and appending anything unexpected to a findings list, is a daily vulnerability management job."
+    "A scanner reports the open ports on each host as a list. You compare that list with the ports you expect. Then you append anything unexpected to a findings list. This is a daily vulnerability management job."
    ],
    "myth": [
     "The first item in a list is item 1.",
@@ -329,12 +352,12 @@
      "q": "What does this print?",
      "code": "ports = [22, 80, 443]\nprint(ports[1])",
      "o": [
-      "80",
       "22",
+      "80",
       "443"
      ],
-     "k": 0,
-     "w": "Index 1 is the second item, because counting starts at 0."
+     "k": 1,
+     "w": "80. Index 1 is the second item, because counting starts at 0. Not 22: that's index 0. Not 443: that's index 2."
     },
     {
      "d": 1,
@@ -343,11 +366,11 @@
      "code": "ports = [22, 80, 443]\nports.remove(80)\nprint(ports)",
      "o": [
       "[22, 443]",
-      "[22, 80, 443]",
-      "[80, 443]"
+      "[80, 443]",
+      "[22, 80, 443]"
      ],
      "k": 0,
-     "w": "`.remove(80)` takes 80 out, leaving 22 and 443."
+     "w": "[22, 443]. `.remove(80)` takes 80 out, leaving 22 and 443. Not [80, 443]: remove takes out the value you give it, not the first item. Not [22, 80, 443]: the list does change."
     },
     {
      "d": 2,
@@ -356,11 +379,11 @@
      "code": "ports = [21, 22, 80, 443]\nprint(ports[0:2])",
      "o": [
       "[21, 22]",
-      "[21, 22, 80]",
-      "[22, 80]"
+      "[22, 80]",
+      "[21, 22, 80]"
      ],
      "k": 0,
-     "w": "The slice starts at index 0 and stops before index 2."
+     "w": "[21, 22]. The slice starts at index 0 and stops before index 2. Not [22, 80]: the start index is included, and index 0 is 21. Not [21, 22, 80]: the end index isn't included."
     }
    ],
    "challenge": {
@@ -372,9 +395,10 @@
    },
    "recap": [
     "Lists hold ordered items.",
-    "Indexes start at 0, and -1 is the last item.",
+    "Indexes start at 0.",
     "`.append()` adds; `.remove()` takes out.",
-    "Slices include the start, not the end."
+    "Slices include the start, not the end.",
+    "Index -1 is the last item."
    ]
   },
   {
@@ -382,17 +406,25 @@
    "sub": "Do the same thing to every item.",
    "learn": [
     [
+     "Key terms",
+     "Loop: code that repeats a block, such as once for each host or log line.\nrange: a built-in function that produces a run of whole numbers.\nFiltering: keeping only the items that match a condition."
+    ],
+    [
      "for loops",
-     "A for loop runs its indented block once for each item. This is how you check every host, every port or every log line. To keep a running count, write `count += 1`, which is short for `count = count + 1`.",
+     "A for loop runs its indented block once for each item. This is how you check every host, every port or every log line.",
      "for port in [22, 80, 443]:\n    print(\"checking\", port)"
     ],
     [
+     "Keeping a count",
+     "To keep a running count, write `count += 1` inside the loop. It's short for `count = count + 1`."
+    ],
+    [
      "range",
-     "`range(1, 5)` produces 1, 2, 3 and 4. The end number is not included. It's handy for port ranges and counting."
+     "`range(1, 5)` produces 1, 2, 3 and 4. It's handy for port ranges and counting."
     ],
     [
      "Filtering as you go",
-     "Combine a loop and an if to keep only what matters. Build a new list of matches, then work with that.",
+     "Combine a loop and an if to keep only what matters. Build a new list of the matches, then work with that list.",
      "ports = [21, 22, 23, 80, 443]\nrisky = []\nfor p in ports:\n    if p in (21, 23):\n        risky.append(p)\nprint(risky)"
     ]
    ],
@@ -402,7 +434,7 @@
    },
    "real": [
     "On the job",
-    "A vulnerability scanner returns 500 findings. A loop that keeps only the critical ones on internet-facing hosts gives you a short list to fix first."
+    "A vulnerability scanner returns 500 findings. A loop keeps only the critical ones on internet-facing hosts. That gives you a short list to fix first."
    ],
    "myth": [
     "`range(1, 5)` includes 5.",
@@ -422,11 +454,11 @@
      "code": "print(list(range(1, 4)))",
      "o": [
       "[1, 2, 3]",
-      "[1, 2, 3, 4]",
-      "[0, 1, 2, 3]"
+      "[0, 1, 2, 3]",
+      "[1, 2, 3, 4]"
      ],
      "k": 0,
-     "w": "The start is included and the stop is not."
+     "w": "[1, 2, 3]. The start is included and the stop is not. Not [0, 1, 2, 3]: this range starts at 1, not 0. Not [1, 2, 3, 4]: 4 is the stop value, so it's left out."
     },
     {
      "d": 2,
@@ -434,12 +466,12 @@
      "q": "What does this print?",
      "code": "total = 0\nfor n in [3, 4, 5]:\n    total = total + n\nprint(total)",
      "o": [
-      "12",
       "5",
+      "12",
       "345"
      ],
-     "k": 0,
-     "w": "The loop adds each number to the running total: 3, then 7, then 12."
+     "k": 1,
+     "w": "12. The loop adds each number to the running total: 3, then 7, then 12. Not 5: that's only the last number. Not 345: these are numbers, so they're added, not joined like text."
     },
     {
      "d": 2,
@@ -447,12 +479,12 @@
      "run": true,
      "code": "count = 0\nfor n in range(1, 4):\n    count += 1\nprint(count)",
      "o": [
-      "3",
+      "1",
       "2",
-      "1"
+      "3"
      ],
-     "k": 0,
-     "w": "The loop runs for 1, 2 and 3, adding 1 to `count` each time."
+     "k": 2,
+     "w": "3. The loop runs for 1, 2 and 3, adding 1 to `count` each time. Not 1 or 2: the range gives three numbers, so the loop runs three times."
     }
    ],
    "challenge": {
@@ -464,9 +496,9 @@
    },
    "recap": [
     "for loops run once per item.",
+    "`count += 1` adds one each time round.",
     "`range(a, b)` stops before b.",
-    "A loop plus an if filters a list.",
-    "`count += 1` adds one each time round."
+    "A loop plus an if filters a list."
    ]
   },
   {
@@ -474,31 +506,35 @@
    "sub": "Look things up by name.",
    "learn": [
     [
+     "Key terms",
+     "Dictionary: a collection that maps keys to values, inside curly braces.\nKey: the name you use to look up a value in a dictionary.\nKeyError: the error Python raises when you look up a key that isn't there.\nJavaScript Object Notation (JSON): a text format for structured, nested data."
+    ],
+    [
      "Dictionaries",
-     "A dictionary maps keys to values, in curly braces. Look a value up by its key, the way DNS looks up an address by name.",
+     "A dictionary maps keys to values, inside curly braces. You look up a value by its key. It works like the Domain Name System (DNS), which looks up an address by name.",
      "services = {22: \"ssh\", 80: \"http\", 443: \"https\"}\nprint(services[443])"
     ],
     [
      "Safe lookups",
-     "Looking up a missing key with square brackets raises a KeyError. `.get(key, default)` returns the default instead, which is safer with messy data."
+     "Looking up a missing key with square brackets raises a KeyError. `.get(key, default)` returns the default instead. That's safer with messy data."
     ],
     [
      "Counting by hand",
-     "To count things, add 1 to a dictionary value each time you see a key. Start missing keys at 0 with `.get()`.",
+     "To count things, add 1 to a key's value each time you see that key. Use `.get()` to start missing keys at 0.",
      "counts = {}\nfor ip in [\"1.1.1.1\", \"2.2.2.2\", \"1.1.1.1\"]:\n    counts[ip] = counts.get(ip, 0) + 1\nprint(counts)"
     ]
    ],
    "play": {
-    "p": "Add another service, then look one up that isn't there.",
+    "p": "Add another service, then look up one that isn't there.",
     "code": "services = {22: \"ssh\", 80: \"http\", 443: \"https\"}\nprint(services[443])\nprint(services.get(3389, \"unknown\"))"
    },
    "real": [
     "On the job",
-    "Parsed JSON from any security API arrives as dictionaries. Knowing how to reach `alert[\"src\"][\"ip\"]` reliably is half of every automation script."
+    "Once parsed, JavaScript Object Notation (JSON) data from a security application programming interface (API) becomes Python dictionaries. Knowing how to reach `alert[\"src\"][\"ip\"]` reliably is a core skill in automation scripts."
    ],
    "myth": [
     "Dictionaries are only for advanced code.",
-    "They're one of the most useful beginner tools: look-up tables, counts and parsed JSON are all dictionaries."
+    "They're one of the most useful beginner tools. Look-up tables, counts and JSON data read into Python are all dictionaries."
    ],
    "quiz": [
     {
@@ -507,23 +543,23 @@
      "q": "What does this print?",
      "code": "services = {22: \"ssh\", 80: \"http\"}\nprint(services.get(443, \"unknown\"))",
      "o": [
-      "unknown",
       "None",
+      "unknown",
       "A KeyError"
      ],
-     "k": 0,
-     "w": "443 isn't a key, so `.get()` returns the default you gave it."
+     "k": 1,
+     "w": "unknown. 443 isn't a key, so `.get()` returns the default you gave it. Not None: that's only returned when you give no default. Not a KeyError: only square brackets raise that."
     },
     {
      "d": 2,
      "q": "Why use `counts.get(ip, 0) + 1` instead of `counts[ip] + 1`?",
      "o": [
-      "The first time an IP appears it isn't a key yet",
       "It runs faster",
-      "It sorts the dictionary"
+      "It sorts the dictionary",
+      "A new IP isn't a key yet"
      ],
-     "k": 0,
-     "w": "Square brackets on a missing key raise a KeyError. `.get` starts new keys at 0."
+     "k": 2,
+     "w": "A new IP isn't a key yet. Square brackets on a missing key raise a KeyError. `.get` starts new keys at 0. Not speed or sorting: `.get` does neither."
     },
     {
      "d": 2,
@@ -531,12 +567,12 @@
      "q": "What does this print?",
      "code": "services = {22: \"ssh\"}\ntry:\n    print(services[80])\nexcept KeyError:\n    print(\"KeyError\")",
      "o": [
-      "KeyError",
       "None",
-      "unknown"
+      "unknown",
+      "KeyError"
      ],
-     "k": 0,
-     "w": "Square brackets raise a KeyError for a missing key. `.get()` is the safe way."
+     "k": 2,
+     "w": "KeyError. Square brackets raise KeyError for a missing key, and the except block prints that text. Not None or unknown: only `.get()` returns a default."
     }
    ],
    "challenge": {
@@ -547,7 +583,7 @@
     "expect": "{'root': 2, 'admin': 1}"
    },
    "recap": [
-    "Dictionaries map keys to values.",
+    "A dictionary maps keys to values.",
     "`.get(key, default)` avoids KeyErrors.",
     "Count with `.get(k, 0) + 1`.",
     "API data usually arrives as dictionaries."
@@ -558,17 +594,21 @@
    "sub": "Package code you'll reuse.",
    "learn": [
     [
+     "Key terms",
+     "Function: a named block of code that you can run again and again.\nParameter: a name in a function's brackets that receives a value when the function is called.\nReturn value: the result a function sends back with return.\nDefault value: the value a parameter uses when the caller leaves it out."
+    ],
+    [
      "Functions",
-     "`def` defines a function: a named block you can call again and again. Parameters go in the brackets, and `return` sends a result back.",
+     "`def` defines a function, which is a named block you can call again and again. Parameters go in the brackets. `return` sends a result back to the caller.",
      "def is_admin_port(port):\n    return port in (22, 3389, 5985)\n\nprint(is_admin_port(3389))"
     ],
     [
      "Why functions matter",
-     "Functions stop you copying code around. Fix a bug once and every caller gets the fix. They also make scripts easier to test and read."
+     "Functions stop you copying code around. Fix a bug once, and every caller gets the fix. Functions also make scripts easier to test and read."
     ],
     [
      "Parameters and defaults",
-     "A parameter can have a default: `def check(port, timeout=1):`. Callers can leave it out or pass their own value.",
+     "A parameter can have a default value, as in `def check(port, timeout=1):`. Callers can leave it out, or pass their own value.",
      "def check(port, timeout=1):\n    return f\"port {port}, timeout {timeout}\"\n\nprint(check(22))\nprint(check(22, 5))"
     ]
    ],
@@ -578,16 +618,16 @@
    },
    "real": [
     "On the job",
-    "Detection rules are functions in disguise: given an event, return True if it's suspicious. Writing small functions like `is_off_hours(timestamp)` is exactly how SIEM and SOAR logic is built."
+    "Detection rules work like functions. Given an event, they return True if it's suspicious. Small functions like `is_off_hours(timestamp)` are exactly how logic is built in security information and event management (SIEM) tools. The same goes for security orchestration, automation and response (SOAR) tools."
    ],
    "myth": [
     "A function that prints a result returns it too.",
-    "print shows a value on screen; return hands it back to the caller. A function without return gives back None."
+    "Printing shows a value on screen. Returning hands it back to the caller. A function without return gives back None."
    ],
    "tryit": {
     "h": "Write a tiny rule",
     "where": "Kali: python3",
-    "p": "Write a function that flags a login as suspicious after more than five failures, then test it with a few values.",
+    "p": "Write a function that flags a login as suspicious after more than five failures. Then test it with a few values.",
     "code": "def suspicious(fails):\n    return fails > 5\n\nfor n in [2, 6, 11]:\n    print(n, suspicious(n))"
    },
    "quiz": [
@@ -597,24 +637,24 @@
      "q": "What does this print?",
      "code": "def risk(likelihood, impact):\n    return likelihood * impact\n\nprint(risk(3, 4))",
      "o": [
-      "12",
       "7",
+      "12",
       "34"
      ],
-     "k": 0,
-     "w": "The function multiplies its two arguments and returns 12."
+     "k": 1,
+     "w": "12. The function multiplies the two values passed in and returns 12. Not 7: that's 3 plus 4, but the code multiplies. Not 34: these are numbers, so they aren't joined like text."
     },
     {
      "d": 3,
      "q": "What does this print?",
      "code": "def check(port):\n    print(\"checked\", port)\n\nresult = check(22)\nprint(result)",
      "o": [
-      "checked 22, then None",
+      "None only",
       "checked 22, then 22",
-      "None only"
+      "checked 22, then None"
      ],
-     "k": 0,
-     "w": "The function prints but never returns, so `result` is None."
+     "k": 2,
+     "w": "checked 22, then None. The function prints but never returns, so `result` is None. Not 22: printing a value doesn't return it. Not None only: the print inside the function still runs first."
     },
     {
      "d": 2,
@@ -622,16 +662,16 @@
      "run": true,
      "code": "def check(port, timeout=1):\n    return f\"port {port}, timeout {timeout}\"\n\nprint(check(22))",
      "o": [
+      "An error",
       "port 22, timeout 1",
-      "port 22, timeout 5",
-      "An error"
+      "port 22, timeout 5"
      ],
-     "k": 0,
-     "w": "`timeout` wasn't passed, so it uses its default of 1."
+     "k": 1,
+     "w": "port 22, timeout 1. `timeout` wasn't passed, so it uses its default of 1. Not timeout 5: this call doesn't pass 5. Not an error: the default makes that parameter optional."
     }
    ],
    "challenge": {
-    "p": "Write a function `is_admin_port(port)` that returns True for 22, 3389 and 5985, then print `is_admin_port(3389)`.",
+    "p": "Write a function `is_admin_port(port)` that returns True for 22, 3389 and 5985. Then print `is_admin_port(3389)`.",
     "start": "def is_admin_port(port):\n    pass\n\nprint(is_admin_port(3389))",
     "hint": "Replace `pass` with `return port in (22, 3389, 5985)`.",
     "solution": "def is_admin_port(port):\n    return port in (22, 3389, 5985)\n\nprint(is_admin_port(3389))",
@@ -639,8 +679,9 @@
    },
    "recap": [
     "`def` packages code; `return` hands back a result.",
-    "A function without return gives back None.",
+    "Fix a bug once and every caller gets the fix.",
     "Defaults make parameters optional.",
+    "A function without return gives back None.",
     "Small functions make detection logic readable."
    ]
   },
@@ -649,18 +690,22 @@
    "sub": "Clean, split and search text.",
    "learn": [
     [
+     "Key terms",
+     "Method: a function that belongs to a value, called with a dot after the value.\nWhitespace: spaces, tabs and newlines.\nCase-sensitive: treating upper-case and lower-case letters as different."
+    ],
+    [
      "String methods",
-     "Strings come with built-in methods. `.lower()` and `.upper()` change case, `.strip()` removes spaces and newlines from the ends, and `.replace()` swaps text.",
+     "Strings come with built-in methods. `.lower()` and `.upper()` change case. `.strip()` removes spaces and newlines from the ends. `.replace()` swaps one piece of text for another.",
      "user = \"  Admin \\n\"\nprint(user.strip().lower())"
     ],
     [
      "Split into parts",
-     "`.split()` breaks a string into a list of words. With an argument it splits on that character instead. It's the quickest way to pull fields out of a log line.",
+     "`.split()` breaks a string into a list of words. Give it a character, and it splits on that character instead. It's the quickest way to pull fields out of a log line.",
      "line = \"Failed password for root from 10.0.0.5\"\nparts = line.split()\nprint(parts[-1])"
     ],
     [
      "Searching",
-     "`in` checks whether text appears anywhere in a string. `.startswith()` and `.endswith()` check the ends. All of them are case-sensitive."
+     "`in` checks whether text appears anywhere in a string. `.startswith()` and `.endswith()` check the start and the end. All of them are case-sensitive."
     ]
    ],
    "play": {
@@ -669,7 +714,7 @@
    },
    "real": [
     "On the job",
-    "Phishing triage often starts with string checks: does the sender's domain end with your company's domain, or with a look-alike? A couple of `.endswith()` and `.lower()` calls handle that."
+    "Checking reported phishing emails often starts with string checks. Does the sender's domain end with your company's domain, or with a look-alike? A couple of `.endswith()` and `.lower()` calls handle that."
    ],
    "myth": [
     "`in` and `==` do the same thing.",
@@ -678,7 +723,7 @@
    "tryit": {
     "h": "Pull fields from a log line",
     "where": "Kali: python3",
-    "p": "Split a real-looking SSH log line and print the user and IP address.",
+    "p": "Split a realistic Secure Shell (SSH) log line, then print the user and IP address.",
     "code": "line = \"Failed password for invalid user test from 10.10.10.10 port 51234 ssh2\"\nparts = line.split()\nprint(\"user:\", parts[5])\nprint(\"ip:\", parts[7])"
    },
    "quiz": [
@@ -689,11 +734,11 @@
      "code": "line = \"Failed password for root\"\nprint(line.split()[2])",
      "o": [
       "for",
-      "password",
-      "root"
+      "root",
+      "password"
      ],
      "k": 0,
-     "w": "Counting starts at 0: Failed is 0, password is 1, for is 2."
+     "w": "for. Counting starts at 0, so Failed is 0, password is 1 and for is 2. Not password: that's index 1. Not root: that's index 3."
     },
     {
      "d": 1,
@@ -706,7 +751,7 @@
       "An error"
      ],
      "k": 0,
-     "w": "`in` matches anywhere inside the string, which is easy to forget when filtering usernames."
+     "w": "True. `in` matches anywhere inside the string, which is easy to forget when filtering usernames. Not False: \"sysadmin\" contains \"admin\". Not an error: `in` works on any two strings."
     },
     {
      "d": 1,
@@ -715,10 +760,11 @@
      "code": "sender = \"it@contoso.com\"\nprint(sender.endswith(\"@contoso.com\"))",
      "o": [
       "True",
-      "False"
+      "False",
+      "An error"
      ],
      "k": 0,
-     "w": "`.endswith` checks the end of the text exactly. The `@` matters: without it, `evilcontoso.com` would match too."
+     "w": "True. `.endswith` checks the end of the text exactly, and this address ends with @contoso.com. Not False or an error: the match is exact and valid. The `@` matters, because without it, `evilcontoso.com` would match too."
     }
    ],
    "challenge": {
@@ -730,49 +776,53 @@
    },
    "recap": [
     "`.strip()`, `.lower()` and `.split()` do most clean-up.",
-    "`in` matches anywhere; `==` needs an exact match.",
-    "`.startswith()` and `.endswith()` check the edges.",
-    "Split, then pick the part you need."
+    "Split, then pick the part you need.",
+    "`.startswith()` and `.endswith()` check the start and end.",
+    "`in` matches anywhere; `==` needs an exact match."
    ]
   },
   {
    "t": "Parse a log: failed SSH logins",
-   "sub": "Count failures in a real-looking auth log.",
+   "sub": "Count failed Secure Shell (SSH) logins in a realistic log.",
    "learn": [
     [
-     "Open with with",
-     "`with open(path) as f:` opens a file and closes it automatically when the block ends, even if an error happens. Use it every time.",
+     "Key terms",
+     "Parse: to pull useful fields out of text, such as a log line.\nwith statement: Python code that sets something up, such as an open file, and cleans it up when its block ends.\nNewline: the hidden character that ends each line of text."
+    ],
+    [
+     "Open files with with",
+     "`with open(path) as f:` opens a file. It closes the file automatically when the block ends, even if an error happens. Use it every time.",
      "with open(\"ssh.log\") as f:\n    for line in f:\n        print(line.strip())"
     ],
     [
      "Line by line",
-     "Looping over a file gives one line at a time, so even a huge log fits in memory. Each line ends with a newline, which `.strip()` removes."
+     "Looping over a file gives you one line at a time. Each line still ends with a newline. `.strip()` removes it before you print or compare the line."
     ],
     [
      "Messy logs",
-     "Real logs contain odd characters. `open(path, errors=\"replace\")` swaps unreadable bytes for a placeholder instead of crashing halfway through."
+     "Real logs contain odd characters. `open(path, errors=\"replace\")` swaps unreadable bytes for a placeholder. That stops the script crashing halfway through."
     ],
     [
      "Practise on text first",
-     "Here a sample log is stored in a variable, and `.splitlines()` turns it into lines. On Kali you'd loop over an open file instead; the loop body stays the same."
+     "Here, a sample log is stored in a variable. `.splitlines()` turns it into lines. On Kali you'd loop over an open file instead, and the loop body stays the same."
     ]
    ],
    "play": {
-    "p": "The sample log is in `LOG`. Run it, then change what it counts, for example `Accepted`.",
+    "p": "The sample log is in `LOG`. Run it, then change what it counts, for example to `Accepted`.",
     "code": "LOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\ncount = 0\nfor line in LOG.splitlines():\n    if \"Failed password\" in line:\n        count += 1\nprint(count, \"failed logins\")"
    },
    "real": [
     "On the job",
-    "An incident responder receives a 2 GB web server log. Opening it in Notepad hangs the laptop. A Python loop reads it line by line, keeps only requests from the suspect IP and writes them to a small file."
+    "An incident responder receives a 2 GB web server log. Opening it in Notepad freezes the laptop. A Python loop reads it line by line and keeps only requests from the suspect IP. Then it writes them to a small file."
    ],
    "myth": [
     "You must load the whole file before searching it.",
-    "Looping over the file object reads one line at a time. That's faster to start and works on files bigger than your RAM."
+    "Looping over the file object reads one line at a time. That's faster to start, and it works on files bigger than your random access memory (RAM)."
    ],
    "tryit": {
     "h": "Count failed SSH logins",
     "where": "Kali terminal",
-    "p": "SSH isn't running on Kali by default. Start it, fail a login, export the log, then count the failures with Python.",
+    "p": "SSH isn't running on Kali by default. Start it, fail a login and export the log. Then count the failures with Python.",
     "code": "sudo systemctl start ssh\nssh nobody@localhost    # type yes, a wrong password, then Ctrl+C\nsudo journalctl -u ssh > ssh.log\npython3 -c '\ncount = 0\nwith open(\"ssh.log\", errors=\"replace\") as f:\n    for line in f:\n        if \"Failed password\" in line:\n            count += 1\nprint(count, \"failed logins\")\n'\nsudo systemctl stop ssh"
    },
    "quiz": [
@@ -780,23 +830,23 @@
      "d": 1,
      "q": "What does `with open(...) as f:` give you that plain `open()` doesn't?",
      "o": [
-      "The file closes automatically when the block ends",
-      "The file opens faster",
-      "The file is encrypted"
+      "It opens the file more quickly",
+      "It encrypts the file's contents",
+      "It closes the file automatically"
      ],
-     "k": 0,
-     "w": "The with block guarantees the file is closed, even if an error interrupts it."
+     "k": 2,
+     "w": "It closes the file automatically. The with block guarantees the file is closed when the block ends, even if an error interrupts it. Not speed: with doesn't change how fast a file opens. Not encryption: with doesn't change the contents."
     },
     {
      "d": 2,
      "q": "Why loop over a log file line by line instead of reading it all at once?",
      "o": [
-      "It handles files bigger than memory",
-      "It sorts the lines",
-      "It removes duplicate lines"
+      "It sorts the lines by time",
+      "It removes duplicate lines",
+      "It works on huge files"
      ],
-     "k": 0,
-     "w": "Only one line is held at a time, so file size stops mattering."
+     "k": 2,
+     "w": "It works on huge files, even ones bigger than memory. Only one line is held at a time, so file size stops mattering. Not sorting or removing duplicates: the loop reads every line in its original order."
     },
     {
      "d": 1,
@@ -804,16 +854,16 @@
      "q": "What does this print?",
      "code": "log = \"Failed a\\nAccepted b\\nFailed c\"\ncount = 0\nfor line in log.splitlines():\n    if \"Failed\" in line:\n        count += 1\nprint(count)",
      "o": [
+      "1",
       "2",
-      "3",
-      "1"
+      "3"
      ],
-     "k": 0,
-     "w": "Two of the three lines contain \"Failed\"."
+     "k": 1,
+     "w": "2. Two lines contain \"Failed\", so the count goes up twice. Not 3: the Accepted line doesn't match. Not 1: the loop checks every line."
     }
    ],
    "challenge": {
-    "p": "Print the source IP of every failed login, one line per failed login (repeats included). The IP is the word after `from`.",
+    "p": "Print the source IP of every failed login, one per line, repeats included. The IP is the word after `from`.",
     "start": "LOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\nfor line in LOG.splitlines():\n    if \"Failed password\" in line:\n        parts = line.split()\n",
     "hint": "`parts.index(\"from\")` gives the position of `from`, so the IP is at that position plus 1.",
     "solution": "LOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\nfor line in LOG.splitlines():\n    if \"Failed password\" in line:\n        parts = line.split()\n        print(parts[parts.index(\"from\") + 1])",
@@ -822,6 +872,7 @@
    "recap": [
     "Always open files with `with`.",
     "Loop line by line; never load a huge log at once.",
+    "`.strip()` removes the newline at the end of each line.",
     "Find the field by a nearby word, not a fixed position.",
     "`errors=\"replace\"` survives messy logs."
    ]
@@ -831,17 +882,21 @@
    "sub": "Remove duplicates and compare groups.",
    "learn": [
     [
+     "Key terms",
+     "Set: a collection of unique values with no fixed order.\nAsset inventory: a list of every system and device an organisation owns.\nShadow IT: devices or software that people use without the organisation's approval."
+    ],
+    [
      "What a set is",
-     "A set holds unique values with no order. `set(ips)` throws away duplicates, so `len(set(ips))` counts distinct IPs.",
+     "A set holds unique values with no fixed order. `set(ips)` throws away duplicates, so `len(set(ips))` counts the distinct IPs.",
      "ips = [\"1.1.1.1\", \"2.2.2.2\", \"1.1.1.1\"]\nprint(len(set(ips)))"
     ],
     [
      "Comparing sets",
-     "`a - b` is what's in a but not b. `a & b` is what's in both. That's how you compare what the scanner found with your asset list."
+     "`a - b` is what's in a but not b. `a & b` is what's in both. That's how you compare what a scanner found with your asset inventory."
     ],
     [
      "Sorting for output",
-     "Sets have no order, so their printed order can change. Use `sorted(myset)` when you want stable, readable output."
+     "A set's printed order can change from run to run. Use `sorted(myset)` when you want stable, readable output."
     ]
    ],
    "play": {
@@ -850,11 +905,11 @@
    },
    "real": [
     "On the job",
-    "Comparing \"hosts on the network\" with \"hosts in the asset register\" is how shadow IT is found. With sets it's one line: `seen - registered`."
+    "Comparing the hosts on the network with the hosts in the asset inventory is how shadow IT is found. Shadow IT means devices or software used without approval. With sets, it's one line: `seen - assets`."
    ],
    "myth": [
     "A set keeps items in the order you added them.",
-    "It doesn't promise any order. If order matters, use a list or sort the set when you print it."
+    "A set doesn't promise any order. If the order you added items matters, use a list instead."
    ],
    "quiz": [
     {
@@ -863,12 +918,12 @@
      "run": true,
      "code": "ips = [\"1.1.1.1\", \"2.2.2.2\", \"1.1.1.1\"]\nprint(len(set(ips)))",
      "o": [
+      "1",
       "2",
-      "3",
-      "1"
+      "3"
      ],
-     "k": 0,
-     "w": "The set keeps one copy of each address, so there are two."
+     "k": 1,
+     "w": "2. The set keeps one copy of each address, so there are two. Not 3: that counts the duplicate as well. Not 1: 1.1.1.1 and 2.2.2.2 are different addresses."
     },
     {
      "d": 2,
@@ -881,18 +936,18 @@
       "{1, 2, 3, 4}"
      ],
      "k": 0,
-     "w": "`a - b` keeps what's only in a."
+     "w": "{3}. `a - b` keeps what's only in a, and 3 is the only value b doesn't have. Not {1, 2}: that's the overlap, which & gives. Not {1, 2, 3, 4}: that's everything in either set."
     },
     {
      "d": 1,
      "q": "Why print `sorted(myset)` instead of the set itself?",
      "o": [
-      "Sets have no fixed order",
       "Sets can't be printed",
+      "Sets have no fixed order",
       "sorted removes duplicates"
      ],
-     "k": 0,
-     "w": "Sorting gives stable, readable output each time."
+     "k": 1,
+     "w": "Sets have no fixed order. Sorting gives stable, readable output each time. Not that sets can't be printed: they can, in any order. Not duplicates: the set has already removed them."
     }
    ],
    "challenge": {
@@ -906,7 +961,7 @@
     "Sets keep one copy of each value.",
     "`a - b` finds what's missing; `a & b` finds the overlap.",
     "Sets have no order, so sort before printing.",
-    "Great for comparing asset lists."
+    "Sets are great for comparing asset lists."
    ]
   },
   {
@@ -914,13 +969,17 @@
    "sub": "Count things in one line.",
    "learn": [
     [
+     "Key terms",
+     "Module: a file of ready-made Python code that you load with import.\nCounter: a tool in the collections module that counts how often each item appears.\nTop talkers: the hosts that send or receive the most traffic."
+    ],
+    [
      "Counter does it for you",
-     "`collections.Counter` counts a list in one line, and `.most_common(n)` gives the top n. It's perfect for top talkers and top failed-login sources.",
+     "`collections.Counter` counts every item in a list in one line. It's perfect for top talkers and top failed-login sources.",
      "from collections import Counter\nfails = [\"1.1.1.1\", \"2.2.2.2\", \"1.1.1.1\"]\nprint(Counter(fails).most_common(1))"
     ],
     [
      "most_common",
-     "`Counter(ips).most_common(3)` gives the top three as (value, count) pairs, already sorted. Perfect for a \"top attackers\" report."
+     "`.most_common(n)` gives the top n. For example, `Counter(ips).most_common(3)` gives the top three as (value, count) pairs, already sorted. Use it for a \"top attackers\" report."
     ],
     [
      "Counters add up",
@@ -933,7 +992,7 @@
    },
    "real": [
     "On the job",
-    "\"Which IPs failed to log in the most last night?\" is a daily SOC question. Read the log, pull out the IPs, put them in a Counter, print `most_common(10)`. Done."
+    "\"Which IPs failed to log in the most last night?\" is a daily question in a security operations centre (SOC). Read the log, pull out the IPs and put them in a Counter. Then print `most_common(10)`."
    ],
    "tryit": {
     "h": "Count top talkers",
@@ -943,7 +1002,7 @@
    },
    "myth": [
     "You need a database to count events.",
-    "For millions of lines, maybe. For a day's auth log, a Counter in memory is instant."
+    "For millions of lines, maybe. For a day's authentication log, a Counter in memory is instant."
    ],
    "quiz": [
     {
@@ -952,12 +1011,12 @@
      "q": "What does this print?",
      "code": "from collections import Counter\nprint(Counter([\"a\", \"b\", \"a\"]).most_common(1))",
      "o": [
-      "[('a', 2)]",
+      "a",
       "{'a': 2}",
-      "a"
+      "[('a', 2)]"
      ],
-     "k": 0,
-     "w": "`most_common` returns a list of (item, count) pairs, highest first."
+     "k": 2,
+     "w": "[('a', 2)]. `most_common` returns a list of (item, count) pairs, highest first. Not {'a': 2}: that's a dictionary, not a list. Not just a: the result includes the count as well as the item."
     },
     {
      "d": 1,
@@ -965,12 +1024,12 @@
      "run": true,
      "code": "from collections import Counter\nc = Counter()\nc[\"root\"] += 1\nprint(c[\"root\"])",
      "o": [
-      "1",
       "0",
+      "1",
       "A KeyError"
      ],
-     "k": 0,
-     "w": "Missing keys start at 0 in a Counter, so adding 1 gives 1."
+     "k": 1,
+     "w": "1. Missing keys start at 0 in a Counter, so adding 1 gives 1. Not 0: the line that adds 1 did run. Not a KeyError: a Counter treats a missing key as 0."
     },
     {
      "d": 2,
@@ -978,12 +1037,12 @@
      "run": true,
      "code": "from collections import Counter\nprint(Counter(\"abaab\").most_common(1)[0])",
      "o": [
+      "3",
       "('a', 3)",
-      "('b', 2)",
-      "3"
+      "('b', 2)"
      ],
-     "k": 0,
-     "w": "`most_common(1)` returns a list holding the top pair; `[0]` takes that pair out."
+     "k": 1,
+     "w": "('a', 3). `most_common(1)` returns a list holding the top pair; `[0]` takes that pair out. Not ('b', 2): b appears less often than a. Not 3: you get the whole pair, not just the count."
     }
    ],
    "challenge": {
@@ -1005,21 +1064,33 @@
    "sub": "Find patterns, not just fixed text.",
    "learn": [
     [
+     "Key terms",
+     "Regular expression (regex): a pattern that matches text.\nRaw string: a string with r before the quotes, which keeps backslashes exactly as typed.\nCapture group: brackets in a pattern that save part of the match.\nEscape: putting a backslash before a character so it's matched literally."
+    ],
+    [
      "What regex is",
-     "A regular expression is a pattern that matches text. Python's `re` module uses it to find IP addresses, usernames or error codes inside messy lines. Write patterns as raw strings, like `r\"...\"`."
+     "A regular expression (regex) is a pattern that matches text. Python's `re` module uses it to find IP addresses, usernames or error codes inside messy lines."
+    ],
+    [
+     "Raw strings",
+     "Write patterns as raw strings, like `r\"...\"`. The r stops Python treating backslashes as its own escapes."
     ],
     [
      "Building blocks",
-     "`\\d` matches a digit and `\\S` any non-whitespace character. `+` means one or more. `.` matches any character, so escape it as `\\.` when you mean a real dot."
+     "`\\d` matches a digit, and `\\S` matches any non-whitespace character. `+` means one or more. `.` matches any character except a newline, so escape it as `\\.` when you mean a real dot."
     ],
     [
      "Capture groups",
-     "Brackets capture part of a match. `re.search` returns a match object, and `.group(1)` gives you what the first brackets captured.",
+     "Brackets in a pattern capture part of the match. `re.search` returns a match object, which holds the result. `.group(1)` gives you what the first brackets captured.",
      "import re\nline = \"Failed password for root from 10.0.0.5 port 22\"\nm = re.search(r\"from (\\S+)\", line)\nif m:\n    print(m.group(1))"
     ],
     [
      "findall",
-     "`re.findall` returns every match in the text as a list. It's the quickest way to pull all the IP addresses or numbers out of a line. A simple IP pattern also matches impossible values like 999.999.999.999, so check results with the `ipaddress` module."
+     "`re.findall` returns every match in the text as a list. It's the quickest way to pull all the IP addresses or numbers out of a line."
+    ],
+    [
+     "Check what you match",
+     "A simple IP pattern also matches impossible values like 999.999.999.999. Check your results with the `ipaddress` module."
     ]
    ],
    "play": {
@@ -1028,11 +1099,11 @@
    },
    "real": [
     "On the job",
-    "Threat intel reports list indicators like IPs and domains buried in paragraphs. A regex pulls them out in seconds so they can be blocked or searched for in your SIEM."
+    "Threat intelligence reports list indicators, such as IPs and domains, inside paragraphs of text. A regex pulls them out in seconds. Then you can block them, or search for them in your security information and event management (SIEM) system."
    ],
    "myth": [
     "You need to memorise regex syntax.",
-    "Nobody does. Learn the few building blocks here, then test patterns on a site like regex101 or in the Python prompt."
+    "Most people don't. Learn the few building blocks here, then test patterns on a site like regex101 or in the Python prompt."
    ],
    "quiz": [
     {
@@ -1041,12 +1112,12 @@
      "q": "What does this print?",
      "code": "import re\nm = re.search(r\"from (\\S+)\", \"Failed password for root from 10.0.0.5 port 22\")\nprint(m.group(1))",
      "o": [
-      "10.0.0.5",
       "root",
+      "10.0.0.5",
       "from 10.0.0.5"
      ],
-     "k": 0,
-     "w": "The brackets capture the non-space text right after \"from \"."
+     "k": 1,
+     "w": "10.0.0.5. The brackets capture the non-space text right after \"from \". Not root: the pattern looks after from, not before it. Not from 10.0.0.5: group 1 holds only what the brackets captured."
     },
     {
      "d": 2,
@@ -1054,23 +1125,23 @@
      "q": "What does this print?",
      "code": "import re\nprint(re.findall(r\"\\d+\", \"port 22 and 443\"))",
      "o": [
-      "['22', '443']",
+      "22443",
       "[22, 443]",
-      "22443"
+      "['22', '443']"
      ],
-     "k": 0,
-     "w": "findall returns every match as a string inside a list."
+     "k": 2,
+     "w": "['22', '443']. findall returns every match as a string inside a list. Not [22, 443]: regex matches are text, not numbers. Not 22443: the matches stay as separate items in the list."
     },
     {
      "d": 3,
      "q": "Why write the pattern as `r\"\\d+\"` instead of `\"\\d+\"`?",
      "o": [
-      "The r keeps backslashes exactly as typed",
+      "It makes the pattern run faster",
       "It makes the regex case-insensitive",
-      "It runs faster"
+      "The r keeps backslashes exactly as typed"
      ],
-     "k": 0,
-     "w": "A raw string stops Python treating backslashes as its own escapes. Without it, `\\b` (a regex word boundary) silently becomes a backspace character."
+     "k": 2,
+     "w": "The r keeps backslashes exactly as typed. A raw string stops Python treating backslashes as its own escapes. Without it, `\\b` (a regex word boundary) silently becomes a backspace character. Not case or speed: the r changes neither."
     }
    ],
    "challenge": {
@@ -1084,7 +1155,8 @@
     "`re.search` finds the first match; `re.findall` finds them all.",
     "Capture groups pull out just the part you need.",
     "Use raw strings for patterns.",
-    "Escape a real dot as `\\.`."
+    "Escape a real dot as `\\.`.",
+    "Check IP matches with the `ipaddress` module."
    ]
   },
   {
@@ -1092,16 +1164,24 @@
    "sub": "Combine checks into one useful tool.",
    "learn": [
     [
-     "What makes a password strong",
-     "Length matters most. NIST SP 800-63B-4 (2025) requires at least 15 characters when a password is the only factor, bans forced symbol rules and routine changes, and requires checks against breached-password lists."
+     "Key terms",
+     "Passphrase: a long password made of several words.\nBreached-password list: a list of passwords already exposed in data breaches.\nany(): a built-in function that returns True if at least one item is True."
+    ],
+    [
+     "Length matters most",
+     "Length matters most in a password. The National Institute of Standards and Technology (NIST) covers this in SP 800-63B-4 (2025). It requires at least 15 characters when a password is the only factor."
+    ],
+    [
+     "No forced symbols or changes",
+     "NIST SP 800-63B-4 bans forced symbol rules. It also bans routine password changes."
     ],
     [
      "Checks with any()",
-     "`any(c.isdigit() for c in pw)` is True if at least one character is a digit. The same pattern works for `.isupper()` and `.islower()`. Read it as: for each character c, is it a digit? `any()` says True if at least one is."
+     "`any(c.isdigit() for c in pw)` is True if at least one character is a digit. Read it as: for each character c, is it a digit? The same pattern works with `.isupper()` and `.islower()`."
     ],
     [
      "Keep it honest",
-     "A checker can only guess. A long password that's already in a breach list is still weak, which is why real systems also check breached-password lists."
+     "A checker can only guess. A long password that's already in a breach list is still weak. That's why NIST requires checks against breached-password lists."
     ]
    ],
    "play": {
@@ -1110,7 +1190,7 @@
    },
    "real": [
     "On the job",
-    "Help desk staff get asked \"is this a good password?\" all the time. Knowing that length and breach checks matter more than symbols is a common interview question too."
+    "Help desk staff often get asked \"is this a good password?\" Interviewers ask about it too. The key point is that length and breach checks matter more than symbols."
    ],
    "myth": [
     "Adding a symbol makes any password strong.",
@@ -1123,11 +1203,12 @@
      "run": true,
      "code": "pw = \"hunter9\"\nprint(any(c.isdigit() for c in pw))",
      "o": [
+      "9",
       "True",
       "False"
      ],
-     "k": 0,
-     "w": "\"9\" is a digit, so `any` finds one."
+     "k": 1,
+     "w": "True. \"9\" is a digit, so `any()` finds at least one. Not False: one digit is enough. Not 9: `any()` returns True or False, not the matching character."
     },
     {
      "d": 2,
@@ -1138,7 +1219,7 @@
       "Your old password with the year changed"
      ],
      "k": 0,
-     "w": "Length and uniqueness beat complexity rules. Changing a year is easy to guess."
+     "w": "A long, unique passphrase. Length and uniqueness beat complexity rules. Not the 8-character password: it's short, and a symbol adds little. Not the old password with a new year: attackers guess that change easily."
     },
     {
      "d": 1,
@@ -1146,15 +1227,16 @@
      "run": true,
      "code": "print(any(c.isupper() for c in \"abc\"))",
      "o": [
+      "True",
       "False",
-      "True"
+      "An error"
      ],
-     "k": 0,
-     "w": "\"abc\" has no upper-case letters."
+     "k": 1,
+     "w": "False. \"abc\" has no upper-case letters, so no character passes the check. Not True: that needs at least one upper-case letter. Not an error: `any()` works on any string."
     }
    ],
    "challenge": {
-    "p": "Write `strong(pw)` that returns True only if the password is at least 15 characters (NIST's minimum when a password is the only factor) long. Print `strong(\"correct horse battery\")`.",
+    "p": "Write `strong(pw)` that returns True only if the password is at least 15 characters long. That's NIST's minimum when a password is the only factor. Print `strong(\"correct horse battery\")`.",
     "start": "def strong(pw):\n    pass\n\nprint(strong(\"correct horse battery\"))",
     "hint": "`return len(pw) >= 15`",
     "solution": "def strong(pw):\n    return len(pw) >= 15\n\nprint(strong(\"correct horse battery\"))",
@@ -1162,9 +1244,10 @@
    },
    "recap": [
     "Length matters most.",
+    "NIST bans forced symbol rules and routine changes.",
     "`any(... for c in pw)` checks for a type of character.",
-    "Check against breached-password lists.",
-    "A checker estimates; it can't prove strength."
+    "A checker estimates; it can't prove strength.",
+    "Check against breached-password lists."
    ]
   },
   {
@@ -1172,17 +1255,21 @@
    "sub": "Fingerprint text and files.",
    "learn": [
     [
+     "Key terms",
+     "Hash: a short fingerprint of data that changes if the data changes.\nBytes: raw data stored as numbers from 0 to 255.\nHex digest: a hash written as hexadecimal text, using 0 to 9 and a to f.\nSalt: a random value added to each password before hashing, so identical passwords get different hashes."
+    ],
+    [
      "hashlib",
-     "Python's `hashlib` computes hashes like SHA-256. Hash functions work on bytes, so encode text first with `.encode()`. `.hexdigest()` gives the familiar hex string.",
+     "Python's `hashlib` module computes hashes such as SHA-256, a Secure Hash Algorithm (SHA) with a 256-bit result. Hash functions work on bytes, so turn text into bytes first with `.encode()`. Then `.hexdigest()` gives the familiar hex string.",
      "import hashlib\nprint(hashlib.sha256(\"hello\".encode()).hexdigest())"
     ],
     [
      "Hashing a file",
-     "Read the file in binary mode and feed it to the hash in chunks, so large files don't fill memory. Compare the result with the publisher's hash to check integrity."
+     "Open the file in binary mode and feed it to the hash in chunks. Chunks stop large files filling memory. Compare the result with the publisher's hash to check integrity. A tiny change to the file gives a completely different hash."
     ],
     [
      "Passwords need more",
-     "SHA-256 is too fast for storing passwords. Use a slow, salted algorithm such as Argon2 or bcrypt, through a library like argon2-cffi. Never write your own."
+     "SHA-256 is too fast for storing passwords. Use a slow, salted algorithm such as Argon2 or bcrypt instead. Use Argon2 via a library like argon2-cffi, and never write your own."
     ]
    ],
    "play": {
@@ -1191,17 +1278,17 @@
    },
    "real": [
     "On the job",
-    "Malware analysts share file hashes, not files. Searching a SHA-256 in a threat intel service tells you in seconds whether a suspicious attachment is already known to be malicious."
+    "Malware analysts share file hashes, not files. Search for a file's SHA-256 in a threat intelligence service. In seconds, you'll see whether a suspicious attachment is already known to be malicious."
    ],
    "tryit": {
     "h": "Hash a file in chunks",
     "where": "Kali: save as hashfile.py",
-    "p": "Hash any file and compare the result with `sha256sum` on the same file. They should match exactly.",
+    "p": "Hash any file, then run `sha256sum` on the same file. The two results should match exactly.",
     "code": "import hashlib, sys\nh = hashlib.sha256()\nwith open(sys.argv[1], \"rb\") as f:\n    for chunk in iter(lambda: f.read(65536), b\"\"):\n        h.update(chunk)\nprint(h.hexdigest())\n# run: python3 hashfile.py /etc/hostname\n# compare: sha256sum /etc/hostname"
    },
    "myth": [
     "A hash can be reversed to get the original back.",
-    "A hash is one-way. Attackers \"crack\" hashes by guessing inputs and hashing them, which is why slow password hashes matter."
+    "A hash is one-way. Attackers \"crack\" hashes by guessing inputs and hashing each guess. That's why slow password hashes matter."
    ],
    "quiz": [
     {
@@ -1210,34 +1297,34 @@
      "q": "What does this print?",
      "code": "import hashlib\nprint(len(hashlib.sha256(b\"x\").hexdigest()))",
      "o": [
-      "64",
       "32",
+      "64",
       "256"
      ],
-     "k": 0,
-     "w": "SHA-256 is 256 bits, which is 32 bytes, which is 64 hex characters."
+     "k": 1,
+     "w": "64. SHA-256 gives 256 bits, which is 32 bytes, and each byte is 2 hex characters. Not 32: that's the length in bytes. Not 256: that's the length in bits."
     },
     {
      "d": 1,
      "q": "Which should you use to store user passwords?",
      "o": [
+      "Base64",
       "Argon2 or bcrypt",
-      "SHA-256 on its own",
-      "Base64"
+      "SHA-256 on its own"
      ],
-     "k": 0,
-     "w": "Password hashes must be slow and salted so stolen hashes are expensive to crack."
+     "k": 1,
+     "w": "Argon2 or bcrypt. They're slow and salted, so stolen hashes are expensive to crack. Not SHA-256 on its own: it's too fast. Not Base64: it's encoding, so anyone can reverse it."
     },
     {
      "d": 1,
-     "q": "Why `.encode()` before hashing text?",
+     "q": "Why call `.encode()` before hashing text?",
      "o": [
-      "hashlib works on bytes, not strings",
-      "It encrypts the text",
-      "It makes the hash shorter"
+      "It makes the hash shorter",
+      "It encrypts the text first",
+      "hashlib needs bytes, not text"
      ],
-     "k": 0,
-     "w": "`.encode()` turns text into bytes using UTF-8."
+     "k": 2,
+     "w": "hashlib needs bytes, not text. `.encode()` turns text into bytes using UTF-8. Not encryption: anyone can turn the bytes back into text. Not shorter: a SHA-256 hash has the same length for any input."
     }
    ],
    "challenge": {
@@ -1248,7 +1335,7 @@
     "expect": "ba7816bf"
    },
    "recap": [
-    "Hash bytes: `.encode()` text first.",
+    "Hashes work on bytes: `.encode()` text first.",
     "A tiny change gives a completely different hash.",
     "Hash big files in chunks, in binary mode.",
     "Passwords need Argon2 or bcrypt."
@@ -1259,17 +1346,25 @@
    "sub": "Encoding you'll see in logs and phishing, and why it isn't security.",
    "learn": [
     [
+     "Key terms",
+     "Encoding: changing data into another format that anyone can reverse, with no key.\nBase64: an encoding that turns bytes into plain text characters.\nTriage: a quick first check of an alert to decide how serious it is."
+    ],
+    [
      "Encoding isn't encryption",
-     "Base64 turns bytes into plain text that's safe to send in email or JSON. Anyone can reverse it with no key. Seeing Base64 in a script or config means obscured, not protected."
+     "Base64 turns bytes into plain text that's safe to send in email or JavaScript Object Notation (JSON). Anyone can reverse it with no key. So Base64 in a script or config file means the data is obscured, not protected."
     ],
     [
      "Encode and decode",
-     "`base64.b64encode(b\"text\")` encodes bytes; `b64decode` reverses it. Both work on bytes, so use `.encode()` and `.decode()` around them.",
+     "`base64.b64encode(b\"text\")` encodes bytes, and `b64decode` reverses it. Both work on bytes. So call `.encode()` on text before encoding, and `.decode()` on the result to get text back.",
      "import base64\nenc = base64.b64encode(\"whoami\".encode())\nprint(enc)\nprint(base64.b64decode(enc).decode())"
     ],
     [
      "Where you'll see it",
-     "Attackers use Base64 to hide commands, for example `powershell -EncodedCommand`. PowerShell encodes UTF-16LE text, so decode it with `base64.b64decode(s).decode(\"utf-16-le\")`. Decoding is often the first step in triaging a suspicious command line."
+     "Attackers use Base64 to hide commands, for example with `powershell -EncodedCommand`. Decoding is often the first step in triaging a suspicious command line."
+    ],
+    [
+     "Decoding PowerShell",
+     "PowerShell turns commands into UTF-16LE bytes, a Windows text format, then Base64. So decode it with `base64.b64decode(s).decode(\"utf-16-le\")` to see the real command."
     ]
    ],
    "play": {
@@ -1278,11 +1373,11 @@
    },
    "real": [
     "On the job",
-    "An EDR alert shows `powershell -enc` followed by a long string. Decoding it with `.decode(\"utf-16-le\")` reveals the real command in seconds."
+    "An endpoint detection and response (EDR) alert shows `powershell -enc` followed by a long string. Decode it with `.decode(\"utf-16-le\")` to see the real command in seconds."
    ],
    "myth": [
     "Base64 hides secrets.",
-    "Base64 is encoding: one line of Python reverses it. Attackers use it to dodge simple text filters, not to protect anything."
+    "One line of Python reverses Base64. Attackers use it to slip past simple text filters, not to protect anything."
    ],
    "quiz": [
     {
@@ -1296,18 +1391,18 @@
       "An error, because you need a key"
      ],
      "k": 0,
-     "w": "No key needed. That's why Base64 is encoding, not encryption."
+     "w": "hi. `b64decode` reverses the encoding, and `.decode()` turns the bytes into text. Not aGk=: that's the encoded input. Not an error: Base64 needs no key, which is why it's encoding, not encryption."
     },
     {
      "d": 1,
-     "q": "Is base64 a way to protect a password?",
+     "q": "Can Base64 protect a stored password?",
      "o": [
-      "No, anyone can decode it",
       "Yes, it's encryption",
-      "Only with a long key"
+      "Only with a long key",
+      "No, anyone can decode it"
      ],
-     "k": 0,
-     "w": "Base64 has no key. It's encoding, not encryption."
+     "k": 2,
+     "w": "No, anyone can decode it. Base64 is encoding, not encryption. Not encryption: nothing secret is needed to reverse it. Not with a long key: Base64 doesn't use a key at all."
     },
     {
      "d": 2,
@@ -1315,12 +1410,12 @@
      "run": true,
      "code": "import base64\nprint(base64.b64encode(b\"hi\").decode())",
      "o": [
-      "aGk=",
       "hi",
+      "aGk=",
       "b'hi'"
      ],
-     "k": 0,
-     "w": "\"hi\" encodes to aGk= in base64."
+     "k": 1,
+     "w": "aGk=. \"hi\" encodes to aGk= in Base64, and `.decode()` turns the result into text. Not hi: that's the input before encoding. Not b'hi': the output is encoded, and `.decode()` gives text, not bytes."
     }
    ],
    "challenge": {
@@ -1334,7 +1429,8 @@
     "Base64 is reversible encoding, not encryption.",
     "It works on bytes: encode and decode around it.",
     "Attackers use it to hide commands.",
-    "Decoding is a normal triage step."
+    "Decoding is a normal triage step.",
+    "Decode PowerShell commands as UTF-16LE."
    ]
   },
   {
@@ -1342,17 +1438,25 @@
    "sub": "Scripts that survive bad input.",
    "learn": [
     [
+     "Key terms",
+     "Exception: an error that Python raises while a script runs, such as ValueError.\nTraceback: the error report Python prints when an exception stops a script.\nFailing open: allowing access when a security check breaks."
+    ],
+    [
      "Exceptions",
-     "When something goes wrong, Python raises an exception, like FileNotFoundError or ValueError. Unhandled, it stops the script with a traceback."
+     "When something goes wrong, Python raises an exception, such as FileNotFoundError or ValueError. If nothing handles it, the exception stops the script and prints a traceback."
     ],
     [
      "try and except",
-     "Wrap risky code in try, and handle a specific exception in except. Catch the errors you expect; a bare `except:` hides real bugs.",
+     "Put risky code in a try block. Handle a specific exception in the except block, so the script keeps running.",
      "try:\n    port = int(\"ssh\")\nexcept ValueError:\n    print(\"not a port number\")"
     ],
     [
+     "Catch specific errors",
+     "Catch only the errors you expect, such as ValueError. A bare `except:` catches everything, so it hides real bugs."
+    ],
+    [
      "Fail safely",
-     "If a security check can't complete, decide what happens. A function that returns True for \"allowed\" when it hits an error is failing open, which is A10:2025 Mishandling of Exceptional Conditions. Default to deny."
+     "If a security check can't finish, decide what happens. A check that returns True (\"allowed\") when it hits an error is failing open. The Open Worldwide Application Security Project (OWASP) lists this as A10:2025 Mishandling of Exceptional Conditions. Default to deny."
     ]
    ],
    "play": {
@@ -1361,11 +1465,11 @@
    },
    "real": [
     "On the job",
-    "A scheduled script crashes at 3am because one log line is malformed, and nobody notices for a week. Handling the expected error, logging it and carrying on keeps monitoring alive."
+    "A scheduled script crashes at 3am on one malformed log line. Nobody notices for a week. Handle the expected error, log it and carry on, so monitoring keeps running."
    ],
    "myth": [
     "Catching every exception with a bare except is the safe choice.",
-    "It hides bugs and can even catch Ctrl+C. Catch the specific errors you expect and let real problems surface."
+    "A bare except can even catch Ctrl+C, so you might not be able to stop a stuck script. Let real problems surface where you can see them."
    ],
    "quiz": [
     {
@@ -1374,23 +1478,23 @@
      "q": "What does this print?",
      "code": "try:\n    port = int(\"8080\")\n    print(\"port\", port)\nexcept ValueError:\n    print(\"bad input\")",
      "o": [
-      "port 8080",
       "bad input",
+      "port 8080",
       "A traceback"
      ],
-     "k": 0,
-     "w": "\"8080\" is all digits, so `int()` works, the print runs and the except block is skipped."
+     "k": 1,
+     "w": "port 8080. \"8080\" is all digits, so `int()` works and the except block is skipped. Not bad input: that only prints after a ValueError. Not a traceback: no exception is raised."
     },
     {
      "d": 3,
      "q": "An access check hits a database error and returns True. What's wrong?",
      "o": [
-      "It fails open, so errors grant access",
       "It's too slow",
+      "It fails open",
       "It logs too much"
      ],
-     "k": 0,
-     "w": "When a check can't finish, deny by default. Failing open turns an outage into a breach."
+     "k": 1,
+     "w": "It fails open: an error grants access, so an outage becomes a breach. When a check can't finish, deny by default. Not speed or logging: the problem is what the check returns on error."
     },
     {
      "d": 1,
@@ -1399,11 +1503,11 @@
      "code": "try:\n    print(int(\"7\") * 2)\nexcept ValueError:\n    print(\"bad\")",
      "o": [
       "14",
-      "bad",
-      "77"
+      "77",
+      "bad"
      ],
      "k": 0,
-     "w": "\"7\" converts cleanly, so no exception happens and the except block is skipped."
+     "w": "14. \"7\" converts cleanly, so no exception happens and the except block is skipped. Not 77: `int()` made it a number, so `*` multiplies. Not bad: that only prints after a ValueError."
     }
    ],
    "challenge": {
@@ -1416,7 +1520,8 @@
    "recap": [
     "Exceptions stop scripts unless handled.",
     "Catch specific errors, not everything.",
-    "Security checks should fail safe.",
+    "A bare `except:` hides real bugs.",
+    "Security checks should fail safe: deny on error.",
     "Skip bad lines and keep going."
    ]
   },
@@ -1425,21 +1530,29 @@
    "sub": "Read security data the way APIs send it.",
    "learn": [
     [
+     "Key terms",
+     "JavaScript Object Notation (JSON): a text format for structured, nested data.\nIdentity and Access Management (IAM) policy: a JSON document that says what an identity may do on which resources.\nWildcard: the * symbol, which matches everything."
+    ],
+    [
      "JSON",
-     "Most security APIs, SIEM exports and cloud logs use JSON. `json.loads()` turns JSON text into Python dictionaries and lists, and `json.dumps()` turns them back into text."
+     "Most security application programming interfaces (APIs) and cloud logs use JavaScript Object Notation (JSON). So do most security information and event management (SIEM) exports. `json.loads()` turns JSON text into Python dictionaries and lists. `json.dumps()` turns them back into text."
     ],
     [
      "Reading nested data",
-     "Parsed JSON is just dictionaries and lists inside each other. Reach into it step by step with keys and indexes.",
+     "Parsed JSON is dictionaries and lists inside each other. Reach into it one step at a time, with keys and indexes.",
      "import json\nalert = json.loads('{\"rule\": \"brute force\", \"src\": {\"ip\": \"203.0.113.7\"}, \"count\": 42}')\nprint(alert[\"src\"][\"ip\"], alert[\"count\"])"
     ],
     [
      "IAM policies are JSON",
-     "An AWS IAM policy is JSON with a list of `Statement` entries. `\"Effect\": \"Allow\"` with `\"Action\": \"*\"` on `\"Resource\": \"*\"` allows everything on everything, which breaks least privilege. (With `\"Deny\"` it would block everything instead.)"
+     "An Amazon Web Services (AWS) Identity and Access Management (IAM) policy is JSON. It holds a list of `Statement` entries."
+    ],
+    [
+     "Allowing * on *",
+     "`\"Effect\": \"Allow\"` with `\"Action\": \"*\"` on `\"Resource\": \"*\"` allows everything on everything. That breaks least privilege: giving each person and process only the access their job needs. With `\"Deny\"`, the same statement would block everything instead."
     ],
     [
      "Pretty printing",
-     "`json.dumps(data, indent=2)` prints JSON with line breaks and indents, which makes a messy API response readable in seconds."
+     "`json.dumps(data, indent=2)` formats JSON with line breaks and indents. That makes a messy API response readable in seconds."
     ]
    ],
    "play": {
@@ -1448,11 +1561,11 @@
    },
    "real": [
     "On the job",
-    "Cloud security reviews often start with \"find every policy that allows `*`\". A short script over exported IAM policies does it for hundreds of roles at once."
+    "Cloud security reviews often start with \"find every policy that allows `*`\". A short script can check the exported IAM policies for hundreds of roles at once."
    ],
    "myth": [
     "JSON is a Python thing.",
-    "JSON is a language-neutral text format used everywhere on the web. Python just happens to map it neatly onto dictionaries and lists."
+    "JSON works with almost every language, and it's used everywhere on the web. Python just maps it neatly onto dictionaries and lists."
    ],
    "quiz": [
     {
@@ -1466,7 +1579,7 @@
       "fails"
      ],
      "k": 0,
-     "w": "JSON numbers become Python ints, so you get 3, not text."
+     "w": "3. JSON numbers become Python integers, so you get the number 3. Not \"3\": print doesn't show quotes around text anyway. Not fails: that's the key, and indexing gives its value."
     },
     {
      "d": 1,
@@ -1474,23 +1587,23 @@
      "run": true,
      "code": "import json\ndoc = json.loads('{\"Statement\": [{\"Action\": \"*\"}, {\"Action\": \"s3:GetObject\"}]}')\nprint(len(doc[\"Statement\"]))",
      "o": [
-      "2",
+      "0",
       "1",
-      "0"
+      "2"
      ],
-     "k": 0,
-     "w": "There are two statements in the list."
+     "k": 2,
+     "w": "2. The Statement list holds two entries, so `len()` returns 2. Not 1: the wildcard entry is only one of the two. Not 0: the list isn't empty."
     },
     {
      "d": 2,
      "q": "Why is `\"Effect\": \"Allow\"` with `\"Action\": \"*\"` on `\"Resource\": \"*\"` a problem?",
      "o": [
-      "It allows every action on everything",
-      "It denies everything",
-      "It's invalid JSON"
+      "It's invalid JSON",
+      "It allows everything",
+      "It denies everything"
      ],
-     "k": 0,
-     "w": "It gives admin-level rights, the opposite of least privilege (still limited by any explicit Deny, permissions boundary or SCP)."
+     "k": 1,
+     "w": "It allows everything: admin-level rights, the opposite of least privilege. An explicit Deny, permissions boundary or service control policy (SCP) can still limit it. Not denies: the Effect is Allow. Not invalid: the JSON parses fine."
     }
    ],
    "challenge": {
@@ -1504,7 +1617,8 @@
     "`json.loads` turns JSON text into Python data.",
     "Reach into nested data one key at a time.",
     "IAM policies are JSON statements.",
-    "`\"Action\": \"*\"` breaks least privilege."
+    "`\"Action\": \"*\"` breaks least privilege.",
+    "`json.dumps(data, indent=2)` makes JSON readable."
    ]
   },
   {
@@ -1512,18 +1626,26 @@
    "sub": "Subnets and private ranges without mistakes.",
    "learn": [
     [
+     "Key terms",
+     "Subnet: a smaller network carved out of a bigger one.\nPrivate address: an IP address reserved for use inside private networks.\nDocumentation range: an IP range reserved for examples, such as 203.0.113.0/24.\nGlobal address: an IP address that's reachable on the public internet."
+    ],
+    [
      "The ipaddress module",
-     "`ipaddress` understands IPv4 and IPv6. It can tell you if an address is private and whether it sits inside a network, so you don't parse dots by hand.",
+     "The `ipaddress` module understands IPv4 and IPv6. It tells you whether an address is private, and whether it sits inside a network. You don't have to split addresses on the dots by hand.",
      "import ipaddress\nip = ipaddress.ip_address(\"10.10.10.20\")\nprint(ip.is_private, ip in ipaddress.ip_network(\"10.10.10.0/24\"))"
     ],
     [
      "Networks",
-     "`ipaddress.ip_network(\"10.10.10.0/24\")` is a subnet. `ip in net` checks membership, and `net.num_addresses` tells you its size.",
+     "`ipaddress.ip_network(\"10.10.10.0/24\")` is a subnet. `ip in net` checks whether an address is inside it. `net.num_addresses` tells you its size.",
      "import ipaddress\nnet = ipaddress.ip_network(\"10.10.10.0/24\")\nprint(net.num_addresses, ipaddress.ip_address(\"10.10.10.20\") in net)"
     ],
     [
      "Private means more than RFC 1918",
-     "`is_private` also covers documentation ranges like 203.0.113.0/24, which this track uses for sample attackers. For \"is this on the internet?\", `is_global` is the stricter test, and documentation addresses fail it too."
+     "`is_private` covers more than the private ranges in Request for Comments (RFC) 1918. It also covers documentation ranges like 203.0.113.0/24. This track uses that range for sample attackers."
+    ],
+    [
+     "Use is_global for the internet",
+     "To ask \"is this on the internet?\", use `is_global`. It's the stricter test, and documentation addresses fail it too."
     ]
    ],
    "play": {
@@ -1532,17 +1654,17 @@
    },
    "real": [
     "On the job",
-    "A SIEM exports 300 alerts as JSON. A script loads them, keeps the ones whose source IP isn't private, and prints a short list of external addresses to check against threat intel."
+    "A security information and event management (SIEM) system exports 300 alerts as JavaScript Object Notation (JSON). A script loads them and keeps the ones whose source IP isn't private. It prints a short list of external addresses to check against threat intelligence."
    ],
    "tryit": {
     "h": "Filter alerts by source",
     "where": "Kali: python3",
-    "p": "Load a small list of alerts and print only the ones from internet addresses, using `is_global`.",
+    "p": "Load a small list of alerts. Print only the ones from internet addresses, using `is_global`.",
     "code": "import json, ipaddress\ndata = '[{\"src\": \"10.10.10.10\"}, {\"src\": \"1.1.1.1\"}, {\"src\": \"8.8.8.8\"}]'\nfor alert in json.loads(data):\n    if ipaddress.ip_address(alert[\"src\"]).is_global:\n        print(\"external:\", alert[\"src\"])"
    },
    "myth": [
     "Working out subnets by hand is safer.",
-    "It's where mistakes creep in. The ipaddress module gets /27s and /29s right every time."
+    "Working them out by hand is where mistakes happen. The ipaddress module gets /27s and /29s right every time."
    ],
    "quiz": [
     {
@@ -1551,12 +1673,12 @@
      "q": "What does this print?",
      "code": "import ipaddress\nprint(ipaddress.ip_address(\"8.8.8.8\").is_private)",
      "o": [
-      "False",
       "True",
+      "False",
       "An error"
      ],
-     "k": 0,
-     "w": "8.8.8.8 is a public address, so it isn't private."
+     "k": 1,
+     "w": "False. 8.8.8.8 is a public internet address, so it isn't private. Not True: it isn't in any private or reserved range. Not an error: `is_private` works on any valid address."
     },
     {
      "d": 2,
@@ -1569,7 +1691,7 @@
       "An error"
      ],
      "k": 0,
-     "w": "A /26 starting at .0 covers .0 to .63, so .70 is outside it."
+     "w": "False. A /26 starting at .0 covers .0 to .63, so .70 is outside it. Not True: .70 falls in the next /26. Not an error: checking an address against a network is valid."
     },
     {
      "d": 2,
@@ -1577,12 +1699,12 @@
      "run": true,
      "code": "import ipaddress\nprint(ipaddress.ip_network(\"192.168.1.0/28\").num_addresses)",
      "o": [
-      "16",
       "14",
+      "16",
       "32"
      ],
-     "k": 0,
-     "w": "A /28 has 2 to the power of 4 addresses, which is 16."
+     "k": 1,
+     "w": "16. A /28 leaves 4 host bits, and 2 to the power of 4 is 16. Not 14: that's the usable host count, but `num_addresses` counts every address. Not 32: that's the size of a /27."
     }
    ],
    "challenge": {
@@ -1596,6 +1718,7 @@
     "`ip_address` and `ip_network` do the maths for you.",
     "`ip in net` checks membership.",
     "`num_addresses` gives a subnet's size.",
+    "`is_private` includes documentation ranges.",
     "`is_global` is stricter than `not is_private`."
    ]
   },
@@ -1604,13 +1727,17 @@
    "sub": "Filter and transform a list in one line.",
    "learn": [
     [
+     "Key terms",
+     "List comprehension: a one-line way to build a new list from another list.\nTransform: to change each item, such as making it upper case.\nNested loop: a loop inside another loop."
+    ],
+    [
      "The pattern",
-     "`[x for x in items if condition]` builds a new list. It's the loop-plus-if from Lesson 5, written in one line.",
+     "A list comprehension, `[x for x in items if condition]`, builds a new list. It's the loop and if from Lesson 5, written in one line.",
      "ports = [21, 22, 80, 443]\nprint([p for p in ports if p < 100])"
     ],
     [
      "Transforming",
-     "The first part can change each item: `[ip.strip() for ip in lines]` cleans every line at once."
+     "The first part can transform each item. For example, `[ip.strip() for ip in lines]` cleans every line at once."
     ],
     [
      "Keep them readable",
@@ -1623,7 +1750,7 @@
    },
    "real": [
     "On the job",
-    "Turning 300 raw log lines into a clean list of internet IPs is often one comprehension: `[ip for ip in ips if ipaddress.ip_address(ip).is_global]`."
+    "You can often turn 300 extracted IPs into a clean list of internet IPs with one comprehension: `[ip for ip in ips if ipaddress.ip_address(ip).is_global]`."
    ],
    "quiz": [
     {
@@ -1632,12 +1759,12 @@
      "run": true,
      "code": "print([n for n in [1, 2, 3, 4] if n % 2 == 0])",
      "o": [
+      "[1, 3]",
       "[2, 4]",
-      "[1, 2, 3, 4]",
-      "[1, 3]"
+      "[1, 2, 3, 4]"
      ],
-     "k": 0,
-     "w": "Only the even numbers pass the condition."
+     "k": 1,
+     "w": "[2, 4]. Only even numbers pass the `n % 2 == 0` condition. Not [1, 3]: those are the odd numbers, which fail it. Not [1, 2, 3, 4]: the if filters the list, so some items are dropped."
     },
     {
      "d": 1,
@@ -1645,23 +1772,23 @@
      "run": true,
      "code": "print([s.upper() for s in [\"a\", \"b\"]])",
      "o": [
-      "['A', 'B']",
+      "AB",
       "['a', 'b']",
-      "AB"
+      "['A', 'B']"
      ],
-     "k": 0,
-     "w": "Each item is changed with `.upper()`."
+     "k": 2,
+     "w": "['A', 'B']. The first part calls `.upper()` on each item, and the result is a list. Not ['a', 'b']: each item was changed. Not AB: a comprehension builds a list, not one joined string."
     },
     {
      "d": 2,
      "q": "When is a normal for loop better than a comprehension?",
      "o": [
-      "When the logic gets complicated",
-      "Never",
-      "When the list is short"
+      "When the list is short",
+      "When the logic is complex",
+      "When the list is very long"
      ],
-     "k": 0,
-     "w": "Comprehensions are for simple filters and changes; complex logic reads better as a loop."
+     "k": 1,
+     "w": "When the logic is complex. Comprehensions suit simple filters and changes, and complex logic reads better as a loop. Not list length: comprehensions work for short and long lists alike."
     }
    ],
    "challenge": {
@@ -1674,8 +1801,7 @@
    "recap": [
     "`[x for x in items if test]` filters.",
     "The first part can transform each item.",
-    "Use comprehensions for simple jobs.",
-    "Readable beats clever."
+    "Use comprehensions for simple jobs; readable beats clever."
    ]
   },
   {
@@ -1683,17 +1809,25 @@
    "sub": "A classic cipher, and why it's easy to break.",
    "learn": [
     [
+     "Key terms",
+     "Cipher: a method for encrypting and decrypting text.\nKey space: all the possible keys a cipher can use.\nModulo: the % operator, which gives the remainder after division, such as 27 % 26 = 1."
+    ],
+    [
      "Shifting letters",
-     "A Caesar cipher shifts each letter a fixed number of places: with a shift of 3, A becomes D. It's a teaching cipher, not real security."
+     "A Caesar cipher shifts each letter a fixed number of places. With a shift of 3, A becomes D. It's a teaching cipher, not real security."
     ],
     [
      "Letters as numbers",
-     "`ord(\"a\")` is 97 and `chr(97)` is \"a\". Shift with `(ord(c) - 97 + k) % 26 + 97`; the `% 26` wraps z back round to a.",
+     "`ord(\"a\")` is 97, and `chr(97)` is \"a\". So you can turn a letter into a number, do maths on it and turn it back.",
      "print(ord(\"a\"), chr(100))"
     ],
     [
+     "The shift formula",
+     "Shift a letter with `(ord(c) - 97 + k) % 26 + 97`, where k is the key. The `% 26` wraps z back round to a."
+    ],
+    [
      "Why it's weak",
-     "There are only 25 possible shifts, so a loop can try them all in a blink. That's a brute-force attack on the key space."
+     "There are only 25 possible shifts, so a loop can try them all in moments. Trying every key like this is a brute-force attack on the key space."
     ]
    ],
    "play": {
@@ -1702,11 +1836,11 @@
    },
    "real": [
     "On the job",
-    "Nobody uses Caesar ciphers for real, but CTF challenges and malware analysis often use simple shifts and XOR to hide strings. Spotting and reversing them is a useful skill."
+    "Nobody uses Caesar ciphers for real security. But capture the flag (CTF) challenges and malware analysis often involve simple shifts and exclusive OR (XOR) used to hide strings. Spotting and reversing them is a useful skill."
    ],
    "myth": [
     "A secret algorithm keeps data safe.",
-    "Security should rest on the key, not on hiding the method (Kerckhoffs's principle). Caesar's method being public is fine; it fails because its key space is tiny, so the key can't protect anything."
+    "Security should rest on the key, not on hiding the method. This is Kerckhoffs's principle. Caesar's method being public isn't the problem. Its key space is tiny, so the key can't protect anything."
    ],
    "quiz": [
     {
@@ -1715,12 +1849,12 @@
      "run": true,
      "code": "print(chr((ord(\"a\") - 97 + 3) % 26 + 97))",
      "o": [
-      "d",
+      "a",
       "c",
-      "a"
+      "d"
      ],
-     "k": 0,
-     "w": "Shifting a by 3 gives d."
+     "k": 2,
+     "w": "d. a is position 0, and a shift of 3 lands on position 3, which is d. Not c: that's a shift of 2. Not a: that would be no shift at all."
     },
     {
      "d": 2,
@@ -1730,25 +1864,25 @@
      "o": [
       "b",
       "z",
-      "{"
+      "|"
      ],
      "k": 0,
-     "w": "`% 26` wraps past z back to the start, so z shifted by 2 is b."
+     "w": "b. `% 26` wraps past z back to the start, so z shifted by 2 is b. Not |: without `% 26` you'd run past z into symbols. Not z: a shift of 2 does change the letter."
     },
     {
      "d": 1,
-     "q": "How many different keys does a Caesar cipher on a to z have?",
+     "q": "How many useful keys does a Caesar cipher on a to z have?",
      "o": [
-      "25 useful shifts",
-      "Millions",
+      "25",
+      "26",
       "256"
      ],
      "k": 0,
-     "w": "A shift of 26 gets you back where you started, so only 25 shifts change anything."
+     "w": "25. A shift of 26 gets you back where you started, so only 25 shifts change anything. Not 26: one of those shifts changes nothing. Not 256: that's the number of values in one byte."
     }
    ],
    "challenge": {
-    "p": "Brute-force it: print the key (shift) that was used to encrypt `hello` into `khoor`.",
+    "p": "Brute-force it. Print the key (the shift) that turned `hello` into `khoor`.",
     "start": "def caesar(text, k):\n    return \"\".join(chr((ord(c) - 97 + k) % 26 + 97) for c in text)\n\nsecret = \"khoor\"\n",
     "hint": "Loop `for k in range(26):` and print k when `caesar(secret, -k) == \"hello\"`.",
     "solution": "def caesar(text, k):\n    return \"\".join(chr((ord(c) - 97 + k) % 26 + 97) for c in text)\n\nsecret = \"khoor\"\nfor k in range(26):\n    if caesar(secret, -k) == \"hello\":\n        print(k)",
@@ -1758,7 +1892,8 @@
     "Caesar shifts letters by a fixed key.",
     "`ord` and `chr` turn letters into numbers and back.",
     "`% 26` wraps around the alphabet.",
-    "A tiny key space falls to brute force."
+    "A tiny key space falls to brute force.",
+    "Security rests on the key, not a secret method."
    ]
   },
   {
@@ -1766,16 +1901,20 @@
    "sub": "Spreadsheet exports are everywhere in security.",
    "learn": [
     [
+     "Key terms",
+     "Comma-separated values (CSV): a text format for tables, with one row per line and commas between fields.\nHeader row: the first row of a CSV file, which names each column.\nCSV injection: a spreadsheet formula hidden in a CSV cell that can run when someone opens the file."
+    ],
+    [
      "The csv module",
-     "`csv.DictReader` reads each row as a dictionary keyed by the header row, so you can write `row[\"user\"]` instead of counting columns."
+     "Python's csv module reads comma-separated values (CSV) files. `csv.DictReader` turns each row into a dictionary, keyed by the header row. So you can write `row[\"user\"]` instead of counting columns."
     ],
     [
      "Files or text",
-     "On Kali you'd use `open(\"logins.csv\", newline=\"\")`. Here, `io.StringIO(data)` makes a string behave like a file, so you can practise in the app."
+     "On Kali, you'd use `open(\"logins.csv\", newline=\"\")`. In the app, `io.StringIO(data)` makes a string behave like a file, so you can practise here."
     ],
     [
      "Why not split on commas",
-     "A field like `\"Smith, Jane\"` contains a comma. The csv module handles quotes correctly; `.split(\",\")` doesn't."
+     "A field like `\"Smith, Jane\"` contains a comma. The csv module handles the quotes correctly, but `.split(\",\")` breaks the field in two."
     ],
     [
      "CSV injection",
@@ -1788,11 +1927,11 @@
    },
    "real": [
     "On the job",
-    "Many tools, including Entra ID and Okta, can export sign-in logs as CSV. A short script that counts failures per user is often faster than building a SIEM query for a one-off question."
+    "Many tools, including Microsoft Entra ID and Okta, can export sign-in logs as CSV. For a one-off question, a short script is often faster than a security information and event management (SIEM) query. It just counts failures per user."
    ],
    "myth": [
     "CSV is just text, so `.split(\",\")` is enough.",
-    "Quoted fields can contain commas and line breaks. Use the csv module and avoid subtle bugs."
+    "Quoted fields can even contain line breaks, which splitting line by line gets wrong. Use the csv module and avoid subtle bugs."
    ],
    "quiz": [
     {
@@ -1801,12 +1940,12 @@
      "run": true,
      "code": "import csv, io\ndata = \"user,result\\nkane,success\\nroot,fail\"\nrows = list(csv.DictReader(io.StringIO(data)))\nprint(rows[1][\"user\"])",
      "o": [
-      "root",
       "kane",
+      "root",
       "user"
      ],
-     "k": 0,
-     "w": "DictReader skips the header and the second data row's user is root."
+     "k": 1,
+     "w": "root. DictReader uses the header as keys, so `rows[1]` is root. Not kane: that's index 0. Not user: the header isn't a data row."
     },
     {
      "d": 2,
@@ -1814,23 +1953,23 @@
      "run": true,
      "code": "import csv, io\nprint(next(csv.reader(io.StringIO('\"Smith, Jane\",admin'))))",
      "o": [
+      "An error",
       "['Smith, Jane', 'admin']",
-      "['\"Smith', ' Jane\"', 'admin']",
-      "An error"
+      "['\"Smith', ' Jane\"', 'admin']"
      ],
-     "k": 0,
-     "w": "The csv module keeps the quoted name together."
+     "k": 1,
+     "w": "['Smith, Jane', 'admin']. The csv module keeps the quoted name together as one field. Not the three-part list: that's what splitting on commas by hand gives. Not an error: a quoted comma is valid CSV."
     },
     {
      "d": 1,
      "q": "What does `csv.DictReader` use as the keys?",
      "o": [
-      "The header row",
       "Row numbers",
+      "The header row",
       "The first column"
      ],
-     "k": 0,
-     "w": "Each row becomes a dictionary keyed by the header names."
+     "k": 1,
+     "w": "The header row. Each row becomes a dictionary keyed by the header names. Not row numbers: DictReader names fields, not positions. Not the first column: it's data, read into each dictionary like the other columns."
     }
    ],
    "challenge": {
@@ -1844,6 +1983,7 @@
     "`csv.DictReader` gives each row as a dictionary.",
     "Use `newline=\"\"` when opening CSV files.",
     "Don't split on commas by hand.",
+    "Cells starting with `=`, `+`, `-` or `@` can run as formulas.",
     "Sign-in exports are often CSV."
    ]
   },
@@ -1852,17 +1992,21 @@
    "sub": "Bundle data and the code that uses it.",
    "learn": [
     [
+     "Key terms",
+     "Class: a blueprint that describes what its objects hold and can do.\nObject: one item made from a class, with its own data.\nSoftware development kit (SDK): ready-made code for working with a service from your own programs."
+    ],
+    [
      "What a class is",
      "A class is a blueprint. `class Alert:` describes what every alert has (its data) and can do (its methods). Each alert you create is an object."
     ],
     [
      "__init__ and self",
-     "`__init__` runs when you create an object and stores its data on `self`. `self.ip` is this alert's IP.",
+     "`__init__` runs when you create an object. It stores the object's data on `self`, so `self.ip` is this alert's IP.",
      "class Alert:\n    def __init__(self, ip, score):\n        self.ip = ip\n        self.score = score\n\na = Alert(\"203.0.113.7\", 8)\nprint(a.ip, a.score)"
     ],
     [
      "Methods",
-     "A method is a function inside the class that uses `self`. `a.is_high()` reads naturally and keeps the rule next to the data."
+     "A method is a function inside a class that uses `self`. Calling `a.is_high()` reads naturally. It also keeps the rule next to the data it checks."
     ]
    ],
    "play": {
@@ -1871,7 +2015,7 @@
    },
    "real": [
     "On the job",
-    "Security tools and SDKs hand you objects with methods; boto3 gives you client and resource objects, for example. Writing a small class yourself makes their documentation far easier to read."
+    "Security tools and software development kits (SDKs) hand you objects with methods. For example, boto3 gives you client and resource objects. Writing a small class yourself makes their documentation far easier to read."
    ],
    "quiz": [
     {
@@ -1885,7 +2029,7 @@
       "score"
      ],
      "k": 0,
-     "w": "`a.score` is the value stored by `__init__`."
+     "w": "8. `__init__` stored 8 as `self.score`, and `a.score` reads it back. Not Alert or score: those are names, not the stored value."
     },
     {
      "d": 2,
@@ -1893,27 +2037,27 @@
      "run": true,
      "code": "class Alert:\n    def __init__(self, score):\n        self.score = score\n    def is_high(self):\n        return self.score >= 7\n\nprint(Alert(3).is_high())",
      "o": [
-      "False",
+      "None",
       "True",
-      "None"
+      "False"
      ],
-     "k": 0,
-     "w": "3 is less than 7, so `is_high` returns False."
+     "k": 2,
+     "w": "False. 3 is less than 7, so `is_high` returns False. Not True: that needs 7 or more. Not None: the method returns a value."
     },
     {
      "d": 1,
      "q": "What does `self` refer to inside a method?",
      "o": [
-      "The object the method was called on",
-      "The class's name",
-      "The previous object"
+      "The class it belongs to",
+      "The last object created",
+      "The object it's called on"
      ],
-     "k": 0,
-     "w": "`a.is_high()` passes `a` in as `self`."
+     "k": 2,
+     "w": "The object it's called on. `a.is_high()` passes `a` in as `self`. Not the class: each object gets its own `self`. Not the last object created: `self` is whichever object you call the method on."
     }
    ],
    "challenge": {
-    "p": "Add a method `label()` that returns `\"HIGH\"` when the score is 7 or more and `\"LOW\"` otherwise, then print `Alert(\"1.2.3.4\", 9).label()`.",
+    "p": "Add a method `label()` that returns `\"HIGH\"` when the score is 7 or more, and `\"LOW\"` otherwise. Then print `Alert(\"1.2.3.4\", 9).label()`.",
     "start": "class Alert:\n    def __init__(self, ip, score):\n        self.ip = ip\n        self.score = score\n\nprint(Alert(\"1.2.3.4\", 9).label())",
     "hint": "Inside the class, add `def label(self):` and return \"HIGH\" if `self.score >= 7`.",
     "solution": "class Alert:\n    def __init__(self, ip, score):\n        self.ip = ip\n        self.score = score\n\n    def label(self):\n        return \"HIGH\" if self.score >= 7 else \"LOW\"\n\nprint(Alert(\"1.2.3.4\", 9).label())",
@@ -1927,17 +2071,25 @@
    ]
   },
   {
-   "t": "Why sockets and boto3 need a real machine",
+   "t": "Sockets and boto3 on Kali",
    "sub": "Some code can't run in a browser, and shouldn't.",
    "learn": [
     [
+     "Key terms",
+     "Sandbox: a protected area where code runs without access to the rest of your computer.\nSocket: an IP address and port together.\nTimeout: how long code waits for a reply before it gives up.\nboto3: the official Amazon Web Services (AWS) software development kit (SDK) for Python."
+    ],
+    [
      "The browser sandbox",
-     "Python here runs inside your browser, which can't open raw network connections, read your files or use your AWS keys. That's a safety feature."
+     "In this app, Python runs inside your browser. The browser can't open raw network connections, read your files or use your Amazon Web Services (AWS) keys. That's a safety feature."
     ],
     [
      "A tiny port check",
-     "Loop over a few ports and report the open ones. This is a TCP connect check: the full handshake completes, unlike Nmap's default SYN scan when run as root (without root, Nmap does a connect scan too).",
+     "This script loops over a few ports and reports the open ones. It's a Transmission Control Protocol (TCP) connect check, so the full handshake completes.",
      "import socket\nhost = \"10.10.10.20\"\nfor port in [22, 135, 445, 3389]:\n    s = socket.socket()\n    s.settimeout(1)\n    if s.connect_ex((host, port)) == 0:\n        print(port, \"open\")\n    s.close()"
+    ],
+    [
+     "Connect scans and SYN scans",
+     "When run as root, Nmap's default is a SYN scan, which never finishes the handshake. Without root, Nmap does a connect scan too, like this script."
     ],
     [
      "Always set a timeout",
@@ -1945,29 +2097,37 @@
     ],
     [
      "What boto3 is",
-     "boto3 is the official AWS SDK for Python. On Kali, install it with `sudo apt install python3-boto3`, because plain pip is blocked outside a virtual environment. Cloud security teams use it to audit settings across many accounts and services."
+     "boto3 is the official AWS software development kit (SDK) for Python. Cloud security teams use it to audit settings across many accounts and services."
     ],
     [
-     "Credentials",
-     "boto3 finds credentials from an IAM role, `aws configure sso` or environment variables. Prefer short-lived credentials over long-term access keys, and never put keys in your code. For audits, use a role with the AWS-managed SecurityAudit policy."
+     "Installing boto3 on Kali",
+     "On Kali, install boto3 with `sudo apt install python3-boto3`. Plain pip is blocked outside a virtual environment."
+    ],
+    [
+     "Where credentials come from",
+     "boto3 finds credentials from an Identity and Access Management (IAM) role, `aws configure sso` or environment variables. Prefer short-lived credentials over long-term access keys. Never put keys in your code."
+    ],
+    [
+     "A role for audits",
+     "For audits, use a role with the AWS-managed SecurityAudit policy. Give an audit script read-only access, so a leak can't change anything."
     ],
     [
      "Files need a real machine too",
-     "The browser can't read your files either. On Kali, `open(path, \"w\")` replaces a file's contents and `\"a\"` appends to the end. Use `\"a\"` for logs you add to."
+     "The browser can't read your files either. On Kali, `open(path, \"w\")` replaces a file's contents. `\"a\"` adds to the end instead, so use `\"a\"` for logs you add to."
     ]
    ],
    "real": [
     "On the job",
-    "Misconfigured cloud storage is behind many data exposures, and it's OWASP 2025 A02. A short boto3 script that flags buckets without a public access block is a classic cloud security interview project."
+    "Misconfigured cloud storage is behind many data exposures. It's A02 in the 2025 Open Worldwide Application Security Project (OWASP) Top 10. A short boto3 script that flags buckets without a public access block is a classic cloud security interview project."
    ],
    "myth": [
     "Writing your own scanner makes you stealthier than Nmap.",
-    "A connect scan completes the handshake, so it's noisier than a SYN scan and easily logged. Use Python for automation, not stealth."
+    "A connect scan is noisier than a SYN scan, and the target can easily log it. Use Python for automation, not stealth."
    ],
    "tryit": {
     "h": "Check your target's ports",
     "where": "Kali, against the Windows target",
-    "p": "Only scan your own lab VMs. Save the learn card's code as portcheck.py and run it. Then compare the result with `sudo nmap -sS -p 22,135,445,3389 10.10.10.20`.",
+    "p": "Only scan your own lab virtual machines (VMs). Save the port check code as portcheck.py and run it. Then compare the result with `sudo nmap -sS -p 22,135,445,3389 10.10.10.20`.",
     "code": "python3 portcheck.py\nsudo nmap -sS -p 22,135,445,3389 10.10.10.20"
    },
    "quiz": [
@@ -1980,85 +2140,90 @@
       "True"
      ],
      "k": 0,
-     "w": "It returns an error number, and 0 means no error: the connection succeeded."
+     "w": "0. `connect_ex` returns an error number, and 0 means no error: the connection worked. Not 1: a non-zero number means the connection failed. Not True: it returns a number, not True or False."
     },
     {
      "d": 2,
      "q": "Why call `s.settimeout(1)` before connecting?",
      "o": [
-      "So filtered ports don't hang the script",
-      "To make the connection encrypted",
-      "To scan UDP instead"
+      "To encrypt the connection",
+      "To hide the scan from logs",
+      "To stop filtered ports hanging"
      ],
-     "k": 0,
-     "w": "A firewall that silently drops packets never answers. The timeout stops your script waiting."
+     "k": 2,
+     "w": "To stop filtered ports hanging. A firewall that silently drops packets never answers, and the timeout stops your script waiting. Not encryption or hiding: a timeout only limits how long the script waits."
     },
     {
      "d": 1,
      "q": "Where should a boto3 script get its AWS credentials?",
      "o": [
-      "From aws configure, environment variables or an IAM role",
-      "Hard-coded at the top of the script",
-      "From a comment in the code"
+      "From a comment in the script",
+      "From an IAM role or environment",
+      "Hard-coded at the top of the script"
      ],
-     "k": 0,
-     "w": "Hard-coded keys leak through repos and screenshots. Let boto3 find credentials outside the code."
+     "k": 1,
+     "w": "From an IAM role or the environment, which keeps keys out of the code. `aws configure` works too. Not hard-coded or in a comment: keys in code leak through repos and screenshots."
     },
     {
      "d": 2,
      "q": "Why give an audit script a read-only role?",
      "o": [
-      "If the script or key leaks, it can't change anything",
       "Read-only roles run faster",
-      "AWS requires it"
+      "AWS requires it for scripts",
+      "A leak can't change anything"
      ],
-     "k": 0,
-     "w": "Least privilege limits the damage from a compromised script or credential."
+     "k": 2,
+     "w": "A leak can't change anything. Least privilege limits the damage if the script or its credentials are compromised. Not speed: permissions don't change how fast calls run. Not an AWS rule: you choose a role's permissions."
     },
     {
      "d": 2,
      "q": "You open report.txt with mode \"w\". What happens to what was already in it?",
      "o": [
       "It's replaced",
-      "New text is added to the end",
-      "Python refuses to open it"
+      "Python refuses to open it",
+      "New text is added to the end"
      ],
      "k": 0,
-     "w": "\"w\" truncates the file. Use \"a\" to append instead."
+     "w": "It's replaced. \"w\" empties the file before writing. Not added to the end: that's what \"a\" does. Not refused: Python opens an existing file in \"w\" mode without complaint."
     }
    ],
    "challenge": {
     "think": true,
-    "p": "Without running it: what should a boto3 audit script use for credentials, and which permissions should its role have?",
+    "p": "Don't run anything. What should a boto3 audit script use for credentials? Which permissions should its role have?",
     "hint": "Think about where secrets should never live, and about least privilege.",
     "solution": "Credentials from an IAM role or `aws configure` (never hard-coded in the script), and a read-only role with only the permissions the audit needs."
    },
    "recap": [
     "Browsers can't open sockets or read your AWS keys.",
-    "Always set a socket timeout.",
-    "boto3 gets credentials from the environment or a role, never the script.",
-    "Audit with read-only roles, in accounts you own."
+    "A connect check completes the TCP handshake. Always set a timeout.",
+    "boto3 gets credentials from the environment or a role.",
+    "Audit with read-only roles, in accounts you own.",
+    "Mode \"w\" replaces a file; \"a\" adds to it."
    ]
   },
   {
-   "t": "Final project: a brute-force detector",
+   "t": "Project: brute-force detector",
    "sub": "Put the whole track together in one tool.",
    "learn": [
     [
+     "Key terms",
+     "Command-line argument: a value you type after the script name, such as ssh.log.\nargparse: a Python module that turns command-line arguments into named values.\nThreshold: the count at which a tool raises an alert.\nREADME: a text file that explains what a project does and how to use it."
+    ],
+    [
      "The goal",
-     "Read an SSH log, find failed logins, count them per source IP and print the IPs over a threshold. It uses files, regex, Counter, error handling and argparse."
+     "Your tool reads a Secure Shell (SSH) log and finds failed logins. It counts them per source IP and prints the IPs at or over a threshold. It uses files, regex, Counter, error handling and argparse."
     ],
     [
      "The plan",
-     "Break it into steps before writing code: get arguments, open the file safely, match each line, count, then report. Each step is a few lines you already know."
+     "Break the job into steps before writing code. Get the arguments, open the file safely, match each line, count, then report. Each step is a few lines you already know."
     ],
     [
      "Command-line arguments",
-     "`argparse` turns `python3 tool.py ssh.log --threshold 5` into named values, with help text for free. It makes a script reusable without editing the code.",
+     "`argparse` turns `python3 tool.py ssh.log --threshold 5` into named values. You get help text for free. You can then reuse the script without editing the code.",
      "import argparse\np = argparse.ArgumentParser(description=\"Count failed logins\")\np.add_argument(\"logfile\")\np.add_argument(\"--threshold\", type=int, default=5)\nargs = p.parse_args()\nprint(args.logfile, args.threshold)"
     ],
     [
-     "Practise here, then build it on Kali",
+     "Practise here, then use Kali",
      "Write the core here against the sample log. Then add argparse and file reading on Kali, as in the Try it card."
     ]
    ],
@@ -2077,7 +2242,7 @@
    "tryit": {
     "h": "Build the detector",
     "where": "Kali: save as bruteforce.py",
-    "p": "Start SSH, fail a few logins with `ssh nobody@localhost`, then run `sudo journalctl -u ssh > ssh.log` and `python3 bruteforce.py ssh.log --threshold 2`. Stop SSH afterwards.",
+    "p": "Start SSH and fail a few logins with `ssh nobody@localhost`. Then run `sudo journalctl -u ssh > ssh.log` and `python3 bruteforce.py ssh.log --threshold 2`. Stop SSH afterwards.",
     "code": "import argparse, re, sys\nfrom collections import Counter\n\np = argparse.ArgumentParser(description=\"Find brute-force sources in an SSH log\")\np.add_argument(\"logfile\")\np.add_argument(\"--threshold\", type=int, default=3)\nargs = p.parse_args()\n\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\ntry:\n    with open(args.logfile, errors=\"replace\") as f:\n        for line in f:\n            m = pattern.search(line)\n            if m:\n                counts[m.group(1)] += 1\nexcept FileNotFoundError:\n    sys.exit(f\"No such file: {args.logfile}\")\n\nfor ip, n in counts.most_common():\n    if n >= args.threshold:\n        print(f\"{ip}: {n} failed logins\")"
    },
    "quiz": [
@@ -2085,38 +2250,38 @@
      "d": 2,
      "q": "Which part of the detector pulls the source IP out of each line?",
      "o": [
-      "The regex capture group",
-      "The Counter",
-      "argparse"
+      "The capture group",
+      "The Counter object",
+      "The argparse module"
      ],
      "k": 0,
-     "w": "`(\\S+)` after \"from \" captures the IP, and `.group(1)` returns it."
+     "w": "The capture group. `(\\S+)` after \"from \" captures the IP, and `.group(1)` returns it. Not the Counter: it counts the IPs after they're pulled out. Not argparse: it reads command-line arguments, not the log."
     },
     {
      "d": 2,
      "q": "Why compile the regex once with `re.compile` outside the loop?",
      "o": [
-      "It avoids re-processing the pattern on every line",
-      "It makes the regex case-insensitive",
-      "It's required for capture groups"
+      "It's required for capture groups",
+      "It processes the pattern just once",
+      "It makes the regex case-insensitive"
      ],
-     "k": 0,
-     "w": "Python caches patterns anyway, but compiling once is clearer and avoids repeated work on huge logs."
+     "k": 1,
+     "w": "It processes the pattern just once. Python caches patterns anyway, but compiling once is clearer and avoids repeated work on huge logs. Not case: compiling doesn't change how letters match. Not capture groups: they work without compiling."
     },
     {
      "d": 3,
      "q": "Which extension would best catch a successful brute-force attack?",
      "o": [
-      "Flag an IP with many failures followed by a success",
       "Print the log in colour",
-      "Sort IPs alphabetically"
+      "Sort the IPs alphabetically",
+      "Flag a success after failures"
      ],
-     "k": 0,
-     "w": "Many failures then a success from the same source is a classic sign that a password was guessed."
+     "k": 2,
+     "w": "Flag a success after failures. Many failures then a success from the same source is a classic sign that a password was guessed. Not colour or sorting: they change how results look, not what you detect."
     }
    ],
    "challenge": {
-    "p": "Print `ALERT <ip> <count>` for each IP with 3 or more failures, and nothing else, like `ALERT 203.0.113.7 3`.",
+    "p": "For each IP with 3 or more failures, print `ALERT <ip> <count>`, like `ALERT 203.0.113.7 3`. Print nothing else.",
     "start": "import re\nfrom collections import Counter\nLOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\nfor line in LOG.splitlines():\n    m = pattern.search(line)\n    if m:\n        counts[m.group(1)] += 1\n",
     "hint": "Loop over `counts.items()` and print when `n >= 3`.",
     "solution": "import re\nfrom collections import Counter\nLOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\nfor line in LOG.splitlines():\n    m = pattern.search(line)\n    if m:\n        counts[m.group(1)] += 1\nfor ip, n in counts.items():\n    if n >= 3:\n        print(\"ALERT\", ip, n)",

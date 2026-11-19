@@ -12,7 +12,7 @@ Every agent that writes or edits content follows this guide. The reader studies 
 
 ## 2. Sentences
 - One idea per sentence [2].
-- Average 15 to 20 words per sentence. Hard limit: 25 words. Comprehension stays above 90% at an average of about 14 words, and drops below 10% at 43 words [1].
+- Hard limit: 25 words per sentence. Short is fine: cards are naturally brief, so there is no minimum average (decided 18 November 2026). Comprehension stays above 90% at an average of about 14 words, and drops below 10% at 43 words [1].
 - Put the key point first, then the detail [2].
 - Cut filler: "basically", "essentially", "it is important to note that", "in order to".
 - Unpack stacked nouns: "credential-based remote access exploitation" becomes "attackers logged in remotely with stolen passwords".
@@ -22,10 +22,10 @@ Every agent that writes or edits content follows this guide. The reader studies 
 - Learn cards: 2 to 4 sentences, about 60 words maximum. Difficult text is read more slowly on a phone, and earlier text scrolled off-screen strains working memory [3].
 - Every card makes sense on its own, without the card before it. Phone reading gets interrupted [3].
 - Cut anything that doesn't serve the card's one idea: no background trivia, no decoration. Removing extra material is one of the strongest learning effects [4].
-- Signal the key idea: make the single most important phrase on a card bold. Only one bold phrase per card [4].
+- No bold and no asterisks in card text (decided 18 November 2026). Signal the key idea by putting it first in the card instead.
 
 ## 4. Terms and consistency
-- Start each day or deck with a short "Key terms" card defining the 2 to 4 new terms it uses, before the lessons. Learning names and characteristics of key concepts first helps people learn the main material [4].
+- Start each day or deck with a short "Key terms" card defining the 2 to 4 new terms it uses, before the lessons. Write one "Term: definition" per line (separated by a newline); the app shows them as a list with every term highlighted. Learning names and characteristics of key concepts first helps people learn the main material [4].
 - Define every technical term on first use in a day or deck, even if the Key terms card covered it: "multi-factor authentication (MFA), which means proving who you are in two different ways".
 - After that, use one term consistently. Don't switch between "attacker", "threat actor" and "adversary" in the same deck.
 - Spell out acronyms on first use per day or deck, except very common ones (IP, URL, PC).
@@ -45,7 +45,7 @@ Based on the research-backed multiple-choice item-writing guidelines [5]:
 ## 6. Quiz explanations
 - Always explain; never show only "Correct" or "Incorrect". Explanations that address the learner's own response or the key concept beat right/wrong feedback for applying knowledge to new questions and for retention [6].
 - Start with the answer and one sentence on why it's right.
-- Then say why each wrong option is wrong, one short sentence each, so whichever option the learner picked gets a specific explanation [6].
+- Then say why each wrong option is wrong, one short sentence each, so whichever option the learner picked gets a specific explanation [6]. To keep the card on one phone screen, wrong options that share a reason can share one sentence ("Not integrity or availability: restoring clean copies fixes both."). Keep the whole explanation to about 45 words.
 - If a wrong option is a common trap, say so: "This is the trap answer because..."
 
 ## 7. Incident files
@@ -63,8 +63,9 @@ Based on the research-backed multiple-choice item-writing guidelines [5]:
 - Never pad content to make it look longer.
 
 ## Checks to run after editing
+Run `node tools/style-check.js` from the project root; it does the measurable checks below.
 - List every sentence over 25 words and every learn card over 60 words, and fix them.
-- Report the average sentence length per section (target 15 to 20).
+- Report the average sentence length per section (no minimum; nothing over 25 words).
 - Search for em dashes, "All of the above", and NOT or EXCEPT in lower case inside questions.
 - Check that no correct option is clearly the longest in its question.
 

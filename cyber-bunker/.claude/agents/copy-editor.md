@@ -16,7 +16,7 @@ When editing a batch:
 - Split any card that holds more than one idea. Merge or cut cards that repeat each other.
 - Add a short "Key terms" card at the start of each day or deck if it doesn't have one.
 - Fix quiz questions and explanations to follow sections 5 and 6 of STYLE.md exactly.
-- Bold the single most important phrase on each card, and nothing else. In the JSON, write bold as `**phrase**` (the app renders it); inline code stays in backticks.
+- No bold and no asterisks anywhere in card text. Put the key idea first instead. Inline code stays in backticks.
 - Rewrite confusing UI labels, buttons and messages. Give every themed name a plain label beside it.
 - Remove every em dash. Use NZ spelling.
 

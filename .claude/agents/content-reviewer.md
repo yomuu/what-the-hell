@@ -18,7 +18,7 @@ When invoked:
 Report, grouped by tab, then by day, deck or lesson, then by card:
 - Errors: anything factually wrong or outdated, with the correct version and a source link.
 - Rule breaks: anything that contradicts the handoff accuracy rules, any em dash, any spelling that isn't NZ English.
-- Style breaks: anything that breaks cyber-bunker/content/STYLE.md, such as sentences over 25 words, learn cards over 60 words, more than one idea or more than one bold phrase on a card, undefined terms or acronyms, quiz questions with clue-giving options (absolutes in wrong options, a correct option that is clearly the longest), NOT or EXCEPT not in capitals, "All of the above", or explanations that don't say why each wrong option is wrong.
+- Style breaks: anything that breaks cyber-bunker/content/STYLE.md, such as sentences over 25 words, learn cards over 60 words, more than one idea or any bold or asterisks on a card, undefined terms or acronyms, quiz questions with clue-giving options (absolutes in wrong options, a correct option that is clearly the longest), NOT or EXCEPT not in capitals, "All of the above", or explanations that don't say why each wrong option is wrong.
 - Unclear: anything a beginner would misread, with a suggested rewording.
 - Missing: one important idea per day, deck or lesson that the cards leave out, if any.
 

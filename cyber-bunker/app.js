@@ -122,6 +122,11 @@ const LEVEL = {1:"Easy", 2:"Medium", 3:"Hard"};
 const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function el(tag, cls, html){ const e = document.createElement(tag); if(cls) e.className = cls; if(html !== undefined) e.innerHTML = html; return e; }
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+// A "Key terms" card lists one "Term: definition" per line, with each term picked out.
+function termsOrPara(h, p){
+  if (h !== "Key terms" || !p.includes("\n")) return `<p>${fmt(p)}</p>`;
+  return `<ul class="terms">${p.split("\n").filter(Boolean).map(t => { const i = t.indexOf(": "); return `<li>${i > 0 ? `<b>${fmt(t.slice(0, i))}</b>: ${fmt(t.slice(i + 2))}` : fmt(t)}</li>`; }).join("")}</ul>`;
+}
 function fmt(s){ return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"); }
 function codeHtml(src){ return src.split("\n").map(l => `<span style="--i:${l.match(/^ */)[0].length}"${/^\s*#/.test(l) ? ' class="c"' : ""}>${esc(l)}</span>`).join(""); }
 function codeBlock(src, where, copy){
@@ -171,7 +176,7 @@ function loadPython(){
     if (store.get("cr2-py-saved", false)) return;
     await new Promise(r => setTimeout(r, 1500));
     if (await pythonSaved()){ store.set("cr2-py-saved", true); toast("Python is saved on this phone, so Run works offline too."); }
-    else toast("Python ran, but isn't saved for offline use yet. Open the app again on Wi-Fi.");
+    else toast("Python ran, but isn't saved for offline use yet. Open the app again while online.");
   }, () => { pyodideReady = null; });
   return pyodideReady;
 }
@@ -204,11 +209,11 @@ document.addEventListener("click", async e => {
       const ok = text.trim() === box.dataset.expect.trim();
       out.classList.toggle("pass", ok);
       if (ok) markLessonDone(+box.dataset.dn);
-      else card.querySelector(".doneNote").textContent = "Not quite. Compare your output with the task, or show the hint.";
+      else card.querySelector(".doneNote").textContent = "Not quite. Compare your output with the task, or tap Show hint.";
     }
   } catch (err){
     out.classList.add("err");
-    say(navigator.onLine ? "Python couldn't load. Try again in a moment." : "You're offline. Python needs a connection the first time you run code; after that it works offline.", true);
+    say(navigator.onLine ? "Python couldn't load. Try again in a moment." : "You're offline. Connect to the internet to run code the first time. After that, it works offline.", true);
   }
   btn.disabled = false; btn.textContent = loaded && !ed ? "Run again" : btn.dataset.label;
 });
@@ -349,14 +354,14 @@ function sealedHtml(p, date){
     <div class="sealed"><div class="sealed-hd"><span>Bunker status</span><span>Sealed</span></div>
       <h2>Done for today</h2>
       <p class="sealed-streak"><span class="sr">Streak: </span>${streak} day${streak === 1 ? "" : "s"}<span aria-hidden="true"> streak</span></p>
-      <p>${list ? esc(list.charAt(0).toUpperCase() + list.slice(1)) + (did.length > 1 || did[0] === "reviews" ? " are" : " is") + " logged." : "All logged."} Come back tomorrow for fresh orders.</p>
+      <p>${list ? esc(list.charAt(0).toUpperCase() + list.slice(1)) + (did.length > 1 || did[0] === "reviews" ? " are" : " is") + " logged." : "All logged."} Come back tomorrow for a new plan.</p>
       <p class="small">The tabs are still open if you want to browse, but there's nothing more you need to do today.</p></div>`;
 }
 function renderToday(focusAfter){
   const box = document.querySelector("#today .todayBox");
   if (!box) return;
   const date = new Date().toLocaleDateString("en-NZ", {weekday:"short", day:"numeric", month:"short"});
-  const warn = store.ok ? "" : `<p class="warn">Storage is blocked in this browser, so today's plan and streak won't be kept after you close the app.</p>`;
+  const warn = store.ok ? "" : `<p class="warn">This browser is blocking storage, so today's plan and streak won't be saved after you close the app.</p>`;
   let html, st = null;
   ensurePlan();
   if (todaySealed()) html = sealedHtml(todayPlan, date) + warn;
@@ -368,15 +373,15 @@ function renderToday(focusAfter){
       const row = (ok, id, label, detail, action) => `<li class="${ok ? "ok" : ""}"><span class="tick" aria-hidden="true">${ok ? "■" : "□"}</span><div><b id="ord-${id}" tabindex="-1">${label}</b><span>${detail}</span><span class="sr">${ok ? " Done." : " To do."}</span>${ok ? "" : action}</div></li>`;
       const it = p.radio, link = it && /^https?:\/\//.test(it.link || "") ? it.link : "";
       html = `<div class="tag"><span>Today</span>${esc(date)}</div>
-        <h2 class="todayH">Today's orders</h2>
-        <p class="todayMeter" id="todayMeter" tabindex="-1"><span aria-hidden="true">${"■".repeat(st.done)}${"□".repeat(Math.max(0, st.n - st.done))} ${st.done}/${st.n}</span><span class="sr">${st.done} of ${st.n} orders done</span></p>
+        <h2 class="todayH">Today's plan</h2>
+        <p class="todayMeter" id="todayMeter" tabindex="-1"><span aria-hidden="true">${"■".repeat(st.done)}${"□".repeat(Math.max(0, st.n - st.done))} ${st.done}/${st.n}</span><span class="sr">${st.done} of ${st.n} tasks done</span></p>
         <ul class="orders">
           ${st.keys.length ? row(st.revDone >= st.keys.length, "rev", "Reviews", `${st.revDone} of ${st.keys.length} answered`, `<button class="btn" type="button" data-go="reviews">Start reviews</button>`) : ""}
           ${p.lesson ? row(st.lessonDone, "lesson", "New lesson", esc(st.lessonName), `<button class="btn ghost" type="button" data-go="lesson">Open ${p.lesson.tab === "study" ? "Day" : "Lesson"} ${p.lesson.n}</button>`) : ""}
-          ${it ? row(st.radioDone, "radio", "Bunker Radio", `${esc(it.source)}: ${esc(it.title)}`, `<div class="row">${link ? `<a class="btn ghost" href="${esc(link)}" target="_blank" rel="noopener noreferrer" data-go="radio-read">Read <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${link ? `<button class="btn ghost" type="button" data-go="radio-brief">Brief it</button>` : ""}<button class="btn ghost" type="button" data-go="radio-done">Mark Radio done</button></div>`) : ""}
+          ${it ? row(st.radioDone, "radio", "Bunker Radio", `${esc(it.source)}: ${esc(it.title)}`, `<div class="row">${link ? `<a class="btn ghost" href="${esc(link)}" target="_blank" rel="noopener noreferrer" data-go="radio-read">Read <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${link ? `<button class="btn ghost" type="button" data-go="radio-brief">Debrief</button>` : ""}<button class="btn ghost" type="button" data-go="radio-done">Mark Radio done</button></div>`) : ""}
           ${st.radioPending ? `<li><span class="tick" aria-hidden="true">□</span><div><b>Bunker Radio</b><span>Tuning in…</span></div></li>` : ""}
         </ul>
-        ${!st.n && !st.radioPending ? `<p>Nothing scheduled today: no reviews due and every lesson finished. Browse the tabs if you like.</p>` : ""}
+        ${!st.n && !st.radioPending ? `<p>Nothing planned today. No reviews are due and every lesson is finished. Browse the tabs if you like.</p>` : ""}
         <p class="small">Reviews over ${REVIEW_CAP} move to the next day or two and keep their place in the queue.</p>${warn}`;
     }
   }
@@ -384,7 +389,7 @@ function renderToday(focusAfter){
   lastTodayHtml = html; box.innerHTML = html;
   // Say only what changed, not the whole card.
   const nowDone = todaySealed() ? 99 : st ? st.done : 0;
-  if (lastTodayDone >= 0 && nowDone !== lastTodayDone) live.textContent = todaySealed() ? `Done for today. Streak ${currentStreak()} day${currentStreak() === 1 ? "" : "s"}.` : `${st.done} of ${st.n} orders done.`;
+  if (lastTodayDone >= 0 && nowDone !== lastTodayDone) live.textContent = todaySealed() ? `Done for today. Streak ${currentStreak()} day${currentStreak() === 1 ? "" : "s"}.` : `${st.done} of ${st.n} tasks done.`;
   lastTodayDone = nowDone;
   if (focusAfter){ const f = box.querySelector("#" + focusAfter) || box.querySelector("#todayMeter") || box.querySelector("h2"); if (f){ if (!f.hasAttribute("tabindex")) f.tabIndex = -1; f.focus({preventScroll:true}); } }
   box.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => {
@@ -435,7 +440,7 @@ document.addEventListener("click", async e => {
   if (!btn || !window.installPrompt) return;
   const ev = window.installPrompt; window.installPrompt = null;
   ev.prompt();
-  try { const r = await ev.userChoice; if (r.outcome !== "accepted") toast("Not installed. You can install later from Chrome's ⋮ menu."); } catch (err) {}
+  try { const r = await ev.userChoice; if (r.outcome !== "accepted") toast("Not installed. To install later, use Chrome's ⋮ menu."); } catch (err) {}
   refreshInstall();
 });
 window.addEventListener("installready", refreshInstall);
@@ -565,7 +570,7 @@ function quizHtml(q, tagHtml, withRetry, seed, recall){
     ${q.code ? codeBlock(q.code, "", false) : ""}
     ${recall ? `<div class="recall">
       <p class="small">${typed ? "Type the answer from memory, or think it through first." : "Think of the answer before you look at the options."}</p>
-      ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"${typed.every(a => /^[0-9.]+$/.test(a)) ? ' inputmode="decimal"' : ""} aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">Check</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
+      ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"${typed.every(a => /^[0-9.]+$/.test(a)) ? ' inputmode="decimal"' : ""} aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">Check answer</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
       <p class="small recallMsg" aria-live="polite"></p></div>` : ""}
     <div class="opts${q.code ? " out" : ""}" role="group" aria-label="Answers"${recall ? " hidden" : ""}>${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
     <div class="why" tabindex="-1"></div>
@@ -636,7 +641,7 @@ function makeTrack(tab, items, cfg){
 
     d.learn.forEach(([h, p, code], j) => {
       const s = make("Learn " + (j+1) + "/" + d.learn.length,
-        `${tag("Learn", (j+1) + " of " + d.learn.length).replace("</div>", `<span class="guessMark" data-g="${tab}:${dn}"></span></div>`)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, cfg.codeLabel || "", true) : ""}`);
+        `${tag("Learn", (j+1) + " of " + d.learn.length).replace("</div>", `<span class="guessMark" data-g="${tab}:${dn}"></span></div>`)}<h2>${fmt(h)}</h2>${termsOrPara(h, p)}${code ? codeBlock(code, cfg.codeLabel || "", true) : ""}`);
       if (code) wireCopy(s, code);
       if (code && tab === "py" && canRun(code)){ s.__runCode = code; s.querySelector(".code").insertAdjacentHTML("afterend", RUN_HTML("Run it here")); }
     });
@@ -648,7 +653,7 @@ function makeTrack(tab, items, cfg){
 
     if (d.real) make(cfg.realLabel, `${tag(cfg.realLabel)}<h2>${fmt(d.real[0])}</h2><p>${fmt(d.real[1])}</p>`);
 
-    if (d.myth) make("Myth vs fact", `${tag("Myth vs fact")}<h2>Don't fall for it</h2>
+    if (d.myth) make("Myth vs fact", `${tag("Myth vs fact")}<h2>A common mistake</h2>
       <div class="mf"><div class="m"><b>Myth</b>${fmt(d.myth[0])}</div><div class="f"><b>Fact</b>${fmt(d.myth[1])}</div></div>`);
 
     if (d.tryit){
@@ -659,7 +664,7 @@ function makeTrack(tab, items, cfg){
     }
 
     (d.review || []).forEach(([h, p], j) => make("Review " + (j+1) + "/" + d.review.length,
-      `${tag("Review", (j+1) + " of " + d.review.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>`));
+      `${tag("Review", (j+1) + " of " + d.review.length)}<h2>${fmt(h)}</h2>${termsOrPara(h, p)}`));
 
     T.resetters[dn] = [];
     d.quiz.forEach((q, qi) => {
@@ -676,7 +681,7 @@ function makeTrack(tab, items, cfg){
         ${ch.think ? "" : EDITOR_HTML(ch.start, "Run and check", dn, ch.expect)}
         <div class="row reveals"><button class="btn ghost hintBtn" type="button" aria-expanded="false">Show hint</button><button class="btn ghost solBtn" type="button" aria-expanded="false">${ch.think ? "Show answer" : "Show solution"}</button></div>
         <div class="hintBox" hidden>${fmt(ch.hint)}</div>
-        <div class="solBox" hidden>${ch.think ? `<p>${fmt(ch.solution)}</p><button class="btn markDone" type="button">Mark lesson done</button>` : codeBlock(ch.solution, "Solution", false) + `<button class="btn ghost useSol" type="button">Put it in the editor</button>`}</div>
+        <div class="solBox" hidden>${ch.think ? `<p>${fmt(ch.solution)}</p><button class="btn markDone" type="button">Mark lesson done</button>` : codeBlock(ch.solution, "Solution", false) + `<button class="btn ghost useSol" type="button">Use this solution</button>`}</div>
         <p class="small doneNote" aria-live="polite"></p>`);
       if (!ch.think) wireEditor(s, ch.start);
       const toggle = (btn, box) => btn.addEventListener("click", () => { const open = box.hidden; box.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
@@ -838,7 +843,7 @@ document.getElementById("stDelete").addEventListener("click", () => {
 });
 document.getElementById("studyCount").textContent = `${DAYS.length} days · ${studyIntroCount()} cards · ${DAYS.reduce((s,d)=>s+d.quiz.length,0)} questions`;
 addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Stages 1 and 2 complete</div><h1>That's all ${DAYS.length} days</h1>
-  <p class="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its summary card. Reset clears your Training quiz answers. Your review schedule and streak are kept.</p>
+  <p class="endScore"></p><p class="small">Missed some? Tap Days, pick a red day, then tap “Redo this quiz” on its Summary card. Reset answers clears your Training Bunker quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
 /* ---------- Python tab ---------- */
@@ -853,14 +858,14 @@ addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
   <div class="row"><button class="btn" id="pyResume">Start Lesson 1</button><button class="btn ghost reviewNow" type="button" hidden></button><button class="btn ghost installBtn" type="button" hidden>Install app</button></div>`});
 makeTrack("py", PY_LESSONS, {
   answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Terminal summary", codeLabel:"Python",
-  links:{9:{tab:"study", n:18, text:"Background: Training Day 18"}, 12:{tab:"study", n:24, text:"Background: Training Day 24"},
-         14:{tab:"study", n:19, text:"Background: Training Day 19"}, 23:{tab:"study", n:22, text:"Background: Training Day 22"},
-         18:{tab:"study", n:9, text:"Background: Training Day 9"}, 24:{tab:"study", n:25, text:"Try it in the Day 25 lab"}},
+  links:{9:{tab:"study", n:18, text:"Background: Training Bunker Day 18"}, 12:{tab:"study", n:24, text:"Background: Training Bunker Day 24"},
+         14:{tab:"study", n:19, text:"Background: Training Bunker Day 19"}, 23:{tab:"study", n:22, text:"Background: Training Bunker Day 22"},
+         18:{tab:"study", n:9, text:"Background: Training Bunker Day 9"}, 24:{tab:"study", n:25, text:"Try it in the Training Bunker Day 25 lab"}},
   id:(dn, n) => n === 0 ? "py-" + dn : "p" + dn + "-" + n,
   groupOf:i => { const l = PY_LEVELS.find(l => i >= l.from && i < l.to); return {c:"var(--t-py)", label:`Terminal · ${l.name}`}; }
 });
 addCard("py", {c:"var(--t-py)", id:"py-finish", label:"Finished", group:-2, html:`<div class="tag"><span>Done</span>Terminal track complete</div><h1>You can script it</h1>
-  <p class="endScore"></p><p class="small">Turn the final project into a GitHub project with a README and sample output. Reset clears your Python quiz answers. Your review schedule and streak are kept.</p>
+  <p class="endScore"></p><p class="small">Turn the final project into a GitHub project with a README and sample output. Reset answers clears your Terminal quiz answers. Your review schedule and streak are kept.</p>
   <div class="row"><button class="btn toTop" type="button">Back to start</button><button class="btn ghost reset" type="button">Reset answers</button></div>`});
 
 /* ---------- Feed tab: endless, shuffled decks ---------- */
@@ -921,11 +926,11 @@ function wireRedaction(card){
 }
 function interviewHtml(d, tagHtml){
   return `${tagHtml}<h2 class="q">${fmt(d.title)}</h2>
-    <p class="small">Answer out loud in about 30 seconds, as if you're in the interview. Then compare.</p>
-    <button class="btn reveal" type="button">Reveal a model answer</button>
+    <p class="small">Answer out loud in about 30 seconds, as if you're in the interview. Then show the model answer and compare.</p>
+    <button class="btn reveal" type="button">Show model answer</button>
     <div class="model">${fmt(d.answer)}</div>
     <div class="yours"></div>
-    <div class="rate" role="group" aria-label="How did you go?"><button type="button" data-r="nailed">Nailed it</button><button type="button" data-r="shaky">Shaky</button><button type="button" data-r="missed">Missed it</button></div>
+    <div class="rate" role="group" aria-label="How did you go?"><button type="button" data-r="nailed">Got it</button><button type="button" data-r="shaky">Partly</button><button type="button" data-r="missed">Missed it</button></div>
     <p class="small rated" aria-live="polite"></p>`;
 }
 function wireInterview(card, d, onRated){
@@ -947,7 +952,7 @@ function wireInterview(card, d, onRated){
     srsRecord(key, b.dataset.r === "nailed");
     if (onRated) onRated();
     const days = srs[key].due - dayNum();
-    rated.textContent = days <= 1 ? "No problem. This one comes back tomorrow for another go." : `Great. This one comes back in ${days} days.`;
+    rated.textContent = days <= 1 ? "Saved. This one comes back tomorrow for another try." : `Saved. This one comes back in ${days} days.`;
   }));
 }
 // Your goal tilts the Feed: SOC leans towards triage, queries and incidents; Cloud towards cloud and app security.
@@ -1000,7 +1005,7 @@ function appendDeck(forced, at){
     const card = ([h, p, code], i, last, chips) => {
       const evidence = d.kind === "triage" && i === 0;
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0},
-        html:`${tag(i)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>${code ? codeBlock(code, evidence ? "Log" : "", !evidence) : ""}${chips && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}${chips && d.attack ? `<div class="chip"><b>ATT&amp;CK</b>${d.attack.map(fmt).join("<br>")}</div>` : ""}`});
+        html:`${tag(i)}<h2>${fmt(h)}</h2>${termsOrPara(h, p)}${code ? codeBlock(code, evidence ? "Log" : "", !evidence) : ""}${chips && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}${chips && d.attack ? `<div class="chip"><b>ATT&amp;CK</b>${d.attack.map(fmt).join("<br>")}</div>` : ""}`});
       if (code && !evidence) wireCopy(s, code);
     };
     // Labels that would give an answer away go after the questions on decks that ask about them.
@@ -1025,10 +1030,10 @@ function appendDeck(forced, at){
   if (at === undefined && ++decksAppended % 5 === 0){
     const pause = addCard("feed", {c:"var(--t-feed)", label:"Pause", group:serial, extra:{pause:true}, html:`
       <div class="tag"><span>Pause</span>${decksAppended} decks in this session</div>
-      <h2>Nice run</h2>
+      <h2>Take a break?</h2>
       <p class="runScore"></p>
-      <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
-      <div class="row"><button class="btn keep" type="button">Keep going</button><button class="btn ghost toStudy" type="button">Switch to Training</button></div>`});
+      <div class="conf target" role="group" aria-label="Your job goal">Job goal:<button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
+      <div class="row"><button class="btn keep" type="button">Keep going</button><button class="btn ghost toStudy" type="button">Go to Training Bunker</button></div>`});
     wireTarget(pause);
     pause.querySelector(".keep").addEventListener("click", () => go("feed", F.cards.findIndex(c => c.el === pause) + 1));
     pause.querySelector(".toStudy").addEventListener("click", () => userSwitch("study"));
@@ -1089,13 +1094,13 @@ function reviewNow(){
   while (F.cards[i+1] && F.cards[i+1].group === g) i++;
   if (appendReview(i + 1)){ requestAnimationFrame(() => go("feed", i + 1)); return; }
   const queued = F.cards.findIndex((c, j) => j > F.current && c.reviewStart);
-  if (queued > 0) go("feed", queued); else toast("Nothing due for review right now");
+  if (queued > 0) go("feed", queued); else toast("Nothing due for review. Check back tomorrow.");
 }
 addCard("feed", {c:"var(--t-feed)", id:"feed-start", label:"Start", group:-1, html:`
   <div class="tag"><span>The Archive</span>Never ends</div>
   <h1>Keep scrolling</h1>
   <p>Short decks, shuffled, with your due reviews mixed in.</p>
-  <div class="conf target" role="group" aria-label="Your job goal">Goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
+  <div class="conf target" role="group" aria-label="Your job goal">Job goal: <button type="button" data-t="mixed">Mixed</button><button type="button" data-t="soc">SOC</button><button type="button" data-t="cloud">Cloud</button></div>
   <div class="legend">${["OWASP","Incidents","Splunk SPL","Essential Eight","Cloud","AU/NZ law","Triage","KQL","Quick-fire","Review"].map(t => `<span>${t}</span>`).join("")}</div>
   <div class="stats streakLine"></div>`});
 function wireTarget(root){
@@ -1231,8 +1236,8 @@ function updateScore(tab, announce){
     if (active === "feed"){
       refreshDaily();
     }
-    F.el.querySelectorAll(".runScore").forEach(r => r.textContent = feedState.answered ? `You've got ${feedState.right} of ${feedState.answered} checks right so far. Keep going, or switch to your Training plan.` : "Keep going, or switch to your Training plan.");
-    if (announce) live.textContent = `${feedState.right} of ${feedState.answered} feed checks right`;
+    F.el.querySelectorAll(".runScore").forEach(r => r.textContent = feedState.answered ? `You've got ${feedState.right} of ${feedState.answered} checks right so far. Keep going, or go to Training Bunker.` : "Keep going, or go to Training Bunker.");
+    if (announce) live.textContent = `${feedState.right} of ${feedState.answered} Archive checks right`;
     return;
   }
   const T = TABS[tab];
@@ -1386,7 +1391,7 @@ let radioSeenMem = wireTime(store.get(RADIO_SEEN, ""));
 const itemSeen = it => wireTime(it.seen || it.date);
 function radioNew(){ return wire ? wire.items.filter(it => itemSeen(it) > radioSeenMem) : []; }
 function radioLabel(){ const n = window.TODAY_READY && todaySealed() ? 0 : radioNew().length; return n ? `Radio · ${n > 9 ? "9+" : n}` : "Radio"; }
-function radioAria(){ const n = radioNew().length; return n ? `Bunker Radio, ${n} new transmission${n === 1 ? "" : "s"}` : "Bunker Radio"; }
+function radioAria(){ const n = radioNew().length; return n ? `Bunker Radio, ${n} new intel report${n === 1 ? "" : "s"}` : "Bunker Radio"; }
 function refreshRadioButton(){
   const hp = document.getElementById("hdrPick");
   if (active === "feed"){ hp.textContent = radioLabel(); hp.setAttribute("aria-label", radioAria()); }
@@ -1418,63 +1423,94 @@ function openRelated(to){
     requestAnimationFrame(() => TABS[active].el.focus({preventScroll:true}));
   });
 }
-/* ---------- Brief it: turn a headline into three quick answers and a line in your own words ---------- */
+/* ---------- Debrief: walk through an intel report in six short steps (stored as "briefs") ---------- */
 const briefs = asObj(store.get("cr2-briefs", {}));
 window.BRIEFS = briefs;
 const saveBriefs = () => store.set("cr2-briefs", briefs);
 const CIA = ["Confidentiality", "Integrity", "Availability"];
+const ENTRY = ["Phishing or social engineering", "Stolen or reused password", "Unpatched software flaw", "Misconfigured cloud or storage", "A supplier or third party", "Malicious insider", "Not reported yet"];
 const CONTROLS = ["MFA (phishing-resistant is best)", "Patch applications", "Patch operating systems", "Restrict admin privileges", "Application control",
   "Office macro settings", "User application hardening", "Regular backups", "Least privilege and access control", "Network segmentation",
   "Logging and monitoring", "Security awareness training", "Supplier and third-party checks", "Encryption of data", "Secure configuration",
-  "Input validation", "Secrets management", "Not sure"];
+  "Input validation", "Secrets management"];
+// Recommended steps: likely controls for the headline, from simple keyword rules. A starting point, not an answer.
+const STEP_RULES = [
+  [/ransom|extort|encrypt(ed|s) (files|systems)|lockbit|akira/i, ["Regular backups", "Patch applications", "MFA (phishing-resistant is best)", "Network segmentation"]],
+  [/phish|social engineer|vishing|smish|impersonat|fake (job|login|site)|credential|password|login|account takeover|mfa|session|token theft/i, ["MFA (phishing-resistant is best)", "Security awareness training"]],
+  [/vulnerab|cve-|exploit|zero[- ]day|unpatched|patch|flaw|bug|rce|remote code/i, ["Patch applications", "Patch operating systems"]],
+  [/cloud|s3|bucket|azure|aws|misconfig|exposed (database|server|data)|open database/i, ["Secure configuration", "Least privilege and access control"]],
+  [/supply chain|supplier|vendor|third[- ]party|partner|contractor|provider/i, ["Supplier and third-party checks"]],
+  [/skimm|inject|xss|sql|web ?shell|website|plugin|wordpress/i, ["Input validation", "Logging and monitoring"]],
+  [/api key|secret|token|github|repo|hard-?coded/i, ["Secrets management"]],
+  [/insider|employee|staff/i, ["Least privilege and access control", "Logging and monitoring"]],
+  [/macro|office|word document|excel/i, ["Office macro settings", "Application control"]],
+];
+// Used only when nothing more specific matched.
+const STEP_FALLBACK = [/breach|leak|stolen|exfiltrat|data of|records|customers/i, ["Logging and monitoring", "Encryption of data"]];
+function suggestSteps(it){
+  const text = `${it.title || ""} ${it.summary || ""} ${(it.tags || []).join(" ")}`, out = [];
+  STEP_RULES.forEach(([re, steps]) => { if (re.test(text)) steps.forEach(x => { if (!out.includes(x)) out.push(x); }); });
+  if (!out.length && STEP_FALLBACK[0].test(text)) out.push(...STEP_FALLBACK[1]);
+  if (!out.length) out.push("Patch applications", "Logging and monitoring");
+  return out.slice(0, 4);
+}
 const LAWS = [["nz", "NZ Privacy Act (notifiable privacy breach)"], ["au", "Australian Notifiable Data Breaches scheme"], ["both", "Both"], ["neither", "Neither"], ["unsure", "Unsure"]];
 let radioView = "list", briefLink = null, briefFrom = "list", briefDraft = null, briefWarned = false, briefPopSilent = false, radioStatus = "";
-const storageNote = () => store.ok ? "" : `<p class="warn">Storage is blocked in this browser, so briefs last only until you close the app.</p>`;
+const storageNote = () => store.ok ? "" : `<p class="warn">This browser is blocking storage, so your debriefs won't be saved after you close the app.</p>`;
 // Messages shown inside the sheet (a toast would sit under it and may not be announced).
 function radioSay(msg){ radioStatus = msg; const el = document.getElementById("radioStatus"); if (el) el.textContent = msg; }
 function briefFormHtml(it){
-  const d = briefDraft;
-  return `<button class="linkbtn backToRadio" type="button"><span aria-hidden="true">←</span> Back to ${briefFrom === "briefs" ? "My briefs" : "Radio"}</button>
+  const d = briefDraft, sug = suggestSteps(it);
+  const steps = sug.concat(CONTROLS.filter(c => !sug.includes(c)));
+  return `<button class="linkbtn backToRadio" type="button"><span aria-hidden="true">←</span> Back to ${briefFrom === "briefs" ? "My debriefs" : "Radio"}</button>
     <p class="radio-status" id="radioStatus" role="status">${esc(radioStatus)}</p>
     <form class="form brief" novalidate aria-labelledby="briefTitle">
-      <p class="tx-meta">Brief · ${esc(it.source || "")}</p>
+      <p class="tx-meta">Debrief · ${esc(it.source || "")}</p>
       <h4 class="brief-title" id="briefTitle" tabindex="-1">${esc(it.title)}</h4>
-      <p class="small">Only question 4 is required.</p>${storageNote()}
-      <fieldset><legend>1. Which part of the CIA triad was hit? Pick any that apply.</legend>
+      <p class="small">Work through the steps like an analyst would. Read the full article first if you can. Only step 6 is required.</p>${storageNote()}
+      <label for="briefWhat">1. What happened?</label>
+      <p class="small" id="briefWhatHint">Who was hit, and what was taken, changed or stopped?</p>
+      <textarea id="briefWhat" name="what" rows="2" maxlength="200" aria-describedby="briefWhatHint">${esc(d.what)}</textarea>
+      <fieldset><legend>2. Which part of the CIA triad was hit? Pick any that apply.</legend>
         <ul class="checks">${CIA.concat("Not clear yet").map(c => `<li><label><input type="checkbox" name="cia" value="${c}"${d.cia.includes(c) ? " checked" : ""}>${c}</label></li>`).join("")}</ul></fieldset>
-      <label>2. Which control would have helped most?
-        <select name="control"><option value="">Choose one</option>${CONTROLS.map(c => `<option${d.control === c ? " selected" : ""}>${c}</option>`).join("")}</select></label>
-      <fieldset><legend>3. Would breach reporting likely apply? Both laws need personal information and serious harm that has happened or is likely (in NZ, losing access to the information counts too). Australia's scheme doesn't cover most small businesses, and quick action that removes the likely harm can mean no report is needed.</legend>
+      <label>3. How did the attackers get in?
+        <select name="entry"><option value="">Choose one</option>${ENTRY.map(c => `<option${d.entry === c ? " selected" : ""}>${c}</option>`).join("")}</select></label>
+      <fieldset><legend>4. Recommended steps: what would you put in place? Tick up to three.</legend>
+        <p class="small">The first ${sug.length} are suggested from the headline. Change them if the article says otherwise.</p>
+        <ul class="checks">${steps.map(c => `<li><label><input type="checkbox" name="steps" value="${c}"${d.steps.includes(c) ? " checked" : ""}>${c}${sug.includes(c) ? ` <span class="sug">Suggested</span>` : ""}</label></li>`).join("")}</ul></fieldset>
+      <fieldset><legend>5. Would breach reporting likely apply?</legend>
+        <p class="small">Both laws need personal information and likely serious harm. Australia's scheme doesn't cover most small businesses.</p>
         <ul class="checks">${LAWS.map(([v, l]) => `<li><label><input type="radio" name="law" value="${v}"${d.law === v ? " checked" : ""}>${l}</label></li>`).join("")}</ul></fieldset>
-      <label for="briefLine">4. The lesson in one line, in your own words (required)</label>
-      <p class="small" id="briefHint">For example: One unpatched VPN let them in; patch internet-facing kit first.</p>
+      <label for="briefLine">6. The lesson in one line, in your own words (required)</label>
+      <p class="small" id="briefHint">For example: One unpatched VPN let them in, so patch internet-facing systems first.</p>
       <textarea id="briefLine" name="line" rows="2" maxlength="200" required aria-required="true" aria-describedby="briefHint briefErr">${esc(d.line)}</textarea>
       <p class="warn" id="briefErr" hidden></p>
-      <div class="row"><button class="btn" type="submit">Save brief</button>${briefs[it.link] ? `<button class="btn ghost delBrief" type="button">Delete</button>` : ""}</div>
+      <div class="row"><button class="btn" type="submit">Save debrief</button>${briefs[it.link] ? `<button class="btn ghost delBrief" type="button">Delete</button>` : ""}</div>
     </form>`;
 }
+const stepsOf = b => Array.isArray(b.steps) ? b.steps : (b.control && b.control !== "Not sure" ? [b.control] : []);
 function myBriefsHtml(){
   const list = Object.entries(briefs).sort((a, b) => (b[1].at || "").localeCompare(a[1].at || ""));
-  if (!list.length) return storageNote() + `<p class="tx-note">No briefs yet. Tap "Brief it" on any transmission to save one. Your briefs are good talking points for "What's a breach you've followed recently?"</p>`;
+  if (!list.length) return storageNote() + `<p class="tx-note">No debriefs yet. Tap "Debrief" on any intel report to work through it. Debriefs are good answers to the interview question "What's a breach you've followed recently?"</p>`;
   const law = v => (LAWS.find(l => l[0] === v) || [, "Not answered"])[1];
-  return storageNote() + `<p class="tx-note">${list.length} brief${list.length === 1 ? "" : "s"}. Skim these before an interview.</p>` + list.map(([link, b], i) => `
+  return storageNote() + `<p class="tx-note">${list.length} debrief${list.length === 1 ? "" : "s"}. Skim these before an interview.</p>` + list.map(([link, b], i) => `
     <article class="tx brief-card" aria-labelledby="bf${i}">
       <h4 class="tx-title" id="bf${i}">${esc(b.title)}</h4>
       <div class="tx-hd"><span>${esc(b.source || "")}</span><span>${esc(nzStamp(b.date || ""))}</span></div>
       ${b.line ? `<p class="tx-sum brief-line">${esc(b.line)}</p>` : ""}
-      <dl class="brief-dl"><dt>CIA</dt><dd>${esc((b.cia || []).join(", ") || "Not answered")}</dd><dt>Control</dt><dd>${esc(b.control || "Not answered")}</dd><dt>Reporting</dt><dd>${esc(law(b.law))}</dd></dl>
+      <dl class="brief-dl">${b.what ? `<dt>What happened</dt><dd>${esc(b.what)}</dd>` : ""}<dt>CIA</dt><dd>${esc((b.cia || []).join(", ") || "Not answered")}</dd>${b.entry ? `<dt>Way in</dt><dd>${esc(b.entry)}</dd>` : ""}<dt>Steps</dt><dd>${esc(stepsOf(b).join(", ") || "Not answered")}</dd><dt>Reporting</dt><dd>${esc(law(b.law))}</dd></dl>
       <div class="row">${/^https?:\/\//.test(link) ? `<a class="btn ghost" href="${esc(link)}" target="_blank" rel="noopener noreferrer" aria-describedby="bf${i}">Full article <span aria-hidden="true">↗</span><span class="sr"> (opens in a new tab)</span></a>` : ""}<button class="btn ghost editBrief" type="button" data-link="${esc(link)}" aria-describedby="bf${i}">Edit</button><button class="btn ghost delBriefList" type="button" data-link="${esc(link)}" aria-describedby="bf${i} radioStatus">Delete</button></div>
     </article>`).join("");
 }
 function radioNav(){
   const n = Object.keys(briefs).length;
-  return `<div class="conf radioNav" role="group" aria-label="Bunker Radio view"><button type="button" data-v="list" aria-pressed="${radioView === "list"}">Transmissions</button><button type="button" data-v="briefs" aria-pressed="${radioView === "briefs"}">My briefs${n ? " (" + n + ")" : ""}</button></div>
+  return `<div class="conf radioNav" role="group" aria-label="Bunker Radio view"><button type="button" data-v="list" aria-pressed="${radioView === "list"}">Intel reports</button><button type="button" data-v="briefs" aria-pressed="${radioView === "briefs"}">My debriefs${n ? " (" + n + ")" : ""}</button></div>
     <p class="radio-status" id="radioStatus" role="status">${esc(radioStatus)}</p>`;
 }
 function openBrief(link, from){
   briefFrom = from || (radioView === "briefs" ? "briefs" : "list");
   const b = briefs[link] || {};
-  briefDraft = {cia: (b.cia || []).slice(), control: b.control || "", law: b.law || "", line: b.line || "", dirty: false};
+  briefDraft = {what: b.what || "", cia: (b.cia || []).slice(), entry: b.entry || "", steps: stepsOf(b).slice(), law: b.law || "", line: b.line || "", dirty: false};
   radioView = "brief"; briefLink = link; briefWarned = false; radioStatus = "";
   history.pushState({brief:1}, "");
   renderRadio();
@@ -1500,7 +1536,9 @@ function wireBriefForm(list, it){
   const sync = () => {
     if (!briefDraft || !form.isConnected) return;
     briefDraft.cia = [...form.querySelectorAll("input[name=cia]:checked")].map(x => x.value);
-    briefDraft.control = form.control.value; briefDraft.law = (form.querySelector("input[name=law]:checked") || {}).value || "";
+    briefDraft.what = form.what.value; briefDraft.entry = form.entry.value;
+    briefDraft.steps = [...form.querySelectorAll("input[name=steps]:checked")].map(x => x.value);
+    briefDraft.law = (form.querySelector("input[name=law]:checked") || {}).value || "";
     briefDraft.line = line.value; briefDraft.dirty = true; briefWarned = false;
   };
   form.addEventListener("input", sync); form.addEventListener("change", sync);
@@ -1510,21 +1548,27 @@ function wireBriefForm(list, it){
     form.querySelectorAll("input[name=cia]").forEach(o => { if (o !== cb && ((cb.value === "Not clear yet") !== (o.value === "Not clear yet"))) o.checked = false; });
     sync();
   }));
+  // Recommended steps: at most three, so the debrief stays focused.
+  form.querySelectorAll("input[name=steps]").forEach(cb => cb.addEventListener("change", () => {
+    const on = form.querySelectorAll("input[name=steps]:checked");
+    if (on.length > 3){ cb.checked = false; radioSay("Pick up to three steps. Untick one to swap."); }
+    sync();
+  }));
   line.addEventListener("input", () => { err.hidden = true; err.textContent = ""; line.removeAttribute("aria-invalid"); });
   list.querySelector(".backToRadio").addEventListener("click", () => leaveBrief(it.link));
   form.addEventListener("submit", e => {
     e.preventDefault(); sync();
     const text = line.value.trim();
     if (!text){ err.textContent = "Add your one-line lesson, then save."; err.hidden = false; line.setAttribute("aria-invalid", "true"); line.focus(); return; }
-    briefs[it.link] = {title: it.title, source: it.source, date: it.date, cia: briefDraft.cia, control: briefDraft.control, law: briefDraft.law, line: text, at: new Date().toISOString()};
+    briefs[it.link] = {title: it.title, source: it.source, date: it.date, summary: it.summary || "", what: briefDraft.what.trim(), cia: briefDraft.cia, entry: briefDraft.entry, steps: briefDraft.steps, law: briefDraft.law, line: text, at: new Date().toISOString()};
     const kept = saveBriefs() && store.ok;
-    radioStatus = kept ? "Brief saved to My briefs." : "Brief kept for this session only (storage is blocked).";
+    radioStatus = kept ? "Debrief saved to My debriefs." : "Debrief saved until you close the app. This browser is blocking storage.";
     if (window.TODAY_READY) renderToday();
     leaveBrief(it.link);
   });
   const del = form.querySelector(".delBrief");
-  if (del) twoTap(del, "Tap Delete again to delete this brief", () => {
-    delete briefs[it.link]; saveBriefs(); radioStatus = "Brief deleted.";
+  if (del) twoTap(del, "Tap again to delete", () => {
+    delete briefs[it.link]; saveBriefs(); radioStatus = "Debrief deleted.";
     if (window.TODAY_READY) renderToday();
     leaveBrief(it.link, true);
   }, radioSay);
@@ -1538,9 +1582,9 @@ function renderRadio(){
   if (radioView === "briefs"){
     list.innerHTML = radioNav() + myBriefsHtml(); wireNav();
     list.querySelectorAll(".editBrief").forEach(b => b.addEventListener("click", () => openBrief(b.dataset.link, "briefs")));
-    list.querySelectorAll(".delBriefList").forEach(b => twoTap(b, "Tap Delete again to delete this brief", () => {
+    list.querySelectorAll(".delBriefList").forEach(b => twoTap(b, "Tap again to delete", () => {
       const all = [...list.querySelectorAll(".delBriefList")], idx = all.indexOf(b);
-      delete briefs[b.dataset.link]; saveBriefs(); radioStatus = "Brief deleted.";
+      delete briefs[b.dataset.link]; saveBriefs(); radioStatus = "Debrief deleted.";
       if (window.TODAY_READY) renderToday();
       renderRadio();
       const edits = list.querySelectorAll(".editBrief"), f = edits[Math.min(idx, edits.length - 1)] || list.querySelector('.radioNav [data-v="briefs"]');
@@ -1555,23 +1599,23 @@ function renderRadio(){
   }
   if (wireState === "loading" && !wire){ list.innerHTML = radioNav() + `<p class="tx-note" role="status">Tuning in…</p>`; wireNav(); return; }
   if (!wire || !wire.items.length){
-    list.innerHTML = radioNav() + `<p class="tx-note">Bunker Radio is off the air. It needs a connection the first time; after that the latest wire is kept for offline use.</p>`;
+    list.innerHTML = radioNav() + `<p class="tx-note">Bunker Radio is off the air. Connect to the internet, then open Radio again. After that, the latest intel reports are kept for offline use.</p>`;
     wireNav(); return;
   }
   const fresh = new Set(radioNew());
   const live = (wire.sources || []).filter(s => String(s.status).startsWith("ok")).map(s => s.name);
-  list.innerHTML = radioNav() + `<p class="tx-meta">Incoming transmissions · updated ${esc(nzStamp(wire.updated))} NZ${wireState === "offline" ? " · offline copy" : ""}</p>
+  list.innerHTML = radioNav() + `<p class="tx-meta">Intel reports · updated ${esc(nzStamp(wire.updated))} NZ${wireState === "offline" ? " · offline copy" : ""}</p>
     <p class="tx-note">Headlines and short summaries${live.length ? " from " + esc(live.join(", ")) : ""}. Tap through for the full story${wireState === "offline" ? " when you're back online" : ""}.</p>` +
     wire.items.map((it, i) => {
       const ok = /^https?:\/\//.test(it.link || ""), isNew = fresh.has(it);
       const rel = it.related && relatedName(it.related.to) ? it.related : null;
       return `<article class="tx${isNew ? " is-new" : ""}" aria-labelledby="tx${i}">
         <h4 class="tx-title" id="tx${i}">${isNew ? `<span class="sr">New: </span>` : ""}${esc(it.title)}</h4>
-        <div class="tx-in" aria-hidden="true"><span>▶ Incoming transmission</span><span class="cursor">_</span>${isNew ? ` <b class="tx-new">New</b>` : ""}</div>
-        <div class="tx-hd"><span><span class="sr">Incoming transmission from </span><span aria-hidden="true">From </span>${esc(it.source)}</span><span>${esc(nzStamp(it.date))}</span></div>
+        <div class="tx-in" aria-hidden="true"><span>▶ Intel report</span><span class="cursor">_</span>${isNew ? ` <b class="tx-new">New</b>` : ""}</div>
+        <div class="tx-hd"><span><span class="sr">Intel report from </span><span aria-hidden="true">From </span>${esc(it.source)}</span><span>${esc(nzStamp(it.date))}</span></div>
         ${it.summary ? `<p class="tx-sum">${esc(it.summary)}</p>` : ""}
         ${(it.tags || []).length ? `<div class="tx-tags"><span class="sr">Tags: </span>${it.tags.map(t => `<span>${esc(t)}</span>`).join("")}</div>` : ""}
-        <div class="row">${ok ? `<a class="btn ghost" href="${esc(it.link)}" target="_blank" rel="noopener noreferrer" aria-describedby="tx${i}">Full article <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${ok ? `<button class="btn ghost briefBtn" type="button" data-link="${esc(it.link)}" aria-describedby="tx${i}">${briefs[it.link] ? `<span aria-hidden="true">■ </span>Edit brief` : "Brief it"}</button>` : ""}${rel ? `<button class="btn ghost tx-rel" type="button" data-to="${esc(rel.to)}">Related: ${esc(rel.label)} <span aria-hidden="true">→</span></button>` : ""}</div>
+        <div class="row">${ok ? `<a class="btn ghost" href="${esc(it.link)}" target="_blank" rel="noopener noreferrer" aria-describedby="tx${i}">Full article <span aria-hidden="true">↗</span><span class="sr"> (opens ${esc(it.source)} in a new tab)</span></a>` : ""}${ok ? `<button class="btn ghost briefBtn" type="button" data-link="${esc(it.link)}" aria-describedby="tx${i}">${briefs[it.link] ? `<span aria-hidden="true">■ </span>Edit debrief` : "Debrief"}</button>` : ""}${rel ? `<button class="btn ghost tx-rel" type="button" data-to="${esc(rel.to)}">Related: ${esc(rel.label)} <span aria-hidden="true">→</span></button>` : ""}</div>
       </article>`;
     }).join("");
   wireNav();
@@ -1640,7 +1684,7 @@ window.addEventListener("popstate", e => {
   if (briefPopSilent){ briefPopSilent = false; return; }
   if (sheet.classList.contains("open") && radioView === "brief"){
     // Back with an unsaved brief: stay once and warn; a second Back discards it.
-    if (briefDraft && briefDraft.dirty && !briefWarned){ briefWarned = true; history.pushState({brief:1}, ""); radioSay("Unsaved brief. Save, or go back again to discard it."); return; }
+    if (briefDraft && briefDraft.dirty && !briefWarned){ briefWarned = true; history.pushState({brief:1}, ""); radioSay("Unsaved debrief. Save, or go back again to discard it."); return; }
     closeBriefView(briefLink); return;
   }
   if (sheet.classList.contains("open")){ ignoreHash = true; hideSheet(); setTimeout(() => { ignoreHash = false; }, 100); return; }
@@ -1663,7 +1707,7 @@ if (!store.ok){
 }
 document.getElementById("bkCopy").addEventListener("click", () => {
   const text = backupText();
-  const shown = () => { bkText.hidden = false; bkText.value = text; bkText.select(); bkApplyRow.hidden = true; bkMsg.textContent = "Copying isn't allowed here, so the backup is selected above. Long-press to copy it."; };
+  const shown = () => { bkText.hidden = false; bkText.value = text; bkText.select(); bkApplyRow.hidden = true; bkMsg.textContent = "Your browser blocked copying, so the backup is selected above. Long-press it to copy."; };
   try { navigator.clipboard.writeText(text).then(() => { bkMsg.textContent = "Backup copied. Paste it into a note or email to yourself."; store.set("cr2-lastbackup", Date.now()); }, shown); }
   catch(e){ shown(); }
 });
@@ -1678,7 +1722,7 @@ bkText.addEventListener("input", () => { bkArmed = null; document.getElementById
 document.getElementById("bkApply").addEventListener("click", () => {
   let b; try { b = JSON.parse(bkText.value.trim()); } catch(e){ b = null; }
   if (!b || !["cyber-scroll","cyber-bunker"].includes(b.app) || !b.data || typeof b.data !== "object"){ bkMsg.textContent = "That doesn't look like a Cyber Bunker backup. Copy the whole text, including the curly brackets."; return; }
-  if (!Object.keys(b.data).length){ bkMsg.textContent = "That backup is empty, so restoring it would only erase this device's progress."; return; }
+  if (!Object.keys(b.data).length){ bkMsg.textContent = "That backup is empty. Restoring it would erase this device's progress, so it wasn't restored."; return; }
   if (!store.ok){ bkMsg.textContent = "This browser is blocking storage, so a backup can't be restored here."; return; }
   if (bkArmed !== bkText.value){
     const n = ["cr2-answers", "cr2-py-answers"].reduce((a, k) => { try { return a + Object.keys(JSON.parse(b.data[k] || "{}")).length; } catch(e){ return a; } }, 0);
@@ -1705,7 +1749,7 @@ sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
 document.getElementById("nextBtn").addEventListener("click", next);
 [["study", S], ["py", P]].forEach(([tab, T]) => {
   T.el.querySelector(".toTop").addEventListener("click", () => go(tab, 0));
-  twoTap(T.el.querySelector(".reset"), "Tap again to clear", () => {
+  twoTap(T.el.querySelector(".reset"), "Tap again to reset", () => {
     Object.keys(T.answers).forEach(k => delete T.answers[k]);
     store.set(T.cfg.answersKey, {});
     Object.values(T.resetters).forEach(list => list.forEach(f => f()));
@@ -1861,7 +1905,7 @@ function renderCerts(onlyId){
     }).join("");
     const out = document.querySelector(`.cert-overall[data-cert="${CSS.escape(e.id)}"]`);
     out.innerHTML = !coveredW ? "No content for this exam yet."
-      : `<b>${Math.round(score / total)}%</b> mastered across the whole exam. This app covers ${Math.round(coveredW / total * 100)}% of the exam's weight; uncovered domains count as 0.`;
+      : `<b>${Math.round(score / total)}%</b> mastered across the whole exam. This app covers ${Math.round(coveredW / total * 100)}% of the exam's weight. Domains it doesn't cover count as 0.`;
   });
 }
 
@@ -1872,10 +1916,10 @@ function renderReady(){
 document.getElementById("cvCopy").addEventListener("click", () => {
   const lines = SKILLS.map(sk => skillScore(sk).line).filter(Boolean).map(l => "• " + l);
   const msg = document.getElementById("cvMsg");
-  if (!lines.length){ msg.textContent = "Nothing ready yet. An “understand” line unlocks at 30% mastered; a hands-on line unlocks when you tick its labs in the portfolio."; return; }
+  if (!lines.length){ msg.textContent = "No CV lines yet. A skill's “understand” line unlocks at 30% mastered. A hands-on line unlocks when you tick its labs in the portfolio."; return; }
   const text = lines.join("\n");
   const done = () => { msg.textContent = `Copied ${lines.length} line${lines.length === 1 ? "" : "s"}. Edit them into your own words before you use them.`; };
-  const show = () => { const t = document.getElementById("cvText"); t.hidden = false; t.value = text; t.select(); msg.textContent = "Copying isn't allowed here, so the lines are selected above. Long-press to copy."; };
+  const show = () => { const t = document.getElementById("cvText"); t.hidden = false; t.value = text; t.select(); msg.textContent = "Your browser blocked copying, so the lines are selected above. Long-press them to copy."; };
   try { navigator.clipboard.writeText(text).then(done, show); } catch(e){ show(); }
 });
 renderReady();

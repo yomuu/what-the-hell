@@ -1,12 +1,12 @@
 {
- "updated": "2026-11-18T20:28:13+13:00",
+ "updated": "2026-11-19T09:30:17+13:00",
  "note": "Headlines and short feed descriptions only, each credited to its publisher (who owns the text) with a link to the full article. Written by tools/fetch-wire.js.",
  "sources": [
   {
    "name": "BleepingComputer",
    "status": "ok",
    "url": "https://www.bleepingcomputer.com/feed/",
-   "kept": 14
+   "kept": 13
   },
   {
    "name": "The Record",
@@ -18,7 +18,7 @@
    "name": "SANS ISC",
    "status": "ok",
    "url": "https://isc.sans.edu/rssfeed.xml",
-   "kept": 5
+   "kept": 6
   },
   {
    "name": "iTnews",
@@ -46,6 +46,158 @@
   }
  ],
  "items": [
+  {
+   "title": "Trump administration officials size-up a bad stretch for tech",
+   "summary": "Homeland Security Secretary Markwayne Mullin said the administration will reach out to industry to get companies to share more information about big patches before they take effect.",
+   "link": "https://therecord.media/tech-disruptions-house-homeland-committee-testimony",
+   "source": "The Record",
+   "date": "2026-11-19T09:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Java4Shell, NGINX2Shell and more: Why we are not at \"Yellow\", (Wed, Nov 18th)",
+   "summary": "About a month ago, we went to Infocon Yellow for the first time in a few years. We decided to address the php2shell vulnerability and alert our readers to its significant impact. Following php2shell…",
+   "link": "https://isc.sans.edu/diary/rss/33532",
+   "source": "SANS ISC",
+   "date": "2026-11-19T08:54:50+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Data breach impacts 40 Irish credit unions in reported IT provider hack",
+   "summary": "A reported cyberattack on Wellington IT has exposed sensitive information belonging to members of 50 credit unions, the majority of which are located in Ireland. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/data-breach-impacts-40-irish-credit-unions-in-reported-it-provider-hack",
+   "source": "BleepingComputer",
+   "date": "2026-11-19T08:39:33+13:00",
+   "tags": [
+    "Breach"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Lawmakers call on White House to develop defensive AI cyber systems",
+   "summary": "A bipartisan Senate duo urged the White House to launch a national effort to more robustly confront AI-enabled cyber threats in light of recent security incidents involving artificial intelligence.",
+   "link": "https://therecord.media/ai-cyber-white-house",
+   "source": "The Record",
+   "date": "2026-11-19T08:00:00+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Microsoft’s Agent Framework PyPI package compromised to steal credentials",
+   "summary": "Hackers compromised Microsoft's official Agent Framework Python package on PyPI, publishing two malicious versions designed to steal cloud credentials and other sensitive information from developers'…",
+   "link": "https://www.bleepingcomputer.com/news/security/microsofts-agent-framework-pypi-package-compromised-to-steal-credentials",
+   "source": "BleepingComputer",
+   "date": "2026-11-19T05:58:42+13:00",
+   "tags": [
+    "Cloud"
+   ],
+   "related": {
+    "to": "deck:owasp-a03",
+    "label": "OWASP A03: Software Supply Chain Failures"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "NSA continues response to interruptions in classified internal network",
+   "summary": "Day 2 of the NSA Net's disruptions included staggered arrivals and logins at Fort Meade, while a source said classified national security work continued unimpeded.",
+   "link": "https://therecord.media/nsa-continues-response-to-nsa-net-problems",
+   "source": "The Record",
+   "date": "2026-11-19T05:19:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Russian cyber-espionage group used stolen cloud data to hack into organizations, Google says",
+   "summary": "Russian state-backed hackers are using information stolen from cloud accounts to impersonate trusted contacts and launch new espionage attacks against people in their victims' professional networks…",
+   "link": "https://therecord.media/russia-cyber-espionage-google",
+   "source": "The Record",
+   "date": "2026-11-19T04:15:00+13:00",
+   "tags": [
+    "Cloud"
+   ],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "British hacker gets 6 year sentence for $11.6M crypto theft scheme",
+   "summary": "Tyler Robert Buchanan, 24, of Dundee, Scotland, was previously described as the suspected ringleader of the hacking collective, which Microsoft called “one of the most dangerous financial criminal…",
+   "link": "https://therecord.media/british-hacker-gets-six-year-sentence-scattered-spider",
+   "source": "The Record",
+   "date": "2026-11-19T03:48:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Dizigom illegal streaming service with 21M monthly visits shuts down",
+   "summary": "The Alliance for Creativity and Entertainment (ACE) has announced the shutdown of Dizigom, one of Turkey's largest piracy sites, after a settlement agreement with the site's operators. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/dizigom-illegal-streaming-service-with-21m-monthly-visits-shuts-down",
+   "source": "BleepingComputer",
+   "date": "2026-11-19T00:50:25+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Apache warns of Roller RCE vulnerability exploited in attacks",
+   "summary": "Apache has released security updates to address a critical Roller flaw that threat actors are exploiting to gain code execution on vulnerable servers. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/apache-warns-of-roller-rce-vulnerability-exploited-in-attacks",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T23:35:05+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Microsoft announces Windows Server 2028 with hardened security",
+   "summary": "Microsoft has announced Windows Server 2028, the next major release of its server operating system, at the Ignite 2026 conference on Tuesday. [...]",
+   "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-announces-windows-server-2028-with-hardened-security",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T22:24:31+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "British Scattered Spider hacker sentenced to 6 years in prison",
+   "summary": "A leader of the Scattered Spider cybercrime collective has been sentenced to six years in prison in the United States for stealing millions in cryptocurrency and conspiring to hack a dozen companies…",
+   "link": "https://www.bleepingcomputer.com/news/security/british-scattered-spider-hacker-sentenced-to-6-years-in-prison",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T21:24:18+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
   {
    "title": "Hijacked website testing tool plants card skimmer on Australian brands’ sites",
    "summary": "Telco, bank and super fund sites among 178 hit through Optimizely breach.",
@@ -312,53 +464,6 @@
    "seen": "2026-11-18T09:55:30+13:00"
   },
   {
-   "title": "Uber notifies drivers of data breach affecting nearly 150,000 people",
-   "summary": "Ride-hailing company Uber is notifying nearly 150,000 drivers that attackers stole their data after breaching AI infrastructure provider Fireworks in early October. [...]",
-   "link": "https://www.bleepingcomputer.com/news/security/uber-notifies-drivers-of-data-breach-affecting-nearly-150-000-people",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T21:35:42+13:00",
-   "tags": [
-    "Breach",
-    "AI"
-   ],
-   "related": {
-    "to": "study:26",
-    "label": "Day 26: Defence in depth and incident response"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Ransomware affiliate suspect extradited to US, faces 27 years in prison",
-   "summary": "A Kazakh national has been extradited from Italy to face charges alleging he targeted US schools, hospitals, and healthcare entities in ransomware attacks. [...]",
-   "link": "https://www.bleepingcomputer.com/news/security/alleged-inc-lynx-ransomware-affiliate-extradited-to-us-faces-27-years-in-prison",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T20:25:44+13:00",
-   "tags": [
-    "Malware"
-   ],
-   "related": {
-    "to": "deck:e8-backups",
-    "label": "Essential Eight: regular backups"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Optimizely hack infected CNN, Fox News, BBC, Salesforce sites with malware",
-   "summary": "A suspected supply chain attack targeting Optimizely has led to malicious JavaScript being loaded on numerous popular websites, including Zoom, CNN, Fox News, BBC, Salesforce, and GitLab, exposing…",
-   "link": "https://www.bleepingcomputer.com/news/security/optimizely-supply-chain-attack-delivers-malware-to-cnn-fox-news-bbc-salesforce-sites",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T15:12:17+13:00",
-   "tags": [
-    "Malware",
-    "Cloud"
-   ],
-   "related": {
-    "to": "deck:owasp-a03",
-    "label": "OWASP A03: Software Supply Chain Failures"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
    "title": "Vulnerabilities are moving quickly, so patch, protect, prevent",
    "summary": "Actions organisations can take to identify internet-exposed systems, address vulnerabilities and reduce cyber security risk.",
    "link": "https://www.cyber.gov.au/alert/vulnerabilities-are-moving-quickly-so-patch-protect-prevent",
@@ -375,51 +480,11 @@
    "seen": "2026-11-17T21:52:20+13:00"
   },
   {
-   "title": "Gemini AI agents repeatedly bypassed safeguards to attack real website",
-   "summary": "Google's Gemini AI agents repeatedly attempted to hack a real organization's website during AI model safety testing, finding ways to circumvent increasingly restrictive security controls designed to…",
-   "link": "https://www.bleepingcomputer.com/news/security/gemini-ai-agents-repeatedly-bypassed-safeguards-to-attack-real-website",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T11:54:00+13:00",
-   "tags": [
-    "AI"
-   ],
-   "related": null,
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
    "title": "California sues OpenAI for Hugging Face and other incidents, alleging deception and recklessness",
    "summary": "\"OpenAI thwarted the Attorney General’s efforts to investigate these incidents, including by refusing to provide detailed information about the full universe of incidents known to the company,”…",
    "link": "https://therecord.media/california-sues-openai-hugging-face",
    "source": "The Record",
    "date": "2026-11-17T10:40:00+13:00",
-   "tags": [
-    "AI"
-   ],
-   "related": null,
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Google Project Zero cuts bug disclosures to 30 days amid AI threats",
-   "summary": "Google Project Zero will replace its \"90+30\" disclosure policy with shorter, fixed deadlines in response to AI-accelerated vulnerability discovery and exploitation. [...]",
-   "link": "https://www.bleepingcomputer.com/news/security/google-project-zero-cuts-bug-disclosure-deadline-to-30-days-amid-ai-threats",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T10:31:44+13:00",
-   "tags": [
-    "Vulnerability",
-    "AI"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "California sues OpenAI over AI agents escaping sandboxes, hacking firms",
-   "summary": "California Attorney General Rob Bonta sued OpenAI on Monday, alleging the company knowingly continued testing advanced artificial intelligence models despite repeated security failures that allowed…",
-   "link": "https://www.bleepingcomputer.com/news/security/california-sues-openai-over-ai-agents-escaping-sandboxes-hacking-firms",
-   "source": "BleepingComputer",
-   "date": "2026-11-17T09:59:44+13:00",
    "tags": [
     "AI"
    ],
@@ -779,94 +844,6 @@
     "to": "study:34",
     "label": "Day 34: Vulnerability management"
    },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
-   "summary": "CISA has added two new vulnerabilities to its Known Exploited Vulnerabilities (KEV) Catalog and updated the PHP Alert, Critical Vulnerabilities in PHP Require Immediate Patching: CVE-2026-109618, PHP…",
-   "link": "https://www.cisa.gov/news-events/alerts/2026/10/26/cisa-adds-two-known-exploited-vulnerabilities-catalog",
-   "source": "CISA",
-   "date": "2026-10-27T01:00:00+13:00",
-   "tags": [
-    "Vulnerability"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Critical vulnerabilities in Fortinet products",
-   "summary": "Fortinet have announced critical vulnerabilities in Fortinet products, and are releasing security updates which customers should implement as a priority.",
-   "link": "https://www.cyber.gov.au/alert/critical-vulnerabilities-in-fortinet-products",
-   "source": "ACSC",
-   "date": "2026-10-23T18:11:47+13:00",
-   "tags": [
-    "Vulnerability",
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Critical vulnerabilities in PHP",
-   "summary": "A security release for two critical PHP vulnerabilities is set for public disclosure on 22 October 2026. PHP is widely used to power web applications.",
-   "link": "https://www.cyber.gov.au/alert/critical-vulnerabilities-in-php",
-   "source": "ACSC",
-   "date": "2026-10-21T16:01:26+13:00",
-   "tags": [
-    "Vulnerability",
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Protecting operational technology and edge devices",
-   "summary": "Alert on the cyber security risks to operational technology (OT), including refrigeration and cooling technology, with mitigation advice and guidance for businesses and organisations that operate…",
-   "link": "https://www.cyber.gov.au/alert/protecting-operational-technology-and-edge-devices",
-   "source": "ACSC",
-   "date": "2026-10-14T15:17:37+13:00",
-   "tags": [
-    "NZ/AU"
-   ],
-   "related": null,
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Critical vulnerabilities in Citrix NetScaler ADC and Citrix NetScaler Gateway products",
-   "summary": "Alert for organisations to implement a high-priority patch addressing new vulnerabilities, under active exploitation in Citrix NetScaler ADC and Citrix NetScaler Gateway products.",
-   "link": "https://www.cyber.gov.au/alert/critical-vulnerabilities-in-citrix-netscaler-adc-and-citrix-netscaler-gateway-products",
-   "source": "ACSC",
-   "date": "2026-10-01T13:39:24+13:00",
-   "tags": [
-    "Vulnerability",
-    "NZ/AU"
-   ],
-   "related": {
-    "to": "study:34",
-    "label": "Day 34: Vulnerability management"
-   },
-   "seen": "2026-11-17T21:52:20+13:00"
-  },
-  {
-   "title": "Risks of AI misalignment to Australian organisations",
-   "summary": "Alert on the risks of AI misalignment to Australian organisations, with mitigation advice and guidance on secure AI practices for organisations.",
-   "link": "https://www.cyber.gov.au/alert/risks-of-ai-misalignment-to-australian-organisations",
-   "source": "ACSC",
-   "date": "2026-09-25T11:43:51+12:00",
-   "tags": [
-    "AI",
-    "NZ/AU"
-   ],
-   "related": null,
    "seen": "2026-11-17T21:52:20+13:00"
   }
  ]

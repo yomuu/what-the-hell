@@ -64,9 +64,9 @@ Data comes from the incident deck's fields: `date`, `status`, `region`, `entry`,
 ## Bunker Radio (news wire)
 
 - Opened from the header button on The Archive tab ("Radio · 3" when there are new items). It uses the Days sheet in a radio mode.
-- Each item is a terminal transmission: terminal-black panel with scanlines and a dim-green border; an RX row in VT323 (source and NZ time); a NEW marker (bunker black on amber) and an amber left edge for items new since the last visit; the headline in IBM Plex Sans 700; the summary in bone, 16px; tags as small mono labels; a Full article link and an amber Related lesson button.
-- **Brief it:** a form inside the Radio sheet with the headline in bone (not phosphor, because it isn't inside a terminal panel), fieldsets on rust, square checkboxes and radio buttons (amber fill when chosen), and a one-line textarea. The Transmissions / My briefs toggle uses cyan, the Archive accent, for the selected view. Messages appear in a status line inside the sheet.
-- **My briefs:** each saved brief is shown as a saved transmission (terminal panel), with your line in phosphor and the CIA, control and reporting answers in a small list.
+- Each item is an intel report: terminal-black panel with scanlines and a dim-green border; an RX row in VT323 (source and NZ time); a NEW marker (bunker black on amber) and an amber left edge for items new since the last visit; the headline in IBM Plex Sans 700; the summary in bone, 16px; tags as small mono labels; a Full article link and an amber Related lesson button.
+- **Debrief:** a six-step form (what happened, CIA, way in, recommended steps with up to three ticked and the headline's likely controls tagged Suggested in amber, reporting, one-line lesson) inside the Radio sheet with the headline in bone (not phosphor, because it isn't inside a terminal panel), fieldsets on rust, square checkboxes and radio buttons (amber fill when chosen), and a one-line textarea. The Intel reports / My debriefs toggle uses cyan, the Archive accent, for the selected view. Messages appear in a status line inside the sheet.
+- **My debriefs:** each saved debrief is shown as a terminal panel, with your line in phosphor and what happened, CIA, way in, steps and reporting answers in a small list.
 - The `--rx` token (#7fbf8f) is the soft phosphor used for labels inside terminal panels.
 - Exception: Radio headlines stay in normal case, not uppercase, because they're long publisher headlines (the same exception as quiz questions).
 
