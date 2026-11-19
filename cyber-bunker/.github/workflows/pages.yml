@@ -1,0 +1,38 @@
+# Optional: publishes the app to GitHub Pages. It only runs when started by hand from the Actions tab,
+# because GitHub Pages on a free plan needs a public repository and makes the site public.
+# The app is hosted privately on Cloudflare Pages with Cloudflare Access instead (see PUBLISH.md).
+name: Deploy to GitHub Pages (manual)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check the app
+        run: node tools/check.js
+      - name: Collect the files to publish
+        run: |
+          mkdir -p _site/content
+          cp index.html app.js sw.js manifest.webmanifest icon.svg icon-192.png icon-512.png icon-maskable-512.png .nojekyll _site/
+          cp content/study.json content/feed.json content/python.json content/version.json content/certs.json _site/content/
+          [ -f content/wire.json ] && cp content/wire.json _site/content/ || true
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

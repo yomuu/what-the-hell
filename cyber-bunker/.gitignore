@@ -1,0 +1,5 @@
+# Local safety copies made before each weekly run (git history is the long-term record)
+backups/
+# Run logs stay on your PC (they can include local paths). The pull request has the summary.
+content/logs/
+_site/

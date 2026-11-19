@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#141414">
+<title>Cyber Bunker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+:root{--k-msft:#5b8fd9;
+  /* One visual world: dark, full-screen vertical feeds. Weeks and tabs each have their own signal colour. */
+  --bg:#0e1216;
+  --surface:#171d24;
+  --sunk:#0a0d10;
+  --line:#26303b;
+  --text:#eef1f4;
+  --muted:#9aa6b2;
+  --good:#46c08a;
+  --bad:#ff6b6b;
+  --w1:#ffb020;
+  --w2:#3ec7e0;
+  --w3:#a78bfa;
+  --w4:#ff7a59;
+  --w5:#a3e635;
+  --w6:#a78bfa;
+  --t-study:#ffb020;
+  --t-feed:#f472b6;
+  --t-py:#5b9dff;
+  --k-e8:#ffd166;
+  --k-law:#a3e635;
+  --k-triage:#2dd4bf;
+  --k-int:#e2e8f0;
+  --k-cloud:#93c5fd;
+  --k-kql:#e879f9;
+  --k-quick:#fb923c;
+  --tab-h:58px;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.why:focus{outline:none}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent,var(--w1));outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.top{position:fixed;inset:0 0 auto 0;z-index:5;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:linear-gradient(var(--bg) 55%,transparent);pointer-events:none}
+.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent,var(--w1));transition:width .25s}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.meta b{color:var(--accent,var(--w1));font-weight:500}
+.meta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta #count{flex:none}
+.chips{display:flex;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none;pointer-events:auto}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;min-height:44px;padding:0 12px;background:var(--surface);border:1px solid var(--line);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--accent,var(--t-feed));border-color:var(--accent,var(--t-feed));color:#0e1216}
+body[data-tab="feed"] #v-feed .card{padding-top:calc(env(safe-area-inset-top) + 118px)}
+
+/* Each tab is its own scroll-snap feed. Inactive feeds are hidden but keep their scroll position. */
+.view{position:fixed;left:0;right:0;top:0;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom));overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
+.view::-webkit-scrollbar{display:none}
+.view.off{visibility:hidden;pointer-events:none}
+.card{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;padding:calc(env(safe-area-inset-top) + 64px) 68px 28px 22px;position:relative;max-width:640px;margin:0 auto}
+.card::-webkit-scrollbar{display:none}
+.card::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
+/* margin:auto centres short cards and lets tall ones scroll from the top instead of clipping */
+.in{margin:auto 0;display:flex;flex-direction:column;gap:18px;min-width:0}
+.in:has(> .opts),.in:has(> .rate){margin:0 0 auto}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tag span{border:1px solid var(--c);border-radius:999px;padding:3px 9px}
+h1,h2{font-family:var(--display);font-weight:800;margin:0;text-wrap:balance;line-height:1.05;overflow-wrap:break-word;hyphens:auto}
+h1{font-size:clamp(36px,10.5vw,64px)}
+h2{font-size:clamp(26px,7.4vw,40px)}
+.card p{font-size:clamp(18px,4.8vw,21px);line-height:1.5;margin:0;max-width:34ch;overflow-wrap:anywhere}
+.card p.small{font-size:16px;color:var(--muted);max-width:40ch}
+.card code{font-family:var(--mono);font-size:.84em;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.hint{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.warn{font-size:15px;line-height:1.45;color:var(--bad);max-width:40ch}
+.chip{align-self:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--text);border:1px solid var(--c);border-radius:8px;padding:6px 10px;max-width:440px;line-height:1.4}
+.chip b{color:var(--c);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-right:6px}
+
+.opts{display:flex;flex-direction:column;gap:10px;max-width:440px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-height:48px;font-size:17px;line-height:1.35;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--c)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt[aria-disabled="true"]:hover{border-color:var(--line)}
+.opt .mk{flex:none;width:1.1em;font-weight:600;display:none}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.opt.right .mk,.opt.wrong .mk{display:inline}
+.opt.right .mk{color:var(--good)}
+.opt.wrong .mk{color:var(--bad)}
+.card h2.q{font-size:clamp(22px,6vw,32px);line-height:1.15}
+.opts.out .opt{font-family:var(--mono);font-size:15px}
+.conf{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.conf button{min-height:44px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
+.conf button[aria-pressed="true"]{border-color:var(--c);color:var(--text);background:color-mix(in srgb,var(--c) 16%,transparent)}
+.recall{display:flex;flex-direction:column;gap:10px;max-width:440px}
+.recall input{min-height:48px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-family:var(--mono);font-size:16px}
+.recall input:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.recall .row .btn{align-self:auto}
+.slip{color:var(--bad);border-color:var(--bad)}
+.x.slip,.tag .slip{border-color:var(--bad)}
+.tag .new{border-color:var(--good);color:var(--good)}
+.conf button:disabled{opacity:.5;cursor:default}
+#cvText{width:100%;min-height:120px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px}
+.why{display:none;font-size:16px;line-height:1.5;color:var(--muted);max-width:440px;border-top:1px solid var(--line);padding-top:12px}
+.why strong{color:var(--text)}
+.why.show{display:block}
+.retry{display:none}
+.retry.show{display:inline-block}
+.lvl{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+.mf{display:flex;flex-direction:column;gap:12px;max-width:440px}
+.mf div{border-radius:12px;padding:14px 16px;font-size:17px;line-height:1.45;border:1px solid var(--line);background:var(--surface)}
+.mf b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.mf .m{border-color:color-mix(in srgb,var(--bad) 55%,var(--line))}
+.mf .m b{color:var(--bad)}
+.mf .f{border-color:color-mix(in srgb,var(--good) 55%,var(--line))}
+.mf .f b{color:var(--good)}
+
+.code{background:var(--sunk);border:1px solid var(--line);border-radius:12px;max-width:540px;overflow:hidden}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 4px 4px 14px;border-bottom:1px solid var(--line)}
+.ch .where{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);min-width:0}
+.cp{flex:none;min-height:44px;min-width:72px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text);cursor:pointer}
+.cp:hover{border-color:var(--c)}
+.code pre{margin:0;padding:12px 14px;font-family:var(--mono);font-size:13px;line-height:1.5;color:#d6e2ea}
+/* Each source line is a block. Wrapped text hangs 2ch deeper than the line's own indentation, so it never looks dedented. */
+.code pre span{display:block;white-space:pre-wrap;overflow-wrap:anywhere;padding-left:calc((var(--i,0) + 2) * 1ch);text-indent:calc((var(--i,0) + 2) * -1ch);min-height:1.5em}
+.code pre span.c{color:var(--muted)}
+.card .code code{background:none;border:0;padding:0;font-size:inherit;border-radius:0}
+.where{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+
+.recap{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-width:440px}
+.recap li{position:relative;padding-left:26px;font-size:17px;line-height:1.45}
+.recap li::before{content:"";position:absolute;left:2px;top:.45em;width:12px;height:7px;border-left:2px solid var(--c);border-bottom:2px solid var(--c);transform:rotate(-45deg)}
+.dscore{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em}
+.dscore b{color:var(--text);font-weight:500}
+.opt.picked{border-color:var(--amber);border-width:3px}
+.opt.picked .mk{display:inline;color:var(--amber)}
+#v-py .opt.picked .mk{color:var(--phosphor)}
+#v-py .why.locked.show{border-color:var(--dimgreen);background:var(--termbg);color:var(--phosphor)}
+#v-py .why.locked > strong:first-child{color:var(--phosphor)}
+#v-py .opt.picked{border-color:var(--phosphor);border-width:3px}
+.dscore .exam.pass summary b{color:var(--good)}
+.dscore .exam.notyet summary b{color:var(--alarm)}
+.debrief summary b{font-weight:500}
+.debrief > p{margin:4px 0 0;color:var(--muted)}
+.debrief{font-family:var(--body);text-transform:none;letter-spacing:normal;font-size:16px;color:var(--text)}
+.debrief summary{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:13px;min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--c);border:2px solid var(--control);padding:4px 10px;list-style:none}
+.debrief summary::-webkit-details-marker{display:none}
+.debrief summary::after{content:"▸";margin-left:auto;color:var(--bone)}
+.debrief[open] summary::after{content:"▾"}
+.debrief ol{margin:6px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:12px}
+.debrief li{line-height:1.45}
+.debrief li > span{display:block;color:var(--muted)}
+.debrief li b{font-weight:600}
+.debrief li b{color:var(--text)}
+.debrief li b span.dmk{display:inline;color:var(--good)}
+.debrief li.miss b span.dmk{color:var(--alarm)}
+.debrief .lvl{display:inline;font-size:12px}
+
+.more{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 10px);z-index:4;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;pointer-events:none;opacity:0;transition:opacity .2s}
+.more.show{opacity:1}
+
+.rail{position:fixed;right:10px;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 16px);z-index:6;display:flex;flex-direction:column;gap:14px;align-items:center}
+.rb{width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer}
+.rb svg{width:22px;height:22px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rl{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:7;display:grid;grid-template-columns:repeat(3,1fr);height:calc(var(--tab-h) + env(safe-area-inset-bottom));padding:0 max(0px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0px,env(safe-area-inset-left));background:var(--surface);border-top:1px solid var(--line)}
+.tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:0;color:var(--muted);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.tab svg{width:52px;height:28px;padding:3px 15px;border-radius:999px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tab::before{content:"";position:absolute;top:-1px;left:28%;right:28%;height:3px;border-radius:0 0 3px 3px;background:var(--tc);opacity:0;transition:opacity .2s}
+.tab[aria-selected="true"]{color:var(--text);font-weight:600}
+.tab[aria-selected="true"] svg{color:var(--tc);background:color-mix(in srgb,var(--tc) 20%,transparent)}
+.tab[aria-selected="true"]::before{opacity:1}
+.tab:focus-visible{outline:2px solid var(--tc);outline-offset:-4px}
+.badge{position:absolute;top:4px;left:calc(50% + 12px);min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--w3);color:#0e1216;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0;display:grid;place-items:center}
+.badge[hidden]{display:none}
+.stats{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;max-width:440px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:var(--muted)}
+.stats b{color:var(--text);font-weight:500}
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 48px);transform:translate(-50%,-8px);z-index:9;max-width:calc(100% - 32px);background:var(--surface);border:1px solid var(--w3);border-radius:999px;padding:8px 16px;font-family:var(--mono);font-size:13px;letter-spacing:.03em;color:var(--text);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.runbox{max-width:540px;margin-top:10px}
+.pyout{margin:10px 0 0;background:var(--sunk);border:1px solid var(--line);border-left:3px solid var(--good);border-radius:10px;padding:10px 12px;font-family:var(--mono);font-size:13px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text)}
+.editor{display:block;width:100%;max-width:540px;margin-top:4px;background:var(--sunk);color:var(--text);border:1px solid var(--line);padding:10px 12px;font-family:var(--mono);font-size:14px;line-height:1.5;tab-size:4;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere;overflow:auto}
+.editor:focus-visible{outline:2px solid var(--accent,var(--good));outline-offset:2px}
+.runbox .row{margin-top:10px}
+.pyout.pass{border-left-color:var(--good)}
+.hintBox,.solBox{max-width:540px;padding:10px 12px;border:1px solid var(--line);background:var(--surface);font-size:16px;line-height:1.5}
+.solBox .btn{margin-top:10px}
+.remTime{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary)}
+.remTime input{min-height:44px;background:var(--rust);color:var(--bone);border:2px solid var(--ash);padding:0 10px;font-family:var(--mono);font-size:16px}
+.pyMeter{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px}
+.pyMeter .segs{display:flex;gap:2px;flex-wrap:wrap}
+.pyMeter i{width:9px;height:14px;background:var(--line)}
+.pyMeter i.on{background:var(--good)}
+.pyout.err{border-left-color:var(--bad)}
+.toast.long{border-radius:16px;line-height:1.4}
+.model{display:none;font-size:17px;line-height:1.5;max-width:440px;border-left:3px solid var(--c);padding:4px 0 4px 14px}
+.model.show{display:block}
+.blank{display:inline-block;width:3em;border-bottom:2px solid var(--amber);vertical-align:-2px;margin:0 2px}
+.model .fill{border-left:0;padding-left:0}
+.card p.fill{font-size:16px;line-height:1.45}
+.evid{margin-top:8px}
+.evid summary{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);min-height:44px;display:flex;align-items:center;cursor:pointer}
+.day.locked .n{opacity:.75}
+.day .lk{font-size:10px;margin-left:2px}
+.stLinksBox{border:2px solid var(--metal);padding:8px 12px 10px;margin:0}
+.stLinksBox legend{font-size:16px;color:var(--bone)}
+.fill{border-left:3px solid var(--c);padding:2px 0 2px 10px;font-size:16px;line-height:1.45}
+.fill .fl{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
+.yours .writeStory{margin-top:10px}
+.rate{display:none;gap:8px;flex-wrap:wrap}
+.rate.show{display:flex}
+.rate button{min-height:44px;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px;cursor:pointer}
+.rate button[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 18%,var(--surface))}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;max-width:460px}
+.checks label{display:flex;gap:12px;align-items:center;min-height:44px;font-size:15px;line-height:1.3;cursor:pointer}
+.checks input{width:22px;height:22px;flex:none;accent-color:var(--c)}
+.linkbtn{align-self:flex-start;min-height:44px;padding:10px 14px;border-radius:12px;text-align:left;border:1px dashed var(--c);background:transparent;color:var(--text);font-size:15px;cursor:pointer}
+.backup{margin-top:20px;border-top:1px solid var(--line);padding-top:6px;display:flex;flex-direction:column;gap:10px;--c:var(--accent)}
+.backup p{margin:0;font-size:14px;line-height:1.45;color:var(--muted)}
+.backup textarea{width:100%;min-height:96px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-family:var(--mono);font-size:12px}
+.weak{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.form{--c:var(--good);display:flex;flex-direction:column;gap:14px;margin-top:8px}
+.form label{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+.form input[type=text],.form textarea{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:var(--body);font-size:16px}
+.form textarea{min-height:84px;resize:vertical}
+.form fieldset{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:0}
+.form legend{font-size:14px;color:var(--muted);padding:0 4px}
+.form .checks label{flex-direction:row;color:var(--text)}
+.stories{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:460px}
+.stories button{width:100%;text-align:left;min-height:48px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:16px;line-height:1.35;cursor:pointer}
+.stories small{display:block;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:2px}
+.yours{display:none;font-size:16px;line-height:1.5;max-width:440px;border-left:3px solid var(--good);padding:4px 0 4px 14px}
+.yours.show{display:block}
+.skills{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-width:460px}
+.skills li{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:15px;line-height:1.3}
+.skills .pct{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;align-self:end}
+.skills .meter{grid-column:1 / -1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.skills .meter i{display:block;height:100%;background:var(--c);border-radius:3px}
+.yours b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--good);margin-bottom:4px}
+
+.btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid color-mix(in srgb,var(--text) 35%,transparent)}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px}
+.weeks div{font-size:14px;line-height:1.35;color:var(--muted);border-left:3px solid var(--wc);padding:4px 10px}
+.weeks b{display:block;color:var(--text);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px;max-width:440px}
+.legend span{color:var(--secondary)!important;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+
+.sheet{position:fixed;inset:0;z-index:10;background:rgba(5,8,10,.72);display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.panel{width:100%;max-width:640px;max-height:82%;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border-radius:18px 18px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 20px)}
+.panel header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel h3{font-family:var(--display);font-size:22px;margin:0}
+.score{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.wk{margin:14px 0 6px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.day{display:flex;gap:10px;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:48px;cursor:pointer;font-size:14px;line-height:1.25}
+.day[aria-current="true"]{border-color:var(--dc);box-shadow:0 0 0 1px var(--dc)}
+.day .n{flex:none;font-family:var(--mono);font-size:12px;min-width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--dc);color:var(--dc)}
+.day small{display:block;font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:3px}
+.day.part .n{background:color-mix(in srgb,var(--dc) 22%,transparent)}
+.day.ok .n{background:var(--good);border-color:var(--good);color:#0e1216}
+.day.miss .n{background:var(--rust);border-color:var(--breach);color:var(--bone)}
+.x{background:none;border:1px solid var(--line);border-radius:999px;padding:10px 16px;min-height:44px;cursor:pointer;font-size:14px}
+
+@media (prefers-reduced-motion:reduce){.bar i,.opt,.more,.tab::before,.toast{transition:none}.view{scroll-behavior:auto}}
+@media (min-width:700px){.card{padding-right:96px}}
+@media (max-height:640px){.in{gap:14px}h1{font-size:clamp(32px,9.5vw,52px)}.card p{font-size:17px}}
+.hpick{display:none;position:relative;flex:none;pointer-events:auto;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer}
+.hpick::after{content:"";position:absolute;inset:-7px -4px}
+@media (pointer:coarse){.kb{display:none}.rail{display:none}.hpick{display:inline-block}.card{padding-right:22px}}
+@media (max-width:400px){.card{padding-left:16px}.code pre{padding:10px}}
+/* Update banner: shown when the service worker has downloaded new content */
+.update{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 12px);z-index:8;display:flex;align-items:center;gap:4px;width:max-content;max-width:calc(100% - 24px);padding:4px;border-radius:16px;background:var(--good);box-shadow:0 6px 24px rgba(0,0,0,.45)}
+.update button,.update a{min-height:44px;border:0;cursor:pointer;color:#0e1216}
+.update a{display:flex;align-items:center;padding:0 14px;font-weight:600;text-decoration:none;font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:.06em}
+.update a:focus-visible{outline-color:var(--bunker)!important;outline-offset:-5px}
+#updateGo{padding:8px 12px;background:transparent;font-weight:600;font-size:14px;line-height:1.25;text-align:left}
+#updateLater,#loginLater{flex:none;min-width:44px;padding:8px 12px;border-radius:12px;background:rgba(14,18,22,.16);font-size:13px}
+.update button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+body.has-update .card{padding-bottom:100px}
+body.has-update .more{bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 76px)}
+/* While typing an answer, the keyboard is up: hide everything fixed to the bottom so it can't cover the input. */
+body.typing .tabs,body.typing .update,body.typing .more{display:none}
+body.typing .card{padding-bottom:28px}
+/* Until the app has started, the tabs and the Days button can't do anything */
+body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
+.loading .in{gap:12px}
+/* ==========================================================================
+   WASTELAND ARCHIVE (design/wasteland-archive.md). This layer restyles the app;
+   the layout above stays as it is. Change tokens here, not colours inline.
+   ========================================================================== */
+:root{
+  --bunker:#141414; --rust:#2b2722; --metal:#4a463d; --breach:#d4291c; --amber:#ffae1a;
+  --phosphor:#6cff8f; --dimgreen:#4a8f5c; --termbg:#0d1a10; --cyan:#4fd1d9;
+  --bone:#d9d6cc; --secondary:#b8b5ab; --ash:#8a877d;
+  --bg:var(--bunker); --surface:var(--rust); --sunk:var(--termbg); --line:var(--metal);
+  --text:var(--bone); --muted:var(--secondary); --good:var(--phosphor); --bad:var(--breach);
+  --w1:var(--amber); --w2:var(--cyan); --w3:var(--phosphor); --w4:var(--bone); --w5:var(--secondary); --w6:#c4a7ff;
+  --t-study:var(--amber); --t-feed:var(--cyan); --t-py:var(--phosphor);
+  --k-e8:var(--phosphor); --k-law:var(--bone); --k-triage:var(--amber); --k-int:var(--secondary);
+  --k-cloud:var(--cyan); --k-msft:#8fb7ff; --k-kql:var(--phosphor); --k-quick:var(--amber);
+  --display:"IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --crt:"VT323","IBM Plex Mono",ui-monospace,monospace;
+  --hazard:repeating-linear-gradient(-45deg,var(--amber) 0 9px,var(--bunker) 9px 18px);
+  --scan:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);
+  --control:var(--ash); /* borders of tappable things need 3:1; ash is 5.1:1 on bunker black */
+  --rx:#7fbf8f;         /* soft phosphor for labels inside terminal panels (about 8:1 on terminal black) */
+  --alarm:#ff6b6b;      /* small warning text: breach red is too dark for it (about 6:1 on bunker black) */
+}
+*,*::before,*::after{border-radius:0!important}
+.warn,.slip,.tag .slip,.opt.wrong .mk,#v-py .opt.wrong .mk{color:var(--alarm)}
+.warn{font-size:16px}
+body{background:var(--bunker)}
+
+/* Type roles: headings Plex Sans 700 uppercase; body Plex Sans 400; labels and stamps Plex Mono; VT323 for short CRT text only */
+h1,h2,.panel h3{font-family:var(--body);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;line-height:1.05;hyphens:manual}
+h1{font-size:clamp(30px,8.6vw,52px)}
+h2{font-size:clamp(22px,6.3vw,34px)}
+.card h2.q{font-size:clamp(20px,5.4vw,28px);text-transform:none;letter-spacing:0}
+.card p{font-size:clamp(17px,4.6vw,19px)}
+.card p.small,.why,.recap li,.mf div,.model,.yours,.opt{font-size:16px}
+.tag,.hint,.lvl,.wk,.where,.score,.stats,.legend span,.conf,.dscore,.chip,.tab,.chips button,.btn,.x,.cp,.rate button,.linkbtn,.hpick,.rl{font-family:var(--mono);font-weight:500;text-transform:uppercase;letter-spacing:.1em}
+.tag{font-size:12px}
+.tag span{border-width:1px}
+.btn{font-size:14px;padding:13px 18px;color:var(--bunker)}
+.btn.ghost{color:var(--bone);border:2px solid var(--control);background:transparent}
+.linkbtn{font-size:13px;border:2px dashed var(--control)}
+.rate button,.conf button,.x,.cp,.hpick{border:2px solid var(--control)}
+:focus-visible{outline:3px solid var(--amber)!important;outline-offset:2px}
+.update button:focus-visible{outline-color:var(--bunker)!important;outline-offset:-5px}
+.chips button:focus-visible{outline-offset:-5px}
+.chips button[aria-pressed="true"]:focus-visible{outline-color:var(--bunker)!important}
+#v-py :focus-visible{outline-color:var(--phosphor)!important}
+
+/* Header bar: CRT amber */
+.top{background:var(--bunker);padding-bottom:6px;border-bottom:2px solid var(--metal)}
+.bar{height:4px;background:var(--rust)}
+.meta{font-family:var(--crt);font-size:20px;letter-spacing:.04em;color:var(--amber)}
+.meta b{color:var(--amber);font-weight:400}
+.hpick{font-size:12px;color:var(--bone);background:var(--bunker)}
+
+/* Cards: a metal frame with a rust-brown outer outline and a hazard stripe across the top */
+.card::before{display:none}
+.card{padding-left:16px;padding-right:16px}
+.card > .in{position:relative;background:var(--bunker);border:4px solid var(--metal);outline:3px solid var(--rust);padding:24px 16px 18px;gap:16px}
+.card > .in::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--hazard)}
+.card .in:has(> .rec)::before{display:none}
+.card .in:has(> .rec){padding-top:0}
+@media (min-width:700px){.card{padding-right:96px}}
+
+/* Quiz options and panels */
+.opt{background:var(--rust);border:2px solid var(--control)}
+.opt.right{border-color:var(--phosphor);background:color-mix(in srgb,var(--phosphor) 10%,var(--rust))}
+.opt.wrong{border-color:var(--breach);background:color-mix(in srgb,var(--breach) 14%,var(--rust))}
+.mf div,.hintBox,.solBox,.stories button,.day,.recall input,.form input[type=text],.form textarea,.backup textarea,#cvText{background:var(--rust);border:2px solid var(--metal)}
+.mf .m{border-color:var(--breach)} .mf .f{border-color:var(--dimgreen)}
+.mf .m b{color:var(--amber)}
+
+/* Terminal panels: code, output, quiz results. Scanlines live only here. */
+.code,.pyout,.editor,.why.show,.term{background:var(--scan),var(--termbg);border:2px solid var(--dimgreen);color:var(--phosphor)}
+.code .ch{border-bottom:2px solid var(--dimgreen)}
+.code .ch .where{color:var(--phosphor)}
+.code pre{color:var(--phosphor)}
+.code pre span.c{color:var(--rx)}
+.card .code code{color:inherit}
+.cp{background:var(--termbg);color:var(--phosphor);border-color:var(--dimgreen)}
+.pyout{font-family:var(--crt);font-size:21px;line-height:1.2;border-left-width:6px}
+.pyout.err{border-color:var(--breach);color:var(--bone)}
+.pyout.pass{border-color:var(--phosphor)}
+.pyout.note{font-family:var(--mono);font-size:15px;line-height:1.5;color:var(--bone)}
+.editor{caret-color:var(--phosphor)}
+.why.show{padding:12px 14px;color:var(--phosphor)}
+.why.miss > strong:first-child{color:var(--amber)}
+.why.locked.show{border-color:var(--metal);color:var(--bone);background:var(--rust)}
+.why.locked > strong:first-child{color:var(--bone)}
+.why strong:not(:first-child){font:inherit;font-weight:700;color:var(--bone);text-transform:none;letter-spacing:0;margin:0}
+.why > strong:first-child{color:var(--phosphor);font-family:var(--crt);font-size:22px;font-weight:400;letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
+.card code{background:var(--termbg);border:1px solid var(--dimgreen);color:var(--phosphor)}
+
+/* Hazard-stripe dividers */
+.hazard{height:6px;background:var(--hazard)}
+.backup p,.checks label,.day{font-size:16px}
+.recap{border-top:6px solid transparent;border-image:var(--hazard) 6;padding-top:12px}
+
+/* Incident record card */
+.rec{display:flex;flex-direction:column;gap:10px;margin:0 -16px}
+.rec > *:not(.hazard):not(.rec-hd){margin-left:16px;margin-right:16px}
+.rec-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px 6px 16px;font-family:var(--crt);font-size:22px;letter-spacing:.06em;color:var(--amber);background:var(--bunker)}
+.recno{border:2px solid var(--metal);padding:0 8px;font-size:20px;color:var(--amber)}
+.rec-row{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:52px;padding:6px 0}
+.rec-file{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);min-width:0}
+.rec-file .new{color:var(--phosphor)}
+.stamp{flex:none;font-family:var(--mono);font-weight:700;font-size:19px;letter-spacing:.12em;text-transform:uppercase;border:2.5px solid currentColor;padding:2px 8px;transform:rotate(-8deg);margin:6px 4px 6px 0}
+.stamp.breached{color:var(--breach)} .stamp.verified{color:var(--amber)} .stamp.developing{color:var(--cyan)}
+.rec-name{font-size:clamp(28px,8vw,44px);margin-top:0}
+.card p.rec-entry{border-left:4px solid var(--breach);padding-left:12px;font-size:17px}
+.rec-entry b,.redact .txt b{display:block;font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:2px}
+.card p.rec-impact{color:var(--secondary);font-size:17px}
+.redact{display:block;width:auto;min-height:48px;text-align:left;cursor:pointer;background:none;border:0;padding:0;color:var(--bone)}
+.redact .redact-bar{display:flex;align-items:center;min-height:48px;padding:0 12px;background:repeating-linear-gradient(90deg,#000 0 14px,#0a0a0a 14px 16px);border:2px solid var(--control);font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--secondary)}
+.redact .txt{display:block;font-size:17px;line-height:1.45;border-left:4px solid var(--amber);padding-left:12px}
+.term.split{display:grid;grid-template-columns:1fr 1fr;padding:0}
+.term.split > div{padding:10px 12px;min-width:0}
+.term.split > div + div{border-left:2px solid var(--dimgreen)}
+.term small{display:block;font-family:var(--crt);font-size:18px;letter-spacing:.08em;color:var(--rx);text-transform:uppercase}
+.term .codex{display:block;font-family:var(--mono);font-weight:500;font-size:13px;line-height:1.35;color:var(--phosphor);overflow-wrap:anywhere}
+.term .status{display:block;font-family:var(--crt);font-weight:400;font-size:24px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber)}
+.cursor{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.card p.rec-src{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--ash);max-width:none}
+.rec-ft span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-ft span:last-child{flex:none}
+.rec-hd span,.meta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-ft{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0 0;border-top:2px solid var(--metal);font-family:var(--crt);font-size:18px;letter-spacing:.05em;color:var(--amber);text-transform:uppercase}
+
+/* Tab bar and chips */
+.tabs{background:var(--bunker);border-top:0;box-shadow:0 -4px 0 var(--metal)}
+.tabs::before{content:"";position:absolute;left:0;right:0;top:-10px;height:6px;background:var(--hazard)}
+.tab{font-size:11px;letter-spacing:.08em;color:var(--secondary)}
+.tab[aria-selected="true"]{color:var(--tc);font-weight:500}
+.tab[aria-selected="true"] svg{background:color-mix(in srgb,var(--tc) 18%,transparent);border:2px solid var(--tc)}
+.badge{background:var(--amber);color:var(--bunker)}
+.chips{gap:5px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);padding-right:28px}
+.chips.at-end{-webkit-mask-image:none;mask-image:none}
+.chips button{font-size:11px;letter-spacing:.02em;padding:0 7px;border:2px solid var(--control);background:var(--bunker);color:var(--bone)}
+.chips button[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--bunker)}
+/* Toasts sit just above the tab bar, so they never cover the header, chips or record bar. */
+.toast{top:auto;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 56px);transform:translate(-50%,8px)}
+.toast.show{transform:translate(-50%,0)}
+body.has-update .toast{bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 84px)}
+
+/* Sheets, toast and banner */
+.panel{background:var(--bunker);border:4px solid var(--metal);border-bottom:0;outline:3px solid var(--rust);position:relative}
+.panel::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:var(--hazard)}
+.toast{background:var(--bunker);border:2px solid var(--amber);font-family:var(--mono);color:var(--bone)}
+.update{background:var(--amber)}
+.more{background:var(--bunker);border:2px solid var(--metal);font-family:var(--crt);font-size:18px;color:var(--amber)}
+.day .n{border-width:2px}
+.weeks div{border-left-width:4px}
+.pyMeter{font-family:var(--crt);font-size:22px;color:var(--phosphor)}
+.pyMeter i{background:var(--dimgreen);width:9px;height:16px}
+
+/* Terminal tab: a full green-screen console */
+#v-py{background:var(--scan),var(--termbg)}
+#v-py .card{--text:var(--phosphor);--muted:#8fd9a3;--c:var(--phosphor);color:var(--phosphor)}
+#v-py .card > .in{background:var(--termbg);border-color:var(--dimgreen);outline-color:#08110a}
+#v-py .card > .in::before{background:repeating-linear-gradient(-45deg,var(--phosphor) 0 9px,var(--termbg) 9px 18px)}
+#v-py .opt,#v-py .mf div,#v-py .hintBox,#v-py .solBox{background:#102414;border-color:var(--dimgreen);color:var(--phosphor)}
+#v-py .btn.ghost{color:var(--phosphor);border-color:var(--dimgreen)}
+#v-py .opt.right{border-color:var(--phosphor);background:color-mix(in srgb,var(--phosphor) 14%,#102414)}
+#v-py .opt.wrong{border-color:var(--breach);background:color-mix(in srgb,var(--breach) 18%,#102414);color:var(--bone)}
+#v-py .mf .m{border-color:var(--breach)}
+#v-py .mf .f{border-color:var(--phosphor)}
+#v-py .btn{--c:var(--phosphor)}
+#v-py .tag span{border-color:var(--phosphor)}
+#v-py .recap{border-image:repeating-linear-gradient(-45deg,var(--phosphor) 0 9px,var(--termbg) 9px 18px) 6}
+body[data-tab="py"] .top{background:var(--termbg);border-bottom-color:var(--dimgreen)}
+body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
+
+/* Bunker Radio: intel reports and debriefs */
+.sheet.radio-mode #score,.sheet.radio-mode #dayList,.sheet.radio-mode .backup{display:none}
+#radioList{display:flex;flex-direction:column;gap:14px}
+.tx-meta{margin:0;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--secondary)}
+.tx-note{margin:0;font-size:16px;line-height:1.5;color:var(--secondary)}
+.tx-title{order:1}.tx-hd{order:0}.tx-sum{order:2}.tx-tags{order:3}.tx .row{order:4}
+.tx{background:var(--scan),var(--termbg);border:2px solid var(--dimgreen);border-left-width:6px;padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px}
+.tx.is-new{border-left-color:var(--amber)}
+.tx-in{order:-1;display:flex;align-items:center;gap:6px;margin:-10px -12px 0;padding:6px 12px;background:var(--dimgreen);color:var(--bunker);font-family:var(--crt);font-size:20px;letter-spacing:.08em;text-transform:uppercase}
+.tx-in .cursor{color:var(--bunker)}
+.tx-in .tx-new{margin-left:auto}
+.tx.is-new .tx-in{background:var(--amber)}
+.tx.is-new .tx-in .tx-new{background:var(--bunker);color:var(--amber)}
+.tx-hd{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;font-family:var(--crt);font-size:19px;letter-spacing:.05em;text-transform:uppercase;color:var(--rx)}
+.tx-hd > span:last-child{white-space:nowrap}
+.tx-new{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.12em;color:var(--bunker);background:var(--amber);padding:1px 6px;vertical-align:2px}
+.tx-title{margin:0;font-family:var(--body);font-weight:700;font-size:18px;line-height:1.3;color:var(--phosphor);overflow-wrap:anywhere}
+.tx-sum{margin:0;font-size:16px;line-height:1.5;color:var(--bone);overflow-wrap:anywhere}
+.tx-tags{display:flex;flex-wrap:wrap;gap:6px}
+.tx-tags span{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--dimgreen);color:var(--phosphor);padding:2px 7px}
+.tx .row{gap:8px}
+.tx .btn{font-size:12px;padding:10px 12px;min-height:44px;text-align:left}
+.tx a.btn{text-decoration:none;display:inline-flex;align-items:center;color:var(--phosphor);border-color:var(--dimgreen)}
+.tx .tx-rel{color:var(--amber);border-color:var(--amber)}
+
+/* Brief it */
+.radioNav{margin-bottom:2px}
+.radioNav button[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--bunker)}
+.radio-status{margin:0;min-height:0;font-size:16px;color:var(--phosphor)}
+.radio-status:empty{display:none}
+.brief-title{margin:0;font-family:var(--body);font-weight:700;font-size:18px;line-height:1.3;color:var(--bone);overflow-wrap:anywhere}
+.brief-title:focus{outline:none}
+.form.brief textarea{min-height:72px;width:100%;background:var(--rust);color:var(--bone);border:2px solid var(--ash);padding:10px 12px;font-family:var(--body);font-size:16px;line-height:1.4;resize:vertical}
+.form.brief ::placeholder{color:var(--secondary)}
+.form.brief .warn{margin:-8px 0 0}
+/* Square checkboxes and radio buttons, to match "no rounded corners" */
+.form.brief input[type=checkbox],.form.brief input[type=radio],.checks input[type=checkbox]{appearance:none;-webkit-appearance:none;width:22px;height:22px;flex:none;margin:0;border:2px solid var(--ash);background:var(--bunker);display:grid;place-content:center;cursor:pointer}
+.form.brief input[type=checkbox]::before,.form.brief input[type=radio]::before,.checks input[type=checkbox]::before{content:"";width:12px;height:12px;background:var(--amber);transform:scale(0)}
+.form.brief input:checked::before,.checks input:checked::before{transform:scale(1)}
+.form.brief input[type=checkbox]:checked,.form.brief input[type=radio]:checked,.checks input[type=checkbox]:checked{border-color:var(--amber)}
+.radioNav button{flex:1 1 0}
+.form.brief{gap:16px}
+.form.brief legend,.form.brief label{font-size:16px;color:var(--bone);line-height:1.4}
+.form.brief select{min-height:48px;width:100%;background:var(--rust);color:var(--bone);border:2px solid var(--ash);padding:0 10px;font-family:var(--body);font-size:16px}
+.form.brief input[type=text]{min-height:48px;border:2px solid var(--ash)}
+.form.brief fieldset{border:2px solid var(--metal);padding:8px 12px 10px;background:var(--rust)}
+.form.brief .checks label{min-height:44px}
+.brief-line{color:var(--phosphor)!important}
+.brief-dl{order:3}
+.brief-card .brief-line{order:2}
+.brief-dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:16px;line-height:1.4}
+.brief-dl dt{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--rx);padding-top:2px}
+.brief-dl dd{margin:0;color:var(--bone)}
+
+/* Key terms list, and tighter answered quiz and record cards so they fit a phone screen */
+.terms{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:440px}
+.terms li{font-size:16px;line-height:1.45;border-left:3px solid var(--amber);padding-left:10px}
+.terms b{color:var(--amber);font-weight:700}
+#v-py .terms li{border-left-color:var(--phosphor)}
+#v-py .terms b{color:var(--phosphor)}
+.in:has(> .why.show){gap:12px}
+.opt{padding:11px 14px}
+@media (max-height:780px){.rec{gap:6px}.rec-row{min-height:44px;padding:2px 0}.card p.rec-entry,.card p.rec-impact{font-size:16px;line-height:1.4}}
+
+/* Guess first */
+.tag .guessMark{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid}
+.tag .guessMark:empty{display:none}
+.tag .guessMark.skim{color:var(--phosphor);border-color:var(--dimgreen);background:var(--termbg)}
+.tag .guessMark.study{color:var(--bunker);background:var(--amber);border-color:var(--amber)}
+#v-py .tag .guessMark.skim{color:var(--bunker);background:var(--phosphor);border-color:var(--phosphor)}
+.tag .notscored{color:var(--secondary);border-color:var(--ash)}
+.card.guess .lvl{display:none}
+.guess-intro{margin:0}
+
+/* Certification readiness */
+.cert-name{margin:0}
+.cert-verified{align-self:flex-start;margin:0;font-family:var(--mono);font-weight:500;font-size:12px!important;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border:1px solid var(--ash);color:var(--bone)}
+.cert-verified.search{color:var(--secondary);border-style:dashed}
+.cert-note{color:var(--amber)!important}
+.card p.cert-overall{margin:0;font-size:16px}
+.cert-overall b{font-family:var(--crt);font-weight:400;font-size:28px;color:var(--amber);margin-right:4px}
+.cert-domains li > .cert-dom{grid-column:1 / -1;font-size:16px}
+.cert-domains .cert-meta{font-family:var(--mono);font-size:14px;color:var(--secondary);align-self:end}
+.cert-domains small{font-family:var(--mono);font-size:14px;color:var(--secondary);white-space:nowrap}
+.cert-domains .pct{font-size:14px}
+.cert-domains small.partial{display:block;white-space:normal;font-family:var(--body);font-size:14px;color:var(--amber);margin-top:2px}
+.cert-domains li.none .cert-dom,.cert-domains li.none .cert-meta,.cert-domains li.none .pct{color:var(--ash)}
+.cert-domains .meter{background:var(--bunker);border:1px solid var(--ash)}
+.cert-domains li.none .meter,.cert-domains li.thin .meter{background:repeating-linear-gradient(90deg,var(--metal) 0 4px,transparent 4px 8px)}
+.cert-more{border:2px solid var(--metal);padding:0 12px}
+.cert-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+.cert-more[open]{padding-bottom:12px}
+.cert-more[open] > *:not(summary){margin:8px 0 0}
+.cert-link{text-decoration:none;display:inline-flex;align-items:center}
+
+/* Today plan */
+.card p.todayMeter{margin:0;font-family:var(--crt);font-size:24px;line-height:1.2;letter-spacing:.06em;color:var(--amber)}
+.todayMeter:focus,.orders b:focus{outline:none}
+.orders{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-width:460px}
+.orders li{display:flex;gap:12px;align-items:flex-start;border:2px solid var(--metal);background:var(--rust);padding:12px}
+.orders li.ok{border-color:var(--dimgreen);background:var(--termbg)}
+.orders .tick{font-size:22px;line-height:1;color:var(--amber);flex:none;padding-top:2px}
+.orders li.ok .tick{color:var(--phosphor)}
+.orders li > div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.orders a.btn{text-decoration:none}
+.orders b{font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber)}
+.orders li.ok b{color:var(--phosphor)}
+.orders li > div > span{font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.orders .btn{margin-top:2px}
+.sealed{display:flex;flex-direction:column;gap:14px;border:2px solid var(--dimgreen);background:var(--scan),var(--termbg);padding:0 16px 18px}
+.sealed-hd{display:flex;flex-wrap:wrap;gap:4px 12px;justify-content:space-between;margin:0 -16px;padding:8px 16px;font-family:var(--crt);font-size:22px;letter-spacing:.06em;text-transform:uppercase;color:var(--bunker);background:var(--phosphor)}
+.sealed h2{color:var(--phosphor);font-size:clamp(28px,8vw,44px)}
+.sealed-streak{font-family:var(--crt);font-size:34px!important;letter-spacing:.06em;text-transform:uppercase;color:var(--amber)}
+
+/* CRT flicker between cards, off for reduced motion */
+.card.flick > .in{animation:crt .22s steps(4,end)}
+@keyframes crt{0%{opacity:.55;filter:brightness(1.7)}35%{opacity:1;filter:brightness(1.1)}65%{opacity:.8}100%{opacity:1;filter:none}}
+@media (prefers-reduced-motion:reduce){.card.flick > .in{animation:none}.cursor{animation:none}}
+/* Tighter quiz and code cards so answered questions fit a 375px phone screen. */
+@media (max-width:400px){.card{padding-left:8px;padding-right:8px}.card>.in{padding:16px 12px 12px}.rec{margin:0 -12px}.rec > *:not(.hazard):not(.rec-hd){margin-left:12px;margin-right:12px}}
+.in:has(> .opts){gap:10px}
+.in:has(> .opts) .opts{gap:6px}
+.in:has(> .opts) .opt{padding:7px 10px}
+.why.show{padding:8px 10px;line-height:1.38}
+.why > strong:first-child{font-size:18px;line-height:1}
+.in:has(> .why.locked.show) > .lvl{display:none}
+.card{padding-bottom:12px}
+body.has-update .card{padding-bottom:100px}
+.code .ch{padding:0 0 0 12px}
+.code pre{line-height:1.4}
+.in:has(> .code){gap:12px}
+.checks .sug{margin-left:auto;flex:none;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border:1px solid var(--amber);padding:1px 6px}
+/* Breach Drill */
+.drill .panel{max-height:94%}
+.dr-intro{margin:0 0 12px}
+.dr-pick{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.dr-side{display:flex;flex-direction:column;gap:6px;text-align:left;padding:14px;background:var(--rust);border:2px solid var(--control);color:var(--bone);cursor:pointer;font-family:var(--body);font-size:16px;line-height:1.4}
+.dr-side b{font-family:var(--crt);font-size:24px;font-weight:400;letter-spacing:.04em;text-transform:uppercase}
+.dr-side.red b{color:var(--alarm)}
+.dr-side.blue b{color:var(--cyan)}
+.dr-side small{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--secondary)}
+.dr-hud{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.dr-stage{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}
+.dr-meter{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--secondary)}
+.dr-bar{flex:1;height:10px;border:2px solid var(--metal);background:var(--bunker)}
+.dr-bar i{display:block;height:100%;background:var(--phosphor)}
+.dr-meter.hot .dr-bar i{background:var(--alarm)}
+.dr-msg,.dr-result{margin:0 0 10px;padding:10px 12px;border:2px solid var(--metal);background:var(--termbg);color:var(--phosphor);font-size:16px;line-height:1.45}
+.dr-msg.bad,.dr-result.bad{border-color:var(--breach);color:var(--bone)}
+.dr-msg.bad::before,.dr-result.bad b{color:var(--alarm)}
+.dr-moves,.dr-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.dr-move{display:flex;flex-direction:column;gap:4px;text-align:left;padding:10px 12px;min-height:48px;background:var(--rust);border:2px solid var(--control);color:var(--bone);cursor:pointer;font-family:var(--body);font-size:16px;line-height:1.35}
+.dr-move b{font-weight:600}
+.dr-move small{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--secondary)}
+.dr-move.blocked{border-style:dashed;opacity:.75}
+.dr-move.recon{border-color:var(--cyan)}
+.dr-track{display:flex;gap:3px;list-style:none;margin:0;padding:0}
+.dr-track li{flex:1;font-family:var(--mono);font-size:10px;line-height:1.2;letter-spacing:.02em;text-transform:uppercase;padding:4px 3px;border:2px solid var(--metal);color:var(--secondary);text-align:center}
+.dr-track li.past{background:color-mix(in srgb,var(--breach) 30%,var(--bunker));color:var(--bone)}
+.dr-track li.now{border-color:var(--alarm);color:var(--alarm)}
+.dr-alert{border:2px solid var(--amber);padding:8px 10px;margin-bottom:8px;background:var(--bunker)}
+.dr-ah{font-family:var(--crt);font-size:22px;letter-spacing:.06em;color:var(--amber)}
+.dr-alert pre.code{margin:6px 0 0;white-space:pre-wrap;font-size:14px}
+.dr-q{margin:4px 0 8px;font-weight:600}
+.dr-end{padding:12px;border:2px solid var(--metal);margin-bottom:10px;font-size:16px;line-height:1.45}
+.dr-end.win{border-color:var(--phosphor)}
+.dr-end.win b{color:var(--phosphor)}
+.dr-end.lose{border-color:var(--breach)}
+.dr-end.lose b{color:var(--alarm)}
+.drill h4{font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin:14px 0 6px}
+.dr-list{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px;font-size:16px;line-height:1.45}
+.dr-list li > span{display:block;color:var(--secondary)}
+.dr-list li b span.dmk{color:var(--phosphor)}
+.dr-list li.miss b span.dmk{color:var(--alarm)}
+.dr-list .lvl{display:inline;font-size:12px}
+.drillRow{margin-top:12px}
+</style>
+</head>
+<body class="booting">
+<div class="top">
+  <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+  <div class="meta"><span id="where">Cyber Bunker</span><span id="count"></span><button class="hpick" id="hdrPick" type="button" aria-label="Choose a day">Days</button></div>
+  <div class="chips" id="chips" role="group" aria-label="Filter The Archive" hidden><button type="button" data-f="all">All</button><button type="button" data-f="codex">Codex</button><button type="button" data-f="incidents">Incidents</button><button type="button" data-f="nzau">NZ/AU</button><button type="button" data-f="quick">Quick-fire</button><button type="button" data-f="interview">Interview</button></div>
+</div>
+<div class="sr" aria-live="polite" id="live"></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="update" id="loginBar" role="region" aria-label="Sign in needed" hidden><a id="loginGo" href="./?signin" target="_blank" rel="noopener">Sign in again to get new content</a><button id="loginLater" type="button">Later</button></div>
+<div class="update" id="updateBar" role="region" aria-label="Update ready" hidden><button id="updateGo" type="button">New content ready. Tap to update</button><button id="updateLater" type="button">Later</button></div>
+
+<main>
+  <div class="view" id="v-study" role="tabpanel" aria-labelledby="tab-study" tabindex="-1"><section class="card loading" style="--c:var(--w1)"><div class="in"><div class="tag"><span>Cyber Bunker</span></div><h2 id="loadMsg" role="status">Loading your cards…</h2><p class="small" id="loadDetail"></p><button class="btn" id="loadRetry" type="button" hidden>Try again</button></div></section></div>
+  <div class="view off" id="v-feed" role="tabpanel" aria-labelledby="tab-feed" tabindex="-1"></div>
+  <div class="view off" id="v-py" role="tabpanel" aria-labelledby="tab-py" tabindex="-1"></div>
+</main>
+<div class="more" id="more" aria-hidden="true">More below ↓</div>
+
+<nav class="rail" id="rail" aria-label="Card controls">
+  <div id="pickWrap"><button class="rb" id="openDays" aria-label="Choose a day"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button><div class="rl" id="pickLabel">Days</div></div>
+  <div><button class="rb" id="nextBtn" aria-label="Next card"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="rl">Next</div></div>
+</nav>
+
+<nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+  <button class="tab" role="tab" id="tab-study" data-tab="study" aria-controls="v-study" style="--tc:var(--t-study)"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M8 7h7"/></svg>Training Bunker</button>
+  <button class="tab" role="tab" id="tab-feed" data-tab="feed" aria-controls="v-feed" style="--tc:var(--t-feed)"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 10l3-3 3 3M12 7v10"/></svg>The Archive<span class="badge" id="dueBadge" hidden></span></button>
+  <button class="tab" role="tab" id="tab-py" data-tab="py" aria-controls="v-py" style="--tc:var(--t-py)"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>Terminal</button>
+</nav>
+
+<div class="sheet" id="storySheet" role="dialog" aria-modal="true" aria-labelledby="storyTitle">
+  <div class="panel">
+    <header><h3 id="storyTitle">Your story</h3><button class="x" id="storyClose" type="button">Close</button></header>
+    <div class="form">
+      <label>Short title<input type="text" id="stTitle" maxlength="80" placeholder="Locked-out finance manager at month end"></label>
+      <label>Situation and task<textarea id="stS" placeholder="Where were you, what was the problem and what did you need to do?"></textarea></label>
+      <label>Action<textarea id="stA" placeholder="What did you do, step by step? Say “I”, not “we”."></textarea></label>
+      <label>Result<textarea id="stR" placeholder="What changed? Numbers help: time saved, tickets closed, risk removed."></textarea></label>
+      <fieldset class="stLinksBox"><legend>Questions this story answers</legend><ul class="checks" id="stLinks"></ul></fieldset>
+      <div class="row"><button class="btn" id="stSave" type="button" style="--c:var(--good)">Save story</button><button class="btn ghost" id="stDelete" type="button">Delete</button></div>
+      <p class="small" id="stMsg" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="panel">
+    <header><h3 id="sheetTitle">Jump to a day</h3><button class="x" id="closeDays">Close</button></header>
+    <div class="score" id="score"></div>
+    <div id="radioList" hidden></div>
+    <div id="dayList"></div>
+    <section class="backup" id="installHelp" aria-labelledby="inTitle">
+      <div class="wk" id="inTitle">Install on your phone</div>
+      <p id="installMsg">Installed, it opens full screen from your home screen and works offline.</p>
+      <div class="row"><button class="btn installBtn" type="button" hidden>Install app</button></div>
+      <p class="small">No button? In Chrome, tap the ⋮ menu, then <b>Add to Home screen</b> or <b>Install app</b>. If asked, choose <b>Install</b>, not Create shortcut.</p>
+    </section>
+    <section class="backup" aria-labelledby="remTitle">
+      <div class="wk" id="remTitle">Daily reminder</div>
+      <p>Add a daily event to your phone's calendar. It reminds you to open Cyber Bunker instead of Reels.</p>
+      <div class="row"><label class="remTime">Time <input type="time" id="remAt" value="19:30"></label><button class="btn ghost" id="remAdd" type="button">Add to calendar</button></div>
+      <p id="remMsg" aria-live="polite"></p>
+    </section>
+    <section class="backup" aria-labelledby="bkTitle">
+      <div class="wk" id="bkTitle">Back up your progress</div>
+      <p id="bkLast"></p>
+      <p id="bkIntro">Your answers, reviews and streak are saved only in this browser. Copy a backup and keep it somewhere safe. On a new phone, paste it here to restore your progress.</p>
+      <div class="row"><button class="btn ghost" id="bkCopy" type="button">Copy backup</button><button class="btn ghost" id="bkPaste" type="button">Restore a backup</button></div>
+      <textarea id="bkText" hidden aria-label="Backup text" spellcheck="false"></textarea>
+      <div class="row" id="bkApplyRow" hidden><button class="btn" id="bkApply" type="button">Restore this backup</button></div>
+      <p id="bkMsg" aria-live="polite"></p>
+    </section>
+  </div>
+</div>
+
+<script>
+/* Loads the study, feed and Python content from content/*.json, then starts the app (app.js).
+   It also runs the service worker (sw.js): offline caching and the "New content" banner. That lives
+   here rather than in app.js so updates still arrive even if a content file ever fails to load. */
+// Breach Drill (game.js) closes on Back. This runs before app.js's own Back handling, so the cards don't move.
+window.addEventListener("popstate", function(e){ if (window.DRILL_POP && window.DRILL_POP()) e.stopImmediatePropagation(); });
+window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); window.installPrompt = e; window.dispatchEvent(new Event("installready")); });
+(function(){
+  var files = ["study", "feed", "python", "version", "certs"];
+  var msg = document.getElementById("loadMsg"), detail = document.getElementById("loadDetail"), retry = document.getElementById("loadRetry");
+  var started = false, failed = false, reg = null, wantReload = false;
+
+  function fetchJson(name){
+    var ctl = new AbortController(), timer = setTimeout(function(){ ctl.abort(); }, 20000);
+    return fetch("content/" + name + ".json", {signal: ctl.signal}).then(function(r){
+      clearTimeout(timer);
+      if (!r.ok) throw new Error(name + ".json: HTTP " + r.status);
+      return r.json();
+    }, function(e){ clearTimeout(timer); throw e.name === "AbortError" ? new Error("timed out after 20 seconds") : e; });
+  }
+  function load(){
+    failed = false; retry.hidden = true;
+    msg.textContent = "Loading your cards…"; detail.textContent = "";
+    var done = 0;
+    // certs.json is optional: without it the certification cards just don't appear.
+    Promise.all(files.map(function(n){ return fetchJson(n).catch(function(e){ if (n === "certs") return null; throw e; }).then(function(j){ done++; detail.textContent = done + " of " + files.length + " files loaded"; return j; }); }))
+    .then(function(res){
+      if (started) return;
+      started = true;
+      window.WEEKS = res[0].weeks; window.DAYS = res[0].days;
+      window.FEED_DECKS = res[1].decks; window.FEED_EXTRA_Q = res[1].extraQuestions || {};
+      window.PY_LEVELS = res[2].levels; window.PY_LESSONS = res[2].lessons; window.PY_MIGRATE = res[2].migrate;
+      window.CONTENT_VERSION = res[3]; window.CERTS = res[4] || null;
+      var s = document.createElement("script"); s.src = "app.js";
+      s.onerror = function(){ bootFail(new Error("app.js didn't load")); };
+      // The game loads after the app; if it fails, the app still works.
+      s.onload = function(){ var g = document.createElement("script"); g.src = "game.js"; document.body.appendChild(g); };
+      document.body.appendChild(s);
+    }).catch(function(err){
+      failed = true;
+      msg.textContent = "Couldn't load the cards";
+      detail.textContent = (location.protocol === "file:")
+        ? "Open the app from its web address, not as a file, so it can load its content."
+        : "Check your connection, then try again. Once it has loaded online, it also works offline. (" + err.message + ")";
+      retry.hidden = location.protocol === "file:";
+    });
+  }
+  // If the app itself fails while starting (for example a broken content update), put the error card back
+  // with Try again, instead of leaving a blank screen. app.js sets window.APP_READY once it has started.
+  var loadCard = msg.closest(".card");
+  function bootFail(err){
+    if (window.APP_READY || failed) return;
+    failed = true;
+    var v = document.getElementById("v-study"); v.innerHTML = ""; v.appendChild(loadCard);
+    document.body.classList.add("booting");
+    msg.textContent = "This week's content didn't load";
+    detail.textContent = "Something in the latest update is broken. Try again later. The fix will arrive like any other update. (" + ((err && err.message) || "app error") + ")";
+    retry.hidden = false; retry.disabled = false;
+  }
+  window.addEventListener("error", function(e){ if (started) bootFail(e.error || e); });
+  // Try again: switch to a waiting update if there is one, otherwise check for one and reload.
+  retry.addEventListener("click", function(){
+    retry.disabled = true; msg.textContent = "Trying again…";
+    if (reg && reg.waiting){ wantReload = true; reg.waiting.postMessage({type: "SKIP_WAITING"}); setTimeout(function(){ location.reload(); }, 3000); return; }
+    var next = function(){ location.reload(); };
+    if (reg) reg.update().then(next, next); else next();
+  });
+  window.addEventListener("online", function(){ if (failed && !started) load(); });
+  load();
+
+  // ---------- Service worker: offline copy and update banner ----------
+  var local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  if (!("serviceWorker" in navigator) || !(location.protocol === "https:" || local)) return;
+  var bar = document.getElementById("updateBar"), go = document.getElementById("updateGo"), later = document.getElementById("updateLater");
+  var waiting = null;
+  function say(text){ var live = document.getElementById("live"); if (live) live.textContent = text; }
+  function show(worker){
+    waiting = worker; bar.hidden = false; document.body.classList.add("has-update");
+    if (loginBar) loginBar.hidden = true;
+    go.disabled = false; go.textContent = "New content ready. Tap to update";
+    say("New content is ready. Tap the update button at the bottom of the screen.");
+  }
+  function hide(){ bar.hidden = true; document.body.classList.remove("has-update"); }
+  // Private hosting (Cloudflare Access): when the sign-in has expired, the update check is redirected to a
+  // sign-in page and new content can't arrive. The app keeps working offline; this offers a way to sign in again.
+  var loginBar = document.getElementById("loginBar"), loginSkipped = false;
+  document.getElementById("loginLater").addEventListener("click", function(){ loginBar.hidden = true; loginSkipped = true; });
+  document.getElementById("loginGo").addEventListener("click", function(){ loginBar.hidden = true; });
+  function checkSignIn(){
+    if (!navigator.onLine || loginSkipped) return;
+    fetch("content/version.json?ping=" + Date.now(), {cache: "no-store", redirect: "manual", credentials: "include"}).then(function(res){
+      var blocked = res.type === "opaqueredirect" || res.status === 401 || res.status === 403;
+      loginBar.hidden = !blocked || !bar.hidden;
+    }, function(){});
+  }
+  go.addEventListener("click", function(){
+    if (!waiting) return location.reload();   // another open copy already switched versions
+    go.textContent = "Updating…"; go.disabled = true; wantReload = true;
+    waiting.postMessage({type: "SKIP_WAITING"});
+    setTimeout(function(){ location.reload(); }, 3000);   // in case the switch already happened elsewhere
+  });
+  later.addEventListener("click", function(){ hide(); say("Update skipped for now. You'll be asked again next time you open the app."); });
+  // Reload only for an update you asked for. If another open copy of the app switched versions,
+  // a tap on this banner just reloads. The very first install must not reload (it would lose your card).
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if (wantReload){ wantReload = false; location.reload(); return; }
+    if (!bar.hidden) waiting = null;
+  });
+  navigator.serviceWorker.register("sw.js").then(function(r){
+    reg = r;
+    if (r.waiting && navigator.serviceWorker.controller) show(r.waiting);
+    r.addEventListener("updatefound", function(){
+      var w = r.installing;
+      if (w) w.addEventListener("statechange", function(){ if (w.state === "installed" && navigator.serviceWorker.controller) show(w); });
+    });
+    // Check for new content every time the app is opened or brought back to the front.
+    r.update().catch(function(){});
+    document.addEventListener("visibilitychange", function(){ if (!document.hidden){ r.update().catch(function(){}); checkSignIn(); } });
+    checkSignIn();
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>

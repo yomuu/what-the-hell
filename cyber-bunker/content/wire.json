@@ -1,0 +1,850 @@
+{
+ "updated": "2026-11-19T09:30:17+13:00",
+ "note": "Headlines and short feed descriptions only, each credited to its publisher (who owns the text) with a link to the full article. Written by tools/fetch-wire.js.",
+ "sources": [
+  {
+   "name": "BleepingComputer",
+   "status": "ok",
+   "url": "https://www.bleepingcomputer.com/feed/",
+   "kept": 13
+  },
+  {
+   "name": "The Record",
+   "status": "ok",
+   "url": "https://therecord.media/feed/",
+   "kept": 5
+  },
+  {
+   "name": "SANS ISC",
+   "status": "ok",
+   "url": "https://isc.sans.edu/rssfeed.xml",
+   "kept": 6
+  },
+  {
+   "name": "iTnews",
+   "status": "ok",
+   "url": "https://www.itnews.com.au/RSS/rss.ashx",
+   "kept": 7
+  },
+  {
+   "name": "NCSC NZ",
+   "status": "failed",
+   "url": null,
+   "kept": 0
+  },
+  {
+   "name": "ACSC",
+   "status": "ok",
+   "url": "https://www.cyber.gov.au/rss/alerts",
+   "kept": 11
+  },
+  {
+   "name": "CISA",
+   "status": "ok",
+   "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
+   "kept": 12
+  }
+ ],
+ "items": [
+  {
+   "title": "Trump administration officials size-up a bad stretch for tech",
+   "summary": "Homeland Security Secretary Markwayne Mullin said the administration will reach out to industry to get companies to share more information about big patches before they take effect.",
+   "link": "https://therecord.media/tech-disruptions-house-homeland-committee-testimony",
+   "source": "The Record",
+   "date": "2026-11-19T09:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Java4Shell, NGINX2Shell and more: Why we are not at \"Yellow\", (Wed, Nov 18th)",
+   "summary": "About a month ago, we went to Infocon Yellow for the first time in a few years. We decided to address the php2shell vulnerability and alert our readers to its significant impact. Following php2shell…",
+   "link": "https://isc.sans.edu/diary/rss/33532",
+   "source": "SANS ISC",
+   "date": "2026-11-19T08:54:50+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Data breach impacts 40 Irish credit unions in reported IT provider hack",
+   "summary": "A reported cyberattack on Wellington IT has exposed sensitive information belonging to members of 50 credit unions, the majority of which are located in Ireland. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/data-breach-impacts-40-irish-credit-unions-in-reported-it-provider-hack",
+   "source": "BleepingComputer",
+   "date": "2026-11-19T08:39:33+13:00",
+   "tags": [
+    "Breach"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Lawmakers call on White House to develop defensive AI cyber systems",
+   "summary": "A bipartisan Senate duo urged the White House to launch a national effort to more robustly confront AI-enabled cyber threats in light of recent security incidents involving artificial intelligence.",
+   "link": "https://therecord.media/ai-cyber-white-house",
+   "source": "The Record",
+   "date": "2026-11-19T08:00:00+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Microsoft’s Agent Framework PyPI package compromised to steal credentials",
+   "summary": "Hackers compromised Microsoft's official Agent Framework Python package on PyPI, publishing two malicious versions designed to steal cloud credentials and other sensitive information from developers'…",
+   "link": "https://www.bleepingcomputer.com/news/security/microsofts-agent-framework-pypi-package-compromised-to-steal-credentials",
+   "source": "BleepingComputer",
+   "date": "2026-11-19T05:58:42+13:00",
+   "tags": [
+    "Cloud"
+   ],
+   "related": {
+    "to": "deck:owasp-a03",
+    "label": "OWASP A03: Software Supply Chain Failures"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "NSA continues response to interruptions in classified internal network",
+   "summary": "Day 2 of the NSA Net's disruptions included staggered arrivals and logins at Fort Meade, while a source said classified national security work continued unimpeded.",
+   "link": "https://therecord.media/nsa-continues-response-to-nsa-net-problems",
+   "source": "The Record",
+   "date": "2026-11-19T05:19:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Russian cyber-espionage group used stolen cloud data to hack into organizations, Google says",
+   "summary": "Russian state-backed hackers are using information stolen from cloud accounts to impersonate trusted contacts and launch new espionage attacks against people in their victims' professional networks…",
+   "link": "https://therecord.media/russia-cyber-espionage-google",
+   "source": "The Record",
+   "date": "2026-11-19T04:15:00+13:00",
+   "tags": [
+    "Cloud"
+   ],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "British hacker gets 6 year sentence for $11.6M crypto theft scheme",
+   "summary": "Tyler Robert Buchanan, 24, of Dundee, Scotland, was previously described as the suspected ringleader of the hacking collective, which Microsoft called “one of the most dangerous financial criminal…",
+   "link": "https://therecord.media/british-hacker-gets-six-year-sentence-scattered-spider",
+   "source": "The Record",
+   "date": "2026-11-19T03:48:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Dizigom illegal streaming service with 21M monthly visits shuts down",
+   "summary": "The Alliance for Creativity and Entertainment (ACE) has announced the shutdown of Dizigom, one of Turkey's largest piracy sites, after a settlement agreement with the site's operators. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/dizigom-illegal-streaming-service-with-21m-monthly-visits-shuts-down",
+   "source": "BleepingComputer",
+   "date": "2026-11-19T00:50:25+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Apache warns of Roller RCE vulnerability exploited in attacks",
+   "summary": "Apache has released security updates to address a critical Roller flaw that threat actors are exploiting to gain code execution on vulnerable servers. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/apache-warns-of-roller-rce-vulnerability-exploited-in-attacks",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T23:35:05+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Microsoft announces Windows Server 2028 with hardened security",
+   "summary": "Microsoft has announced Windows Server 2028, the next major release of its server operating system, at the Ignite 2026 conference on Tuesday. [...]",
+   "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-announces-windows-server-2028-with-hardened-security",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T22:24:31+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "British Scattered Spider hacker sentenced to 6 years in prison",
+   "summary": "A leader of the Scattered Spider cybercrime collective has been sentenced to six years in prison in the United States for stealing millions in cryptocurrency and conspiring to hack a dozen companies…",
+   "link": "https://www.bleepingcomputer.com/news/security/british-scattered-spider-hacker-sentenced-to-6-years-in-prison",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T21:24:18+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-19T09:30:07+13:00"
+  },
+  {
+   "title": "Hijacked website testing tool plants card skimmer on Australian brands’ sites",
+   "summary": "Telco, bank and super fund sites among 178 hit through Optimizely breach.",
+   "link": "https://www.itnews.com.au/news/hijacked-website-testing-tool-plants-card-skimmer-on-australian-brands-sites-630407",
+   "source": "iTnews",
+   "date": "2026-11-18T16:01:00+13:00",
+   "tags": [
+    "Breach",
+    "NZ/AU"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "Critical Java4Shell flaw allows RCE attacks on major Java applications",
+   "summary": "A critical vulnerability dubbed Java4Shell in OpenJDK, the open-source implementation of Java, can allow unauthenticated attackers to remotely execute code on popular enterprise applications…",
+   "link": "https://www.bleepingcomputer.com/news/security/critical-java4shell-flaw-allows-rce-attacks-on-major-java-applications",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T12:04:21+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "Cloud keys leaked in Docker Hub images are stolen within seconds",
+   "summary": "Credentials and access secrets exposed in public Docker Hub images are being extracted and exploited by attackers within as little as eight seconds of publication. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/cloud-keys-leaked-in-docker-hub-images-are-stolen-within-seconds",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T10:27:17+13:00",
+   "tags": [
+    "Breach",
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "Website management platform Optimizely confirms hackers put malicious code into customer sites",
+   "summary": "Researchers said they found malicious JavaScript code on 178 different widely visited websites run through the Optimizely Web experimentation platform. The company confirmed the breach.",
+   "link": "https://therecord.media/optimizely-malicious-code-customer-sites",
+   "source": "The Record",
+   "date": "2026-11-18T10:20:00+13:00",
+   "tags": [
+    "Breach"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "Microsoft unveils AI models for coding and cyber security",
+   "summary": "To challenge rivals such as Anthropic and OpenAI.",
+   "link": "https://www.itnews.com.au/news/microsoft-unveils-ai-models-for-coding-and-cyber-security-630419",
+   "source": "iTnews",
+   "date": "2026-11-18T10:11:00+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Uber says nearly 150,000 impacted by third-party breach",
+   "summary": "In breach notification letters, the rideshare company said it was notified by a third party service provider on October 9 that internal credentials were stolen and used to access Uber’s account.",
+   "link": "https://therecord.media/uber-says-150000-impacted-third-party-breach",
+   "source": "The Record",
+   "date": "2026-11-18T09:55:30+13:00",
+   "tags": [
+    "Breach"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Japan takes Fugaku supercomputer offlline after cyberattack",
+   "summary": "The Fugaku supercomputer operated by Japan's RIKEN Center for Computational Science has been taken offline following a security breach. [...]",
+   "link": "https://www.bleepingcomputer.com/news/security/japan-takes-fugaku-supercomputer-offlline-after-cyberattack",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T09:51:21+13:00",
+   "tags": [
+    "Breach"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Apple reports outages affecting iCloud Mail, AppleCare and more",
+   "summary": "Apple is reporting service disruptions affecting several of its services, including iCloud Mail, iCloud Account & Sign In, Apple School Manager, and Schoolwork. [...]",
+   "link": "https://www.bleepingcomputer.com/news/apple/apple-reports-outages-affecting-icloud-mail-applecare-and-more",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T08:24:07+13:00",
+   "tags": [
+    "Cloud"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Kazakh ransomware hacking suspect extradited from Italy",
+   "summary": "The U.S. accused Roman Khlynovskiy of participating in ransomware attacks against healthcare organizations, schools and companies as part of the \"8 Digits Team\" connected with INC and Lynx.",
+   "link": "https://therecord.media/kazakh-suspected-extradited-charges-8-digits-team-inc-lynx",
+   "source": "The Record",
+   "date": "2026-11-18T08:09:00+13:00",
+   "tags": [
+    "Malware"
+   ],
+   "related": {
+    "to": "deck:e8-backups",
+    "label": "Essential Eight: regular backups"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Chinese state group developing automated attack tool for cyber espionage, Google says",
+   "summary": "Google released its latest AI Threat Tracker report on Monday, writing that threat actors are rapidly evolving their use of artificial intelligence in attacks, now leaning more heavily on autonomous…",
+   "link": "https://therecord.media/chinese-state-group-developing-automated-attack-tool-espionage",
+   "source": "The Record",
+   "date": "2026-11-18T07:50:00+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Researchers hijack Hugging Face account for popular Kokoro AI model",
+   "summary": "A Lack of ownership verification on the Hugging Face platform allowed researchers to take control of Kokoro, a text-to-speech model used in projects from Google, NVIDIA, AMD, Intel, and Amazon Web…",
+   "link": "https://www.bleepingcomputer.com/news/security/researchers-hijack-hugging-face-account-for-popular-kokoro-ai-model",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T07:21:24+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Tor releases emergency update amid ongoing DDoS attack",
+   "summary": "The Tor Project has released a security update for its network relay software to increase defenses against an ongoing distributed denial-of-service attack that it says has overwhelmed relays and…",
+   "link": "https://www.bleepingcomputer.com/news/security/tor-releases-emergency-update-amid-ongoing-ddos-attack",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T07:04:15+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "California fines Hertz $1.5 million for breaking state data privacy law",
+   "summary": "Hertz agreed to the fine and said it would change its business practices, according to a court filing shared by the regulator, the California Privacy Protection Agency (CPPA).",
+   "link": "https://therecord.media/california-fines-hertz-state-data-privacy-law",
+   "source": "The Record",
+   "date": "2026-11-18T06:13:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "NSA Net, agency’s classified internal network, faces unspecified disruptions",
+   "summary": "The NSA has ordered staggered arrivals at its headquarters at Fort Meade, Maryland, as technicians work to fully restore the classified internal network NSA Net.",
+   "link": "https://therecord.media/nsa-net-disruptions",
+   "source": "The Record",
+   "date": "2026-11-18T05:21:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Flipper Devices launches $399 ‘Flipper One’ Linux-based multi-tool",
+   "summary": "Flipper Devices, the company behind the popular Flipper Zero pentesting device, has launched a crowdfunding campaign for Flipper One, a portable Linux computer and networking multi-tool. [...]",
+   "link": "https://www.bleepingcomputer.com/news/hardware/flipper-devices-launches-399-flipper-one-linux-based-multi-tool",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T05:00:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Critical Java Vulnerability Requires Immediate Patching",
+   "summary": "Purpose CISA strongly urges organizations to immediately patch the recently disclosed Oracle Java vulnerability CVE-2026-114938. This critical memory-corruption vulnerability, known as “Java4Shell,”…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/17/critical-java-vulnerability-requires-immediate-patching",
+   "source": "CISA",
+   "date": "2026-11-18T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T20:28:02+13:00"
+  },
+  {
+   "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
+   "summary": "CISA has added one new vulnerability to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-115731 Perforce Puppet Enterprise Deserialization of…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/17/cisa-adds-one-known-exploited-vulnerability-catalog",
+   "source": "CISA",
+   "date": "2026-11-18T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Microsoft testing Remote Lock for lost or stolen Windows devices",
+   "summary": "Microsoft is testing a new feature that lets enterprise IT administrators remotely lock stolen or lost Windows devices without wiping them. [...]",
+   "link": "https://www.bleepingcomputer.com/news/microsoft/microsoft-testing-remote-lock-for-lost-or-stolen-windows-devices",
+   "source": "BleepingComputer",
+   "date": "2026-11-18T00:19:51+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "A phishing page interested in MX records, (Tue, Nov 17th)",
+   "summary": "I&#x26;#xe2;&#x26;#x80;&#x26;#x99;ve mentioned before in some of my diaries that it can be instructive to look at what appear to be…",
+   "link": "https://isc.sans.edu/diary/rss/33526",
+   "source": "SANS ISC",
+   "date": "2026-11-17T23:56:38+13:00",
+   "tags": [],
+   "related": {
+    "to": "study:6",
+    "label": "Day 6: Common attacks"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Court clears brothers of $25 million Ethereum crypto heist charges",
+   "summary": "US District Judge Jessica Clarke has acquitted two brothers accused of stealing $25 million in cryptocurrency in about 12 seconds through a scheme that exploited a bug in the Ethereum blockchain…",
+   "link": "https://www.bleepingcomputer.com/news/security/court-clears-brothers-of-25-million-ethereum-crypto-heist-charges",
+   "source": "BleepingComputer",
+   "date": "2026-11-17T22:44:22+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-18T09:55:30+13:00"
+  },
+  {
+   "title": "Vulnerabilities are moving quickly, so patch, protect, prevent",
+   "summary": "Actions organisations can take to identify internet-exposed systems, address vulnerabilities and reduce cyber security risk.",
+   "link": "https://www.cyber.gov.au/alert/vulnerabilities-are-moving-quickly-so-patch-protect-prevent",
+   "source": "ACSC",
+   "date": "2026-11-17T14:41:43+13:00",
+   "tags": [
+    "Vulnerability",
+    "NZ/AU"
+   ],
+   "related": {
+    "to": "study:11",
+    "label": "Day 11: Ports and services"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "California sues OpenAI for Hugging Face and other incidents, alleging deception and recklessness",
+   "summary": "\"OpenAI thwarted the Attorney General’s efforts to investigate these incidents, including by refusing to provide detailed information about the full universe of incidents known to the company,”…",
+   "link": "https://therecord.media/california-sues-openai-hugging-face",
+   "source": "The Record",
+   "date": "2026-11-17T10:40:00+13:00",
+   "tags": [
+    "AI"
+   ],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Match fined $10 million for alleged Tinder privacy violations",
+   "summary": "Ireland’s data protection regulator will fine the Match Group as a result of the dating app Tinder allegedly failing to provide users with their personal data held by the company upon request.",
+   "link": "https://therecord.media/ireland-tinder-privacy-fine",
+   "source": "The Record",
+   "date": "2026-11-17T09:15:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Italian regulator fines Meta $886 million for violating data privacy law",
+   "summary": "The crackdown on Meta’s Facebook platform involved the company’s alleged use of its “camera roll” suggestions option, launched in 2023, to browse Android users’ photo galleries to recommend posts…",
+   "link": "https://therecord.media/italian-regulator-fines-meta-886-million-privacy",
+   "source": "The Record",
+   "date": "2026-11-17T07:05:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "King Charles opens new HQ for National Cyber Force, UK’s offensive hacking unit",
+   "summary": "A building near the Lancashire village of Samlesbury in northwest England is officially the headquarters for the secretive unit that runs the Britain's offensive cyber operations.",
+   "link": "https://therecord.media/uk-national-cyber-force-headquarters-opens",
+   "source": "The Record",
+   "date": "2026-11-17T06:22:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Scans for LiteLLM/Starlette (CVE-2026-42271, CVE-2026-48710), (Mon, Nov 16th)",
+   "summary": "This weekend, we started seeing requests for /mcp-rest/test/tools/list hitting our honeypots. These requests appear to attempt to exploit CVE-2026-42271 and CVE-2026-48710. Horizon3.ai published a…",
+   "link": "https://isc.sans.edu/diary/rss/33522",
+   "source": "SANS ISC",
+   "date": "2026-11-17T02:11:04+13:00",
+   "tags": [
+    "Vulnerability",
+    "AI"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Microsoft says three-month-old bug behind global M365 outage",
+   "summary": "Newer servers proved more vulnerable than those in test labs.",
+   "link": "https://www.itnews.com.au/news/microsoft-says-three-month-old-bug-behind-global-m365-outage-630382",
+   "source": "iTnews",
+   "date": "2026-11-17T01:00:00+13:00",
+   "tags": [
+    "Vulnerability",
+    "Cloud"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Kernel-crashing NoisyTCP bug sat in Linux for 11 years",
+   "summary": "Lets unauthenticated attackers knock systems offline remotely.",
+   "link": "https://www.itnews.com.au/news/kernel-crashing-noisytcp-bug-sat-in-linux-for-11-years-630369",
+   "source": "iTnews",
+   "date": "2026-11-16T15:55:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Coles Group investigating a cyber incident",
+   "summary": "Says no evidence of data being \"compromised or removed\".",
+   "link": "https://www.itnews.com.au/news/coles-group-investigating-a-cyber-incident-630361",
+   "source": "iTnews",
+   "date": "2026-11-16T12:11:00+13:00",
+   "tags": [
+    "NZ/AU"
+   ],
+   "related": {
+    "to": "study:26",
+    "label": "Day 26: Defence in depth and incident response"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "YARA-X 1.23.0 Release, (Sun, Nov 15th)",
+   "summary": "YARA-X&#x26;#39;s 1.23.0 release brings 4 improvements and 16 bugfixes.",
+   "link": "https://isc.sans.edu/diary/rss/33496",
+   "source": "SANS ISC",
+   "date": "2026-11-16T07:17:27+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Phishers quick to exploit extended M365 outage",
+   "summary": "Fake service health notices threaten loss of emails without specific action.",
+   "link": "https://www.itnews.com.au/news/phishers-quick-to-exploit-extended-m365-outage-630347",
+   "source": "iTnews",
+   "date": "2026-11-14T22:49:00+13:00",
+   "tags": [
+    "Vulnerability",
+    "Cloud"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
+   "summary": "CISA has added two new vulnerabilities to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-114713 UnrealIRCd Improper Neutralization of Delimiters…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/13/cisa-adds-two-known-exploited-vulnerabilities-catalog",
+   "source": "CISA",
+   "date": "2026-11-14T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "In Pictures: Benchmark Security Saviynt roundtable",
+   "summary": "A selection of photos from a recent iTnews roundtable lunch at Cafe Del Mar.",
+   "link": "https://www.itnews.com.au/gallery/in-pictures-benchmark-security-saviynt-roundtable-630334",
+   "source": "iTnews",
+   "date": "2026-11-13T17:46:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Macfinger ClickFix campaign sends DownTheDRAIN infostealer for macOS, (Fri, Nov 13th)",
+   "summary": "",
+   "link": "https://isc.sans.edu/diary/rss/33518",
+   "source": "SANS ISC",
+   "date": "2026-11-13T16:41:41+13:00",
+   "tags": [
+    "Malware"
+   ],
+   "related": {
+    "to": "study:6",
+    "label": "Day 6: Common attacks"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Exploit Attempts for GPUStack Authentication Bypass (CVE-2026-102895), (Thu, Nov 12th)",
+   "summary": "CVE-2026-102895 is a trivial authentication-bypass vulnerability. GPUStack is also an attractive target. It is open-source software that manages clusters of GPUs, which are typically used to run AI…",
+   "link": "https://isc.sans.edu/diary/rss/33514",
+   "source": "SANS ISC",
+   "date": "2026-11-13T00:56:24+13:00",
+   "tags": [
+    "Vulnerability",
+    "AI"
+   ],
+   "related": {
+    "to": "deck:owasp-a07",
+    "label": "OWASP A07: Authentication Failures"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Microsoft Patch Tuesday November 2026, (Tue, Nov 10th)",
+   "summary": "Microsoft continues its AI-induced patch surge, addressing 1,260 different vulnerabilities this month. 68 of these vulnerabilities are considered critical. 167 of the vulnerabilities are Chromium…",
+   "link": "https://isc.sans.edu/diary/rss/33508",
+   "source": "SANS ISC",
+   "date": "2026-11-12T07:28:43+13:00",
+   "tags": [
+    "Vulnerability",
+    "AI"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "In pictures: The 2026 iTnews Benchmark Security Awards winners",
+   "summary": "All the winning security leaders.",
+   "link": "https://www.itnews.com.au/gallery/in-pictures-the-2026-itnews-benchmark-security-awards-winners-630284",
+   "source": "iTnews",
+   "date": "2026-11-12T07:09:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds Six Known Exploited Vulnerabilities to Catalog",
+   "summary": "CISA has added six new vulnerabilities to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-20320 Cisco BroadWorks Improper Restriction of XML…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/10/cisa-adds-six-known-exploited-vulnerabilities-catalog",
+   "source": "CISA",
+   "date": "2026-11-11T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds Four Known Exploited Vulnerabilities to Catalog",
+   "summary": "CISA has added four new vulnerabilities to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-102895 GPUStack Improper Authentication Vulnerability…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/09/cisa-adds-four-known-exploited-vulnerabilities-catalog",
+   "source": "CISA",
+   "date": "2026-11-10T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
+   "summary": "CISA has added one new vulnerability to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-19868 SonicWall SonicOS SSLVPN Use of Single-factor…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/06/cisa-adds-one-known-exploited-vulnerability-catalog",
+   "source": "CISA",
+   "date": "2026-11-07T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "US Government Partners Urge Hardening Industrial Refrigeration and Cold Chain Monitoring Systems",
+   "summary": "Overview The Cybersecurity and Infrastructure Security Agency (CISA), Federal Bureau of Investigation (FBI), Health and Human Services (HHS), U.S. Department of Agriculture (USDA), and the Department…",
+   "link": "https://www.cisa.gov/resources-tools/resources/us-government-partners-urge-hardening-industrial-refrigeration-and-cold-chain-monitoring-systems",
+   "source": "CISA",
+   "date": "2026-11-06T01:00:00+13:00",
+   "tags": [],
+   "related": null,
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "Post-Quantum Questions to Ask Your Vendors",
+   "summary": "CISA, the Australian Signals Directorate’s Australian Cyber Security Centre (ASD’s ACSC) and the National Security Agency (NSA) released joint guidance and an accompanying quick-reference list to…",
+   "link": "https://www.cisa.gov/resources-tools/resources/post-quantum-questions-ask-your-vendors",
+   "source": "CISA",
+   "date": "2026-11-06T01:00:00+13:00",
+   "tags": [
+    "NZ/AU"
+   ],
+   "related": {
+    "to": "study:19",
+    "label": "Day 19: Encryption vs hashing"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
+   "summary": "CISA has added one new vulnerability to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2024-27834 Apple Multiple Products Improper Authentication…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/04/cisa-adds-one-known-exploited-vulnerability-catalog",
+   "source": "CISA",
+   "date": "2026-11-05T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds One Known Exploited Vulnerability to Catalog",
+   "summary": "CISA has added one new vulnerability to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-119977 WordPress Core Time-of-check Time-of-use (TOCTOU)…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/11/03/cisa-adds-one-known-exploited-vulnerability-catalog",
+   "source": "CISA",
+   "date": "2026-11-04T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
+   "summary": "CISA has added two new vulnerabilities to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-111357 Ivanti Connect Secure Missing Authentication for…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/10/30/cisa-adds-two-known-exploited-vulnerabilities-catalog",
+   "source": "CISA",
+   "date": "2026-10-31T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
+   "summary": "CISA has added two new vulnerabilities to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-97229 GitLab Community Edition and Enterprise Edition…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/10/29/cisa-adds-two-known-exploited-vulnerabilities-catalog",
+   "source": "CISA",
+   "date": "2026-10-30T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
+   "summary": "CISA has added two new vulnerabilities to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-41709 Broadcom VMWare ESX Insufficient Logging…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/10/28/cisa-adds-two-known-exploited-vulnerabilities-catalog",
+   "source": "CISA",
+   "date": "2026-10-29T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  },
+  {
+   "title": "CISA Adds Two Known Exploited Vulnerabilities to Catalog",
+   "summary": "CISA has added two new vulnerabilities to its Known Exploited Vulnerabilities (KEV) Catalog, based on evidence of active exploitation. CVE-2026-48356 Adobe Commerce and Magento Unrestricted Upload of…",
+   "link": "https://www.cisa.gov/news-events/alerts/2026/10/27/cisa-adds-two-known-exploited-vulnerabilities-catalog",
+   "source": "CISA",
+   "date": "2026-10-28T01:00:00+13:00",
+   "tags": [
+    "Vulnerability"
+   ],
+   "related": {
+    "to": "study:34",
+    "label": "Day 34: Vulnerability management"
+   },
+   "seen": "2026-11-17T21:52:20+13:00"
+  }
+ ]
+}

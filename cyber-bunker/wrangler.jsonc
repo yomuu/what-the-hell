@@ -1,0 +1,13 @@
+// Cloudflare Workers settings. Only the built app (_site/, made by tools/build-site.sh) is published:
+// never the repository root, which holds drafts, notes and agent settings.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cyberbunker1948",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./_site",
+    "not_found_handling": "single-page-application"
+  },
+  "workers_dev": true,
+  "preview_urls": false
+}

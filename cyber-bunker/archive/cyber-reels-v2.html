@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1216">
+<title>Cyber Scroll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* One visual world: a dark, full-screen vertical feed; each week has its own signal colour. */
+  --bg:#0e1216;
+  --surface:#171d24;
+  --sunk:#0a0d10;
+  --line:#26303b;
+  --text:#eef1f4;
+  --muted:#9aa6b2;
+  --good:#46c08a;
+  --bad:#ff6b6b;
+  --w1:#ffb020;
+  --w2:#3ec7e0;
+  --w3:#a78bfa;
+  --w4:#ff7a59;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible,.why:focus-visible{outline:2px solid var(--accent,var(--w1));outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.top{position:fixed;inset:0 0 auto 0;z-index:5;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:linear-gradient(var(--bg) 55%,transparent);pointer-events:none}
+.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent,var(--w1));transition:width .25s}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.meta b{color:var(--accent,var(--w1));font-weight:500}
+.meta span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.card{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;scrollbar-width:none;padding:calc(env(safe-area-inset-top) + 64px) 68px calc(env(safe-area-inset-bottom) + 40px) 22px;position:relative;max-width:640px;margin:0 auto}
+.card::-webkit-scrollbar{display:none}
+.card::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
+/* margin:auto centres short cards and lets tall ones scroll from the top instead of clipping */
+.in{margin:auto 0;display:flex;flex-direction:column;gap:18px;min-width:0}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tag span{border:1px solid var(--c);border-radius:999px;padding:3px 9px}
+h1,h2{font-family:var(--display);font-weight:800;margin:0;text-wrap:balance;line-height:1.05;overflow-wrap:break-word;hyphens:auto}
+h1{font-size:clamp(36px,10.5vw,64px)}
+h2{font-size:clamp(26px,7.4vw,40px)}
+.card p{font-size:clamp(18px,4.8vw,21px);line-height:1.5;margin:0;max-width:34ch;overflow-wrap:anywhere}
+.card p.small{font-size:16px;color:var(--muted);max-width:40ch}
+.card code{font-family:var(--mono);font-size:.84em;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+.hint{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+.warn{font-size:15px;line-height:1.45;color:var(--bad);max-width:40ch}
+
+.opts{display:flex;flex-direction:column;gap:10px;max-width:440px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-height:48px;font-size:17px;line-height:1.35;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--c)}
+.opt[aria-disabled="true"]{cursor:default}
+.opt[aria-disabled="true"]:hover{border-color:var(--line)}
+.opt .mk{flex:none;width:1.1em;font-weight:600;display:none}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.opt.right .mk,.opt.wrong .mk{display:inline}
+.opt.right .mk{color:var(--good)}
+.opt.wrong .mk{color:var(--bad)}
+.card h2.q{font-size:clamp(22px,6vw,32px);line-height:1.15}
+.why{display:none;font-size:16px;line-height:1.5;color:var(--muted);max-width:440px;border-top:1px solid var(--line);padding-top:12px}
+.why strong{color:var(--text)}
+.why.show{display:block}
+.retry{display:none}
+.retry.show{display:inline-block}
+.lvl{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+.mf{display:flex;flex-direction:column;gap:12px;max-width:440px}
+.mf div{border-radius:12px;padding:14px 16px;font-size:17px;line-height:1.45;border:1px solid var(--line);background:var(--surface)}
+.mf b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.mf .m{border-color:color-mix(in srgb,var(--bad) 55%,var(--line))}
+.mf .m b{color:var(--bad)}
+.mf .f{border-color:color-mix(in srgb,var(--good) 55%,var(--line))}
+.mf .f b{color:var(--good)}
+
+.code{background:var(--sunk);border:1px solid var(--line);border-radius:12px;max-width:540px;overflow:hidden}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 4px 4px 14px;border-bottom:1px solid var(--line)}
+.ch .where{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);min-width:0}
+.cp{flex:none;min-height:44px;min-width:64px;background:transparent;border:0;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);cursor:pointer}
+.cp:hover{color:var(--text)}
+.code pre{margin:0;padding:12px 14px;font-family:var(--mono);font-size:12.5px;line-height:1.5;color:#d6e2ea}
+/* Each source line is a block with a hanging indent, so wrapped lines are easy to tell apart from new ones. */
+.code pre span{display:block;white-space:pre-wrap;overflow-wrap:anywhere;padding-left:1.4em;text-indent:-1.4em;min-height:1.5em}
+.code pre span.c{color:var(--muted)}
+.card .code code{background:none;border:0;padding:0;font-size:inherit;border-radius:0}
+.where{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+
+.recap{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;max-width:440px}
+.recap li{position:relative;padding-left:26px;font-size:17px;line-height:1.45}
+.recap li::before{content:"";position:absolute;left:2px;top:.45em;width:12px;height:7px;border-left:2px solid var(--c);border-bottom:2px solid var(--c);transform:rotate(-45deg)}
+.dscore{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em}
+.dscore b{color:var(--text);font-weight:500}
+
+.more{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 10px);z-index:4;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;pointer-events:none;opacity:0;transition:opacity .2s}
+.more.show{opacity:1}
+
+.rail{position:fixed;right:10px;bottom:calc(env(safe-area-inset-bottom) + 28px);z-index:6;display:flex;flex-direction:column;gap:14px;align-items:center}
+.rb{width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer}
+.rb svg{width:22px;height:22px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rl{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+
+.btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;min-height:48px;font-weight:600;font-size:16px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px}
+.weeks div{font-size:14px;line-height:1.35;color:var(--muted);border-left:3px solid var(--wc);padding:4px 10px}
+.weeks b{display:block;color:var(--text);font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px;max-width:440px}
+.legend span{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+
+.sheet{position:fixed;inset:0;z-index:10;background:rgba(5,8,10,.72);display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.panel{width:100%;max-width:640px;max-height:82%;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border-radius:18px 18px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 20px)}
+.panel header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel h3{font-family:var(--display);font-size:22px;margin:0}
+.score{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.wk{margin:14px 0 6px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.day{display:flex;gap:10px;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;min-height:48px;cursor:pointer;font-size:14px;line-height:1.25}
+.day[aria-current="true"]{border-color:var(--dc);box-shadow:0 0 0 1px var(--dc)}
+.day .n{flex:none;font-family:var(--mono);font-size:12px;min-width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--dc);color:var(--dc)}
+.day small{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
+.day.part .n{background:color-mix(in srgb,var(--dc) 22%,transparent)}
+.day.ok .n{background:var(--good);border-color:var(--good);color:#0e1216}
+.day.miss .n{background:var(--bad);border-color:var(--bad);color:#0e1216}
+.x{background:none;border:1px solid var(--line);border-radius:999px;padding:10px 16px;min-height:44px;cursor:pointer;font-size:14px}
+
+@media (prefers-reduced-motion:reduce){.bar i,.opt,.more{transition:none}.feed{scroll-behavior:auto}}
+@media (min-width:700px){.card{padding-right:96px}}
+@media (max-height:640px){.in{gap:14px}h1{font-size:clamp(32px,9.5vw,52px)}.card p{font-size:17px}}
+@media (pointer:coarse){.kb{display:none}}
+</style>
+</head>
+<body>
+<div class="top" aria-hidden="true">
+  <div class="bar"><i id="prog"></i></div>
+  <div class="meta"><span id="where">Cyber Scroll</span><span id="count"></span></div>
+</div>
+<div class="sr" aria-live="polite" id="live"></div>
+
+<main class="feed" id="feed" tabindex="-1" aria-label="Study cards, swipe up for the next card"></main>
+<div class="more" id="more" aria-hidden="true">More below ↓</div>
+
+<nav class="rail" id="rail" aria-label="Study controls">
+  <div><button class="rb" id="openDays" aria-label="Choose a day"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button><div class="rl">Days</div></div>
+  <div><button class="rb" id="nextBtn" aria-label="Next card"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="rl">Next</div></div>
+</nav>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="panel">
+    <header><h3 id="sheetTitle">Jump to a day</h3><button class="x" id="closeDays">Close</button></header>
+    <div class="score" id="score"></div>
+    <div id="dayList"></div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   CONTENT
+   Each day is one object. Card order in the feed:
+   topic, learn[], real, myth, tryit, review[], quiz[], recap.
+
+   t      title                          sub    one-line hook on the topic card
+   learn  [[heading, body], ...]         one idea per card, 2 to 4 sentences
+   real   [heading, body]                a breach, incident or everyday example
+   myth   [myth, fact]                   optional
+   tryit  {h, p, code, where}            code is optional; where = which machine.
+                                         Lines starting with # in code are shown as comments.
+   review [[heading, body], ...]         optional, used on review days
+   quiz   [{q, o:[...], k, w, d}, ...]   k = index of the right option in o,
+                                         w = explanation, d = 1 easy, 2 medium, 3 hard.
+                                         Options are shuffled on screen, so write
+                                         them in any order.
+   recap  [point, ...]
+   Text supports `inline code` with backticks. Keep it plain: no HTML.
+   ========================================================================== */
+const WEEKS = [
+  {n:1, name:"Security fundamentals", c:"var(--w1)"},
+  {n:2, name:"Networking", c:"var(--w2)"},
+  {n:3, name:"Operating systems and crypto", c:"var(--w3)"},
+  {n:4, name:"Hands-on analysis", c:"var(--w4)"}
+];
+
+const DAYS = [
+/* ---------------- WEEK 1: Security fundamentals ---------------- */
+{t:"The CIA triad",
+ sub:"The three goals behind every security control.",
+ learn:[
+  ["Three goals, one triad","Every security control serves at least one of three goals: confidentiality, integrity and availability. Together they're called the CIA triad. When you meet a new control, ask which of the three it protects."],
+  ["Confidentiality","Only authorised people can read the data. Encryption, access controls and MFA protect it. A leaked customer database is a confidentiality failure."],
+  ["Integrity","Data isn't changed without authorisation, and changes can be detected. Hashes, digital signatures and change control protect it. Signatures also prove who signed, which is called non-repudiation. An invoice with a swapped bank account number is an integrity failure."],
+  ["Availability","Systems and data work when authorised people need them. Backups, redundancy, patching and DDoS protection support it. An outage from a traffic flood or a dead disk is an availability failure."],
+  ["One attack, several pillars","Ransomware can hit all three. It often steals data first (confidentiality), encrypts it without permission (integrity) and locks you out (availability). Steal-then-encrypt is called double extortion."]
+ ],
+ real:["Waikato DHB, 2021","In May 2021 ransomware took down IT systems across Waikato District Health Board hospitals in New Zealand. Clinics and services were disrupted for weeks (availability). Stolen patient and staff data was later leaked (confidentiality). One incident, several pillars."],
+ myth:["Ransomware is only an availability problem.","Most ransomware groups now steal data before encrypting it. That's double extortion, and it breaks confidentiality too. Restoring from backup doesn't undo the leak."],
+ tryit:{h:"See integrity in action", where:"Kali VM terminal",
+  p:"Create a file, hash it, change one character and hash it again. The digest changes completely. That's how integrity checks spot tampering.",
+  code:`echo 'pay $100 to Alice' > note.txt
+sha256sum note.txt
+sed -i 's/100/900/' note.txt
+sha256sum note.txt`},
+ quiz:[
+  {d:1, q:"An attacker changes a price in a database without permission. Which pillar is violated?", o:["Confidentiality","Integrity","Availability"], k:1,
+   w:"Unauthorised modification is an integrity failure. Nobody had to read the data or lose access to it for this to count."},
+  {d:1, q:"A website goes down after a flood of junk traffic. Which pillar is hit?", o:["Confidentiality","Integrity","Availability"], k:2,
+   w:"Authorised users can't reach the service, so availability is lost. No data had to be read or changed."},
+  {d:2, q:"A hospital restores its encrypted files from offline backups, but the attackers publish patient records anyway. Which pillar couldn't the backups protect?", o:["Confidentiality","Integrity","Availability"], k:0,
+   w:"Backups bring back the encrypted data, which restores availability. They can't take back data that has already been stolen."},
+  {d:3, q:"Which control mainly protects integrity?", o:["A digital signature on a software update","Full disk encryption on a laptop","A second internet connection","A privacy filter on a screen"], k:0,
+   w:"A signature proves the update came from the publisher and wasn't altered. Disk encryption and privacy filters protect confidentiality; a second link protects availability."}
+ ],
+ recap:["Confidentiality: only authorised people can read it.","Integrity: no unauthorised changes, and changes can be detected.","Availability: it works when authorised people need it.","Double-extortion ransomware hits all three."]},
+
+{t:"Threats, vulnerabilities and risk",
+ sub:"Why some weaknesses matter far more than others.",
+ learn:[
+  ["Vulnerability","A vulnerability is a weakness that could be exploited. Examples: an unpatched bug, a weak password, an open file share, a misconfigured cloud storage bucket. People and processes have weaknesses too, not just software."],
+  ["Threat","A threat is anything that could exploit a vulnerability and cause harm. External attackers, malicious insiders, staff mistakes, hardware failure, fire and flood all count. Threats aren't always external or deliberate."],
+  ["Risk","Risk combines how likely a threat is to exploit a vulnerability with how much harm it would cause. A critical bug on an internet-facing server is high risk. The same bug on an offline lab box is much lower."],
+  ["A teaching shortcut","You'll often see Threat × Vulnerability × Impact written as a formula. It's a simplified teaching model, not an official formula. Real risk assessments weigh likelihood, impact and the controls already in place."],
+  ["Treating risk","Once you know a risk, you can mitigate it (add controls), transfer it (insurance or a contract), avoid it (stop the activity) or accept it. Accepting a risk should be a recorded decision by someone with authority, not something that happens by default."]
+ ],
+ real:["Equifax, 2017","Attackers exploited a known flaw in Apache Struts on an Equifax web portal. A fix had been published about two months earlier but hadn't been applied. Personal data of about 147 million people was exposed. A public vulnerability, a real threat and a huge impact."],
+ myth:["Threats only come from outside hackers.","Insiders cause many incidents, often by accident: a misdirected email, a lost laptop, a share left open. Hardware failure and natural events are threats too."],
+ tryit:{h:"Score a few risks", where:"Any machine with Python 3",
+  p:"Rate likelihood and impact from 1 to 5, multiply, and sort. It's a rough teaching model, but it shows why some fixes come first.",
+  code:`risks = {
+    "Unpatched VPN on the internet": (4, 5),
+    "Weak Wi-Fi password at home": (2, 3),
+    "Laptop with no disk encryption": (3, 4),
+}
+ranked = sorted(risks.items(), key=lambda r: -r[1][0] * r[1][1])
+for name, (lik, imp) in ranked:
+    print(lik * imp, name)`},
+ quiz:[
+  {d:1, q:"Staff accidentally emailing customer data to the wrong person is an example of what?", o:["Not a threat, because it's an accident","An accidental insider threat","A vulnerability"], k:1,
+   w:"Threats don't have to be malicious or external. Staff mistakes are one of the most common threat sources."},
+  {d:1, q:"A missing security patch on a web server is best described as what?", o:["A vulnerability","A threat","A risk treatment"], k:0,
+   w:"The missing patch is a weakness. The attacker who might exploit it is the threat."},
+  {d:2, q:"The same critical bug exists on an internet-facing server and on an offline lab box. Why is the risk different?", o:["The likelihood of exploitation is different","The vulnerability is different","Risk depends only on the bug's severity score"], k:0,
+   w:"Same weakness, very different exposure. The internet-facing server is far more likely to be attacked, so its risk is higher."},
+  {d:2, q:"Buying cyber insurance is an example of which risk treatment?", o:["Mitigate","Transfer","Avoid","Accept"], k:1,
+   w:"Insurance shifts some of the financial impact to someone else. It doesn't reduce the chance of the incident."},
+  {d:3, q:"Which statement about Threat × Vulnerability × Impact is accurate?", o:["It's a simplified teaching model, not an official formula","It's the official NIST risk formula","It calculates the exact dollar cost of a risk"], k:0,
+   w:"It's a handy way to remember the parts of risk. Real assessments use likelihood, impact and existing controls, often on a risk matrix."}
+ ],
+ recap:["Vulnerability: the weakness.","Threat: who or what could exploit it, including insiders and accidents.","Risk: likelihood and impact together.","Treat risk by mitigating, transferring, avoiding or accepting it."]},
+
+{t:"Authentication vs authorisation",
+ sub:"Who are you, and what are you allowed to do?",
+ learn:[
+  ["Authentication","Typing a username only claims an identity. Authentication checks proof of that claim: a password, a passkey, a fingerprint. It answers “who are you?”"],
+  ["Authorisation","Authorisation decides what an authenticated identity may do, and it should be checked on every request. On the web, 401 Unauthorized really means “not authenticated”. 403 Forbidden means “we know who you are, and the answer is no”."],
+  ["Accounting","Accounting, or auditing, records who did what and when. Authentication, authorisation and accounting together are called AAA. Without the logs you can't prove what an account actually did."],
+  ["Least privilege","Give each person and process only the access their job needs, for only as long as they need it. If an account is compromised, the damage is limited to what that account could reach."],
+  ["In the OWASP Top 10","OWASP Top 10:2025 puts Broken Access Control at A01, the top spot. Authentication Failures is A07. Access control breaks easily because every request needs a check, and one missing check is enough."]
+ ],
+ real:["Guessable links, 2019","In 2019 US title insurer First American Financial was found exposing about 885 million records. Document links used sequential numbers, and the site didn't check who was asking. Changing the number in the address showed other people's documents."],
+ myth:["If a link is hard to find, it's secure.","Hiding a URL isn't access control. Links get shared, logged and guessed. The server has to check authorisation on every request."],
+ tryit:{h:"Check your own rights", where:"Windows target, then Kali",
+  p:"See what your account is allowed to do. On Windows, `whoami /groups` and `whoami /priv` list your groups and privileges. On Kali, `id` shows your groups and `sudo -l` shows what you may run as root. It asks for your password.",
+  code:`# Windows Command Prompt
+whoami /groups
+whoami /priv
+
+# Kali terminal
+id
+sudo -l`},
+ quiz:[
+  {d:1, q:"You log in successfully, then get 403 Forbidden on the payroll page. Which check stopped you?", o:["Authentication","Authorisation","Encryption"], k:1,
+   w:"Logging in proved who you are. The 403 means that identity isn't permitted to access the resource."},
+  {d:2, q:"You change `?invoice=1001` to `?invoice=1002` in the address bar and see another customer's invoice. What's broken?", o:["Access control (authorisation)","Authentication","Encryption"], k:0,
+   w:"You were logged in, so authentication worked. The server failed to check whether that invoice belongs to you. That's broken access control."},
+  {d:2, q:"Which of these is authentication rather than authorisation?", o:["Scanning your fingerprint to unlock a laptop","The finance group being allowed to open payroll","A shared folder set to read-only for interns"], k:0,
+   w:"The fingerprint proves who you are. The other two decide what an identity may do."},
+  {d:3, q:"A help desk account can reset any password, including domain admins'. Which principle is broken?", o:["Least privilege","Encryption at rest","Availability"], k:0,
+   w:"Help desk staff rarely need to reset admin accounts. If that account is phished, the attacker can take over admins too."},
+  {d:1, q:"In OWASP Top 10:2025, what is A01?", o:["Broken Access Control","Injection","Authentication Failures","Security Logging and Alerting Failures"], k:0,
+   w:"Broken Access Control is A01. Authentication Failures is A07, and Security Logging and Alerting Failures is A09."}
+ ],
+ recap:["Authentication proves who you are. Authorisation decides what you may do. Accounting records it.","Authorisation must be checked on every request.","Least privilege limits the damage from a compromised account.","OWASP 2025: A01 Broken Access Control, A07 Authentication Failures."]},
+
+{t:"Multi-factor authentication",
+ sub:"Not all second factors are equal.",
+ learn:[
+  ["Three factor categories","Something you know: a password or PIN. Something you have: a phone or security key. Something you are: a fingerprint or face. MFA combines factors from at least two different categories."],
+  ["Same category doesn't count","A password plus a PIN is still one category: two things you know. A password plus a security question is the same. Real MFA needs a second category."],
+  ["SMS codes","SMS codes count as MFA, but they're weak. SIM swapping moves your number to an attacker's SIM, and fake login pages can simply ask you for the code. Better than nothing, but the weakest option."],
+  ["App codes and push","Authenticator-app codes avoid SIM swapping, but you can still type them into a fake site that passes them on. Push approvals can be abused by spamming prompts until you tap Approve. Number matching makes that harder."],
+  ["Phishing-resistant","FIDO2 security keys and passkeys are bound to the real website's domain. A look-alike site gets nothing it can use, even if you're fooled. These are the only phishing-resistant options."]
+ ],
+ real:["Twilio and Cloudflare, 2022","In August 2022 the same SMS phishing campaign hit both companies. At Twilio, staff entered credentials on fake pages and attackers got into internal systems. At Cloudflare, some staff were fooled too, but their FIDO2 hardware keys blocked the logins."],
+ myth:["Any MFA stops phishing.","SMS and app codes can be typed into a fake site and relayed in real time. Only FIDO2 keys and passkeys resist phishing, because they check the real domain."],
+ tryit:{h:"Audit your own MFA", where:"Your phone and browser",
+  p:"Check the second factor on your email, password manager and bank. Where passkeys or security keys are offered, add one and keep a backup method safe. Start with email: it can reset everything else."},
+ quiz:[
+  {d:1, q:"Which pair is genuine MFA?", o:["A password and an authenticator-app code","A password and a PIN","A password and a security question"], k:0,
+   w:"The app code is something you have. A PIN and a security question are both things you know, the same category as the password."},
+  {d:2, q:"What does SIM swapping attack?", o:["SMS codes","Passkeys","Fingerprint readers"], k:0,
+   w:"The attacker moves your phone number to their SIM, so your SMS codes go to them."},
+  {d:2, q:"Your phone shows 30 MFA push prompts at 2am that you didn't trigger. What's the safest move?", o:["Deny them, report it and change your password","Approve one so they stop","Ignore them, push can't be abused"], k:0,
+   w:"Someone has your password and is hoping you'll tap Approve. Denying isn't enough on its own: the password needs changing."},
+  {d:3, q:"Which option resists a fake login page that relays your code to an attacker?", o:["SMS code","Authenticator-app code","FIDO2 security key or passkey"], k:2,
+   w:"A FIDO2 key or passkey checks the site's real domain cryptographically, so a look-alike site gets nothing it can use."},
+  {d:3, q:"Why does a passkey defeat a look-alike login page?", o:["It's bound to the real site's domain and won't sign in anywhere else","It changes every 30 seconds","It's longer than a password"], k:0,
+   w:"The browser only offers the passkey to the domain it was created for. A changing code (like TOTP) can still be phished."}
+ ],
+ recap:["MFA means two or more different factor categories.","SMS is MFA but weak: SIM swapping and phishing.","App codes and push can be phished too.","Only FIDO2 keys and passkeys are phishing-resistant."]},
+
+{t:"Hygiene and hardening",
+ sub:"Boring habits that stop most attacks.",
+ learn:[
+  ["Cyber hygiene","Hygiene is the routine: patching, backups, a password manager, MFA everywhere and reviewing app permissions. None of it is exciting. Many breaches start with one of these being skipped."],
+  ["Patch promptly","Attackers often build exploits soon after a patch comes out by studying the fix. So patch internet-facing systems first. Australia's Essential Eight sets 48 hours for those when a flaw is critical or already exploited."],
+  ["Backups that work","Follow 3-2-1: three copies, on two types of storage, one offsite. Keep at least one copy offline or immutable so ransomware can't reach it. A backup you've never test-restored is a hope, not a plan."],
+  ["Hardening","Hardening shrinks the attack surface by changing insecure defaults. Replace default credentials, disable unneeded services, close unused ports and remove unused software. Keeping defaults is the opposite of hardening."],
+  ["Use a baseline","Don't harden from memory. CIS Benchmarks and vendor security baselines list recommended settings for Windows, Linux, browsers and cloud services. They give you a checklist you can audit against."]
+ ],
+ real:["Mirai, 2016","The Mirai botnet scanned the internet for cameras and routers still using factory logins. It tried a short list of about 60 default username and password pairs and took over hundreds of thousands of devices. In October 2016 it knocked DNS provider Dyn offline, disrupting many major sites."],
+ myth:["Default settings are secure because the vendor tested them.","Defaults are chosen for easy setup, not security. Default passwords are published online. Hardening means changing them."],
+ tryit:{h:"What's running by default?", where:"Windows target, PowerShell",
+  p:"List running services and listening ports on a fresh install. For each one ask: do I need this? That question is where hardening starts.",
+  code:`Get-Service | Where-Object Status -eq Running
+Get-NetTCPConnection -State Listen |
+  Sort-Object LocalPort |
+  Select-Object LocalAddress, LocalPort,
+    @{n="Process"; e={(Get-Process -Id $_.OwningProcess).ProcessName}}`},
+ quiz:[
+  {d:1, q:"A new router still uses admin/admin. What's the hardening fix?", o:["Leave it, defaults are tested","Change the default credentials","Hide the Wi-Fi network name"], k:1,
+   w:"Default credentials are public knowledge. Changing them is basic hardening. Hiding the network name adds very little."},
+  {d:2, q:"Which backup is most likely to survive ransomware on your network?", o:["An offline or immutable copy","A network drive that's always mapped","A second folder on the same server"], k:0,
+   w:"Ransomware encrypts anything it can reach. A copy that's offline or can't be changed is out of reach."},
+  {d:2, q:"Why patch internet-facing systems first?", o:["Anyone can reach them, and exploits often follow soon after a patch","They're cheaper to patch","Internal systems can't be exploited"], k:0,
+   w:"Exposure drives likelihood. Internal systems still need patching, but internet-facing ones are attacked first."},
+  {d:3, q:"What is a CIS Benchmark?", o:["A list of recommended secure configuration settings","An antivirus product","A law that requires encryption"], k:0,
+   w:"CIS Benchmarks are free, consensus-based hardening guides you can audit a system against."}
+ ],
+ recap:["Hygiene: patch, back up, MFA, password manager, review permissions.","Patch internet-facing systems first.","3-2-1 backups, with one copy offline or immutable, and test restores.","Hardening means changing insecure defaults, ideally against a baseline."]},
+
+{t:"Common attacks",
+ sub:"The attacks you'll see again and again.",
+ learn:[
+  ["Phishing","Phishing tricks people into handing over credentials, approving payments or running malware. Spear phishing targets one person with researched details. Smishing uses SMS and vishing uses phone calls."],
+  ["Business email compromise","BEC uses a hijacked or look-alike mailbox to ask for a payment or new bank details. Often there's no malware at all. Always verify bank changes by calling a number you already had."],
+  ["Malware and ransomware","Malware is any malicious software: viruses, worms, trojans and spyware. Ransomware encrypts data and demands payment. It often steals the data first and threatens to leak it."],
+  ["Password attacks","Brute force tries many passwords on one account. Password spraying tries one common password on many accounts to avoid lockouts. Credential stuffing reuses username and password pairs leaked from other sites."],
+  ["DoS and DDoS","A denial-of-service attack floods or crashes a target so it's unavailable. Distributed DoS uses many machines at once, often a botnet. Defence means filtering and absorbing traffic, usually through a DDoS protection service."],
+  ["On-path attacks","An on-path attacker (man-in-the-middle) sits between two parties to read or change traffic. Rogue Wi-Fi hotspots and ARP spoofing are common ways in. HTTPS with valid certificates is the main defence."],
+  ["Injection","Injection happens when an app treats user input as code. SQL injection slips database commands into a form field or URL. Parameterised queries and input validation stop it. Injection is A05 in OWASP Top 10:2025."]
+ ],
+ real:["Colonial Pipeline, 2021","In May 2021 attackers logged in to Colonial Pipeline through an old VPN account with a leaked password and no MFA. Ransomware hit the IT systems, and the company shut down the largest fuel pipeline in the US for several days. It paid about US$4.4 million in ransom."],
+ myth:["Paying the ransom gets everything back.","There's no guarantee the decryptor works, and stolen data can still be leaked or sold. Payment also funds the next attack. Restore from backups and get expert advice before any decision."],
+ tryit:{h:"Dissect a phishing email", where:"Your email client",
+  p:"Open a spam email's original headers, without clicking anything. Compare From with Reply-To, and check SPF, DKIM and DMARC. A red-flag example:",
+  code:`From: "IT Support" <it-support@yourc0mpany.example>
+Reply-To: reset-desk@freemail.example
+Authentication-Results: mx.example;
+  spf=fail; dkim=none; dmarc=fail`},
+ quiz:[
+  {d:1, q:"Which defence helps most against a DDoS attack?", o:["Stronger passwords","Traffic filtering and extra capacity, such as a DDoS protection service","Disk encryption"], k:1,
+   w:"DDoS attacks availability with sheer traffic. You absorb or filter it; passwords and encryption don't help."},
+  {d:2, q:"An attacker tries `Summer2025!` once against every account in a company. What's this called?", o:["Password spraying","Brute force","Credential stuffing"], k:0,
+   w:"One common password across many accounts stays under per-account lockout limits. That's spraying."},
+  {d:1, q:"A supplier emails new bank details for their next invoice. What should you do?", o:["Call the supplier on a number you already had","Reply to the email to confirm","Pay it, since it came from their real address"], k:0,
+   w:"The supplier's mailbox may be compromised, so replying goes straight to the attacker. Verify out of band."},
+ ],
+ recap:["Phishing, BEC and vishing target people. Injection targets the app.","Spraying, brute force and stuffing target passwords: MFA and unique passwords help.","DDoS hits availability: filter and absorb.","On-path attacks are beaten by HTTPS with valid certificates."]},
+
+{t:"Week 1 review",
+ sub:"Pull the week together, then test yourself.",
+ learn:[
+  ["How to review","Try to answer each review card's heading from memory before you read the body. Struggling a bit to recall is what makes it stick. Then do the quiz without scrolling back."]
+ ],
+ real:["Medibank, 2022","In October 2022 attackers used a contractor's stolen credentials to log in to Medibank's network through a VPN that didn't require a second factor. They took data on about 9.7 million current and former customers. When Medibank refused to pay, they published some of it."],
+ myth:["One good control, like MFA or backups, solves the whole problem.","Each control covers part of the risk. MFA stops many logins, backups restore data and patching closes known holes. You need them working together, which is defence in depth."],
+ tryit:{h:"Teach it back", where:"Notes app or paper",
+  p:"Explain the Medibank incident to an imaginary new help desk colleague in five sentences: what happened, which pillars were hit and which controls would have helped. Where you get stuck is the card to revisit. You'll also have a ready answer for interviews."},
+ review:[
+  ["CIA in one breath","Confidentiality: encryption and access control. Integrity: hashes and signatures. Availability: backups, redundancy and DDoS protection. Double-extortion ransomware hits all three."],
+  ["Threat, vulnerability, risk","Vulnerability is the weakness. Threat is who or what could exploit it, including insiders and accidents. Risk is likelihood and impact together. The multiplication formula is only a teaching shortcut."],
+  ["The three As","Authentication proves who you are. Authorisation decides what you can do, on every request. Accounting logs what you did. Broken Access Control is A01 in OWASP Top 10:2025."],
+  ["MFA, weakest to strongest","SMS codes, then app codes and push with number matching, then FIDO2 keys and passkeys. SMS still counts as MFA. Only the last group is phishing-resistant."],
+  ["Hygiene vs hardening","Hygiene is the routine: patch, back up, MFA, password manager. Hardening changes insecure defaults: credentials, services, ports and software. Mirai showed what happens when nobody changes defaults."],
+  ["Attacks at a glance","Phishing and BEC target people. Spraying, brute force and stuffing target passwords. Injection targets apps. DDoS hits availability. On-path attacks are beaten by HTTPS with valid certificates."],
+  ["Scenario","A phishing email steals a VPN password. The account has no MFA. Ransomware then steals and encrypts a file server. Which pillars are hit? What would have stopped the login? What restores the files, and what can't it undo?"],
+  ["Scenario answers","All three pillars are hit. MFA on the VPN, ideally phishing-resistant, would have stopped the login. Offline backups restore the files. They can't undo the theft, so the leak still needs a response."]
+ ],
+ quiz:[
+  {d:2, q:"Offline backups protect you against which part of a double-extortion attack?", o:["The data theft","The encryption and lost access","Both equally"], k:1,
+   w:"Backups let you restore encrypted data. They do nothing about data the attacker has already stolen."},
+  {d:1, q:"Which of these is a vulnerability?", o:["A router still using its default admin password","A ransomware gang","A flood in the server room"], k:0,
+   w:"The default password is the weakness. The gang and the flood are threats that could exploit weaknesses."},
+  {d:2, q:"Which MFA method is phishing-resistant?", o:["A passkey","An SMS code","Push approval with number matching"], k:0,
+   w:"Number matching cuts down on accidental approvals, but a passkey is the only one here that checks the real domain."},
+  {d:2, q:"A logged-in user views other customers' records by editing a number in the URL. Which OWASP Top 10:2025 category fits best?", o:["A01 Broken Access Control","A07 Authentication Failures","A09 Security Logging and Alerting Failures"], k:0,
+   w:"Login worked fine. The missing check on each record is broken access control."},
+  {d:2, q:"Which of these is a hardening step?", o:["Disabling SMBv1 on a server that doesn't need it","Running the weekly backup","Booking staff into awareness training"], k:0,
+   w:"Turning off an unneeded, insecure legacy protocol reduces the attack surface. The others are valuable, but they're hygiene and training."},
+  {d:1, q:"Credential stuffing works because…", o:["People reuse passwords across sites","Passwords are too long","MFA is turned on"], k:0,
+   w:"Leaked pairs from one site work on another only when the same password was reused."},
+  {d:3, q:"Medibank's attackers logged in with a contractor's stolen credentials. Which control would most directly have blocked that login?", o:["Requiring MFA on the VPN","Encrypting the customer database","Adding more bandwidth"], k:0,
+   w:"A second factor stops a stolen password from being enough on its own. Encryption wouldn't help once a valid user is logged in."}
+ ],
+ recap:["CIA: confidentiality, integrity, availability.","Risk = likelihood and impact of a threat exploiting a vulnerability.","Authenticate, authorise, account. Least privilege limits damage.","Phishing-resistant MFA, patching, backups and hardening work together."]},
+/* ---------------- WEEK 2: Networking ---------------- */
+{t:"IP and MAC addresses",
+ sub:"Two addresses, two different jobs.",
+ learn:[
+  ["Two addresses, two jobs","Every Ethernet or Wi-Fi interface has a MAC address and usually at least one IP address. The MAC delivers frames on the local network. The IP gets packets across networks. Switches care about MACs; routers care about IPs."],
+  ["MAC addresses","A MAC address is 48 bits, written as six pairs of hex like 08:00:27:3a:5b:7c. The first half usually identifies the manufacturer. `08:00:27` is VirtualBox's prefix, which is handy for spotting VMs."],
+  ["IPv4","An IPv4 address is 32 bits, written as four numbers from 0 to 255, like 192.168.1.50. There are only about 4.3 billion of them. That shortage is why private ranges and NAT exist."],
+  ["Private ranges and NAT","10.0.0.0/8, 172.16.0.0/12 and 192.168.0.0/16 are private and aren't routed on the internet. Your router uses NAT to share one public address among many private devices. 127.0.0.1 is loopback: a machine talking to itself."],
+  ["IPv6","IPv6 addresses are 128 bits, written in hex like 2001:db8::1. There are enough for every device to have a global address. Many networks run IPv4 and IPv6 side by side, so check both when you write firewall rules."],
+  ["ARP joins them up","To reach an IP on the local network, a device broadcasts an ARP request: who has 10.10.10.20? The owner replies with its MAC. ARP has no authentication, which is why ARP spoofing works."]
+ ],
+ real:["MAC randomisation","Modern Android and iOS phones use a different random MAC address for each Wi-Fi network by default. It stops shops and venues tracking you between locations. It also shows why a MAC allow-list on Wi-Fi is weak: MACs change easily."],
+ myth:["A MAC address proves which device is connecting.","MACs can be changed in software in seconds, and phones randomise them anyway. For real device identity, use certificates or 802.1X, not MAC filtering."],
+ tryit:{h:"Address your lab", where:"Kali and Windows, both on internal network labnet",
+  p:"Internal networks have no DHCP server by default, so Windows shows a self-assigned 169.254.x.x address until you set one. Even if Windows blocks the ping, ARP learns its MAC.",
+  code:`# Kali
+sudo ip addr add 10.10.10.10/24 dev eth0   # lasts until reboot; nmtui makes it permanent
+ip a
+
+# Windows PowerShell (admin)
+New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 10.10.10.20 -PrefixLength 24
+ipconfig /all
+
+# Back on Kali
+ping -c 2 10.10.10.20
+ip neigh`},
+ quiz:[
+  {d:1, q:"Which address do routers use to move packets between networks?", o:["MAC address","IP address","Port number"], k:1,
+   w:"IP addresses are routable across networks. MAC addresses only matter on the local segment."},
+  {d:3, q:"Which of these is a private IPv4 address?", o:["172.20.5.4","172.32.5.4","8.8.8.8"], k:0,
+   w:"The private range 172.16.0.0/12 runs from 172.16.0.0 to 172.31.255.255. 172.32.5.4 sits just outside it."},
+  {d:2, q:"What does ARP do?", o:["Finds the MAC address for an IP on the local network","Finds the IP address for a domain name","Hands out IP addresses"], k:0,
+   w:"ARP maps IP to MAC locally. DNS maps names to IPs, and DHCP hands out addresses."},
+  {d:2, q:"A Wi-Fi network only lets listed MAC addresses join. Why is that weak?", o:["MACs can be copied or changed in software","MACs change every hour on their own","Routers can't read MAC addresses"], k:0,
+   w:"An attacker can sniff an allowed MAC and copy it. MAC filtering keeps out honest people, not attackers."}
+ ],
+ recap:["MAC: 48-bit, local delivery, easy to change.","IPv4: 32-bit and routable. IPv6: 128-bit.","Private ranges plus NAT share one public address.","ARP maps IP to MAC, with no authentication."]},
+
+{t:"Subnets and segmentation",
+ sub:"Smaller networks, smaller blast radius.",
+ learn:[
+  ["What a subnet is","A subnet is a smaller network carved out of a bigger one. Devices in the same subnet talk directly. Traffic to another subnet goes through a router, which is a natural place to filter it."],
+  ["CIDR notation","The number after the slash is how many bits belong to the network. 192.168.1.0/24 fixes the first 24 bits and leaves 8 bits for hosts: 256 addresses. The mask 255.255.255.0 means the same thing."],
+  ["Usable hosts","Normally each IPv4 subnet reserves two addresses: the network address (host bits all 0) and the broadcast address (host bits all 1). So a /24 has 254 usable hosts, and a /26 has 64 addresses with 62 usable."],
+  ["The halving trick","Each extra bit in the prefix halves the subnet. A /24 is 256 addresses, /25 is 128, /26 is 64 and /27 is 32. Split a /24 into /26s and you get four subnets."],
+  ["Segmentation","Segmentation splits a network into zones using VLANs, routers and firewalls. Staff, servers, guests, printers and cameras each get their own zone. Rules between zones allow only what's needed."],
+  ["Stopping lateral movement","Once inside, attackers move sideways looking for valuable systems. That's lateral movement. Segmentation makes each hop harder and noisier, which gives defenders more chances to catch them."]
+ ],
+ real:["Target, 2013","Attackers stole network credentials from Target's heating and air-conditioning contractor and used them to get in. From there they reached the point-of-sale systems and stole about 40 million card numbers. Stronger segmentation between vendor access and payment systems could have blocked that path."],
+ myth:["A strong firewall at the edge means the inside can be flat.","Phishing and stolen credentials put attackers inside the edge. On a flat network they can reach everything. Internal segmentation limits how far they get."],
+ tryit:{h:"Subnet with Python", where:"Kali or any machine with Python 3",
+  p:"Python's built-in `ipaddress` module does the maths for you. Run this, then change `new_prefix=26` to `new_prefix=27` and predict the output before running it again.",
+  code:`import ipaddress
+net = ipaddress.ip_network("192.168.1.0/24")
+print(net.num_addresses, len(list(net.hosts())))
+for sub in net.subnets(new_prefix=26):
+    print(sub, "broadcast", sub.broadcast_address)
+print(ipaddress.ip_address("192.168.1.77") in net)`},
+ quiz:[
+  {d:1, q:"How many usable host addresses does a /24 IPv4 subnet have?", o:["254","256","512"], k:0,
+   w:"A /24 has 256 addresses. The network address and the broadcast address are reserved, leaving 254 for hosts."},
+  {d:2, q:"How many /26 subnets fit in a /24?", o:["4","2","8"], k:0,
+   w:"Two extra prefix bits give 2 × 2 = 4 subnets of 64 addresses each."},
+  {d:3, q:"What's the broadcast address of 192.168.1.0/26?", o:["192.168.1.63","192.168.1.64","192.168.1.255"], k:0,
+   w:"A /26 holds 64 addresses, .0 to .63. The last one, .63, is the broadcast. .64 starts the next subnet."},
+  {d:2, q:"Your lab VMs share a flat home network with your family's laptops. What's the risk?", o:["A vulnerable or compromised lab VM can reach the household devices","None, because VMs are always isolated","The lab will just run slower"], k:0,
+   w:"Keep the lab on its own segment, such as a VirtualBox internal or host-only network, so lab mistakes stay in the lab."}
+ ],
+ recap:["CIDR: the slash number is the network bits.","Usable hosts = addresses minus 2. A /24 has 254.","Each extra prefix bit halves the subnet.","Segmentation limits lateral movement."]},
+
+{t:"TCP vs UDP",
+ sub:"Reliable or fast: the transport layer choice.",
+ learn:[
+  ["The transport layer","TCP and UDP work at Layer 4, the transport layer. They carry data between applications using port numbers. An app picks one based on whether it needs reliability or speed."],
+  ["The TCP handshake","TCP opens a connection with a three-way handshake: SYN, SYN-ACK, ACK. Only then does data flow. Port scanners take advantage of this handshake, as you'll see in Week 4."],
+  ["TCP is reliable","TCP numbers the data, confirms delivery and resends anything lost, so it arrives complete and in order. It closes politely with FIN or abruptly with RST. HTTPS, SSH, email and (mainly) RDP use TCP."],
+  ["UDP is lightweight","UDP just sends datagrams: no handshake, no delivery guarantee, very little overhead. DNS lookups, DHCP, live video, voice calls and games use it. A late packet is useless in a voice call anyway."],
+  ["QUIC","QUIC builds reliability and TLS 1.3 encryption on top of UDP. It carries HTTP/3, so a lot of web traffic is now UDP on port 443. Firewall rules that only think about TCP 443 can miss it."],
+  ["Why UDP gets abused","With no handshake, a UDP packet's source address is easy to fake. Attackers send small requests with a victim's address to servers that reply with much bigger answers. That's an amplification attack."]
+ ],
+ real:["GitHub, 2018","In February 2018 GitHub was hit by a 1.35 Tbps DDoS, a record at the time. Attackers sent spoofed UDP requests to exposed memcached servers, which sent much larger replies to GitHub. GitHub routed traffic to its DDoS protection provider and was back within about 10 minutes."],
+ myth:["TCP is secure and UDP is insecure.","Neither one encrypts anything. Security comes from what runs on top, like TLS over TCP or QUIC over UDP. TCP is reliable, not private."],
+ tryit:{h:"Watch a handshake", where:"Kali: two terminals and Wireshark",
+  p:"Capture on `lo` in Wireshark with the display filter `tcp.port == 4444 || udp.port == 5555`. TCP shows a handshake before your data; UDP doesn't.",
+  code:`# Terminal 1: TCP listener
+nc -lvnp 4444
+# Terminal 2: connect, type hello, then Ctrl+C
+nc 127.0.0.1 4444
+
+# UDP version: no handshake this time
+nc -u -lvnp 5555
+nc -u 127.0.0.1 5555`},
+ quiz:[
+  {d:1, q:"What is the correct order of the TCP handshake?", o:["SYN, ACK, SYN-ACK","SYN, SYN-ACK, ACK","ACK, SYN, FIN"], k:1,
+   w:"The client sends SYN, the server replies SYN-ACK, and the client confirms with ACK."},
+  {d:2, q:"HTTP/3 traffic travels over which transport?", o:["UDP, using QUIC","TCP","ICMP"], k:0,
+   w:"HTTP/3 runs on QUIC, which runs on UDP, usually on port 443."},
+  {d:3, q:"Why are UDP services popular for amplification attacks?", o:["With no handshake, the source address is easy to spoof","UDP packets are always encrypted","UDP always uses port 80"], k:0,
+   w:"The attacker fakes the victim's address as the source, so the large replies all land on the victim."},
+  {d:2, q:"What does a TCP RST packet do?", o:["Abruptly ends or refuses a connection","Starts a new handshake","Asks for lost data to be resent"], k:0,
+   w:"RST resets the connection. A closed port answers a SYN with RST, which is how scanners tell closed from filtered."}
+ ],
+ recap:["TCP: handshake, reliable, ordered.","UDP: no handshake, fast, easy to spoof.","QUIC carries HTTP/3 over UDP 443.","Neither TCP nor UDP encrypts on its own."]},
+
+{t:"Ports and services",
+ sub:"Which door is the traffic knocking on?",
+ learn:[
+  ["What a port is","An IP address gets traffic to a host. A port number, from 0 to 65535, gets it to the right service on that host. An IP address and port together are often called a socket."],
+  ["Ports to know by heart","21 FTP, 22 SSH, 23 Telnet, 25 SMTP, 53 DNS, 80 HTTP, 110 POP3, 143 IMAP, 443 HTTPS, 445 SMB, 3389 RDP. Services can run on any port, though, so confirm what's really there with a version scan."],
+  ["Port ranges","0 to 1023 are well-known ports for common services. 1024 to 49151 are registered ports for specific apps. 49152 to 65535 are dynamic ports for the client side of a connection. Linux actually uses 32768 to 60999, so treat ranges as a guide."],
+  ["Open, closed, filtered","Open: a service is listening. Closed: the host answered, but nothing is listening. Filtered: no useful answer, usually because a firewall dropped the probe. Nmap reports these states."],
+  ["Open isn't vulnerable","An open port only means a service is listening. It becomes a vulnerability if that service is unpatched, misconfigured or shouldn't be exposed at all, like RDP open to the internet."],
+  ["Cleartext protocols","Telnet, FTP and plain HTTP send everything unencrypted, passwords included. Replace them with SSH, SFTP and HTTPS. In Week 4 you'll watch a cleartext request in Wireshark."]
+ ],
+ real:["Exposed RDP","Remote Desktop open to the internet on port 3389 is one of the most common ways ransomware gangs get in, by guessing or reusing passwords. In 2019 Microsoft patched BlueKeep, a flaw that let attackers take over unpatched older RDP servers without logging in. Put RDP behind a VPN or gateway with MFA."],
+ myth:["An open port is a vulnerability.","It means something is listening. Whether it's a problem depends on what's running, its version, how it's configured and who can reach it."],
+ tryit:{h:"List what's listening", where:"Kali and Windows target",
+  p:"List listening ports on both VMs. Then test one port from Kali with Python: 0 means open, any other number means closed or filtered.",
+  code:`# Kali
+sudo ss -tulpn
+
+# Windows PowerShell
+Get-NetTCPConnection -State Listen | Sort-Object LocalPort
+
+# Kali: test one port on Windows
+python3 -c "import socket; s=socket.socket(); s.settimeout(1); print(s.connect_ex(('10.10.10.20', 445)))"`},
+ quiz:[
+  {d:1, q:"A scan finds port 443 open on a web server. What does that tell you?", o:["The server is vulnerable","A service, probably HTTPS, is listening","The server has been compromised"], k:1,
+   w:"Open isn't the same as vulnerable. Next you'd check what's running, its version and how it's configured."},
+  {d:2, q:"Nmap gets no reply at all from a TCP port. Which state will it usually report?", o:["Filtered","Closed","Open"], k:0,
+   w:"Closed ports answer with RST. Silence usually means a firewall dropped the probe."},
+  {d:1, q:"Which of these sends passwords in cleartext?", o:["Telnet","SSH","HTTPS"], k:0,
+   w:"Telnet has no encryption at all. SSH was built to replace it."},
+  {d:3, q:"Port 22 is open on an internal Linux server. What's the best next step?", o:["Check the SSH version, its configuration and who can reach it","Report it as a critical vulnerability","Close it straight away without asking"], k:0,
+   w:"SSH may be exactly what admins need. Assess it first: version, password or key login, root login, and network exposure."}
+ ],
+ recap:["A port points traffic to a service on a host.","Know 22, 25, 53, 80, 443, 445 and 3389 cold.","Open, closed and filtered mean different things.","Open isn't vulnerable on its own. Replace cleartext protocols."]},
+
+{t:"DNS and DHCP",
+ sub:"The quiet services every connection depends on.",
+ learn:[
+  ["What DNS does","DNS turns names like example.com into IP addresses. It uses port 53: UDP for most lookups, TCP for large answers and zone transfers. Almost every connection starts with a lookup, so DNS logs are gold for investigators."],
+  ["How a lookup works","Your device asks a recursive resolver. If it hasn't cached the answer, the resolver asks a root server, then the top-level domain server (.com, .nz), then the domain's authoritative server. Answers are cached for their TTL."],
+  ["Record types","A maps a name to an IPv4 address and AAAA to IPv6. CNAME is an alias, MX names mail servers, NS names the authoritative servers, and TXT holds text such as SPF and DMARC policies."],
+  ["What DHCP does","When a device joins a network, DHCP hands it an IP address, subnet mask, default gateway and DNS server. The four steps are Discover, Offer, Request, Acknowledge, or DORA. It runs on UDP ports 67 and 68, and addresses are leased, not owned."],
+  ["Attacks on DNS","Cache poisoning tricks a resolver into storing a fake answer. Hijacking changes the real records, often through a stolen registrar login. DNSSEC lets resolvers check that answers were signed by the domain owner."],
+  ["Attacks on DHCP","A rogue DHCP server can hand out a malicious gateway or DNS server and put itself on-path. DHCP starvation uses up the address pool. Switches with DHCP snooping only trust DHCP replies from approved ports."]
+ ],
+ real:["The Kaminsky bug, 2008","In 2008 researcher Dan Kaminsky found a way to poison DNS resolver caches far faster than anyone thought possible. Vendors shipped a coordinated fix that randomised source ports, making fake answers much harder to guess. The scare gave DNSSEC a big push."],
+ myth:["DNS is just a phone book, so it isn't a security concern.","Attackers poison and hijack DNS, and use it to hide command-and-control traffic and sneak data out. DNS logs are one of the cheapest ways to spot malware."],
+ tryit:{h:"Follow a lookup", where:"Your host machine (needs internet)",
+  p:"Your lab network is internal and has no DNS or DHCP, which is why you set static IPs on Day 8. So do this on your host. Watch the chain from the root down (some work networks block it), then look up mail and TXT records.",
+  code:`# Linux, macOS or WSL
+dig +trace example.com
+dig gmail.com MX +short
+dig gmail.com TXT +short
+
+# Windows
+nslookup -type=MX gmail.com
+ipconfig /displaydns`},
+ quiz:[
+  {d:1, q:"Your laptop joins Wi-Fi and gets an IP address automatically. Which service did that?", o:["DNS","DHCP","NAT"], k:1,
+   w:"DHCP leases addresses and network settings. DNS only resolves names."},
+  {d:2, q:"In what order does DHCP work?", o:["Discover, Offer, Request, Acknowledge","Request, Offer, Discover, Acknowledge","Offer, Discover, Acknowledge, Request"], k:0,
+   w:"DORA: the client discovers, a server offers, the client requests, the server acknowledges."},
+  {d:3, q:"Guest Wi-Fi users are being sent to fake banking sites. Their devices show a default gateway and DNS server nobody recognises. What's the likely cause?", o:["A rogue DHCP server","An expired TLS certificate","DNSSEC being turned on"], k:0,
+   w:"A rogue DHCP server hands out its own gateway and DNS settings, putting the attacker on-path. DHCP snooping on the switches helps prevent it."},
+  {d:2, q:"What does DNSSEC add to DNS?", o:["Signatures so resolvers can verify answers","Encryption of every DNS query","Faster lookups"], k:0,
+   w:"DNSSEC proves answers are authentic. It doesn't hide queries; DNS over HTTPS or TLS does that."}
+ ],
+ recap:["DNS: names to IPs, via resolver, root, TLD and authoritative servers.","Know A, AAAA, CNAME, MX, NS and TXT.","DHCP: Discover, Offer, Request, Acknowledge.","Poisoning, hijacking and rogue DHCP are the classic attacks."]},
+
+{t:"HTTPS and TLS",
+ sub:"What the padlock really promises.",
+ learn:[
+  ["HTTP vs HTTPS","HTTP on port 80 sends everything in plaintext, so anyone on the path can read or change it. HTTPS on port 443 wraps HTTP in TLS. Same web pages, protected in transit."],
+  ["What TLS gives you","Confidentiality: the traffic is encrypted. Integrity: tampering is detected. Authentication: the server proves its identity with a certificate. It only protects data in transit, not data once it's stored."],
+  ["Certificates","A certificate binds a domain name to a public key, signed by a certificate authority (CA) your device trusts. Your browser checks the name matches, the dates are valid and the chain leads to a trusted root."],
+  ["The handshake, simply","Client and server agree on a TLS version and cipher, the server sends its certificate, and they agree fresh session keys. Then HTTP flows inside the encrypted tunnel. TLS 1.3 does this in one round trip."],
+  ["Versions","Use TLS 1.2 or 1.3. SSL 2.0, SSL 3.0, TLS 1.0 and TLS 1.1 are deprecated and should be turned off. Old versions have known attacks, like POODLE against SSL 3.0."],
+  ["What the padlock means","The padlock (Chrome now shows a settings-style icon instead) means your connection to that domain is encrypted and the certificate is valid for it. It doesn't mean the site is honest. Phishing sites use HTTPS too."]
+ ],
+ real:["DigiNotar, 2011","In 2011 attackers broke into DigiNotar, a Dutch certificate authority, and issued a fake google.com certificate used to spy on Gmail users in Iran. Browsers dropped DigiNotar and it went bankrupt within weeks. Today, Certificate Transparency logs make fakes like this far easier to spot."],
+ myth:["The padlock means a site is safe.","It only means the connection is encrypted to whoever controls that domain. A phishing site can get a valid certificate in minutes, for free."],
+ tryit:{h:"Inspect a real certificate", where:"Your host machine with Python 3 (needs internet)",
+  p:"Print the TLS version and certificate expiry for a site. Then click the padlock or site-info icon in your address bar and compare.",
+  code:`import socket, ssl
+host = "example.com"
+ctx = ssl.create_default_context()
+with socket.create_connection((host, 443)) as s:
+    with ctx.wrap_socket(s, server_hostname=host) as t:
+        print(t.version())
+        print(t.getpeercert()["notAfter"])`},
+ quiz:[
+  {d:1, q:"A phishing site shows a valid padlock. What does the padlock prove?", o:["The site is safe","The connection to that domain is encrypted","The site is run by a real company"], k:1,
+   w:"TLS proves you're talking to whoever controls that domain over an encrypted link. It says nothing about their intentions."},
+  {d:2, q:"Which TLS versions should a server allow today?", o:["TLS 1.2 and 1.3","SSL 3.0 and TLS 1.0","Every version, for compatibility"], k:0,
+   w:"Older versions have known weaknesses and are deprecated. Allowing them lets attackers try to downgrade connections."},
+  {d:3, q:"Your browser warns that a certificate doesn't match the site's name. What could it mean?", o:["A misconfiguration, or someone intercepting the connection","The site is using TLS 1.3","Nothing, it's fine to click through"], k:0,
+   w:"Often it's a mistake, but it's exactly what an on-path attacker would cause. Don't click through on a site where you enter credentials."},
+  {d:2, q:"HTTPS protects data in transit. What doesn't it protect?", o:["Data once it's stored on the server","Your password as it crosses the network","Page contents from a Wi-Fi snooper"], k:0,
+   w:"TLS ends at the server. Stored data needs its own controls, like access control and encryption at rest."}
+ ],
+ recap:["HTTPS = HTTP inside TLS on port 443.","TLS gives confidentiality, integrity and server authentication in transit.","Allow only TLS 1.2 and 1.3.","The padlock means encrypted, not trustworthy."]},
+
+{t:"Firewalls and Week 2 review",
+ sub:"Firewalls, then the whole week pulled together.",
+ learn:[
+  ["What a firewall does","A firewall allows or blocks traffic based on rules, usually checked in order with the first match winning. Windows Defender Firewall is different: there, block rules beat allow rules."],
+  ["Network vs host firewalls","Network firewalls sit between segments and protect everything behind them. Host firewalls, like Windows Defender Firewall, protect one machine, even on a hostile network. Use both."],
+  ["Packet filter vs stateful","A packet filter checks each packet's header: source and destination IP, port and protocol. A stateful firewall also tracks connections, so replies to traffic you started are let back in automatically."],
+  ["NGFWs and WAFs","Next-generation firewalls can also identify applications and users and inspect content. A web application firewall (WAF) sits in front of a web app and filters HTTP requests for attacks like SQL injection."],
+  ["Default deny, both ways","Good practice is default deny: block everything, then allow only what's needed. Ingress rules filter what comes in. Egress rules filter what goes out, which can stop malware calling home."]
+ ],
+ real:["Capital One, 2019","An attacker abused a misconfigured web application firewall in Capital One's AWS environment. A server-side request forgery flaw let them obtain cloud credentials and copy data on about 100 million people in the US and 6 million in Canada. The firewall itself became the way in."],
+ myth:["A firewall stops all attacks.","It filters traffic by rules. Phishing, stolen credentials and attacks over allowed ports like 443 pass straight through. It's one layer, not the whole defence."],
+ tryit:{h:"Write a firewall rule", where:"Windows target, then Kali",
+  p:"Inbound `NotConfigured` means the default, Block. Allow ping from the lab subnet only.",
+  code:`# Kali: expect this to fail first
+ping -c 3 10.10.10.20
+
+# Windows PowerShell (admin)
+Get-NetFirewallProfile | Format-Table Name, Enabled, DefaultInboundAction
+New-NetFirewallRule -DisplayName "Lab ping" -Direction Inbound -Protocol ICMPv4 -IcmpType 8 -RemoteAddress 10.10.10.0/24 -Action Allow
+
+# Kali: try again
+ping -c 3 10.10.10.20`},
+ review:[
+  ["Addresses","MAC: 48-bit, local delivery, easy to change. IPv4: 32-bit and routable. IPv6: 128-bit. ARP links an IP to a MAC on the local network."],
+  ["Subnets","A /24 has 256 addresses and 254 usable. Each extra prefix bit halves it. Segmentation with VLANs and firewalls limits lateral movement."],
+  ["TCP and UDP","TCP: handshake, reliable, ordered. UDP: no handshake, fast, easy to spoof. Neither encrypts. QUIC carries HTTP/3 over UDP 443."],
+  ["Ports","22 SSH, 53 DNS, 80 HTTP, 443 HTTPS, 445 SMB, 3389 RDP. Open means listening, not vulnerable. Filtered usually means a firewall dropped the probe."],
+  ["DNS and TLS","DNS: poisoning, hijacking and rogue DHCP are the classic attacks, and DNSSEC signs answers. TLS: allow only 1.2 and 1.3. The padlock means encrypted, not trustworthy."],
+  ["Laptop to website, part 1","The laptop joins Wi-Fi and DHCP gives it an IP, gateway and DNS server. ARP finds the gateway's MAC so packets can leave the local network. Then it asks DNS for the site's address."],
+  ["Laptop to website, part 2","The laptop opens TCP to port 443: SYN, SYN-ACK, ACK. TLS checks the certificate and agrees session keys. HTTP then flows inside the encrypted tunnel. With HTTP/3, QUIC over UDP replaces the TCP step."]
+ ],
+ quiz:[
+  {d:1, q:"What does a default-deny inbound policy mean?", o:["Everything is allowed unless blocked","Everything is blocked unless a rule allows it","Only port 22 is blocked"], k:1,
+   w:"Default deny keeps exposure to a minimum: only traffic you've explicitly approved gets in."},
+  {d:2, q:"A stateful firewall lets the reply to your web request back in without an inbound rule. Why?", o:["It tracks the connection you started","It allows all inbound traffic on 443","Replies are never filtered"], k:0,
+   w:"The firewall remembers the outbound connection and allows matching return traffic. Unsolicited inbound traffic is still blocked."},
+  {d:2, q:"A laptop joins new Wi-Fi and opens a website. Which happens first?", o:["DHCP gives it an IP address","The TLS handshake","The TCP handshake to port 443"], k:0,
+   w:"Nothing else can happen until the laptop has an address. Then ARP and DNS, then TCP, then TLS."},
+  {d:2, q:"Which would a web application firewall most likely block?", o:["A SQL injection attempt in a form field","A phishing email","A stolen laptop"], k:0,
+   w:"A WAF inspects HTTP requests to a web app. Email and physical theft need other controls."},
+  {d:3, q:"Malware on a laptop tries to connect out to an unknown server on port 8443. Which control could stop it?", o:["Egress filtering","Ingress filtering only","A longer Wi-Fi password"], k:0,
+   w:"Egress rules control outbound traffic. Default-deny egress with an allow-list would block an unknown destination."},
+  {d:2, q:"Which DNS feature lets a resolver check that an answer really came from the domain owner?", o:["DNSSEC","DHCP snooping","A CNAME record"], k:0,
+   w:"DNSSEC adds signatures to DNS answers. DHCP snooping protects DHCP, and a CNAME is just an alias."},
+  {d:2, q:"How many usable hosts are in a /25?", o:["126","128","254"], k:0,
+   w:"A /25 has 128 addresses. Take off the network and broadcast addresses and 126 are usable."},
+  {d:3, q:"Which pairing is correct?", o:["ARP maps an IP to a MAC; DNS maps a name to an IP","ARP maps a name to an IP; DNS maps an IP to a MAC","DHCP maps a name to a MAC; ARP hands out addresses"], k:0,
+   w:"ARP works locally between IP and MAC. DNS turns names into IPs. DHCP hands out addresses."}
+ ],
+ recap:["Firewalls filter by rules. Stateful ones track connections.","Default deny for inbound, and filter outbound too.","A WAF protects web apps. No firewall stops phishing.","You can now trace a laptop to a website: DHCP, ARP, DNS, TCP, TLS."]},
+/* ---------------- WEEK 3: Operating systems and crypto ---------------- */
+{t:"Windows vs Linux",
+ sub:"Same ideas, different places to look.",
+ learn:[
+  ["Two families","Most servers run Linux and most office desktops run Windows. In a security role you'll work on both. The ideas are the same; the tools and file locations differ."],
+  ["Windows: the Registry","Windows keeps much of its configuration in the Registry. HKLM holds machine-wide settings and HKCU the current user's. Run keys launch programs at logon, so malware loves them, along with scheduled tasks."],
+  ["Windows in organisations","Organisations manage Windows centrally. Active Directory holds users, groups and computers, and Group Policy pushes settings to them. Microsoft Entra ID is the cloud identity service, often used alongside AD."],
+  ["Linux: everything is a file","Linux treats almost everything as a file, even devices. System configuration is plain text under /etc, and users' files live under /home. Root is the all-powerful account."],
+  ["Distributions","A Linux distribution bundles the kernel with tools. Debian and Ubuntu use apt; Red Hat, Rocky and Fedora use dnf. Kali is Debian-based and packed with security testing tools."],
+  ["Where the logs are","Windows: Event Viewer, with Security, System and Application logs. Linux: text logs under /var/log, or the systemd journal, read with journalctl. On Kali, use journalctl: /var/log/auth.log may not exist unless rsyslog is installed."]
+ ],
+ real:["WannaCry, 2017","In March 2017 Microsoft patched an SMBv1 flaw (MS17-010). In May, WannaCry ransomware used the EternalBlue exploit to spread between unpatched Windows machines. It hit around 200,000 computers in about 150 countries, and the UK's NHS cancelled appointments and operations."],
+ myth:["Linux can't get malware.","Linux servers are prime targets for cryptominers, botnets and ransomware. Weak SSH passwords and unpatched web apps are common ways in."],
+ tryit:{h:"Same question, two systems", where:"Kali, then Windows target",
+  p:"Find the OS version and what starts automatically on each machine.",
+  code:`# Kali
+cat /etc/os-release
+systemctl list-unit-files --state=enabled
+
+# Windows Command Prompt
+systeminfo | findstr /B /C:"OS Name" /C:"OS Version"
+reg query HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
+reg query HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run`},
+ quiz:[
+  {d:1, q:"Where does Linux usually keep system configuration files?", o:["/etc","/home","The Registry"], k:0,
+   w:"/etc holds system-wide configuration. The Registry only exists on Windows."},
+  {d:2, q:"Which Registry location is a classic place for malware to persist?", o:["A Run key, which starts programs at logon","The desktop wallpaper setting","The keyboard layout setting"], k:0,
+   w:"Anything listed in a Run key starts every time someone logs on. Check these during any investigation."},
+  {d:2, q:"What pushes security settings to thousands of domain-joined Windows PCs?", o:["Group Policy","Event Viewer","Task Manager"], k:0,
+   w:"Group Policy applies settings from Active Directory to users and computers."},
+  {d:1, q:"Which package manager does Kali use?", o:["apt","dnf","winget"], k:0,
+   w:"Kali is Debian-based, so it uses apt. dnf is the Red Hat family's; winget is Windows."}
+ ],
+ recap:["Windows: Registry, Event Viewer, Active Directory, Group Policy.","Linux: text config in /etc, logs in /var/log or the journal.","Run keys are a classic persistence spot.","Linux gets malware too: patch it and harden SSH."]},
+
+{t:"Users and permissions",
+ sub:"Who can read, write and run what.",
+ learn:[
+  ["Accounts","Every process runs as some account, and that account's permissions limit what it can do. Linux has root (user ID 0) and normal users. Windows has Administrators and standard users. Service accounts run background software."],
+  ["Reading rwx","Linux permissions are set for owner, group and others: r (read), w (write), x (execute). rwxr-xr-- means the owner can do everything, the group can read and execute, and others can only read."],
+  ["Octal shorthand","Each rwx set is a number: r is 4, w is 2, x is 1, added up. So 7 is rwx, 6 is rw-, 5 is r-x and 4 is r--. `chmod 640 file` gives rw-r-----."],
+  ["Changing them","`chmod` changes permissions, `chown` changes the owner, and `sudo` runs one command as root. `sudo -l` lists what you're allowed to run as root. On Debian-based systems like Kali, /etc/shadow, which holds password hashes, is readable only by root and the shadow group."],
+  ["Windows ACLs and UAC","Windows uses access control lists (ACLs) on files and other objects, saying who gets which rights. User Account Control (UAC) runs admins with standard rights until they approve elevation. Use a standard account day to day."],
+  ["SUID","A file with the SUID bit runs as its owner, not as you. `passwd` needs it to update /etc/shadow. A root-owned SUID program that can run commands is a classic way to escalate privileges."]
+ ],
+ real:["Baron Samedit, 2021","In January 2021 researchers at Qualys disclosed Baron Samedit, a bug in sudo that had gone unnoticed for nearly 10 years. Any local user could exploit it to become root, even without being listed in sudoers. Patching privilege tools like sudo matters as much as patching servers."],
+ myth:["Using an admin account every day is fine if you're careful.","Anything you run, including malware from one bad click, gets your rights. A standard account limits the damage. Elevate only when you need to."],
+ tryit:{h:"Read real permissions", where:"Kali, then Windows target",
+  p:"Compare /etc/passwd with /etc/shadow, make a private file, then list SUID programs. On Windows, `icacls` shows an ACL.",
+  code:`# Kali
+ls -l /etc/passwd /etc/shadow
+touch private.txt && chmod 600 private.txt && ls -l private.txt
+find / -perm -4000 -type f 2>/dev/null
+
+# Windows Command Prompt
+icacls C:\\Users\\Public`},
+ quiz:[
+  {d:1, q:"A file shows rw-r-----. What can “others” do?", o:["Read","Read and write","Nothing"], k:2,
+   w:"The last three characters are for others, and --- means no access."},
+  {d:2, q:"What does `chmod 750` set?", o:["rwxr-x---","rwxrwx---","rw-r-x---"], k:0,
+   w:"7 is rwx for the owner, 5 is r-x for the group, 0 is nothing for others."},
+  {d:2, q:"Why isn't /etc/shadow readable by everyone?", o:["It holds password hashes that could be cracked offline","It's too large to open","It contains the kernel"], k:0,
+   w:"Anyone who copies the hashes can try to crack them at leisure. /etc/passwd is world-readable, but it no longer holds the hashes."},
+  {d:3, q:"You find a root-owned SUID program that can run shell commands. Why is that dangerous?", o:["Any user could run commands as root through it","It slows down the boot process","It isn't, SUID only affects the file's owner"], k:0,
+   w:"SUID runs the program with its owner's rights. If it can launch commands, those commands run as root too."}
+ ],
+ recap:["rwx for owner, group and others. r=4, w=2, x=1.","chmod, chown and sudo are the core tools.","Windows uses ACLs and UAC.","Use standard accounts, and watch for risky SUID programs."]},
+
+{t:"Processes and services",
+ sub:"What's running, and should it be?",
+ learn:[
+  ["Processes","A process is a running program with a process ID (PID). Each one runs as a user and has a parent process that started it. Parent and child links are a key clue in investigations."],
+  ["Services and daemons","A service runs in the background without anyone logged in. On Linux it's called a daemon, and systemd manages most of them. Many listen on a port, like sshd or a web server."],
+  ["Linux tools","`ps aux` lists processes, `top` shows them live, and `systemctl status ssh` checks the SSH service (it's called sshd on Red Hat systems). `sudo ss -tulpn` ties listening ports to processes."],
+  ["Windows tools","Task Manager and `Get-Process` show processes. `Get-Service` and services.msc show services. Process Explorer, from Microsoft's free Sysinternals suite, shows parent and child processes and file paths."],
+  ["Spotting the odd one out","Warning signs: a familiar name in the wrong folder, an odd parent (Word starting PowerShell), a service nobody installed, or an unknown program listening on a port. You need to know normal first."]
+ ],
+ real:["SolarWinds, 2020","Attackers slipped malicious code into updates of SolarWinds Orion, a trusted IT monitoring tool, and up to 18,000 customers installed them. The backdoor ran inside Orion's own legitimate process, so it looked normal. It was discovered in December 2020, months after the first tainted update shipped."],
+ myth:["A process with a familiar name like svchost.exe is legitimate.","Malware often borrows trusted names. Check the file path, the signer, the parent process and the user it runs as. The real svchost.exe lives in C:\\Windows\\System32 (or SysWOW64 for 32-bit copies)."],
+ tryit:{h:"Map what's running", where:"Kali, then Windows target",
+  p:"List the busiest processes and running services. On Windows, run PowerShell as administrator to see each process's parent and path, and look for anything outside the usual folders.",
+  code:`# Kali
+ps aux --sort=-%cpu | head
+systemctl list-units --type=service --state=running
+
+# Windows PowerShell
+Get-CimInstance Win32_Process |
+  Select-Object ProcessId, ParentProcessId, Name, ExecutablePath`},
+ quiz:[
+  {d:1, q:"Which command checks whether the SSH service is running on Kali?", o:["systemctl status ssh","chmod ssh","ping ssh"], k:0,
+   w:"systemctl manages and reports on services. On Debian, Ubuntu and Kali the unit is ssh; on Red Hat systems it's sshd."},
+  {d:2, q:"Microsoft Word starts PowerShell, which then downloads a file. Why is that suspicious?", o:["Office apps rarely need to start PowerShell; it's a common malicious macro pattern","PowerShell is malware","Word can never start other processes"], k:0,
+   w:"PowerShell is a legitimate tool, but Word as its parent is a classic sign of a malicious document."},
+  {d:2, q:"A process named svchost.exe is running from C:\\Users\\Public. What do you conclude?", o:["It's suspicious, because the real one runs from System32","It's normal Windows behaviour","It's a Linux daemon"], k:0,
+   w:"The name is borrowed. The path gives it away. Record the details and escalate."},
+  {d:1, q:"On Linux, what is a daemon?", o:["A background service","A type of virus","The root password"], k:0,
+   w:"Daemons are background services, often ending in d, like sshd or crond."}
+ ],
+ recap:["Process: a running program with a PID, a user and a parent.","Service or daemon: runs in the background, often on a port.","Check path, parent, signer and user, not just the name.","Know your normal so the odd one stands out."]},
+
+{t:"The command line",
+ sub:"Faster, scriptable and where the tools live.",
+ learn:[
+  ["Why the command line","A GUI is fine for one machine. The command line is faster, works over SSH and can be scripted across hundreds of machines. Most security tools are command-line first."],
+  ["Linux essentials","`ls -la` lists files, including hidden ones. `cd` moves around, `cat` prints a file, `less` pages through it and `grep` finds matching lines. `ip a` shows addresses and `ss -tulpn` shows listening ports."],
+  ["Windows essentials","`ipconfig /all` shows network settings. `ping` and `tracert` test reachability, `nslookup` queries DNS and `netstat -ano` lists connections with process IDs."],
+  ["Pipes","A pipe sends one command's output into the next. `journalctl -u ssh | grep \"Failed password\" | wc -l` counts failed SSH logins. Chaining small tools is how most quick investigations work."],
+  ["PowerShell objects","PowerShell passes objects, not plain text, between commands, so you can filter by property: `Get-Service | Where-Object Status -eq Running`. That makes it powerful for admins, and for attackers too."],
+  ["Getting help","Nobody memorises every flag. Use `man grep` or `grep --help` on Linux, and `Get-Help Get-Process -Examples` in PowerShell. Reading help quickly is a real skill."]
+ ],
+ real:["Help desk: “the internet's down”","A user can't reach anything. If `ipconfig` shows 169.254.x.x, DHCP failed: check the cable, Wi-Fi and DHCP server. If the address looks normal, ping the gateway, then a public IP, then try nslookup. In two minutes you know if it's the link, DHCP, routing or DNS."],
+ myth:["You have to memorise every command and flag.","Professionals look things up all the time. Know the core tools well, and know how to use man, --help and Get-Help for the rest."],
+ tryit:{h:"Count failed logins", where:"Kali terminal",
+  p:"Kali logs to the systemd journal, so read SSH logs with journalctl. Start SSH, fail a login on purpose, count the failures and see which IP they came from. Stop SSH afterwards.",
+  code:`sudo systemctl start ssh
+ssh nobody@127.0.0.1    # type yes, any password, then Ctrl+C
+sudo journalctl -u ssh | grep -c "Failed password"
+sudo journalctl -u ssh | grep "Failed password" |
+  awk '{print $(NF-3)}' | sort | uniq -c
+sudo systemctl stop ssh`},
+ quiz:[
+  {d:1, q:"Which Linux command lists listening ports and the processes using them?", o:["ss -tulpn","ls -la","cd /ports"], k:0,
+   w:"ss shows sockets: -t TCP, -u UDP, -l listening, -p process, -n numeric. Use sudo to see processes owned by other users."},
+  {d:2, q:"`ipconfig` shows the address 169.254.10.7. What's the most likely problem?", o:["The PC couldn't get an address from DHCP","DNS is down","The website is blocked"], k:0,
+   w:"169.254.x.x is a self-assigned (APIPA) address. Windows uses it when no DHCP server answers."},
+  {d:2, q:"In `ps aux | grep sshd`, what does the `|` do?", o:["Sends the output of ps into grep","Runs both commands separately","Saves the output to a file called grep"], k:0,
+   w:"The pipe feeds one command's output to the next command's input. `>` is the one that writes to a file."},
+  {d:1, q:"Which Windows command lists connections with their process IDs?", o:["netstat -ano","ipconfig /all","tracert"], k:0,
+   w:"-a shows all connections, -n keeps addresses numeric and -o adds the PID."}
+ ],
+ recap:["Linux: ls, cd, cat, grep, ip a, ss -tulpn, journalctl.","Windows: ipconfig, ping, tracert, nslookup, netstat -ano.","Pipes chain small tools into an investigation.","Use man, --help and Get-Help instead of memorising."]},
+
+{t:"Encryption vs hashing",
+ sub:"Two-way locks and one-way fingerprints.",
+ learn:[
+  ["Encryption","Encryption scrambles data so only someone with the right key can read it, at rest or in transit. Don't confuse it with encoding, like Base64, which anyone can reverse with no key."],
+  ["Symmetric","Symmetric encryption uses one shared key to encrypt and decrypt. AES is the standard, and it's fast enough for disks and VPN traffic. The hard part is sharing the key safely."],
+  ["Asymmetric","Asymmetric cryptography uses a key pair. What the public key encrypts, only the private key can decrypt. RSA and elliptic-curve cryptography are common. It's slow, so it's mainly used to agree keys and to sign things."],
+  ["Hashing","A hash function turns any input into a fixed-length digest, like SHA-256's 256 bits. It's one-way: you can't reverse it, though short or common inputs can be guessed and checked. Change one character and the digest changes completely."],
+  ["Digital signatures","To sign, you hash a message and sign the hash with your private key. Anyone with your public key can check it. That proves integrity and who signed. TLS certificates and software updates rely on this."],
+  ["Storing passwords","Hash passwords with a slow, salted algorithm like bcrypt or Argon2. The salt makes identical passwords produce different hashes. The slowness makes cracking expensive. Fast hashes like MD5 are the wrong tool."]
+ ],
+ real:["Adobe, 2013","In 2013 attackers stole data on around 150 million Adobe accounts. The passwords were encrypted with 3DES instead of hashed, all with the same key and mode, so identical passwords looked identical. Plain-text password hints sat right next to them, which made many easy to guess."],
+ myth:["Encrypting passwords is the safest way to store them.","If the key leaks, every password is exposed at once. Hash them with a slow, salted algorithm so even the server can't reverse them."],
+ tryit:{h:"See a hash change", where:"Any machine with Python 3",
+  p:"Hash two words that differ by one letter and compare the digests. Then hash a file you've downloaded and compare it with the value the publisher lists.",
+  code:`import hashlib
+for word in ["hello", "hellp"]:
+    print(word, hashlib.sha256(word.encode()).hexdigest())
+
+# File hash, Linux:   sha256sum kali.iso
+# File hash, Windows: Get-FileHash .\\kali.iso`},
+ quiz:[
+  {d:1, q:"You compare a downloaded ISO's SHA-256 value with the publisher's. What are you checking?", o:["Confidentiality","Integrity","Availability"], k:1,
+   w:"A matching hash shows the file wasn't altered or corrupted. It doesn't hide the contents."},
+  {d:2, q:"A message is encrypted with Alice's public key. Which key decrypts it?", o:["Alice's private key","Alice's public key","The sender's private key"], k:0,
+   w:"Only the matching private key can decrypt. That's why the public key can be shared freely."},
+  {d:1, q:"Which of these is a symmetric encryption algorithm?", o:["AES","RSA","SHA-256"], k:0,
+   w:"AES uses one shared key. RSA is asymmetric and SHA-256 is a hash, not encryption."},
+  {d:3, q:"Two users have the same password, but their stored hashes are different. Why?", o:["Each password got a unique salt before hashing","Hashing is random every time","The passwords were encrypted with different keys"], k:0,
+   w:"The same input always gives the same hash. A unique salt per user changes the input, so the hashes differ and precomputed tables don't work."}
+ ],
+ recap:["Encryption is reversible with a key: confidentiality.","Symmetric (AES) is fast; asymmetric (RSA, ECC) agrees keys and signs.","Hashing is one-way: integrity.","Passwords: bcrypt or Argon2 with a salt, never plain encryption."]},
+
+{t:"Virtualisation and lab safety",
+ sub:"Break things safely, and keep the mess in the lab.",
+ learn:[
+  ["Hypervisors","A hypervisor runs virtual machines, each with its own OS. Type 1 runs on bare metal: Proxmox, ESXi, Hyper-V. Type 2 runs on top of an OS: VirtualBox, VMware Workstation."],
+  ["Why labs use VMs","VMs let you build, break and rebuild systems for free. Snapshots save a known-good state, so you can roll back after an exercise in seconds. The cloud is built on the same idea."],
+  ["VirtualBox network modes","NAT: the VM reaches the internet through the host (NAT Network also lets VMs see each other). Bridged: the VM joins your real home network. Internal: VMs talk only to each other. Host-only: VMs talk to each other and to the host."],
+  ["Isolation isn't guaranteed","VMs reduce risk but don't guarantee isolation. Shared folders, a shared clipboard, drag and drop, bridged networking and hypervisor bugs can all leak. Turn off what you don't need."],
+  ["Lab rules","Keep vulnerable VMs on an internal or host-only network, never bridged. Snapshot before each exercise. Keep the hypervisor patched. Keep real passwords and personal files out of lab VMs."]
+ ],
+ real:["VENOM, 2015","In 2015 researchers disclosed VENOM, a bug in the virtual floppy controller used by QEMU, Xen, KVM and VirtualBox. Code in a guest VM could potentially break out to the host. Few people had thought about the floppy drive. Every device a hypervisor emulates is attack surface."],
+ myth:["A VM is a perfect sandbox.","Escapes are rare but real, and misconfiguration is far more common. A shared folder or bridged adapter can expose your host and home network. Treat the VM boundary as a strong layer, not a guarantee."],
+ tryit:{h:"Lock down a lab VM", where:"Host terminal, VM powered off",
+  p:"Put each VM on the internal network labnet, turn off clipboard and drag and drop, then snapshot it (VirtualBox 7 syntax). Remove shared folders under Settings, Shared Folders.",
+  code:`VBoxManage modifyvm "Win-Target" --nic1 intnet --intnet1 "labnet"
+VBoxManage modifyvm "Win-Target" --clipboard-mode disabled --drag-and-drop disabled
+VBoxManage snapshot "Win-Target" take "clean-baseline"
+# Repeat for your Kali VM, so both share labnet`},
+ quiz:[
+  {d:1, q:"Which network mode should a deliberately vulnerable VM use?", o:["Bridged","Internal or host-only","Whatever the default is"], k:1,
+   w:"Bridged puts the VM on your real home network. Internal or host-only keeps it inside the lab."},
+  {d:1, q:"Which of these is a Type 2 hypervisor?", o:["VirtualBox","ESXi","Proxmox"], k:0,
+   w:"VirtualBox runs as an app on top of your OS. ESXi and Proxmox run directly on the hardware."},
+  {d:2, q:"Why take a snapshot before a lab exercise?", o:["So you can roll back to a known-good state","It encrypts the VM","It isolates the VM's network"], k:0,
+   w:"If the exercise breaks or infects the VM, you restore the snapshot in seconds."},
+  {d:3, q:"Your lab VMs are on an internal network, but a shared folder maps your host's Documents folder. What's the risk?", o:["Anything running in the VM could read or change your real files","None, because internal mode isolates everything","The VM will lose its IP address"], k:0,
+   w:"The network is only one path out. Shared folders, clipboard and drag and drop are others. Turn them off on attack and target VMs."}
+ ],
+ recap:["Type 1 runs on hardware; Type 2 runs on an OS.","NAT, bridged, internal and host-only all behave differently.","VMs reduce risk but don't guarantee isolation.","Vulnerable VMs go on internal or host-only networks, never bridged."]},
+
+{t:"Week 3 review",
+ sub:"Operating systems and crypto, pulled together.",
+ learn:[
+  ["How to review","Answer each review heading from memory before reading the card. Then do the hands-on task. Doing it sticks far better than rereading."]
+ ],
+ real:["LastPass, 2022","In 2022 attackers stole backups of LastPass customer vaults. Each vault was encrypted with a key derived from the user's master password, so safety came down to password strength and hashing rounds. Some old accounts had very low settings, and saved website addresses weren't encrypted."],
+ myth:["Linux and Windows security are completely different skills.","The concepts carry over: least privilege, services, logs, patching and hardening. Only the commands and file locations change."],
+ tryit:{h:"Prove a permission works", where:"Kali terminal",
+  p:"Create a test user, make a file in /tmp only you can read, and confirm the test user gets “Permission denied”. Then clean up. A mail spool warning from userdel is harmless.",
+  code:`sudo useradd -m tester
+echo "top secret" > /tmp/private.txt
+chmod 600 /tmp/private.txt
+sudo -u tester cat /tmp/private.txt
+rm /tmp/private.txt
+sudo userdel -r tester`},
+ review:[
+  ["Linux vs Windows","Linux: text config under /etc, logs under /var/log or the journal, packages via apt or dnf. Windows: the Registry, Event Viewer, Active Directory and Group Policy."],
+  ["Permissions","rwxr-x--- is 750: owner everything, group read and execute, others nothing. chmod changes it, chown changes the owner, sudo elevates one command. Watch for root-owned SUID programs."],
+  ["Processes and services","A process is a running program with a PID, a user and a parent. A service runs in the background, often on a port. Suspicious: wrong path, odd parent, unknown listener."],
+  ["Command line","Linux: ls -la, grep, ss -tulpn, journalctl, systemctl. Windows: ipconfig /all, netstat -ano, Get-Process, Get-Service. Pipes chain them together."],
+  ["Crypto in one card","Symmetric (AES): one key, fast. Asymmetric (RSA, ECC): key pair, for key agreement and signatures. Hashing (SHA-256): one-way, for integrity. Passwords: bcrypt or Argon2 with a salt."],
+  ["Lab safety","Internal or host-only networks for vulnerable VMs, never bridged. Snapshot before exercises. Turn off shared folders and clipboard. Keep the hypervisor patched."]
+ ],
+ quiz:[
+  {d:2, q:"What's the right way to store user passwords?", o:["Encrypted with AES","Hashed with a slow, salted algorithm like bcrypt or Argon2","Hashed with plain MD5"], k:1,
+   w:"Passwords should be hashed, not encrypted, with a slow salted algorithm so cracking is expensive. MD5 is far too fast."},
+  {d:2, q:"What's the octal value of rw-r--r--?", o:["644","755","600"], k:0,
+   w:"rw- is 6, r-- is 4, r-- is 4. It's a common setting for files everyone may read but only the owner may change."},
+  {d:3, q:"HTTPS uses asymmetric cryptography in the handshake, then symmetric encryption for the data. Why?", o:["Asymmetric is slow, so it's used to authenticate and agree a key; fast symmetric encryption carries the data","Symmetric encryption is less secure","Asymmetric cryptography can't protect data at all"], k:0,
+   w:"Each does what it's best at. The handshake agrees a shared key, and AES or ChaCha20 then encrypts the traffic quickly."},
+  {d:1, q:"Where are most traditional Linux log files kept?", o:["/var/log","/etc","/home"], k:0,
+   w:"/var/log holds text logs. Many newer systems also use the systemd journal, read with journalctl."},
+  {d:3, q:"An unknown service on a Windows server listens on port 4444 and runs from C:\\ProgramData\\upd.exe. What's your best first step?", o:["Record the details and escalate it as a possible compromise","Delete the file straight away","Ignore it, because services are trusted"], k:0,
+   w:"Deleting it destroys evidence and may not remove the attacker. Note the path, hash, parent and connections, then follow your incident process."},
+  {d:2, q:"Where would you look for a program that starts every time a user logs on to Windows?", o:["The Run keys in the Registry","/etc/shadow","The Windows firewall log"], k:0,
+   w:"Run keys under HKLM and HKCU are classic persistence spots, along with scheduled tasks and services."},
+  {d:2, q:"Which VirtualBox mode lets VMs talk to each other and the host, but not the internet?", o:["Host-only","NAT","Bridged"], k:0,
+   w:"Host-only is a private network shared with the host. Internal is the same without the host."},
+  {d:3, q:"What proves a software update really came from its publisher?", o:["A valid digital signature","A matching file size","Downloading it over HTTPS"], k:0,
+   w:"A signature ties the file to the publisher's private key. HTTPS only protects the download from whichever server you used."}
+ ],
+ recap:["Know where config, logs and services live on both systems.","Read permissions in rwx and octal.","Symmetric, asymmetric and hashing each have one job.","Lab VMs stay off bridged networks."]},
+/* ---------------- WEEK 4: Hands-on analysis ---------------- */
+{t:"Scanning with Nmap",
+ sub:"See your network the way an attacker would.",
+ learn:[
+  ["What Nmap does","Nmap discovers live hosts, open ports, running services and their versions. Defenders use it to check their own exposure; attackers use it for reconnaissance. Same tool, different permission."],
+  ["Permission first","Only scan systems you own or have written permission to test. Unauthorised scanning can breach laws and acceptable use policies, and it sets off alarms. Your internal lab is the place to practise."],
+  ["Host discovery","`sudo nmap -sn 10.10.10.0/24` finds live hosts without scanning ports. Run as root on a local subnet, Nmap uses ARP, so even hosts that block ping show up. Without sudo it falls back to weaker probes."],
+  ["The SYN scan","`sudo nmap -sS` sends a SYN to each port. SYN-ACK means open, RST means closed, and no reply means filtered. Nmap never completes the handshake, which is why it's called a half-open scan."],
+  ["Versions and scripts","`-sV` identifies the service and version on open ports, `-O` guesses the OS and `-sC` runs default scripts for extra detail. By default Nmap scans the 1,000 most common TCP ports; `-p-` scans all 65,535. UDP services like DNS need `-sU`."],
+  ["From results to risk","A port list is just an inventory. Compare each service and version with what should be there, then look up known vulnerabilities for those versions. Open isn't the same as vulnerable."]
+ ],
+ real:["The internet is always scanning","Services like Shodan and Censys scan the whole IPv4 internet continuously and index what they find. Anything you expose, like RDP or an old admin page, can be listed within days. Attackers often search these indexes instead of scanning themselves."],
+ myth:["A SYN scan is stealthy, so nobody notices it.","Skipping the final ACK avoids some application logs, but firewalls and intrusion detection systems spot a burst of SYNs easily. You'll see that for yourself in the Day 25 lab."],
+ tryit:{h:"Scan your target", where:"Kali, against the Windows target only",
+  p:"Find live hosts, scan the top ports, then identify versions. With the Windows firewall on, expect mostly filtered ports.",
+  code:`sudo nmap -sn 10.10.10.0/24
+sudo nmap -sS --top-ports 100 10.10.10.20
+sudo nmap -sS -sV -p 135,139,445,3389 10.10.10.20`},
+ quiz:[
+  {d:2, q:"Why is `-sS` called a half-open scan?", o:["It scans half the ports","It never completes the TCP handshake","It only works on half of hosts"], k:1,
+   w:"After the SYN-ACK, Nmap doesn't send the final ACK, so a full connection is never made."},
+  {d:1, q:"What does `nmap -sn` do?", o:["Finds live hosts without scanning ports","Scans all 65,535 ports","Detects service versions"], k:0,
+   w:"-sn is host discovery only. It's a quick, quiet first step."},
+  {d:2, q:"Which flag tells Nmap to identify service versions?", o:["-sV","-sS","-sn"], k:0,
+   w:"-sV probes open ports to work out the service and version, which you need before looking up vulnerabilities."},
+  {d:1, q:"When is it OK to scan a network?", o:["When you own it or have written permission","Whenever it's only a SYN scan","Whenever it's on the internet"], k:0,
+   w:"Permission is what separates a security test from an attack. Get it in writing."}
+ ],
+ recap:["Only scan what you own or have written permission to test.","-sn finds hosts, -sS finds ports, -sV finds versions.","Open, closed and filtered come from SYN-ACK, RST or silence.","A scan result is an inventory, not a list of vulnerabilities."]},
+
+{t:"Packets with Wireshark",
+ sub:"What's really on the wire.",
+ learn:[
+  ["What Wireshark does","Wireshark captures packets from a network interface and decodes every layer, from Ethernet up to HTTP. It shows what's really on the wire, not what an app claims is happening."],
+  ["Capture vs display filters","Capture filters, like `host 10.10.10.20`, decide what gets recorded and use BPF syntax. Display filters, like `ip.addr == 10.10.10.20`, decide what you see afterwards. You can change display filters any time."],
+  ["Display filters to know","`dns`, `http`, `tls`, `arp`, `icmp` and `tcp.port == 443`. `tcp.flags.syn == 1 && tcp.flags.ack == 0` shows new connection attempts. Combine filters with `&&`, `||` and `!`."],
+  ["Follow the stream","Right-click a packet and choose Follow, then TCP Stream, to rebuild a whole conversation. With cleartext protocols you can read requests, responses and even passwords. With TLS you see only encrypted data."],
+  ["What TLS still reveals","Even encrypted traffic shows IP addresses, ports, timing and how much data moved. The TLS handshake usually shows the server name too. That metadata is often enough to spot something odd."],
+  ["Capture responsibly","Only capture on networks you own or are authorised to monitor. Packets can hold passwords and personal information, so store capture files carefully and delete them when you're done."]
+ ],
+ real:["Firesheep, 2010","In 2010 a Firefox add-on called Firesheep let anyone on public Wi-Fi grab other people's session cookies for sites like Facebook and Twitter with one click. Those sites used HTTPS for the login page but not for the rest of the session. The outcry pushed big sites to use HTTPS everywhere."],
+ myth:["With Wireshark you can read anyone's HTTPS traffic.","TLS encrypts the content. You see addresses, ports, timing and usually the server name, but not the pages or passwords unless you hold the session keys."],
+ tryit:{h:"Catch a cleartext request", where:"Kali and Windows target",
+  p:"On Kali, start Wireshark with sudo and capture on eth0. Serve a folder over plain HTTP on 8080, a port Wireshark decodes as HTTP. Browse to it from Windows, then follow the TCP stream and read the request.",
+  code:`# Kali: serve the current folder over plain HTTP
+python3 -m http.server 8080
+
+# Windows browser
+http://10.10.10.10:8080
+
+# Wireshark display filter on Kali
+http && ip.addr == 10.10.10.20`},
+ quiz:[
+  {d:2, q:"Which of these is a Wireshark display filter, not a capture filter?", o:["host 10.10.10.20","ip.addr == 10.10.10.20","port 80"], k:1,
+   w:"ip.addr == is display filter syntax. host and port are capture (BPF) syntax."},
+  {d:2, q:"Which display filter shows new TCP connection attempts?", o:["tcp.flags.syn == 1 && tcp.flags.ack == 0","tcp.flags.fin == 1","udp"], k:0,
+   w:"The first packet of a handshake has SYN set and ACK clear. A scan lights this filter up."},
+  {d:2, q:"You capture HTTPS traffic to a website. What can you usually still see?", o:["IP addresses, ports, timing and the server name","The password that was typed","The full page contents"], k:0,
+   w:"The content is encrypted, but the metadata isn't. That's often enough for an investigation."},
+  {d:1, q:"What does Follow TCP Stream do?", o:["Rebuilds a whole conversation in order","Blocks the connection","Decrypts TLS traffic"], k:0,
+   w:"It stitches the packets of one connection back together so you can read the exchange."}
+ ],
+ recap:["Capture filters decide what's recorded; display filters decide what you see.","Know dns, http, tls, arp and the SYN-without-ACK filter.","Follow TCP Stream rebuilds a conversation.","TLS hides content but not metadata."]},
+
+{t:"Reading logs",
+ sub:"The record of what really happened.",
+ learn:[
+  ["Why logs matter","Logs record logins, errors, changes and connections. Without them you can't detect an attack or prove what an attacker did. OWASP Top 10:2025 lists Security Logging and Alerting Failures as A09."],
+  ["Linux logs","Systems running rsyslog, such as Ubuntu, write authentication events to /var/log/auth.log; the Red Hat family uses /var/log/secure. Newer Debian and Kali log only to the systemd journal: `journalctl -u ssh` shows SSH events."],
+  ["Windows Security log","Event Viewer's Security log records logons and account changes. Key IDs: 4624 successful logon, 4625 failed logon, 4672 special (admin-level) privileges at logon, 4720 user account created, 1102 audit log cleared."],
+  ["Logon types","Events 4624 and 4625 include a logon type. Type 2 is at the keyboard, 3 is over the network (like a file share) and 10 is Remote Desktop. With Network Level Authentication on, failed RDP logons often show as type 3, so check the source IP too."],
+  ["SIEMs","A SIEM collects logs from many systems in one place, correlates them and raises alerts. Wazuh is a free, open-source option; Microsoft Sentinel and Splunk are common at work. Alerts only help if someone acts on them."],
+  ["Red flags","Many failures then a success from the same IP. A logon at 3am from a new country. A new admin account. The Security log being cleared. Any one might be innocent; together they tell a story."]
+ ],
+ real:["Target's ignored alerts, 2013","Remember Target from Day 9? Its malware detection tool raised alerts as the attackers set up, and a monitoring team overseas passed them on. The team in the US didn't act on them in time. Logging and alerting only help when someone responds."],
+ myth:["No alerts means no attacks.","It might mean you aren't collecting the right logs, or nobody has tuned the alerts. Attackers also clear logs, which is why Event ID 1102 matters."],
+ tryit:{h:"Find your own failed logons", where:"Windows target",
+  p:"Lock the Windows target and enter a wrong password three times. Then log in and pull the failures. If nothing shows, check that logon auditing is turned on.",
+  code:`# Windows PowerShell (admin)
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625} -MaxEvents 5 |
+  Format-List TimeCreated, Message
+
+auditpol /get /subcategory:"Logon"`},
+ quiz:[
+  {d:1, q:"Hundreds of Event ID 4625 entries from one IP in a minute suggest what?", o:["A software update","A brute-force or password-spraying attempt","A normal backup job"], k:1,
+   w:"4625 is a failed logon. A burst from one source is a classic brute-force signal."},
+  {d:2, q:"Event ID 1102 appears on a server at 2am. Why worry?", o:["Someone cleared the Security log, possibly to hide their tracks","It's a routine backup","A user changed their wallpaper"], k:0,
+   w:"Clearing the log is rare in normal operations and common after an intrusion. Investigate who did it."},
+  {d:3, q:"Many 4625 events with logon type 10 arrive from one external IP. What's being targeted?", o:["Remote Desktop","A file share","The local keyboard"], k:0,
+   w:"Type 10 is RemoteInteractive, which is RDP. Type 3 is usually a network logon like a file share, though with NLA on, failed RDP attempts can show as type 3 too."},
+  {d:3, q:"What does OWASP Top 10:2025 call A09?", o:["Security Logging and Alerting Failures","Security Logging and Monitoring Failures","Insufficient Logging"], k:0,
+   w:"The 2021 name was Security Logging and Monitoring Failures. The 2025 list renamed it to stress alerting."}
+ ],
+ recap:["Linux: auth.log, secure or journalctl.","Windows: 4624, 4625, 4672, 4720 and 1102.","Logon type 3 is network, 10 is RDP, but failed RDP often shows as 3.","A SIEM centralises logs, but someone has to act on alerts."]},
+
+{t:"Lab: scan and watch",
+ sub:"Attack your own lab and see what the defender sees.",
+ learn:[
+  ["The plan","You'll scan the Windows target from Kali while watching with Wireshark and the Windows firewall log. Seeing both sides of one attack is the fastest way to learn detection."],
+  ["Set up","Both VMs on the labnet internal network: Kali at 10.10.10.10, Windows at 10.10.10.20. Snapshot both first. Confirm they can see each other with `sudo nmap -sn 10.10.10.0/24`."],
+  ["Give the defender eyes","Windows Defender Firewall doesn't log dropped packets by default. Turn logging on (see the Try it card). The log lives at C:\\Windows\\System32\\LogFiles\\Firewall\\pfirewall.log."],
+  ["Run the scan","Start Wireshark on Kali's eth0, then apply the display filter `tcp.flags.syn == 1 && tcp.flags.ack == 0`. Now run the SYN scan. Watch a wall of SYNs from one source hit many ports in seconds."],
+  ["Compare the evidence","In Wireshark, Statistics then Conversations shows one source talking to many ports. On Windows, the firewall log shows a DROP line for each blocked probe. What did the scan learn, and what did the defender see?"]
+ ],
+ real:["A scan from the inside","SOC analysts treat scans very differently depending on where they come from. Scans from the internet are constant background noise. An internal laptop scanning the server subnet often means a compromised machine looking for its next hop."],
+ myth:["If a scan didn't show up in Event Viewer, nothing recorded it.","A SYN scan rarely creates logon events, but firewall logs, network flow records and intrusion detection systems all see it. Detection depends on looking in the right place."],
+ tryit:{h:"Run the lab", where:"Windows target, then Kali",
+  p:"Turn on firewall logging and tail the log on Windows. Then scan from Kali and watch the DROP lines arrive. Afterwards, restore both clean snapshots.",
+  code:`# Windows PowerShell (admin)
+Set-NetFirewallProfile -All -LogBlocked True
+Get-Content C:\\Windows\\System32\\LogFiles\\Firewall\\pfirewall.log -Tail 20 -Wait
+
+# Kali
+sudo nmap -sS --top-ports 200 10.10.10.20
+
+# Windows: turn logging off again
+Set-NetFirewallProfile -All -LogBlocked False`},
+ quiz:[
+  {d:1, q:"What pattern in Wireshark shows a port scan?", o:["Many SYNs from one source to many ports","One long TLS session","Only DNS replies"], k:0,
+   w:"A scanner probes many ports fast, so you see a burst of SYNs from one IP across many destination ports."},
+  {d:2, q:"Once logging is on, where does Windows Defender Firewall record dropped packets?", o:["pfirewall.log","The Security log as Event ID 4625","/var/log/auth.log"], k:0,
+   w:"The firewall writes its own text log. 4625 is a failed logon, and auth.log is on Linux."},
+  {d:2, q:"Most ports on the Windows target show as filtered. What does that tell you?", o:["The firewall is silently dropping the probes","Those ports are open","The Windows VM is switched off"], k:0,
+   w:"Filtered means no useful reply came back. A powered-off host would show as down, not filtered."},
+  {d:3, q:"A finance laptop starts scanning the server subnet at midnight. What's the most likely explanation?", o:["The laptop may be compromised and looking for its next target","Normal Windows updates","An overnight backup job"], k:0,
+   w:"Workstations don't scan servers in normal operations. Treat it as possible lateral movement and investigate."}
+ ],
+ recap:["Snapshot first, internal network only.","Wireshark shows a burst of SYNs from one source.","Turn on firewall logging to see the drops.","Internal scanning is a lateral movement red flag."]},
+
+{t:"Defence in depth and incident response",
+ sub:"Layers before, a plan during, lessons after.",
+ learn:[
+  ["Defence in depth","Stack controls so one failure doesn't become a breach: training, MFA, patching, firewalls, segmentation, endpoint protection, logging and backups. Each layer is another chance to stop or spot an attacker."],
+  ["Types of control","Preventive controls stop things, like MFA and firewalls. Detective controls spot them, like logs and alerts. Corrective controls fix things afterwards, like backups and reimaging. Good defence mixes all three."],
+  ["The four-phase cycle","NIST SP 800-61 Rev. 2 described four phases: preparation; detection and analysis; containment, eradication and recovery; and post-incident activity. You'll still see it in textbooks and interviews."],
+  ["Rev. 3 and CSF 2.0","NIST SP 800-61 Rev. 3 (April 2025) instead organises incident response around the six CSF 2.0 functions: Govern, Identify, Protect, Detect, Respond, Recover. Preparation is now spread across Govern, Identify and Protect."],
+  ["In the moment","Contain first: isolate the machine from the network, but don't switch it off, because memory holds evidence. Preserve logs, note what you do and when, and escalate. Then remove the cause and recover from clean backups."],
+  ["Learn from it","After recovery, hold a blameless review and fix the gaps. If personal information was breached and serious harm is likely, report it: to the OAIC in Australia or the Privacy Commissioner in NZ."]
+ ],
+ real:["Maersk and NotPetya, 2017","In June 2017 NotPetya malware tore through shipping giant Maersk, wiping thousands of machines within hours. Every domain controller was hit except one in Ghana, which happened to be offline during a power cut. That one copy let Maersk rebuild its network in about ten days."],
+ myth:["Incident response starts when you get breached.","Most of it happens before: knowing your assets, backups, logging, contacts and a written plan. Rev. 3 makes that explicit with Govern, Identify and Protect."],
+ tryit:{h:"Write a mini playbook", where:"Notes app or your GitHub repo",
+  p:"Write a one-page playbook for “a user entered their password on a phishing page”. Cover who to tell, resetting the password and signing out all sessions, which logs to check, and what to tell the user."},
+ quiz:[
+  {d:2, q:"What does NIST SP 800-61 Rev. 3 align incident response with?", o:["The OWASP Top 10","The NIST CSF 2.0 functions","The OSI model"], k:1,
+   w:"Rev. 3 is a CSF 2.0 Community Profile, so incident response sits under the CSF functions."},
+  {d:2, q:"A laptop shows signs of ransomware. What should you do first?", o:["Disconnect it from the network but leave it powered on","Switch it off at the wall","Run a disk clean-up"], k:0,
+   w:"Isolating stops the spread. Keeping it on preserves memory evidence such as running processes and keys."},
+  {d:1, q:"Which of these is a detective control?", o:["Alerting on repeated failed logons","MFA","Restoring from backup"], k:0,
+   w:"Alerts detect. MFA prevents, and restoring from backup corrects."},
+  {d:3, q:"What are the six CSF 2.0 functions?", o:["Govern, Identify, Protect, Detect, Respond, Recover","Identify, Protect, Detect, Respond, Recover","Prepare, Detect, Contain, Eradicate, Recover, Review"], k:0,
+   w:"CSF 2.0 added Govern to the five functions of CSF 1.1."}
+ ],
+ recap:["Defence in depth: many layers, no single point of failure.","Preventive, detective and corrective controls.","Rev. 2 had four phases; Rev. 3 uses the CSF 2.0 functions.","Isolate, preserve evidence, escalate, recover, then learn."]},
+
+{t:"Full review",
+ sub:"Four weeks, one last pass.",
+ learn:[
+  ["How to review","This is the big one. Answer each review card's heading out loud first. Then do the quiz cold, without scrolling back. Anything you miss tells you which day to redo."]
+ ],
+ real:["Latitude Financial, 2023","In March 2023 an attack through a major vendor gave attackers a Latitude Financial employee's login. They took about 14 million Australian and NZ records, including millions of driver licence numbers, some kept since 2005. Latitude refused to pay. Third-party access and keeping too much data, in one story."],
+ myth:["Once you've finished Stage 1, the basics are done.","The basics are what most breaches exploit: missing MFA, unpatched systems, weak access control and ignored alerts. You'll use these ideas at every level."],
+ tryit:{h:"Build a one-page cheat sheet", where:"Paper or notes app",
+  p:"From memory, write down the key ports, the Windows Event IDs, the MFA ranking, the permission octals and the six CSF 2.0 functions. Then check it against the cards. Keep it for interview prep."},
+ review:[
+  ["Week 1","CIA, and double extortion hitting all three. Threats include insiders and accidents. Risk is likelihood and impact. Authorisation is checked on every request, with least privilege. SMS is MFA but weak; only FIDO2 keys and passkeys are phishing-resistant."],
+  ["Week 2","Open means listening, not vulnerable. TCP has a handshake; UDP doesn't. DHCP, ARP, DNS, TCP and TLS get a laptop to a website. The padlock means encrypted, not honest."],
+  ["Week 3","Config lives in /etc or the Registry. Read rwx and octal. Judge a process by its path and parent, not its name. Hash passwords with bcrypt or Argon2. Vulnerable VMs never go on bridged networks."],
+  ["Week 4","Nmap finds hosts, ports and versions, with permission only. Wireshark shows the wire. Logs and a SIEM catch what attackers leave behind. Incident response now follows the CSF 2.0 functions. Defence in depth means no single control does everything."],
+  ["Explain: SMS MFA","SMS counts as MFA, but SIM swapping and fake login pages can steal the code. App codes can be phished too. FIDO2 keys and passkeys check the real domain, so a phishing site gets nothing."],
+  ["Explain: open ports","Open just means a service is listening. Risk depends on what it is, its version, its configuration and who can reach it. RDP open to the internet is risky; 443 on a patched web server is expected."],
+  ["Explain: backups","Offline or immutable backups restore encrypted data and get you running again. They do nothing about data that's already been stolen, the other half of double extortion."],
+  ["Explain: HTTPS","TLS checks the server's certificate, agrees session keys, then encrypts traffic between browser and server. The data is decrypted at the server, so stored data needs its own protection."]
+ ],
+ quiz:[
+  {d:2, q:"Which statement is correct?", o:["Backups prevent data theft","An open port proves a vulnerability","A passkey resists phishing better than an SMS code"], k:2,
+   w:"Passkeys are bound to the real site. The other two are misconceptions this plan set out to fix."},
+  {d:2, q:"In OWASP Top 10:2025, what is A09?", o:["Security Logging and Alerting Failures","Broken Access Control","Injection"], k:0,
+   w:"A01 is Broken Access Control and A05 is Injection."},
+  {d:1, q:"Ransomware steals data, then encrypts it. Which pillars are hit?", o:["Confidentiality, integrity and availability","Availability only","Integrity only"], k:0,
+   w:"Theft breaks confidentiality, unauthorised encryption breaks integrity and lost access breaks availability."},
+  {d:2, q:"Which of these is the most worrying open port?", o:["RDP open to the internet on an unpatched server","443 open on a patched web server","53 open on the internal DNS server"], k:0,
+   w:"The other two are expected services. Exposed, unpatched RDP is a common ransomware entry point."},
+  {d:3, q:"The four-phase incident response cycle comes from which document?", o:["NIST SP 800-61 Rev. 2","NIST SP 800-61 Rev. 3","OWASP Top 10:2025"], k:0,
+   w:"Rev. 2 had the four phases. Rev. 3 (April 2025) organises incident response around the CSF 2.0 functions."},
+  {d:1, q:"Which network mode should a deliberately vulnerable VM use?", o:["Internal or host-only","Bridged","NAT with port forwarding to the internet"], k:0,
+   w:"Keep vulnerable machines off your real network and away from the internet."},
+  {d:3, q:"A file owned by alice, group staff, is set to 640. What can a staff member who isn't alice do?", o:["Read it","Read and write it","Nothing"], k:0,
+   w:"6 gives the owner rw-, 4 gives the group r--, and 0 gives others nothing."},
+  {d:1, q:"What does hardening mean?", o:["Changing insecure defaults to shrink the attack surface","Keeping the vendor's default settings","Buying a bigger firewall"], k:0,
+   w:"Hardening removes or changes what an attacker could use: default credentials, unneeded services, open ports and unused software."}
+ ],
+ recap:["You can explain CIA, risk, AAA and MFA strength.","You can trace a connection from DHCP to TLS.","You can read permissions, processes, hashes and logs.","Score 80% or more across all days before moving to intermediate."]},
+
+{t:"What comes next",
+ sub:"From fundamentals to a job-ready portfolio.",
+ learn:[
+  ["What you've covered","Security fundamentals, networking, operating systems, cryptography, scanning, packet capture and logs. That's the base every intermediate topic builds on."],
+  ["The intermediate stage","Next comes frameworks in depth (NIST CSF 2.0, ISO 27001, the Essential Eight), security tools, configuring controls, vulnerability management and cloud security basics."],
+  ["Grow the lab","Add a deliberately vulnerable VM, such as Metasploitable 2, on the internal network only. Add a SIEM, such as Wazuh (give it 4 to 8 GB of RAM), and send it Windows and Linux logs. Then attack your lab and detect yourself."],
+  ["Show your work","Write up each lab on GitHub: goal, setup, steps, what you saw and what you'd fix. Screenshots and clear explanations beat a list of courses. Never publish real credentials or anything from an employer's systems."],
+  ["Certifications","CompTIA Security+ is a common first security certification and often appears in entry-level job ads. For cloud roles, start with an entry cert like AWS Cloud Practitioner or Microsoft SC-900, then aim for a cloud security cert. Pair any cert with lab write-ups."],
+  ["Keep the habit","A few cards a day beats a cram. Redo red days in the Days picker. Follow alerts from Australia's ACSC and New Zealand's NCSC, and read one incident write-up a week."]
+ ],
+ real:["What hiring managers look for","Entry-level security roles usually want networking and OS basics, log analysis, some scripting and clear communication. IT support is a real asset: you already troubleshoot, document and calm down stressed users. Say that in interviews, with examples."],
+ myth:["Certifications alone will get you hired.","They help you get past filters, but interviews test whether you can do and explain the work. Documented lab projects prove that."],
+ tryit:{h:"Start your portfolio repo", where:"GitHub",
+  p:"Create a public repo called homelab and add a README for your Day 25 lab using this outline. Keep it short and use screenshots from your own lab only.",
+  code:`# Lab 01: Scan and watch
+## Goal
+Detect an Nmap SYN scan from the defender's side.
+## Setup
+VirtualBox internal network. Kali 10.10.10.10, Windows 10.10.10.20.
+## Steps
+## What I saw
+## What I'd change in a real network`},
+ quiz:[
+  {d:1, q:"What's the strongest evidence of skill for an employer?", o:["Watching more videos","Documented hands-on projects","Memorising port numbers"], k:1,
+   w:"Write-ups of real lab work show what you can do, not just what you've read."},
+  {d:1, q:"Where should Metasploitable 2 be connected in your lab?", o:["An internal or host-only network","A bridged adapter","NAT with ports forwarded from the internet"], k:0,
+   w:"It's deliberately full of holes. It must never be reachable from your home network or the internet."},
+  {d:2, q:"Which of these should never go in a public lab write-up?", o:["Real credentials or details from an employer's systems","Screenshots from your own lab","What you'd do differently next time"], k:0,
+   w:"Publishing real credentials or work details is a breach in its own right. Keep write-ups to your own lab."},
+  {d:1, q:"What does a SIEM add to your lab?", o:["Central log collection and alerting","Faster internet","Another vulnerable target"], k:0,
+   w:"A SIEM lets you practise the defender's job: collecting logs, writing detections and responding to alerts."}
+ ],
+ recap:["Stage 1 done: fundamentals, networking, OS, crypto, hands-on analysis.","Grow the lab with a vulnerable VM and a SIEM, kept internal.","Write up everything on GitHub.","Next: the intermediate stage."]}
+];
+/* ==========================================================================
+   APP
+   ========================================================================== */
+const store = {
+  ok: (() => { try { localStorage.setItem("cr2-test", "1"); localStorage.removeItem("cr2-test"); return true; } catch(e){ return false; } })(),
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
+// Answers are keyed "day.question" and store the index in the authored option list.
+let answers = store.get("cr2-answers", {});
+if (!answers || typeof answers !== "object") answers = {};
+
+const feed = document.getElementById("feed");
+const cards = [];
+const LEVEL = {1:"Easy", 2:"Medium", 3:"Hard"};
+const reduceMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function weekOf(i){ return WEEKS[Math.floor(i/7)]; }
+function el(tag, cls, html){ const e = document.createElement(tag); if(cls) e.className = cls; if(html !== undefined) e.innerHTML = html; return e; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function fmt(s){ return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>"); }
+function codeHtml(src){ return src.split("\n").map(l => `<span${/^\s*#/.test(l) ? ' class="c"' : ""}>${esc(l)}</span>`).join(""); }
+
+// Stable option shuffle per question, so the right answer isn't always in the same spot.
+function seedOf(s){ let h = 2166136261; for (let i = 0; i < s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function order(n, seed){
+  const a = [...Array(n).keys()]; let x = seed || 1;
+  for (let i = n - 1; i > 0; i--){ x ^= x << 13; x ^= x >>> 17; x ^= x << 5; x >>>= 0; const j = x % (i + 1); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function quizStats(dn){
+  const d = DAYS[dn-1]; let done = 0, right = 0;
+  d.quiz.forEach((q, qi) => { const a = answers[dn + "." + qi]; if (Number.isInteger(a)){ done++; if (a === q.k) right++; } });
+  return {done, right, total: d.quiz.length};
+}
+const TOTAL_Q = DAYS.reduce((s, d) => s + d.quiz.length, 0);
+const cardCount = d => 3 + d.learn.length + (d.myth ? 1 : 0) + (d.tryit ? 1 : 0) + (d.review ? d.review.length : 0) + d.quiz.length;
+
+// Intro card
+const intro = el("section","card");
+intro.style.setProperty("--c","var(--w1)");
+intro.id = "start";
+intro.innerHTML = `<div class="in">
+  <div class="tag"><span>Stage 1</span>28 days · ${DAYS.reduce((s, d) => s + cardCount(d), 0)} cards · ${TOTAL_Q} questions</div>
+  <h1>Cyber Scroll</h1>
+  <p>Swipe up through one idea at a time. Each day mixes short lessons, a real incident, a lab task and a quiz.</p>
+  <div class="legend"><span>Learn</span><span>Real world</span><span>Myth vs fact</span><span>Try it</span><span>Quiz</span><span>Recap</span></div>
+  <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
+  ${store.ok ? "" : `<p class="warn">This browser is blocking storage, so your answers and place won't be saved after you close the page.</p>`}
+  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost" id="pick">Choose a day</button></div>
+  <div class="hint">Swipe up ↑<span class="kb"> or press the down arrow</span></div></div>`;
+feed.appendChild(intro); cards.push({el:intro, day:-1, label:"Start"});
+
+const recapScores = {};
+const resetters = {};
+DAYS.forEach((d, i) => {
+  const wk = weekOf(i), dn = i + 1;
+  let n = 0;
+  const make = (label, body) => {
+    const s = el("section","card");
+    s.style.setProperty("--c", wk.c);
+    s.dataset.day = dn;
+    s.id = n === 0 ? "day-" + dn : "d" + dn + "-" + n;
+    n++;
+    s.innerHTML = `<div class="in">${body}</div>`;
+    feed.appendChild(s);
+    cards.push({el:s, day:i, label});
+    return s;
+  };
+  const tag = (kind, extra) => `<div class="tag"><span>${kind}</span>Day ${dn}${extra ? " · " + extra : ""}</div>`;
+
+  make("Topic", `<div class="tag"><span>Day ${dn}</span>Week ${wk.n} · ${wk.name}</div><h1>${fmt(d.t)}</h1>
+    ${d.sub ? `<p>${fmt(d.sub)}</p>` : ""}
+    <div class="hint">${cardCount(d)} cards · ${d.quiz.length} questions · swipe up ↑</div>`);
+
+  d.learn.forEach(([h, p], j) => make("Learn " + (j+1) + "/" + d.learn.length,
+    `${tag("Learn", (j+1) + " of " + d.learn.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>`));
+
+  if (d.real) make("Real world", `${tag("Real world")}<h2>${fmt(d.real[0])}</h2><p>${fmt(d.real[1])}</p>`);
+
+  if (d.myth) make("Myth vs fact", `${tag("Myth vs fact")}<h2>Don't fall for it</h2>
+    <div class="mf"><div class="m"><b>Myth</b>${fmt(d.myth[0])}</div><div class="f"><b>Fact</b>${fmt(d.myth[1])}</div></div>`);
+
+  if (d.tryit){
+    const t = d.tryit;
+    const s = make("Try it", `${tag("Try it")}<h2>${fmt(t.h)}</h2>${t.where && !t.code ? `<div class="where">${esc(t.where)}</div>` : ""}<p>${fmt(t.p)}</p>
+      ${t.code ? `<div class="code"><div class="ch"><span class="where">${esc(t.where || "")}</span><button class="cp" type="button" aria-label="Copy commands">Copy</button></div><pre><code>${codeHtml(t.code)}</code></pre></div>` : ""}`);
+    const cp = s.querySelector(".cp");
+    if (cp) cp.addEventListener("click", () => {
+      const pre = s.querySelector("pre");
+      const fallback = () => {
+        // Clipboard blocked: select the code so a long-press can copy it.
+        try { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch(e){}
+        cp.textContent = "Selected";
+        setTimeout(() => cp.textContent = "Copy", 1600);
+      };
+      try {
+        navigator.clipboard.writeText(t.code).then(() => { cp.textContent = "Copied"; setTimeout(() => cp.textContent = "Copy", 1400); }, fallback);
+      } catch(e){ fallback(); }
+    });
+  }
+
+  (d.review || []).forEach(([h, p], j) => make("Review " + (j+1) + "/" + d.review.length,
+    `${tag("Review", (j+1) + " of " + d.review.length)}<h2>${fmt(h)}</h2><p>${fmt(p)}</p>`));
+
+  resetters[dn] = [];
+  d.quiz.forEach((q, qi) => {
+    const key = dn + "." + qi;
+    const ord = order(q.o.length, seedOf(q.q));
+    const qc = make("Quiz " + (qi+1) + "/" + d.quiz.length, `${tag("Quiz", (qi+1) + " of " + d.quiz.length)}
+      ${q.d ? `<div class="lvl">${LEVEL[q.d]}</div>` : ""}
+      <h2 class="q">${fmt(q.q)}</h2>
+      <div class="opts" role="group" aria-label="Answers">${ord.map(j=>`<button class="opt" data-j="${j}"><span class="mk" aria-hidden="true"></span><span>${fmt(q.o[j])}<span class="sr st"></span></span></button>`).join("")}</div>
+      <div class="why" tabindex="-1" aria-live="polite"></div>
+      <button class="btn ghost retry" type="button">Try again</button>`);
+    const btns = [...qc.querySelectorAll(".opt")], why = qc.querySelector(".why"), retry = qc.querySelector(".retry");
+    const reveal = (pick, fromUser) => {
+      btns.forEach(b => {
+        const j = +b.dataset.j, mk = b.querySelector(".mk"), st = b.querySelector(".st");
+        b.setAttribute("aria-disabled", "true");
+        if (j === q.k){ b.classList.add("right"); mk.textContent = "✓"; st.textContent = j === pick ? " (your answer, correct)" : " (correct answer)"; }
+        else if (j === pick){ b.classList.add("wrong"); mk.textContent = "✗"; st.textContent = " (your answer)"; }
+      });
+      why.innerHTML = `<strong>${pick === q.k ? "Correct." : "Not quite."}</strong> ${fmt(q.w)}`;
+      why.classList.add("show");
+      retry.classList.add("show");
+      if (fromUser){
+        why.focus({preventScroll:true});
+        why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
+      }
+    };
+    const clear = () => {
+      btns.forEach(b => { b.removeAttribute("aria-disabled"); b.classList.remove("right","wrong"); b.querySelector(".mk").textContent = ""; b.querySelector(".st").textContent = ""; });
+      why.classList.remove("show"); why.innerHTML = ""; retry.classList.remove("show");
+    };
+    resetters[dn].push(clear);
+    btns.forEach(b => b.addEventListener("click", () => {
+      if (b.getAttribute("aria-disabled") === "true") return;
+      const pick = +b.dataset.j;
+      answers[key] = pick;
+      store.set("cr2-answers", answers);
+      reveal(pick, true);
+      updateScore(true);
+    }));
+    retry.addEventListener("click", () => {
+      delete answers[key];
+      store.set("cr2-answers", answers);
+      clear(); updateScore(false);
+      btns[0].focus({preventScroll:true});
+      qc.scrollTo({top:0, behavior: reduceMotion() ? "auto" : "smooth"});
+    });
+    if (Number.isInteger(answers[key])) reveal(answers[key], false);
+  });
+
+  const rc = make("Recap", `${tag("Recap")}<h2>${dn === 28 ? "Stage 1, wrapped" : "Day " + dn + " in a nutshell"}</h2>
+    <ul class="recap">${d.recap.map(r => `<li>${fmt(r)}</li>`).join("")}</ul>
+    <div class="dscore"></div>
+    <div class="row">${dn < 28 ? `<button class="btn nx">Start Day ${dn+1}</button>` : `<button class="btn nx">Finish</button>`}<button class="btn ghost redo" type="button">Redo this quiz</button></div>`);
+  recapScores[dn] = rc.querySelector(".dscore");
+  rc.querySelector(".nx").addEventListener("click", () => dn < 28 ? goDay(dn+1) : go(cards.length-1));
+  rc.querySelector(".redo").addEventListener("click", () => {
+    d.quiz.forEach((q, qi) => delete answers[dn + "." + qi]);
+    store.set("cr2-answers", answers);
+    resetters[dn].forEach(f => f());
+    updateScore(false);
+    go(cards.findIndex(c => c.el.id === "d" + dn + "-" + (cardCount(d) - d.quiz.length - 1)));
+  });
+});
+
+// End card
+const end = el("section","card");
+end.style.setProperty("--c","var(--w4)");
+end.id = "finish";
+end.innerHTML = `<div class="in"><div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
+  <p id="endScore"></p><p class="small">Missed some? Open Days, pick a red one and use “Redo this quiz” on its recap card, or “Try again” on any question. Reset clears every answer on this device.</p>
+  <div class="row"><button class="btn" id="toTop">Back to start</button><button class="btn ghost" id="reset">Reset answers</button></div></div>`;
+feed.appendChild(end); cards.push({el:end, day:-2, label:"Finished"});
+
+// Header, progress and the "more below" hint
+const prog = document.getElementById("prog"), where = document.getElementById("where"), count = document.getElementById("count");
+const more = document.getElementById("more"), live = document.getElementById("live");
+let current = 0;
+const hasMore = c => c.scrollHeight - c.clientHeight - c.scrollTop > 6;
+function updateMore(){ more.classList.toggle("show", !sheet.classList.contains("open") && hasMore(cards[current].el)); }
+cards.forEach(c => c.el.addEventListener("scroll", () => { if (cards[current].el === c.el) updateMore(); }, {passive:true}));
+
+function setHeader(idx){
+  if (idx < 0) return;
+  current = idx;
+  const c = cards[idx];
+  prog.style.width = (idx / (cards.length - 1) * 100) + "%";
+  if (c.day >= 0){
+    document.documentElement.style.setProperty("--accent", weekOf(c.day).c);
+    where.innerHTML = `<b>Day ${c.day+1}</b> · ${esc(c.label)}`;
+    store.set("cr2-pos", c.el.id);
+    // The hash names the exact card, so a reload or a restored tab comes back to the same place.
+    if (location.hash !== "#" + c.el.id) history.replaceState(history.state, "", "#" + c.el.id);
+  } else {
+    document.documentElement.style.setProperty("--accent", c.day === -1 ? "var(--w1)" : "var(--w4)");
+    where.textContent = c.day === -1 ? "Cyber Scroll" : "Finished";
+  }
+  updateMore();
+}
+function updateScore(announce){
+  let done = 0, right = 0;
+  DAYS.forEach((d, i) => { const s = quizStats(i+1); done += s.done; right += s.right;
+    const r = recapScores[i+1];
+    if (r) r.innerHTML = s.done ? `Quiz: <b>${s.right} of ${s.total}</b> right${s.done < s.total ? ` · ${s.total - s.done} unanswered` : ""}` : `Quiz: not answered yet`;
+  });
+  count.textContent = `${right}/${done} correct`;
+  if (announce) live.textContent = `${right} of ${done} correct so far`;
+  document.getElementById("score").textContent = `${done} of ${TOTAL_Q} questions answered · ${right} correct`;
+  const es = document.getElementById("endScore");
+  if (es) es.textContent = done ? `You got ${right} of ${done} questions right${done < TOTAL_Q ? `, with ${TOTAL_Q-done} still to do` : ""}.` : "You haven't answered any questions yet.";
+}
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) setHeader(cards.findIndex(c => c.el === e.target)); }), {root:feed, threshold:0.6});
+cards.forEach(c => io.observe(c.el));
+
+function go(idx){
+  idx = Math.max(0, Math.min(cards.length-1, idx));
+  // Smooth for a step or two; instant for long jumps so the Days picker doesn't scroll through hundreds of cards.
+  const smooth = Math.abs(idx - current) <= 2 && !reduceMotion();
+  cards[idx].el.scrollIntoView({behavior: smooth ? "smooth" : "auto"});
+}
+function goDay(n){ go(cards.findIndex(c => c.day === n-1)); }
+// Next and the down keys finish reading a tall card before moving on.
+function next(){
+  const c = cards[current].el;
+  if (hasMore(c)) c.scrollBy({top: c.clientHeight * 0.8, behavior: reduceMotion() ? "auto" : "smooth"});
+  else go(current + 1);
+}
+function prev(){
+  const c = cards[current].el;
+  if (c.scrollTop > 6) c.scrollBy({top: -c.clientHeight * 0.8, behavior: reduceMotion() ? "auto" : "smooth"});
+  else go(current - 1);
+}
+
+// Day picker. Opening it adds a history entry, so the phone's Back button closes it instead of leaving the app.
+const sheet = document.getElementById("sheet"), dayList = document.getElementById("dayList");
+const rail = document.getElementById("rail");
+let opener = null, afterClose = null, ignoreHash = false;
+function renderDays(){
+  const cur = cards[current].day + 1;
+  dayList.innerHTML = WEEKS.map((w,wi) => `<div class="wk" style="color:${w.c}">Week ${w.n} · ${w.name}</div><div class="days">${
+    DAYS.slice(wi*7, wi*7+7).map((d,j) => { const n = wi*7+j+1, s = quizStats(n);
+      const st = s.done === 0 ? "" : s.right < s.done ? "miss" : s.done === s.total ? "ok" : "part";
+      const label = s.done ? s.right + "/" + s.total + " right" : s.total + " questions";
+      return `<button class="day ${st}" style="--dc:${w.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
+  }</div>`).join("");
+  dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => goDay(n)); }));
+}
+function openSheet(e){
+  opener = (e && e.currentTarget) || document.activeElement;
+  renderDays();
+  sheet.classList.add("open");
+  feed.inert = true; rail.inert = true;
+  more.classList.remove("show");
+  history.pushState({sheet:1}, "");
+  const cur = dayList.querySelector('[aria-current="true"]');
+  if (cur) cur.scrollIntoView({block:"center"});
+  document.getElementById("closeDays").focus();
+}
+function hideSheet(){
+  sheet.classList.remove("open");
+  feed.inert = false; rail.inert = false;
+  if (opener && opener.isConnected && opener !== document.body) opener.focus({preventScroll:true}); else feed.focus({preventScroll:true});
+  const f = afterClose; afterClose = null;
+  if (f) f();
+  updateMore();
+}
+function closeSheet(then){
+  if (!sheet.classList.contains("open")) return;
+  afterClose = typeof then === "function" ? then : null;
+  if (history.state && history.state.sheet){
+    // Going back restores the URL from before the sheet opened; ignore the hashchange that follows.
+    ignoreHash = true;
+    history.back();
+  } else hideSheet();
+}
+window.addEventListener("popstate", () => {
+  if (sheet.classList.contains("open")){ ignoreHash = true; hideSheet(); setTimeout(() => { ignoreHash = false; }, 100); }
+});
+document.getElementById("openDays").addEventListener("click", openSheet);
+document.getElementById("pick").addEventListener("click", openSheet);
+document.getElementById("closeDays").addEventListener("click", () => closeSheet());
+sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
+document.getElementById("nextBtn").addEventListener("click", next);
+document.getElementById("toTop").addEventListener("click", () => go(0));
+// Two taps to reset, confirmed in the page itself (some hosts block confirm() dialogs).
+const resetBtn = document.getElementById("reset");
+let resetArmed = null;
+resetBtn.addEventListener("click", () => {
+  if (!resetArmed){
+    resetBtn.textContent = "Tap again to clear all answers";
+    resetArmed = setTimeout(() => { resetArmed = null; resetBtn.textContent = "Reset answers"; }, 4000);
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed = null;
+  answers = {}; store.set("cr2-answers", {}); store.del("cr2-pos");
+  Object.values(resetters).forEach(list => list.forEach(f => f()));
+  updateScore(false);
+  resetBtn.textContent = "Answers cleared";
+  setTimeout(() => { resetBtn.textContent = "Reset answers"; }, 2000);
+  resumeBtn.textContent = "Start Day 1";
+});
+
+// Resume
+const savedId = store.get("cr2-pos", "start");
+const savedIdx = cards.findIndex(c => c.el.id === savedId);
+const resumeBtn = document.getElementById("resume");
+let resumeTo = (savedIdx > 0 && cards[savedIdx].day >= 0) ? savedIdx : -1;
+if (resumeTo > 0) resumeBtn.textContent = `Continue Day ${cards[resumeTo].day+1}`;
+resumeBtn.addEventListener("click", () => resumeTo > 0 && resumeBtn.textContent !== "Start Day 1" ? go(resumeTo) : goDay(1));
+
+document.addEventListener("keydown", e => {
+  if (sheet.classList.contains("open")){ if (e.key === "Escape") closeSheet(); return; }
+  if (e.target.closest && e.target.closest("button") && (e.key === " " || e.key === "Enter")) return;
+  if (["ArrowDown","PageDown","j"," "].includes(e.key)){ e.preventDefault(); next(); }
+  if (["ArrowUp","PageUp","k"].includes(e.key)){ e.preventDefault(); prev(); }
+});
+
+// Hash links: #day-5 opens a day; #d5-7 opens an exact card (that's what the address bar shows while you read).
+function fromHash(){
+  const id = location.hash.slice(1);
+  if (!/^(day-\d+|d\d+-\d+)$/.test(id)) return;
+  const idx = cards.findIndex(c => c.el.id === id);
+  if (idx >= 0) go(idx);
+}
+window.addEventListener("hashchange", () => { if (ignoreHash){ ignoreHash = false; return; } fromHash(); });
+renderDays(); updateScore(false); setHeader(0);
+if (location.hash) requestAnimationFrame(() => setTimeout(fromHash, 50));
+</script>
+</body>
+</html>

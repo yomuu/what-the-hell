@@ -1,0 +1,1914 @@
+{
+ "terms": [
+  {
+   "term": "CIA triad",
+   "definition": "Confidentiality, integrity and availability: the three pillars of security.",
+   "spelling": "CIA triad"
+  },
+  {
+   "term": "Confidentiality",
+   "definition": "Only authorised people can read the data.",
+   "spelling": "confidentiality"
+  },
+  {
+   "term": "Integrity",
+   "definition": "Data isn't changed without authorisation, and changes can be detected.",
+   "spelling": "integrity"
+  },
+  {
+   "term": "Availability",
+   "definition": "Systems and data work when authorised people need them.",
+   "spelling": "availability"
+  },
+  {
+   "term": "Non-repudiation",
+   "definition": "Proof of who signed something, so the signer can't later deny it.",
+   "spelling": "non-repudiation"
+  },
+  {
+   "term": "Hash",
+   "definition": "A short fingerprint of data that changes if the data changes.",
+   "spelling": "hash"
+  },
+  {
+   "term": "Digital signature",
+   "definition": "A cryptographic mark that proves who signed data and that it wasn't altered.",
+   "spelling": "digital signature"
+  },
+  {
+   "term": "Multi-factor authentication (MFA)",
+   "definition": "Proving who you are with two or more different kinds of proof, such as a password and a phone.",
+   "spelling": "multi-factor authentication (MFA)"
+  },
+  {
+   "term": "Distributed denial-of-service (DDoS)",
+   "definition": "An attack that floods a service with junk traffic from many computers so people can't use it.",
+   "spelling": "DDoS"
+  },
+  {
+   "term": "Ransomware",
+   "definition": "Malware that locks or steals data and demands payment.",
+   "spelling": "ransomware"
+  },
+  {
+   "term": "Double extortion",
+   "definition": "Ransomware that steals data and then encrypts it, so attackers can threaten to leak it as well as lock it.",
+   "spelling": "double extortion"
+  },
+  {
+   "term": "Credentials",
+   "definition": "The details you log in with, such as a username and password.",
+   "spelling": "credentials"
+  },
+  {
+   "term": "Privileged credentials",
+   "definition": "Logins with admin-level powers.",
+   "spelling": "privileged credentials"
+  },
+  {
+   "term": "Infostealer",
+   "definition": "Malware that steals saved passwords and login data from a computer.",
+   "spelling": "infostealer"
+  },
+  {
+   "term": "Virtual private network (VPN)",
+   "definition": "A secure link that lets staff log in to a work network remotely.",
+   "spelling": "VPN"
+  },
+  {
+   "term": "Dark web",
+   "definition": "A hidden part of the internet that you can only reach with special software, such as Tor.",
+   "spelling": "dark web"
+  },
+  {
+   "term": "Sanction",
+   "definition": "A government ban on a person or group, such as freezing their money or banning travel.",
+   "spelling": "sanction"
+  },
+  {
+   "term": "Vulnerability",
+   "definition": "A weakness that could be exploited to cause harm.",
+   "spelling": "vulnerability"
+  },
+  {
+   "term": "Threat",
+   "definition": "Anything that could exploit a vulnerability and cause harm.",
+   "spelling": "threat"
+  },
+  {
+   "term": "Risk",
+   "definition": "How likely a threat is to exploit a vulnerability, combined with how much harm it would cause.",
+   "spelling": "risk"
+  },
+  {
+   "term": "Risk treatment",
+   "definition": "Choosing to mitigate, transfer, avoid or accept a risk.",
+   "spelling": "risk treatment"
+  },
+  {
+   "term": "Exploit",
+   "definition": "To use a flaw to cause harm, or a tool that does this.",
+   "spelling": "exploit"
+  },
+  {
+   "term": "Authentication",
+   "definition": "Checking proof that you are who you claim to be.",
+   "spelling": "authentication"
+  },
+  {
+   "term": "Authorisation",
+   "definition": "Deciding what an authenticated identity is allowed to do.",
+   "spelling": "authorisation"
+  },
+  {
+   "term": "Accounting",
+   "definition": "Recording who did what and when, also called auditing.",
+   "spelling": "accounting"
+  },
+  {
+   "term": "AAA",
+   "definition": "Authentication, authorisation and accounting together.",
+   "spelling": "AAA"
+  },
+  {
+   "term": "Least privilege",
+   "definition": "Giving each person and process only the access their job needs, for only as long as they need it.",
+   "spelling": "least privilege"
+  },
+  {
+   "term": "OWASP Top 10",
+   "definition": "A list of the most critical web app security risks, published by the Open Worldwide Application Security Project.",
+   "spelling": "OWASP Top 10"
+  },
+  {
+   "term": "Broken access control",
+   "definition": "An app failing to check what a logged-in user is allowed to see or do.",
+   "spelling": "Broken Access Control (as an OWASP category name)"
+  },
+  {
+   "term": "SIM swapping",
+   "definition": "Moving your phone number to an attacker's SIM card, so your text-message codes go to them.",
+   "spelling": "SIM swapping"
+  },
+  {
+   "term": "Passkey",
+   "definition": "A login stored on your device that only works on the real website it was created for.",
+   "spelling": "passkey"
+  },
+  {
+   "term": "FIDO2 security key",
+   "definition": "A small hardware key that proves who you are and only works on the real website.",
+   "spelling": "FIDO2 security key"
+  },
+  {
+   "term": "Phishing-resistant MFA",
+   "definition": "MFA that still protects you if you log in on a fake website.",
+   "spelling": "phishing-resistant"
+  },
+  {
+   "term": "Authenticator app",
+   "definition": "A phone app that shows short login codes.",
+   "spelling": "authenticator app"
+  },
+  {
+   "term": "Push approval",
+   "definition": "A prompt on your phone that you tap to log in.",
+   "spelling": "push approval"
+  },
+  {
+   "term": "Number matching",
+   "definition": "A push approval check where you type a number from the login screen into your phone.",
+   "spelling": "number matching"
+  },
+  {
+   "term": "Time-based one-time password (TOTP)",
+   "definition": "A short login code that changes at set intervals.",
+   "spelling": "TOTP"
+  },
+  {
+   "term": "Cyber hygiene",
+   "definition": "Routine security habits, such as patching, backups and MFA.",
+   "spelling": "cyber hygiene"
+  },
+  {
+   "term": "Hardening",
+   "definition": "Changing insecure default settings to shrink the attack surface.",
+   "spelling": "hardening"
+  },
+  {
+   "term": "Attack surface",
+   "definition": "All the ways an attacker could get into a system.",
+   "spelling": "attack surface"
+  },
+  {
+   "term": "Immutable backup",
+   "definition": "A backup copy that can't be changed or deleted.",
+   "spelling": "immutable backup"
+  },
+  {
+   "term": "3-2-1 backups",
+   "definition": "Three copies of data, on two types of storage, with one offsite.",
+   "spelling": "3-2-1"
+  },
+  {
+   "term": "Default credentials",
+   "definition": "The factory username and password a device comes with.",
+   "spelling": "default credentials"
+  },
+  {
+   "term": "CIS Benchmarks",
+   "definition": "Free hardening guides from the Center for Internet Security that list recommended secure settings.",
+   "spelling": "CIS Benchmarks"
+  },
+  {
+   "term": "Botnet",
+   "definition": "A network of hijacked devices that an attacker controls.",
+   "spelling": "botnet"
+  },
+  {
+   "term": "Phishing",
+   "definition": "Tricking people into handing over login details, approving payments or running malware.",
+   "spelling": "phishing"
+  },
+  {
+   "term": "Spear phishing",
+   "definition": "Phishing that targets one person with researched details.",
+   "spelling": "spear phishing"
+  },
+  {
+   "term": "Smishing",
+   "definition": "Phishing by SMS text message.",
+   "spelling": "smishing"
+  },
+  {
+   "term": "Vishing",
+   "definition": "Phishing by phone call.",
+   "spelling": "vishing"
+  },
+  {
+   "term": "Business email compromise (BEC)",
+   "definition": "Using a hijacked or look-alike mailbox to ask for a payment or new bank details.",
+   "spelling": "business email compromise (BEC)"
+  },
+  {
+   "term": "Malware",
+   "definition": "Any malicious software, such as viruses, worms, trojans and spyware.",
+   "spelling": "malware"
+  },
+  {
+   "term": "Brute force",
+   "definition": "Trying many passwords on one account.",
+   "spelling": "brute force"
+  },
+  {
+   "term": "Password spraying",
+   "definition": "Trying one common password on many accounts to avoid lockouts.",
+   "spelling": "password spraying"
+  },
+  {
+   "term": "Credential stuffing",
+   "definition": "Trying username and password pairs leaked from other sites.",
+   "spelling": "credential stuffing"
+  },
+  {
+   "term": "Denial-of-service (DoS)",
+   "definition": "An attack that floods or crashes a target so it's unavailable.",
+   "spelling": "denial-of-service (DoS)"
+  },
+  {
+   "term": "On-path attack",
+   "definition": "An attacker secretly sitting between two parties to read or change their traffic.",
+   "spelling": "on-path attack (also called man-in-the-middle)"
+  },
+  {
+   "term": "ARP spoofing",
+   "definition": "Faking local network address replies so traffic goes to the attacker.",
+   "spelling": "ARP spoofing"
+  },
+  {
+   "term": "Injection",
+   "definition": "An attack where an app treats user input as code.",
+   "spelling": "injection"
+  },
+  {
+   "term": "Parameterised query",
+   "definition": "A database query that keeps user input separate from the command.",
+   "spelling": "parameterised query"
+  },
+  {
+   "term": "SPF, DKIM and DMARC",
+   "definition": "Email checks that show whether a message really came from the domain it claims.",
+   "spelling": "SPF, DKIM and DMARC"
+  },
+  {
+   "term": "Defence in depth",
+   "definition": "Using several layers of controls, so one failure doesn't leave you exposed.",
+   "spelling": "defence in depth"
+  },
+  {
+   "term": "Media access control (MAC) address",
+   "definition": "A hardware address used to deliver data between devices on the same local network.",
+   "spelling": "MAC address"
+  },
+  {
+   "term": "IP address",
+   "definition": "A numbered address that gets data across networks to the right host.",
+   "spelling": "IP address"
+  },
+  {
+   "term": "Network address translation (NAT)",
+   "definition": "A router feature that shares one public IP address among many private devices.",
+   "spelling": "NAT"
+  },
+  {
+   "term": "Address Resolution Protocol (ARP)",
+   "definition": "A local network protocol that finds the MAC address for an IP address.",
+   "spelling": "ARP"
+  },
+  {
+   "term": "Loopback",
+   "definition": "Usually 127.0.0.1: an address a machine uses to talk to itself.",
+   "spelling": "loopback"
+  },
+  {
+   "term": "Virtual machine (VM)",
+   "definition": "A computer simulated in software, running inside a real one.",
+   "spelling": "VM"
+  },
+  {
+   "term": "Subnet",
+   "definition": "A smaller network carved out of a bigger one.",
+   "spelling": "subnet"
+  },
+  {
+   "term": "Classless Inter-Domain Routing (CIDR) notation",
+   "definition": "Writing a network as an address plus a slash number, such as /24, that counts the network bits.",
+   "spelling": "CIDR notation"
+  },
+  {
+   "term": "Segmentation",
+   "definition": "Splitting a network into zones, with rules that limit traffic between them.",
+   "spelling": "segmentation"
+  },
+  {
+   "term": "Lateral movement",
+   "definition": "An attacker moving sideways from one system to another inside a network.",
+   "spelling": "lateral movement"
+  },
+  {
+   "term": "Virtual local area network (VLAN)",
+   "definition": "A separate logical network created on shared switches.",
+   "spelling": "VLAN"
+  },
+  {
+   "term": "Transmission Control Protocol (TCP)",
+   "definition": "A transport protocol that sets up a connection and delivers data reliably and in order.",
+   "spelling": "TCP"
+  },
+  {
+   "term": "User Datagram Protocol (UDP)",
+   "definition": "A transport protocol that sends data without a connection or delivery guarantee.",
+   "spelling": "UDP"
+  },
+  {
+   "term": "Three-way handshake",
+   "definition": "The SYN, SYN-ACK, ACK exchange that opens a TCP connection.",
+   "spelling": "three-way handshake"
+  },
+  {
+   "term": "QUIC",
+   "definition": "A transport protocol that adds reliability and TLS encryption on top of UDP, used by HTTP/3.",
+   "spelling": "QUIC"
+  },
+  {
+   "term": "Amplification attack",
+   "definition": "A DDoS attack that sends small spoofed requests to servers that send much bigger replies to the victim.",
+   "spelling": "amplification attack"
+  },
+  {
+   "term": "Port",
+   "definition": "A number from 0 to 65535 that gets traffic to the right service on a host.",
+   "spelling": "port"
+  },
+  {
+   "term": "Socket",
+   "definition": "One end of a network connection, identified by an IP address and port.",
+   "spelling": "socket"
+  },
+  {
+   "term": "Filtered port",
+   "definition": "A port that gives no useful answer, usually because a firewall dropped the probe.",
+   "spelling": "filtered"
+  },
+  {
+   "term": "Cleartext",
+   "definition": "Data sent without encryption, so anyone on the path can read it.",
+   "spelling": "cleartext"
+  },
+  {
+   "term": "File Transfer Protocol (FTP)",
+   "definition": "An old protocol for copying files that sends everything unencrypted.",
+   "spelling": "FTP"
+  },
+  {
+   "term": "Secure Shell (SSH)",
+   "definition": "An encrypted protocol for logging in to and managing remote machines.",
+   "spelling": "SSH"
+  },
+  {
+   "term": "Telnet",
+   "definition": "An old remote login protocol that sends everything unencrypted, passwords included.",
+   "spelling": "Telnet"
+  },
+  {
+   "term": "Simple Mail Transfer Protocol (SMTP)",
+   "definition": "The protocol mail servers use to send email.",
+   "spelling": "SMTP"
+  },
+  {
+   "term": "Hypertext Transfer Protocol (HTTP)",
+   "definition": "The protocol web browsers use to fetch web pages, without encryption.",
+   "spelling": "HTTP"
+  },
+  {
+   "term": "Post Office Protocol version 3 (POP3)",
+   "definition": "A protocol for downloading email from a mail server.",
+   "spelling": "POP3"
+  },
+  {
+   "term": "Internet Message Access Protocol (IMAP)",
+   "definition": "A protocol for reading email that stays on the mail server.",
+   "spelling": "IMAP"
+  },
+  {
+   "term": "Server Message Block (SMB)",
+   "definition": "The Windows file-sharing protocol.",
+   "spelling": "SMB"
+  },
+  {
+   "term": "Remote Desktop Protocol (RDP)",
+   "definition": "Microsoft's protocol for controlling a Windows desktop remotely.",
+   "spelling": "RDP"
+  },
+  {
+   "term": "Domain Name System (DNS)",
+   "definition": "The service that turns names like example.com into IP addresses.",
+   "spelling": "DNS"
+  },
+  {
+   "term": "Recursive resolver",
+   "definition": "A server that looks up names for you.",
+   "spelling": "recursive resolver"
+  },
+  {
+   "term": "Dynamic Host Configuration Protocol (DHCP)",
+   "definition": "The service that gives devices an IP address and network settings when they join a network.",
+   "spelling": "DHCP"
+  },
+  {
+   "term": "DNS cache poisoning",
+   "definition": "Tricking a DNS resolver into storing a fake answer.",
+   "spelling": "cache poisoning"
+  },
+  {
+   "term": "DNS hijacking",
+   "definition": "Changing a domain's real DNS records, often through a stolen login to its registrar account.",
+   "spelling": "hijacking"
+  },
+  {
+   "term": "DNS Security Extensions (DNSSEC)",
+   "definition": "Signatures that let resolvers check a DNS answer came from the domain owner.",
+   "spelling": "DNSSEC"
+  },
+  {
+   "term": "Rogue DHCP server",
+   "definition": "An unauthorised DHCP server that hands out malicious network settings.",
+   "spelling": "rogue DHCP server"
+  },
+  {
+   "term": "Transport Layer Security (TLS)",
+   "definition": "Encryption that protects data in transit and proves the server's identity.",
+   "spelling": "TLS"
+  },
+  {
+   "term": "HTTPS",
+   "definition": "Encrypted web traffic, which is HTTP wrapped in TLS.",
+   "spelling": "HTTPS"
+  },
+  {
+   "term": "Certificate",
+   "definition": "A file that binds a domain name to a public key, signed by a certificate authority.",
+   "spelling": "certificate"
+  },
+  {
+   "term": "Certificate authority (CA)",
+   "definition": "A trusted organisation that signs certificates.",
+   "spelling": "certificate authority (CA)"
+  },
+  {
+   "term": "Firewall",
+   "definition": "A device or program that allows or blocks traffic based on rules.",
+   "spelling": "firewall"
+  },
+  {
+   "term": "Stateful firewall",
+   "definition": "A firewall that tracks connections, so replies to traffic you started are let back in.",
+   "spelling": "stateful firewall"
+  },
+  {
+   "term": "Next-generation firewall (NGFW)",
+   "definition": "A firewall that can also identify applications and users and inspect content.",
+   "spelling": "next-generation firewall (NGFW)"
+  },
+  {
+   "term": "Web application firewall (WAF)",
+   "definition": "A firewall in front of a web app that filters HTTP requests for attacks.",
+   "spelling": "WAF"
+  },
+  {
+   "term": "Default deny",
+   "definition": "Blocking everything, then allowing only what's needed.",
+   "spelling": "default deny"
+  },
+  {
+   "term": "Egress filtering",
+   "definition": "Firewall rules that filter traffic going out of a network.",
+   "spelling": "egress filtering"
+  },
+  {
+   "term": "DHCP snooping",
+   "definition": "A switch feature that blocks DHCP replies from ports where no real DHCP server should be.",
+   "spelling": "DHCP snooping"
+  },
+  {
+   "term": "DHCP starvation",
+   "definition": "An attack that requests every free address so real devices can't get one.",
+   "spelling": "DHCP starvation"
+  },
+  {
+   "term": "Zone transfer",
+   "definition": "Copying a domain's DNS records from one DNS server to another.",
+   "spelling": "zone transfer"
+  },
+  {
+   "term": "Time to live (TTL)",
+   "definition": "How long a DNS answer can be cached before it must be looked up again.",
+   "spelling": "time to live (TTL)"
+  },
+  {
+   "term": "Top-level domain (TLD)",
+   "definition": "The last part of a domain name, such as .com or .nz.",
+   "spelling": "top-level domain (TLD)"
+  },
+  {
+   "term": "802.1X",
+   "definition": "A standard that makes a device or its user log in before a network lets it in.",
+   "spelling": "802.1X"
+  },
+  {
+   "term": "Certificate Transparency",
+   "definition": "Public logs of every certificate issued, so wrongly issued ones can be spotted.",
+   "spelling": "Certificate Transparency"
+  },
+  {
+   "term": "Version scan",
+   "definition": "A scan that probes open ports and matches the replies to known software.",
+   "spelling": "version scan"
+  },
+  {
+   "term": "Registry",
+   "definition": "Windows' central database of configuration settings.",
+   "spelling": "Registry"
+  },
+  {
+   "term": "Active Directory (AD)",
+   "definition": "Microsoft's directory of an organisation's users, groups and computers.",
+   "spelling": "Active Directory (AD)"
+  },
+  {
+   "term": "Group Policy",
+   "definition": "A Windows feature that pushes settings from Active Directory to users and computers.",
+   "spelling": "Group Policy"
+  },
+  {
+   "term": "Linux distribution",
+   "definition": "The Linux kernel bundled with tools and a package manager.",
+   "spelling": "distribution"
+  },
+  {
+   "term": "Package manager",
+   "definition": "A tool that installs and updates software, such as apt or dnf.",
+   "spelling": "package manager"
+  },
+  {
+   "term": "Persistence",
+   "definition": "A way for malware to start again automatically, such as after a reboot or logon.",
+   "spelling": "persistence"
+  },
+  {
+   "term": "Root",
+   "definition": "The all-powerful admin account on Linux, with user ID 0.",
+   "spelling": "root"
+  },
+  {
+   "term": "sudo",
+   "definition": "A Linux command that runs one command as root or as another user.",
+   "spelling": "sudo"
+  },
+  {
+   "term": "Access control list (ACL)",
+   "definition": "A list attached to a file or other object that says who gets which rights.",
+   "spelling": "ACL"
+  },
+  {
+   "term": "User Account Control (UAC)",
+   "definition": "A Windows feature that runs admins with standard rights until they approve elevation.",
+   "spelling": "UAC"
+  },
+  {
+   "term": "Set user ID (SUID)",
+   "definition": "A Linux permission bit that makes a program run as its owner, not as the person running it.",
+   "spelling": "SUID"
+  },
+  {
+   "term": "Privilege escalation",
+   "definition": "Gaining more rights than you were given, such as becoming root.",
+   "spelling": "privilege escalation"
+  },
+  {
+   "term": "Process",
+   "definition": "A running program, with its own process ID (PID).",
+   "spelling": "process"
+  },
+  {
+   "term": "Parent process",
+   "definition": "The process that started another process.",
+   "spelling": "parent process"
+  },
+  {
+   "term": "Service",
+   "definition": "A program that runs in the background without needing anyone logged in.",
+   "spelling": "service"
+  },
+  {
+   "term": "Daemon",
+   "definition": "The Linux name for a background service.",
+   "spelling": "daemon"
+  },
+  {
+   "term": "systemd",
+   "definition": "The service manager on most Linux distributions.",
+   "spelling": "systemd"
+  },
+  {
+   "term": "Command line",
+   "definition": "A text interface where you type commands instead of clicking.",
+   "spelling": "command line (command-line before a noun)"
+  },
+  {
+   "term": "Graphical user interface (GUI)",
+   "definition": "A screen of windows, menus and buttons that you click.",
+   "spelling": "GUI"
+  },
+  {
+   "term": "Flag",
+   "definition": "An option added to a command, such as -la in ls -la.",
+   "spelling": "flag"
+  },
+  {
+   "term": "Pipe",
+   "definition": "The | symbol, which sends one command's output into the next command.",
+   "spelling": "pipe"
+  },
+  {
+   "term": "PowerShell",
+   "definition": "Microsoft's command-line shell and scripting language, which passes objects between commands.",
+   "spelling": "PowerShell"
+  },
+  {
+   "term": "Encryption",
+   "definition": "Scrambling data so only someone with the right key can read it.",
+   "spelling": "encryption"
+  },
+  {
+   "term": "Symmetric encryption",
+   "definition": "Encryption that uses one shared key to encrypt and decrypt.",
+   "spelling": "symmetric encryption"
+  },
+  {
+   "term": "Asymmetric cryptography",
+   "definition": "Cryptography that uses a key pair, made of a public key and a private key.",
+   "spelling": "asymmetric cryptography"
+  },
+  {
+   "term": "Salt",
+   "definition": "A random value added to each password before hashing, so identical passwords get different hashes.",
+   "spelling": "salt"
+  },
+  {
+   "term": "Hypervisor",
+   "definition": "Software that runs virtual machines.",
+   "spelling": "hypervisor"
+  },
+  {
+   "term": "Host machine",
+   "definition": "The real computer that runs the hypervisor and its VMs.",
+   "spelling": "host machine"
+  },
+  {
+   "term": "Snapshot",
+   "definition": "A saved state of a VM that you can roll back to.",
+   "spelling": "snapshot"
+  },
+  {
+   "term": "VM escape",
+   "definition": "Code in a VM breaking out to reach the host machine.",
+   "spelling": "VM escape"
+  },
+  {
+   "term": "Hashing rounds",
+   "definition": "The number of times a password is hashed, which makes each guess slower.",
+   "spelling": "hashing rounds"
+  },
+  {
+   "term": "Nmap",
+   "definition": "A network scanner that finds live hosts, open ports, running services and their versions.",
+   "spelling": "Nmap"
+  },
+  {
+   "term": "Reconnaissance",
+   "definition": "Gathering information about a target before an attack.",
+   "spelling": "reconnaissance"
+  },
+  {
+   "term": "Host discovery",
+   "definition": "Finding which addresses on a network belong to live devices.",
+   "spelling": "host discovery"
+  },
+  {
+   "term": "SYN scan",
+   "definition": "A port scan that starts the TCP handshake but never finishes it, also called a half-open scan.",
+   "spelling": "SYN scan"
+  },
+  {
+   "term": "Connect scan",
+   "definition": "A port scan that completes the full TCP handshake, which Nmap uses when it isn't run as root.",
+   "spelling": "connect scan"
+  },
+  {
+   "term": "HTTP Strict Transport Security (HSTS)",
+   "definition": "A setting where a site tells your browser to use HTTPS only. After the first secure visit, the browser won't fall back to plain HTTP.",
+   "spelling": "HTTP Strict Transport Security (HSTS)"
+  },
+  {
+   "term": "SSL stripping",
+   "definition": "An on-path attack that keeps your browser on plain, unencrypted HTTP instead of HTTPS.",
+   "spelling": "SSL stripping"
+  },
+  {
+   "term": "Smart-card login",
+   "definition": "Logging in with a physical card that holds a cryptographic key; a phishing-resistant method.",
+   "spelling": "smart-card login"
+  },
+  {
+   "term": "Intrusion detection system (IDS)",
+   "definition": "A tool that watches network or system activity and alerts on signs of an attack.",
+   "spelling": "intrusion detection system (IDS)"
+  },
+  {
+   "term": "Wireshark",
+   "definition": "A tool that captures network packets and decodes every layer so you can read them.",
+   "spelling": "Wireshark"
+  },
+  {
+   "term": "Capture filter",
+   "definition": "A filter that decides which packets Wireshark records.",
+   "spelling": "capture filter"
+  },
+  {
+   "term": "Display filter",
+   "definition": "A filter that decides which recorded packets Wireshark shows you.",
+   "spelling": "display filter"
+  },
+  {
+   "term": "Berkeley Packet Filter (BPF)",
+   "definition": "The syntax used to write capture filters, such as host 10.10.10.20.",
+   "spelling": "BPF"
+  },
+  {
+   "term": "Metadata",
+   "definition": "Data about traffic, such as addresses, ports and timing, rather than its content.",
+   "spelling": "metadata"
+  },
+  {
+   "term": "Session cookie",
+   "definition": "A token a website stores in your browser to keep you logged in.",
+   "spelling": "session cookie"
+  },
+  {
+   "term": "Event ID",
+   "definition": "A number that identifies the type of event in a Windows log, such as 4625 for a failed logon.",
+   "spelling": "Event ID"
+  },
+  {
+   "term": "Logon type",
+   "definition": "A number in a Windows logon event that shows how someone logged on, such as 10 for Remote Desktop.",
+   "spelling": "logon type"
+  },
+  {
+   "term": "Security information and event management (SIEM)",
+   "definition": "A system that collects logs from many systems in one place, correlates them and raises alerts.",
+   "spelling": "SIEM"
+  },
+  {
+   "term": "Network Level Authentication (NLA)",
+   "definition": "A Remote Desktop setting that makes users log in before a full remote session starts.",
+   "spelling": "Network Level Authentication (NLA)"
+  },
+  {
+   "term": "Port scan",
+   "definition": "Probing many ports on a host to see which ones answer.",
+   "spelling": "port scan"
+  },
+  {
+   "term": "Firewall log",
+   "definition": "A file where a firewall records the traffic it allowed or blocked.",
+   "spelling": "firewall log"
+  },
+  {
+   "term": "Security operations centre (SOC)",
+   "definition": "A team that monitors an organisation's systems and responds to alerts.",
+   "spelling": "security operations centre (SOC)"
+  },
+  {
+   "term": "Network flow record",
+   "definition": "A summary of who talked to whom, on which ports and how much data moved.",
+   "spelling": "network flow record"
+  },
+  {
+   "term": "Incident response",
+   "definition": "The plan and steps for detecting, containing and recovering from a security incident.",
+   "spelling": "incident response"
+  },
+  {
+   "term": "Containment",
+   "definition": "Stopping an incident from spreading, such as by isolating a machine from the network.",
+   "spelling": "containment"
+  },
+  {
+   "term": "NIST Cybersecurity Framework (CSF) 2.0",
+   "definition": "A US framework that sorts security work into six functions, such as Govern and Respond.",
+   "spelling": "NIST CSF 2.0"
+  },
+  {
+   "term": "Blameless review",
+   "definition": "A review after an incident that looks for what failed, not who to blame.",
+   "spelling": "blameless review"
+  },
+  {
+   "term": "Domain controller",
+   "definition": "A server that holds Active Directory and handles logins.",
+   "spelling": "domain controller"
+  },
+  {
+   "term": "Third-party access",
+   "definition": "Access to your systems or data held by an outside company, such as a vendor.",
+   "spelling": "third-party access"
+  },
+  {
+   "term": "Data retention",
+   "definition": "How long an organisation keeps data before deleting it.",
+   "spelling": "data retention"
+  },
+  {
+   "term": "Portfolio",
+   "definition": "A collection of your own work, such as lab write-ups, that shows employers your skills.",
+   "spelling": "portfolio"
+  },
+  {
+   "term": "Certification",
+   "definition": "An exam-based qualification, such as CompTIA Security+.",
+   "spelling": "certification"
+  },
+  {
+   "term": "Deliberately vulnerable VM",
+   "definition": "A VM built with known flaws so you can practise attacks safely.",
+   "spelling": "deliberately vulnerable VM"
+  },
+  {
+   "term": "Microsoft Entra ID",
+   "definition": "Microsoft's cloud identity service for Microsoft 365 and Azure, called Azure Active Directory until 2023.",
+   "spelling": "Microsoft Entra ID (Entra ID after first use)"
+  },
+  {
+   "term": "Tenant",
+   "definition": "An organisation's own private instance of Entra ID, holding its users, groups and apps.",
+   "spelling": "tenant"
+  },
+  {
+   "term": "Privileged Identity Management (PIM)",
+   "definition": "An Entra ID feature that lets people switch on an admin role only when they need it.",
+   "spelling": "PIM"
+  },
+  {
+   "term": "Service principal",
+   "definition": "An app's identity in Entra ID, which lets it sign in and hold permissions.",
+   "spelling": "service principal"
+  },
+  {
+   "term": "Zero-day",
+   "definition": "A flaw attackers use before a fix exists.",
+   "spelling": "zero-day"
+  },
+  {
+   "term": "Consent phishing",
+   "definition": "Tricking users into giving a malicious app access to their account or data.",
+   "spelling": "consent phishing"
+  },
+  {
+   "term": "Token theft",
+   "definition": "Stealing the proof that a user has already signed in, so an attacker can reuse their session.",
+   "spelling": "token theft"
+  },
+  {
+   "term": "Conditional Access",
+   "definition": "Entra ID rules that block a sign-in, allow it or require more, such as multi-factor authentication (MFA).",
+   "spelling": "Conditional Access"
+  },
+  {
+   "term": "Security defaults",
+   "definition": "A free, simpler Entra ID setting that makes everyone register for MFA and blocks legacy authentication.",
+   "spelling": "security defaults"
+  },
+  {
+   "term": "Legacy authentication",
+   "definition": "Old sign-in protocols, such as basic authentication for email, that can't do MFA.",
+   "spelling": "legacy authentication"
+  },
+  {
+   "term": "Emergency access (break-glass) account",
+   "definition": "An admin account for getting back in if everyone else is locked out.",
+   "spelling": "emergency access account, break-glass account"
+  },
+  {
+   "term": "Compliant device",
+   "definition": "A device that meets your organisation's device rules.",
+   "spelling": "compliant device"
+  },
+  {
+   "term": "Azure role-based access control (RBAC)",
+   "definition": "The permission system for Azure resources, such as virtual machines and storage.",
+   "spelling": "Azure RBAC"
+  },
+  {
+   "term": "Scope",
+   "definition": "The level a role applies at, from a management group down to a single resource.",
+   "spelling": "scope"
+  },
+  {
+   "term": "Security principal",
+   "definition": "A user, group or app that can be given a role.",
+   "spelling": "security principal"
+  },
+  {
+   "term": "Role assignment",
+   "definition": "A link between a security principal, a role definition and a scope.",
+   "spelling": "role assignment"
+  },
+  {
+   "term": "Endpoint detection and response (EDR)",
+   "definition": "A tool that records what happens on devices, so you can detect, investigate and respond to attacks.",
+   "spelling": "EDR"
+  },
+  {
+   "term": "Device isolation",
+   "definition": "Cutting a device off from the network while it stays connected to Defender.",
+   "spelling": "device isolation"
+  },
+  {
+   "term": "Advanced hunting",
+   "definition": "A Defender tool for searching up to 30 days of security data, such as device and email events, with queries.",
+   "spelling": "advanced hunting"
+  },
+  {
+   "term": "Kusto Query Language (KQL)",
+   "definition": "Microsoft's query language for searching log data, used in Defender and Sentinel.",
+   "spelling": "KQL"
+  },
+  {
+   "term": "Attack surface reduction rules",
+   "definition": "Defender for Endpoint rules that block common attack steps, such as Office apps creating child processes.",
+   "spelling": "attack surface reduction rules"
+  },
+  {
+   "term": "Child process",
+   "definition": "A program started by another program.",
+   "spelling": "child process"
+  },
+  {
+   "term": "Security orchestration, automation and response (SOAR)",
+   "definition": "Tools that automate response steps, such as disabling a user.",
+   "spelling": "SOAR"
+  },
+  {
+   "term": "Analytics rule",
+   "definition": "A Sentinel query, usually run on a schedule, that looks for suspicious patterns and raises alerts.",
+   "spelling": "analytics rule"
+  },
+  {
+   "term": "Entity",
+   "definition": "Something an alert involves, such as an account, host or IP address.",
+   "spelling": "entity"
+  },
+  {
+   "term": "Alert fatigue",
+   "definition": "When so many alerts arrive that analysts start to miss real ones.",
+   "spelling": "alert fatigue"
+  },
+  {
+   "term": "Benign positive",
+   "definition": "Real, detected activity that wasn't malicious, such as approved admin work.",
+   "spelling": "benign positive"
+  },
+  {
+   "term": "Playbook (Sentinel)",
+   "definition": "An automated workflow, built on Azure Logic Apps, that takes response actions.",
+   "spelling": "playbook"
+  },
+  {
+   "term": "Common Vulnerabilities and Exposures (CVE)",
+   "definition": "An ID that names one publicly known vulnerability.",
+   "spelling": "CVE"
+  },
+  {
+   "term": "Common Vulnerability Scoring System (CVSS)",
+   "definition": "A 0 to 10 score for how severe a vulnerability is.",
+   "spelling": "CVSS"
+  },
+  {
+   "term": "Exploit Prediction Scoring System (EPSS)",
+   "definition": "An estimate of how likely a vulnerability is to be exploited in the next 30 days.",
+   "spelling": "EPSS"
+  },
+  {
+   "term": "Known Exploited Vulnerabilities (KEV) catalogue",
+   "definition": "A US government list of flaws that attackers are exploiting in the wild.",
+   "spelling": "KEV catalogue"
+  },
+  {
+   "term": "Session token",
+   "definition": "Proof that a user is logged in, which keeps their session open.",
+   "spelling": "session token"
+  },
+  {
+   "term": "Foothold",
+   "definition": "An attacker's first point of access inside a system or network.",
+   "spelling": "foothold"
+  },
+  {
+   "term": "Perimeter",
+   "definition": "The boundary where you control who and what gets in.",
+   "spelling": "perimeter"
+  },
+  {
+   "term": "Insecure direct object reference (IDOR)",
+   "definition": "A flaw where changing an ID in a request shows someone else's data, because the app doesn't check ownership.",
+   "spelling": "insecure direct object reference (IDOR)"
+  },
+  {
+   "term": "Server-side request forgery (SSRF)",
+   "definition": "Tricking a server into fetching a URL for the attacker, often an internal one.",
+   "spelling": "server-side request forgery (SSRF)"
+  },
+  {
+   "term": "Cloud metadata service",
+   "definition": "A built-in cloud service that gives a server its settings and temporary credentials.",
+   "spelling": "cloud metadata service"
+  },
+  {
+   "term": "Security misconfiguration",
+   "definition": "Insecure settings, rather than buggy code, that leave a system open to attack.",
+   "spelling": "Security Misconfiguration (as an OWASP category name)"
+  },
+  {
+   "term": "Cloud security posture management (CSPM)",
+   "definition": "A tool that scans cloud settings automatically for risky misconfigurations.",
+   "spelling": "CSPM"
+  },
+  {
+   "term": "Stack trace",
+   "definition": "A detailed error report that lists the functions and file paths running when the error happened.",
+   "spelling": "stack trace"
+  },
+  {
+   "term": "Software supply chain",
+   "definition": "Everything that goes into your software, such as libraries, build tools, pipelines and the people who maintain them.",
+   "spelling": "software supply chain"
+  },
+  {
+   "term": "Software bill of materials (SBOM)",
+   "definition": "A list of every component and version in the software you ship.",
+   "spelling": "SBOM"
+  },
+  {
+   "term": "Continuous integration and delivery (CI/CD) pipeline",
+   "definition": "Automated steps that build, test and release code.",
+   "spelling": "CI/CD pipeline"
+  },
+  {
+   "term": "Backdoor",
+   "definition": "Hidden code that gives an attacker secret access.",
+   "spelling": "backdoor"
+  },
+  {
+   "term": "Key management service",
+   "definition": "A service that stores and controls encryption keys outside your code.",
+   "spelling": "key management service"
+  },
+  {
+   "term": "Secrets manager",
+   "definition": "A service that stores keys, passwords and other secrets safely, outside your code.",
+   "spelling": "secrets manager"
+  },
+  {
+   "term": "Cross-site scripting (XSS)",
+   "definition": "Injecting script into a web page so it runs in other users' browsers.",
+   "spelling": "cross-site scripting (XSS)"
+  },
+  {
+   "term": "Object-relational mapper (ORM)",
+   "definition": "A library that builds database queries from code, so you don't write them by hand.",
+   "spelling": "ORM"
+  },
+  {
+   "term": "Insecure design",
+   "definition": "A flaw in how a feature was planned, not in how it was coded.",
+   "spelling": "Insecure Design (as an OWASP category name)"
+  },
+  {
+   "term": "Threat modelling",
+   "definition": "Thinking through what could go wrong with a feature, and who would abuse it, before you build it.",
+   "spelling": "threat modelling (threat model as a verb)"
+  },
+  {
+   "term": "Abuse case",
+   "definition": "A description of how someone could misuse a feature, written next to the normal user story.",
+   "spelling": "abuse case"
+  },
+  {
+   "term": "Rate limiting",
+   "definition": "Capping how many requests someone can make in a set time.",
+   "spelling": "rate limiting (rate-limit as a verb)"
+  },
+  {
+   "term": "Code signing",
+   "definition": "Signing software so users can check who made it and that it wasn't changed.",
+   "spelling": "code signing"
+  },
+  {
+   "term": "Deserialisation",
+   "definition": "Turning stored or received data back into objects a program can use.",
+   "spelling": "deserialisation"
+  },
+  {
+   "term": "Log",
+   "definition": "A record of events, such as logins and errors, that a system writes as it runs.",
+   "spelling": "log"
+  },
+  {
+   "term": "Alert",
+   "definition": "A message that tells a person something suspicious has happened.",
+   "spelling": "alert"
+  },
+  {
+   "term": "Exceptional condition",
+   "definition": "An error or unusual situation, such as bad input or a failed connection.",
+   "spelling": "exceptional condition"
+  },
+  {
+   "term": "Failing open",
+   "definition": "Allowing access when a security check breaks.",
+   "spelling": "failing open (fail open)"
+  },
+  {
+   "term": "Failing closed",
+   "definition": "Denying access when a security check breaks.",
+   "spelling": "failing closed (fail closed)"
+  },
+  {
+   "term": "Out-of-bounds memory read",
+   "definition": "A program reading memory outside the area it's allowed to use.",
+   "spelling": "out-of-bounds memory read"
+  },
+  {
+   "term": "Remote access portal",
+   "definition": "A login page that lets people reach internal systems from outside the network.",
+   "spelling": "remote access portal"
+  },
+  {
+   "term": "Data exfiltration",
+   "definition": "Copying data out of a network without permission.",
+   "spelling": "data exfiltration"
+  },
+  {
+   "term": "Web shell",
+   "definition": "A malicious script planted on a web server that lets an attacker run commands on it remotely.",
+   "spelling": "web shell"
+  },
+  {
+   "term": "Library",
+   "definition": "Ready-made code that many programs reuse instead of writing it themselves.",
+   "spelling": "library"
+  },
+  {
+   "term": "Dependency",
+   "definition": "A library or other software that your software needs in order to run.",
+   "spelling": "dependency"
+  },
+  {
+   "term": "Maintainer",
+   "definition": "A person who looks after an open-source project and approves changes to it.",
+   "spelling": "maintainer"
+  },
+  {
+   "term": "Rolling release",
+   "definition": "A way of releasing software that ships updates continuously, instead of in fixed versions.",
+   "spelling": "rolling release"
+  },
+  {
+   "term": "Kernel driver",
+   "definition": "Low-level software that runs inside the core of the operating system, with full control of the machine.",
+   "spelling": "kernel driver"
+  },
+  {
+   "term": "Staged rollout",
+   "definition": "Releasing an update to a small group first, then to everyone if nothing breaks.",
+   "spelling": "staged rollout"
+  },
+  {
+   "term": "BitLocker recovery key",
+   "definition": "A long code that unlocks a BitLocker-encrypted Windows drive when Windows can't unlock it itself.",
+   "spelling": "BitLocker recovery key"
+  },
+  {
+   "term": "MFA fatigue",
+   "definition": "Sending many MFA prompts until a tired or confused user approves one.",
+   "spelling": "MFA fatigue"
+  },
+  {
+   "term": "Social engineering",
+   "definition": "Tricking people into doing something that helps an attacker, such as approving a login.",
+   "spelling": "social engineering"
+  },
+  {
+   "term": "Identity and Access Management (IAM) role",
+   "definition": "A cloud identity with set permissions that trusted users or services can temporarily take on.",
+   "spelling": "IAM role"
+  },
+  {
+   "term": "Trust policy",
+   "definition": "The part of an IAM role that says who is allowed to take it on.",
+   "spelling": "trust policy"
+  },
+  {
+   "term": "musl",
+   "definition": "A small C library, the basic code programs rely on, used by Alpine Linux instead of the more common glibc.",
+   "spelling": "musl (always lower case)"
+  },
+  {
+   "term": "Pluggable Authentication Modules (PAM)",
+   "definition": "A Linux system that handles how users log in and how their passwords are checked.",
+   "spelling": "PAM"
+  },
+  {
+   "term": "Honeypot",
+   "definition": "A decoy system that attracts attackers, so defenders can watch what they do.",
+   "spelling": "honeypot"
+  },
+  {
+   "term": "System account",
+   "definition": "An account that software or a system uses to log in, instead of a person.",
+   "spelling": "system account (also called a service account)"
+  },
+  {
+   "term": "Legacy system",
+   "definition": "An old system that is still running, often no longer updated or watched closely.",
+   "spelling": "legacy system"
+  },
+  {
+   "term": "Asset inventory",
+   "definition": "A list of every system and device an organisation owns.",
+   "spelling": "asset inventory"
+  },
+  {
+   "term": "Leak site",
+   "definition": "A website where a ransomware gang names victims and posts stolen data to pressure them.",
+   "spelling": "leak site"
+  },
+  {
+   "term": "Sideloading",
+   "definition": "Installing an app from outside the official app store, such as from a link.",
+   "spelling": "sideloading (sideload as a verb)"
+  },
+  {
+   "term": "Accessibility access",
+   "definition": "An Android permission meant for assistive tools, which can let an app read and control your screen.",
+   "spelling": "Accessibility access"
+  },
+  {
+   "term": "Factory reset",
+   "definition": "Wiping a phone back to its original settings, deleting all apps and data.",
+   "spelling": "factory reset"
+  },
+  {
+   "term": "Patch",
+   "definition": "An update that fixes a flaw in software.",
+   "spelling": "patch"
+  },
+  {
+   "term": "Apache Struts",
+   "definition": "Free, open-source code for building web apps.",
+   "spelling": "Apache Struts"
+  },
+  {
+   "term": "Build system",
+   "definition": "The servers and tools that turn source code into the software customers install.",
+   "spelling": "build system"
+  },
+  {
+   "term": "Operational technology (OT)",
+   "definition": "Systems that control physical equipment, such as pipelines and factory machines.",
+   "spelling": "operational technology (OT)"
+  },
+  {
+   "term": "Application programming interface (API)",
+   "definition": "A way for programs to ask another system for data over a network.",
+   "spelling": "API"
+  },
+  {
+   "term": "Subdomain",
+   "definition": "A name under a main domain, such as api.example.com under example.com.",
+   "spelling": "subdomain"
+  },
+  {
+   "term": "Shared responsibility model",
+   "definition": "The split of security duties between a cloud provider and its customers.",
+   "spelling": "shared responsibility model"
+  },
+  {
+   "term": "Worm",
+   "definition": "Malware that spreads between computers on its own, with no clicks needed.",
+   "spelling": "worm"
+  },
+  {
+   "term": "Kill switch",
+   "definition": "A built-in check that makes malware stop, such as when a certain domain responds.",
+   "spelling": "kill switch"
+  },
+  {
+   "term": "Essential Eight",
+   "definition": "Eight mitigation strategies from the Australian Signals Directorate (ASD) that form a security baseline.",
+   "spelling": "Essential Eight"
+  },
+  {
+   "term": "Maturity level",
+   "definition": "One of four Essential Eight levels, from zero to three, each designed to resist more capable attackers.",
+   "spelling": "Maturity Level One (capitalised with the level number)"
+  },
+  {
+   "term": "Baseline",
+   "definition": "A minimum set of security controls to build on.",
+   "spelling": "baseline"
+  },
+  {
+   "term": "End of support",
+   "definition": "When a vendor stops releasing security updates for a product.",
+   "spelling": "end of support (out-of-support before a noun)"
+  },
+  {
+   "term": "Application control",
+   "definition": "Letting only approved programs, scripts and installers run, and blocking everything else by default.",
+   "spelling": "application control"
+  },
+  {
+   "term": "Allow-list",
+   "definition": "A list of the only things allowed, such as the programs that may run.",
+   "spelling": "allow-list (allow-listing)"
+  },
+  {
+   "term": "Macro",
+   "definition": "A small program saved inside an Office document.",
+   "spelling": "macro"
+  },
+  {
+   "term": "Infrastructure as a service (IaaS)",
+   "definition": "Cloud computing where you rent virtual machines and manage the operating system yourself.",
+   "spelling": "IaaS"
+  },
+  {
+   "term": "Software as a service (SaaS)",
+   "definition": "Ready-made software you use over the internet, where you mostly manage users, data and settings.",
+   "spelling": "SaaS"
+  },
+  {
+   "term": "AWS root user",
+   "definition": "The login that created an Amazon Web Services (AWS) account, with full control over it.",
+   "spelling": "root user"
+  },
+  {
+   "term": "AWS CloudTrail",
+   "definition": "An Amazon Web Services (AWS) service that records API calls and console sign-ins.",
+   "spelling": "CloudTrail"
+  },
+  {
+   "term": "Trail",
+   "definition": "A CloudTrail setting that copies events to storage you choose.",
+   "spelling": "trail"
+  },
+  {
+   "term": "Data events",
+   "definition": "CloudTrail records of actions on data, such as S3 object reads, which you must turn on.",
+   "spelling": "data events"
+  },
+  {
+   "term": "Instance Metadata Service Version 2 (IMDSv2)",
+   "definition": "The AWS metadata service version that needs a session token first.",
+   "spelling": "IMDSv2"
+  },
+  {
+   "term": "Notifiable Data Breaches scheme",
+   "definition": "Australia's rules for reporting serious data breaches, under the Privacy Act 1988.",
+   "spelling": "Notifiable Data Breaches scheme"
+  },
+  {
+   "term": "Eligible data breach",
+   "definition": "A breach of personal information that's likely to cause serious harm, where you can't remove that risk with quick remedial action.",
+   "spelling": "eligible data breach"
+  },
+  {
+   "term": "Office of the Australian Information Commissioner (OAIC)",
+   "definition": "Australia's privacy regulator.",
+   "spelling": "OAIC"
+  },
+  {
+   "term": "Notifiable privacy breach",
+   "definition": "Under New Zealand's Privacy Act 2020, a privacy breach that has caused, or is likely to cause, serious harm.",
+   "spelling": "notifiable privacy breach"
+  },
+  {
+   "term": "Privacy Commissioner",
+   "definition": "New Zealand's privacy regulator.",
+   "spelling": "Privacy Commissioner"
+  },
+  {
+   "term": "Cyber extortion",
+   "definition": "Demanding payment to stop an attack or keep stolen data private.",
+   "spelling": "cyber extortion"
+  },
+  {
+   "term": "Australian Signals Directorate (ASD)",
+   "definition": "The Australian government agency that runs the Australian Cyber Security Centre and publishes the Essential Eight.",
+   "spelling": "ASD"
+  },
+  {
+   "term": "National Cyber Security Centre (NCSC NZ)",
+   "definition": "New Zealand's government agency for cyber incident reports, which has absorbed CERT NZ.",
+   "spelling": "NCSC NZ"
+  },
+  {
+   "term": "Cybersecurity and Infrastructure Security Agency (CISA)",
+   "definition": "The US government agency that runs the Known Exploited Vulnerabilities (KEV) catalogue.",
+   "spelling": "CISA"
+  },
+  {
+   "term": "MITRE ATT&CK",
+   "definition": "A free catalogue of real attacker behaviour.",
+   "spelling": "MITRE ATT&CK (ATT&CK after first use)"
+  },
+  {
+   "term": "Tactic (ATT&CK)",
+   "definition": "An attacker's goal, such as Initial Access.",
+   "spelling": "tactic"
+  },
+  {
+   "term": "Technique (ATT&CK)",
+   "definition": "A way attackers reach a goal, with an ID such as T1110.",
+   "spelling": "technique"
+  },
+  {
+   "term": "Sub-technique (ATT&CK)",
+   "definition": "A more specific version of a technique, such as T1110.003.",
+   "spelling": "sub-technique"
+  },
+  {
+   "term": "Search Processing Language (SPL)",
+   "definition": "Splunk's query language for searching log data.",
+   "spelling": "SPL"
+  },
+  {
+   "term": "Sender Policy Framework (SPF)",
+   "definition": "An email check that shows whether a server may send mail for a domain.",
+   "spelling": "SPF"
+  },
+  {
+   "term": "DomainKeys Identified Mail (DKIM)",
+   "definition": "An email check that uses a signature to show a message came from the domain and wasn't changed.",
+   "spelling": "DKIM"
+  },
+  {
+   "term": "Domain-based Message Authentication, Reporting and Conformance (DMARC)",
+   "definition": "A domain's rule for handling email whose SPF and DKIM results don't match the domain it claims.",
+   "spelling": "DMARC"
+  },
+  {
+   "term": "fail2ban",
+   "definition": "A tool that blocks addresses after repeated failed logins.",
+   "spelling": "fail2ban (always lower case)"
+  },
+  {
+   "term": "Regular expression",
+   "definition": "A pattern that matches text.",
+   "spelling": "regular expression"
+  },
+  {
+   "term": "Named group",
+   "definition": "Part of a regular expression that saves what it matched under a name, such as src_ip.",
+   "spelling": "named group"
+  },
+  {
+   "term": "Inner join",
+   "definition": "A join that keeps only rows found in both result sets.",
+   "spelling": "inner join"
+  },
+  {
+   "term": "JavaScript Object Notation (JSON)",
+   "definition": "A text format for structured, nested data.",
+   "spelling": "JSON"
+  },
+  {
+   "term": "Command-line auditing",
+   "definition": "A Windows audit setting that adds the full command line to process creation events (4688).",
+   "spelling": "command-line auditing"
+  },
+  {
+   "term": "Script",
+   "definition": "A short program saved in a file that automates a task.",
+   "spelling": "script"
+  },
+  {
+   "term": "Interpreter",
+   "definition": "The program that reads your Python code and runs it.",
+   "spelling": "interpreter"
+  },
+  {
+   "term": "Variable",
+   "definition": "A name that stores a value so you can use it later.",
+   "spelling": "variable"
+  },
+  {
+   "term": "Comment",
+   "definition": "A note in your code that Python ignores.",
+   "spelling": "comment"
+  },
+  {
+   "term": "String",
+   "definition": "A piece of text, such as a username or a log line.",
+   "spelling": "string"
+  },
+  {
+   "term": "Integer",
+   "definition": "A whole number, such as a port number.",
+   "spelling": "integer (int in code)"
+  },
+  {
+   "term": "f-string",
+   "definition": "A string with an f before the quotes, which fills in values from braces.",
+   "spelling": "f-string (always lower-case f)"
+  },
+  {
+   "term": "Condition",
+   "definition": "A check that is either True or False.",
+   "spelling": "condition"
+  },
+  {
+   "term": "Block",
+   "definition": "The indented lines that belong to an if, a loop or a function.",
+   "spelling": "block"
+  },
+  {
+   "term": "Branch",
+   "definition": "One of the paths code can take, such as the if or the else.",
+   "spelling": "branch"
+  },
+  {
+   "term": "Indentation",
+   "definition": "Spaces at the start of a line that show which block it belongs to.",
+   "spelling": "indentation"
+  },
+  {
+   "term": "List",
+   "definition": "An ordered collection of items inside square brackets.",
+   "spelling": "list"
+  },
+  {
+   "term": "Index",
+   "definition": "An item's position in a list, counting from 0.",
+   "spelling": "index (plural indexes)"
+  },
+  {
+   "term": "Slice",
+   "definition": "A part of a list, picked out by a start and an end position.",
+   "spelling": "slice"
+  },
+  {
+   "term": "Loop",
+   "definition": "Code that repeats a block, such as once for each host or log line.",
+   "spelling": "loop (for loop)"
+  },
+  {
+   "term": "range",
+   "definition": "A built-in that produces a run of whole numbers.",
+   "spelling": "range (always lower case)"
+  },
+  {
+   "term": "Filtering",
+   "definition": "Keeping only the items that match a condition.",
+   "spelling": "filtering"
+  },
+  {
+   "term": "Dictionary",
+   "definition": "A collection that maps keys to values, inside curly braces.",
+   "spelling": "dictionary"
+  },
+  {
+   "term": "Key (dictionary)",
+   "definition": "The name you use to look up a value in a dictionary.",
+   "spelling": "key"
+  },
+  {
+   "term": "KeyError",
+   "definition": "The error Python raises when you look up a key that isn't there.",
+   "spelling": "KeyError"
+  },
+  {
+   "term": "Function",
+   "definition": "A named block of code that you can run again and again.",
+   "spelling": "function"
+  },
+  {
+   "term": "Parameter",
+   "definition": "A name in a function's brackets that receives a value when the function is called.",
+   "spelling": "parameter"
+  },
+  {
+   "term": "Return value",
+   "definition": "The result a function sends back with return.",
+   "spelling": "return value"
+  },
+  {
+   "term": "Default value",
+   "definition": "The value a parameter uses when the caller leaves it out.",
+   "spelling": "default value"
+  },
+  {
+   "term": "Method",
+   "definition": "A function that belongs to a value, called with a dot after the value.",
+   "spelling": "method"
+  },
+  {
+   "term": "Whitespace",
+   "definition": "Spaces, tabs and newlines.",
+   "spelling": "whitespace"
+  },
+  {
+   "term": "Case-sensitive",
+   "definition": "Treating upper-case and lower-case letters as different.",
+   "spelling": "case-sensitive"
+  },
+  {
+   "term": "Parse",
+   "definition": "To pull useful fields out of text, such as a log line.",
+   "spelling": "parse"
+  },
+  {
+   "term": "with statement",
+   "definition": "Python code that sets something up, such as an open file, and cleans it up when its block ends.",
+   "spelling": "with statement (with in lower case)"
+  },
+  {
+   "term": "Newline",
+   "definition": "The hidden character that ends each line of text.",
+   "spelling": "newline"
+  },
+  {
+   "term": "Set",
+   "definition": "A collection of unique values with no fixed order.",
+   "spelling": "set"
+  },
+  {
+   "term": "Shadow IT",
+   "definition": "Devices or software that people use without the organisation's approval.",
+   "spelling": "shadow IT"
+  },
+  {
+   "term": "Module",
+   "definition": "A file of ready-made Python code that you load with import.",
+   "spelling": "module"
+  },
+  {
+   "term": "Counter",
+   "definition": "A tool in the collections module that counts how often each item appears.",
+   "spelling": "Counter (capital C)"
+  },
+  {
+   "term": "Top talkers",
+   "definition": "The hosts that send or receive the most traffic.",
+   "spelling": "top talkers"
+  },
+  {
+   "term": "Raw string",
+   "definition": "A string with r before the quotes, which keeps backslashes exactly as typed.",
+   "spelling": "raw string"
+  },
+  {
+   "term": "Capture group",
+   "definition": "Brackets in a pattern that save part of the match.",
+   "spelling": "capture group"
+  },
+  {
+   "term": "Escape",
+   "definition": "Putting a backslash before a character so it's matched literally.",
+   "spelling": "escape"
+  },
+  {
+   "term": "Passphrase",
+   "definition": "A long password made of several words.",
+   "spelling": "passphrase"
+  },
+  {
+   "term": "Breached-password list",
+   "definition": "A list of passwords already exposed in data breaches.",
+   "spelling": "breached-password list"
+  },
+  {
+   "term": "any()",
+   "definition": "A built-in function that returns True if at least one item is True.",
+   "spelling": "any() (always lower case)"
+  },
+  {
+   "term": "Bytes",
+   "definition": "Raw data stored as numbers from 0 to 255.",
+   "spelling": "bytes"
+  },
+  {
+   "term": "Hex digest",
+   "definition": "A hash written as hexadecimal text, using 0 to 9 and a to f.",
+   "spelling": "hex digest"
+  },
+  {
+   "term": "Encoding",
+   "definition": "Changing data into another format that anyone can reverse, with no key.",
+   "spelling": "encoding"
+  },
+  {
+   "term": "Base64",
+   "definition": "An encoding that turns bytes into plain text characters.",
+   "spelling": "Base64"
+  },
+  {
+   "term": "Triage",
+   "definition": "A quick first check of an alert to decide how serious it is.",
+   "spelling": "triage"
+  },
+  {
+   "term": "Exception",
+   "definition": "An error that Python raises while a script runs, such as ValueError.",
+   "spelling": "exception"
+  },
+  {
+   "term": "Traceback",
+   "definition": "The error report Python prints when an exception stops a script.",
+   "spelling": "traceback"
+  },
+  {
+   "term": "Identity and Access Management (IAM) policy",
+   "definition": "A JSON document that says what an identity may do on which resources.",
+   "spelling": "IAM policy"
+  },
+  {
+   "term": "Wildcard",
+   "definition": "The * symbol, which matches everything.",
+   "spelling": "wildcard"
+  },
+  {
+   "term": "Private address",
+   "definition": "An IP address reserved for use inside private networks.",
+   "spelling": "private address"
+  },
+  {
+   "term": "Documentation range",
+   "definition": "An IP range reserved for examples, such as 203.0.113.0/24.",
+   "spelling": "documentation range"
+  },
+  {
+   "term": "Global address",
+   "definition": "An IP address that's reachable on the public internet.",
+   "spelling": "global address"
+  },
+  {
+   "term": "List comprehension",
+   "definition": "A one-line way to build a new list from another list.",
+   "spelling": "list comprehension"
+  },
+  {
+   "term": "Transform",
+   "definition": "To change each item, such as making it upper case.",
+   "spelling": "transform"
+  },
+  {
+   "term": "Nested loop",
+   "definition": "A loop inside another loop.",
+   "spelling": "nested loop"
+  },
+  {
+   "term": "Cipher",
+   "definition": "A method for encrypting and decrypting text.",
+   "spelling": "cipher"
+  },
+  {
+   "term": "Key space",
+   "definition": "All the possible keys a cipher can use.",
+   "spelling": "key space"
+  },
+  {
+   "term": "Modulo",
+   "definition": "The % operator, which gives the remainder after division, such as 27 % 26 = 1.",
+   "spelling": "modulo"
+  },
+  {
+   "term": "Comma-separated values (CSV)",
+   "definition": "A text format for tables, with one row per line and commas between fields.",
+   "spelling": "CSV"
+  },
+  {
+   "term": "Header row",
+   "definition": "The first row of a CSV file, which names each column.",
+   "spelling": "header row"
+  },
+  {
+   "term": "CSV injection",
+   "definition": "A spreadsheet formula hidden in a CSV cell that can run when someone opens the file.",
+   "spelling": "CSV injection"
+  },
+  {
+   "term": "Class",
+   "definition": "A blueprint that describes what its objects hold and can do.",
+   "spelling": "class"
+  },
+  {
+   "term": "Object",
+   "definition": "One item made from a class, with its own data.",
+   "spelling": "object"
+  },
+  {
+   "term": "Software development kit (SDK)",
+   "definition": "Ready-made code for working with a service from your own programs.",
+   "spelling": "SDK"
+  },
+  {
+   "term": "Sandbox",
+   "definition": "A protected area where code runs without access to the rest of your computer.",
+   "spelling": "sandbox"
+  },
+  {
+   "term": "Timeout",
+   "definition": "How long code waits for a reply before it gives up.",
+   "spelling": "timeout"
+  },
+  {
+   "term": "boto3",
+   "definition": "The official Amazon Web Services (AWS) software development kit (SDK) for Python.",
+   "spelling": "boto3 (always lower case)"
+  },
+  {
+   "term": "Command-line argument",
+   "definition": "A value you type after the script name, such as ssh.log.",
+   "spelling": "command-line argument"
+  },
+  {
+   "term": "argparse",
+   "definition": "A Python module that turns command-line arguments into named values.",
+   "spelling": "argparse (always lower case)"
+  },
+  {
+   "term": "Threshold",
+   "definition": "The count at which a tool raises an alert.",
+   "spelling": "threshold"
+  },
+  {
+   "term": "README",
+   "definition": "A text file that explains what a project does and how to use it.",
+   "spelling": "README"
+  }
+ ]
+}

@@ -1,0 +1,27 @@
+# Runs the app check on every pull request, so a weekly content PR shows a green tick or a red cross before you merge.
+name: Check the app
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/check.js
+      # Phones only pick up a change when the version goes up, so app or content changes must bump it.
+      - name: Version was bumped if the app changed
+        if: github.event_name == 'pull_request'
+        run: |
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- index.html app.js sw.js manifest.webmanifest content/study.json content/feed.json content/python.json)
+          if [ -n "$changed" ] && git diff --quiet "origin/${{ github.base_ref }}"...HEAD -- content/version.json; then
+            echo "These files changed but content/version.json did not:"; echo "$changed"
+            echo "Run: node tools/bump-version.js \"what changed\""; exit 1
+          fi

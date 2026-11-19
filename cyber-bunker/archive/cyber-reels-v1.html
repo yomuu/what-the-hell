@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cyber Reels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* One visual world: a dark, full-screen vertical feed; each week has its own signal colour. */
+  --bg:#0e1216;
+  --surface:#171d24;
+  --line:#26303b;
+  --text:#eef1f4;
+  --muted:#9aa6b2;
+  --good:#46c08a;
+  --bad:#ff6b6b;
+  --w1:#ffb020;
+  --w2:#3ec7e0;
+  --w3:#a78bfa;
+  --w4:#ff7a59;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:var(--body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent,var(--w1));outline-offset:3px}
+
+.top{position:fixed;inset:0 0 auto 0;z-index:5;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;background:linear-gradient(var(--bg) 55%,transparent);pointer-events:none}
+.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent,var(--w1));transition:width .25s}
+.meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.meta b{color:var(--accent,var(--w1));font-weight:500}
+
+.feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+.card{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:calc(env(safe-area-inset-top) + 64px) 72px calc(env(safe-area-inset-bottom) + 40px) 22px;position:relative;max-width:640px;margin:0 auto}
+.card::before{content:"";position:absolute;left:0;top:22%;bottom:22%;width:4px;border-radius:0 3px 3px 0;background:var(--c)}
+.tag{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--c);display:flex;gap:10px;align-items:center}
+.tag span{border:1px solid var(--c);border-radius:999px;padding:3px 9px}
+h1,h2{font-family:var(--display);font-weight:800;margin:0;text-wrap:balance;line-height:1.05}
+h1{font-size:clamp(40px,11vw,64px)}
+h2{font-size:clamp(28px,8vw,42px)}
+.card p{font-size:clamp(18px,4.8vw,21px);line-height:1.5;margin:0;max-width:34ch}
+.card p.small{font-size:16px;color:var(--muted)}
+.hint{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+
+.opts{display:flex;flex-direction:column;gap:10px;max-width:420px}
+.opt{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:17px;line-height:1.35;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--c)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.why{display:none;font-size:16px;line-height:1.5;color:var(--muted);max-width:420px;border-top:1px solid var(--line);padding-top:12px}
+.why strong{color:var(--text)}
+.why.show{display:block}
+
+.rail{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom) + 28px);z-index:6;display:flex;flex-direction:column;gap:14px;align-items:center}
+.rb{width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer}
+.rb svg{width:22px;height:22px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rl{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+
+.btn{align-self:flex-start;background:var(--c);color:#0e1216;border:0;border-radius:999px;padding:13px 22px;font-weight:600;font-size:16px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.weeks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px}
+.weeks div{font-size:14px;line-height:1.35;color:var(--muted);border-left:3px solid var(--wc);padding:4px 10px}
+.weeks b{display:block;color:var(--text);font-weight:600}
+
+.sheet{position:fixed;inset:0;z-index:10;background:rgba(5,8,10,.72);display:none;align-items:flex-end;justify-content:center}
+.sheet.open{display:flex}
+.panel{width:100%;max-width:640px;max-height:82%;overflow-y:auto;background:var(--surface);border-radius:18px 18px 0 0;padding:18px 16px calc(env(safe-area-inset-bottom) + 20px)}
+.panel header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel h3{font-family:var(--display);font-size:22px;margin:0}
+.score{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.wk{margin:14px 0 6px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.day{display:flex;gap:10px;align-items:center;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;font-size:14px;line-height:1.25}
+.day .n{font-family:var(--mono);font-size:12px;min-width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--dc);color:var(--dc)}
+.day.ok .n{background:var(--good);border-color:var(--good);color:#0e1216}
+.day.miss .n{background:var(--bad);border-color:var(--bad);color:#0e1216}
+.x{background:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:14px}
+
+@media (prefers-reduced-motion:reduce){.bar i,.opt{transition:none}.feed{scroll-behavior:auto}}
+@media (min-width:700px){.card{padding-right:96px}}
+</style>
+</head>
+<body>
+<div class="top" aria-hidden="true">
+  <div class="bar"><i id="prog"></i></div>
+  <div class="meta"><span id="where">Cyber Reels</span><span id="count"></span></div>
+</div>
+
+<main class="feed" id="feed" tabindex="-1" aria-label="Study cards, swipe up for the next card"></main>
+
+<nav class="rail" aria-label="Study controls">
+  <div><button class="rb" id="openDays" aria-label="Choose a day"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></button><div class="rl">Days</div></div>
+  <div><button class="rb" id="nextBtn" aria-label="Next card"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button><div class="rl">Next</div></div>
+</nav>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="panel">
+    <header><h3 id="sheetTitle">Jump to a day</h3><button class="x" id="closeDays">Close</button></header>
+    <div class="score" id="score"></div>
+    <div id="dayList"></div>
+  </div>
+</div>
+
+<script>
+const WEEKS = [
+  {n:1, name:"Security fundamentals", c:"var(--w1)"},
+  {n:2, name:"Networking", c:"var(--w2)"},
+  {n:3, name:"Operating systems and crypto", c:"var(--w3)"},
+  {n:4, name:"Hands-on analysis", c:"var(--w4)"}
+];
+
+const DAYS = [
+ {t:"The CIA triad",
+  a:"Every security control serves three goals. Confidentiality: only authorised people can read the data. Integrity: data isn't changed without authorisation. Availability: systems and data work when authorised people need them.",
+  b:"Ransomware can hit all three. It often steals data first (confidentiality), encrypts it without permission (integrity) and locks you out (availability). Steal-then-encrypt is called double extortion.",
+  q:"An attacker changes a price in a database without permission. Which pillar is violated?",
+  o:["Confidentiality","Integrity","Availability"], k:1,
+  w:"Unauthorised modification is an integrity failure. Nobody had to read the data or lose access to it for this to count."},
+ {t:"Threats, vulnerabilities and risk",
+  a:"A vulnerability is a weakness: an unpatched bug, a weak password, a misconfiguration. A threat is anything that could exploit it: external attackers, malicious insiders, staff mistakes, hardware failure.",
+  b:"Risk is the likelihood and impact of a threat exploiting a vulnerability. Threat × Vulnerability × Impact is only a teaching shortcut. Real assessments weigh likelihood, impact and the controls already in place.",
+  q:"An employee accidentally emails a customer list to the wrong person. What is this?",
+  o:["Not a threat, because it was an accident","An accidental insider threat","A vulnerability"], k:1,
+  w:"Threats don't have to be malicious or external. Staff mistakes are one of the most common threat sources."},
+ {t:"Authentication vs authorisation",
+  a:"Authentication asks “who are you?” and checks proof such as a password, passkey or fingerprint. Authorisation asks “what are you allowed to do?” and is checked each time you request something.",
+  b:"Least privilege: give each person and process only the access their job needs. In OWASP Top 10:2025, A01 is Broken Access Control and A07 is Authentication Failures.",
+  q:"You log in successfully, then get 403 Forbidden on the payroll page. Which check stopped you?",
+  o:["Authentication","Authorisation","Encryption"], k:1,
+  w:"Logging in proved who you are. The 403 means that identity isn't permitted to access the resource."},
+ {t:"Multi-factor authentication",
+  a:"MFA combines factors from at least two different categories: something you know (password, PIN), something you have (phone, security key), something you are (fingerprint, face). A password plus a PIN is still one category.",
+  b:"SMS codes count as MFA but are weak: SIM swapping and fake login pages can steal them. Authenticator-app codes can be phished too. FIDO2 security keys and passkeys resist phishing because they're bound to the real site.",
+  q:"Which option resists a fake login page that relays your code to an attacker?",
+  o:["SMS code","Authenticator app code","FIDO2 security key or passkey"], k:2,
+  w:"A FIDO2 key or passkey checks the site's real domain cryptographically, so a look-alike site gets nothing it can use."},
+ {t:"Hygiene and hardening",
+  a:"Hygiene is the routine: patch promptly, keep tested backups, use a password manager, turn on MFA everywhere and review app permissions.",
+  b:"Hardening shrinks the attack surface by changing insecure defaults: replace default credentials, disable unneeded services, close unused ports and remove unused software. Keeping defaults is the opposite of hardening.",
+  q:"A new router still uses admin/admin. What's the hardening fix?",
+  o:["Leave it, defaults are tested","Change the default credentials","Hide the Wi-Fi network name"], k:1,
+  w:"Default credentials are public knowledge. Changing them is basic hardening. Hiding the network name adds very little."},
+ {t:"Common attacks",
+  a:"Phishing tricks people into handing over credentials or running malware. Malware is any malicious software. Ransomware encrypts data and demands payment. Brute force tries many passwords. DoS and DDoS flood a target until it's unavailable.",
+  b:"An on-path attack (man-in-the-middle) sits between two parties to read or alter traffic; HTTPS with valid certificates is the main defence. Against brute force: MFA, rate limiting and lockouts.",
+  q:"Which defence helps most against a DDoS attack?",
+  o:["Stronger passwords","Traffic filtering and extra capacity, such as a DDoS protection service","Disk encryption"], k:1,
+  w:"DDoS attacks availability with sheer traffic. You absorb or filter it; passwords and encryption don't help."},
+ {t:"Week 1 review",
+  a:"Say these out loud without notes: the three CIA pillars, threat vs vulnerability vs risk, authentication vs authorisation, the three MFA factor categories, hygiene vs hardening, and six common attacks.",
+  b:"Scenario: a phishing email leads to ransomware that steals and encrypts a file server. Which pillars are hit? What would have stopped the login? What restores the files, and what can it not undo?",
+  q:"Offline backups protect you against which part of a double-extortion attack?",
+  o:["The data theft","The encryption and lost access","Both equally"], k:1,
+  w:"Backups let you restore encrypted data. They do nothing about data the attacker has already stolen."},
+ {t:"IP and MAC addresses",
+  a:"A MAC address is a 48-bit hardware address used for delivery on the local network (Layer 2). An IP address is a logical, routable address (Layer 3). IPv4 is 32-bit, like 192.168.1.50; IPv6 is 128-bit.",
+  b:"MACs are set at the factory but can be changed in software, and phones randomise them on Wi-Fi, so a MAC proves nothing about identity. On Windows, ipconfig /all shows both addresses; on Linux, ip a.",
+  q:"Which address do routers use to move packets between networks?",
+  o:["MAC address","IP address","Port number"], k:1,
+  w:"IP addresses are routable across networks. MAC addresses only matter on the local segment."},
+ {t:"Subnets and segmentation",
+  a:"A subnet is a smaller network inside a larger one. CIDR notation shows the network bits: 192.168.1.0/24 means 24 network bits, leaving 256 addresses.",
+  b:"Segmentation splits networks with VLANs, routers and firewalls so a breach in one zone can't easily spread. That spreading is called lateral movement. Your home lab belongs in its own segment.",
+  q:"How many usable host addresses does a /24 IPv4 subnet have?",
+  o:["254","256","512"], k:0,
+  w:"A /24 has 256 addresses. The network address and the broadcast address are reserved, leaving 254 for hosts."},
+ {t:"TCP vs UDP",
+  a:"TCP is connection-oriented: it opens with a three-way handshake (SYN, SYN-ACK, ACK) and guarantees ordered, reliable delivery. HTTPS, SSH and email use it.",
+  b:"UDP is connectionless: no handshake and no delivery guarantee, but very little overhead. DNS lookups, streaming, VoIP and games use it. QUIC, which carries HTTP/3, runs over UDP.",
+  q:"What is the correct order of the TCP handshake?",
+  o:["SYN, ACK, SYN-ACK","SYN, SYN-ACK, ACK","ACK, SYN, FIN"], k:1,
+  w:"The client sends SYN, the server replies SYN-ACK, and the client confirms with ACK."},
+ {t:"Ports and services",
+  a:"A port (0 to 65535) directs traffic to a service on a host. Know these by heart: 22 SSH, 25 SMTP, 53 DNS, 80 HTTP, 443 HTTPS, 3389 RDP.",
+  b:"An open port only means a service is listening. It becomes a vulnerability if that service is unpatched, misconfigured or shouldn't be exposed at all, like RDP open to the internet.",
+  q:"A scan finds port 443 open on a web server. What does that tell you?",
+  o:["The server is vulnerable","A service, probably HTTPS, is listening","The server has been compromised"], k:1,
+  w:"Open isn't the same as vulnerable. Next you'd check what's running, its version and how it's configured."},
+ {t:"DNS and DHCP",
+  a:"DNS turns names like example.com into IP addresses. Your device asks a recursive resolver, which works through the root, top-level domain and authoritative name servers to find the answer.",
+  b:"DHCP gives a device its IP address, subnet mask, default gateway and DNS server when it joins a network. Attacks include DNS spoofing, cache poisoning and rogue DHCP servers handing out a malicious gateway.",
+  q:"Your laptop joins Wi-Fi and gets an IP address automatically. Which service did that?",
+  o:["DNS","DHCP","NAT"], k:1,
+  w:"DHCP leases addresses and network settings. DNS only resolves names."},
+ {t:"HTTPS and TLS",
+  a:"HTTP (port 80) sends everything in plaintext. HTTPS (port 443) wraps HTTP in TLS, which gives confidentiality (encryption), integrity (tamper detection) and authentication of the server through its certificate.",
+  b:"Use TLS 1.2 or 1.3; older SSL and TLS versions are deprecated. The padlock means the connection to that domain is encrypted, not that the site is trustworthy. Phishing sites use HTTPS too.",
+  q:"A phishing site shows a valid padlock. What does the padlock prove?",
+  o:["The site is safe","The connection to that domain is encrypted","The site is run by a real company"], k:1,
+  w:"TLS proves you're talking to whoever controls that domain over an encrypted link. It says nothing about their intentions."},
+ {t:"Firewalls",
+  a:"A firewall allows or blocks traffic using rules. A packet filter checks headers such as source and destination IP, port and protocol. A stateful firewall also tracks connections and lets return traffic back in.",
+  b:"Good practice is default deny: block everything, then allow only what's needed. Week 2 review: explain how a laptop reaches a website, step by step through DHCP, DNS, TCP and TLS.",
+  q:"What does a default-deny inbound policy mean?",
+  o:["Everything is allowed unless blocked","Everything is blocked unless a rule allows it","Only port 22 is blocked"], k:1,
+  w:"Default deny keeps exposure to a minimum: only traffic you've explicitly approved gets in."},
+ {t:"Windows vs Linux",
+  a:"Windows keeps much of its configuration in the Registry. Organisations manage it through Active Directory and Group Policy, and increasingly Microsoft Entra ID.",
+  b:"Linux treats almost everything as a file and keeps configuration as text under /etc, with logs under /var/log. Kali Linux is a Debian-based distribution packed with security testing tools.",
+  q:"Where does Linux usually keep system configuration files?",
+  o:["/etc","/home","The Registry"], k:0,
+  w:"/etc holds system-wide configuration. The Registry only exists on Windows."},
+ {t:"Users and permissions",
+  a:"Linux permissions are set for owner, group and others: r (read), w (write), x (execute). rwxr-xr-- means the owner can do everything, the group can read and execute, and others can only read.",
+  b:"chmod changes permissions, chown changes ownership and sudo runs one command as root. Windows uses ACLs on files and objects. Use a standard account day to day and elevate only when you need to.",
+  q:"A file shows rw-r-----. What can “others” do?",
+  o:["Read","Read and write","Nothing"], k:2,
+  w:"The last three characters are for others, and --- means no access."},
+ {t:"Processes and services",
+  a:"A process is a running program with a process ID (PID). A service (a daemon on Linux) runs in the background, often listening on a port, like sshd or a web server.",
+  b:"Linux: ps aux, top, systemctl status sshd. Windows: Task Manager, Get-Process, Get-Service. An unexpected process or service is a classic sign of compromise.",
+  q:"Which Linux command checks whether the SSH service is running?",
+  o:["systemctl status sshd","chmod sshd","ping sshd"], k:0,
+  w:"systemctl manages and reports on services. On Ubuntu the unit may be called ssh instead of sshd."},
+ {t:"The command line",
+  a:"Linux essentials: ls -la, cd, cat, grep, ip a, and ss -tulpn for listening ports. Windows essentials: ipconfig, ping, netstat -ano, tracert.",
+  b:"Try this on an Ubuntu box: grep \"Failed password\" /var/log/auth.log | wc -l counts failed SSH logins. Piping one command into another is how most quick investigations work.",
+  q:"Which Linux command lists listening ports and the processes using them?",
+  o:["ss -tulpn","ls -la","cd /ports"], k:0,
+  w:"ss shows sockets: -t TCP, -u UDP, -l listening, -p process, -n numeric."},
+ {t:"Encryption vs hashing",
+  a:"Encryption is reversible with a key. Symmetric encryption (AES) uses one shared key; asymmetric encryption (RSA, elliptic curve) uses a public and private key pair. It protects confidentiality.",
+  b:"Hashing is one-way: data in, fixed-length digest out (SHA-256). It can't be reversed, so it's used to check integrity and to store passwords, which need slow, salted algorithms like bcrypt or Argon2.",
+  q:"You compare a downloaded ISO's SHA-256 value with the publisher's. What are you checking?",
+  o:["Confidentiality","Integrity","Availability"], k:1,
+  w:"A matching hash shows the file wasn't altered or corrupted. It doesn't hide the contents."},
+ {t:"Virtualisation and lab safety",
+  a:"A hypervisor runs virtual machines. Type 1 runs on bare metal (Proxmox, ESXi); Type 2 runs on top of an OS (VirtualBox, VMware Workstation). A lab lets you attack and break things safely.",
+  b:"VMs reduce risk but don't guarantee isolation. Shared folders, a shared clipboard, bridged networking and hypervisor bugs can all leak. Keep vulnerable VMs on an internal or host-only network.",
+  q:"Which network mode should a deliberately vulnerable VM use?",
+  o:["Bridged","Internal or host-only","Whatever the default is"], k:1,
+  w:"Bridged puts the VM on your real home network. Internal or host-only keeps it inside the lab."},
+ {t:"Week 3 review",
+  a:"Recall: where Linux keeps configuration and logs, how to read rwxr-x---, process vs service, three Linux and three Windows commands, and symmetric vs asymmetric vs hashing.",
+  b:"Mini task: on a Linux VM, create a user, make a file only that user can read (chmod 600), then confirm another user gets “Permission denied”.",
+  q:"What's the right way to store user passwords?",
+  o:["Encrypted with AES","Hashed with a slow, salted algorithm like bcrypt or Argon2","Hashed with plain MD5"], k:1,
+  w:"Passwords should be hashed, not encrypted, with a slow salted algorithm so cracking is expensive. MD5 is far too fast."},
+ {t:"Scanning with Nmap",
+  a:"Nmap discovers hosts, open ports, services and versions. nmap -sn 10.0.2.0/24 finds live hosts, nmap -sS runs a SYN scan and -sV detects service versions.",
+  b:"In a SYN scan, SYN-ACK means open and RST means closed, and Nmap never completes the handshake. Only scan systems you own or have written permission to test.",
+  q:"Why is -sS called a half-open scan?",
+  o:["It scans half the ports","It never completes the TCP handshake","It only works on half of hosts"], k:1,
+  w:"After the SYN-ACK, Nmap doesn't send the final ACK, so a full connection is never made."},
+ {t:"Packets with Wireshark",
+  a:"Wireshark captures packets so you can inspect every layer. Capture filters, like host 10.0.2.15, limit what's recorded. Display filters, like ip.addr == 10.0.2.15 or tcp.port == 443, filter what you see.",
+  b:"Handy display filters: dns, http, and tcp.flags.syn == 1 && tcp.flags.ack == 0 for new connection attempts, which light up during a scan. Follow TCP Stream rebuilds a whole conversation.",
+  q:"Which of these is a Wireshark display filter, not a capture filter?",
+  o:["host 10.0.2.15","ip.addr == 10.0.2.15","port 80"], k:1,
+  w:"ip.addr == is display filter syntax. host and port are capture (BPF) syntax."},
+ {t:"Reading logs",
+  a:"Logs are your record of what happened. Linux: /var/log/auth.log (Debian, Ubuntu) or /var/log/secure (Red Hat family). Windows: Event Viewer, where Event ID 4625 is a failed logon and 4624 a successful one.",
+  b:"OWASP 2025 A09 is Security Logging and Alerting Failures: without good logs you can't detect or investigate. A SIEM such as Wazuh or Microsoft Sentinel gathers logs in one place and alerts on patterns.",
+  q:"Hundreds of Event ID 4625 entries from one IP in a minute suggest what?",
+  o:["A software update","A brute-force or password-spraying attempt","A normal backup job"], k:1,
+  w:"4625 is a failed logon. A burst from one source is a classic brute-force signal."},
+ {t:"Lab: scan and watch",
+  a:"Set up Kali and a target VM on the same internal network. Find the target's IP with ip a or ipconfig, then start Wireshark on the target's network interface.",
+  b:"From Kali, run nmap -sS against the target. In Wireshark, filter for SYNs without ACKs and watch them hit many ports from one source. Then check the target's logs: did anything record the scan?",
+  q:"What pattern in Wireshark shows a port scan?",
+  o:["Many SYNs from one source to many ports","One long TLS session","Only DNS replies"], k:0,
+  w:"A scanner probes many ports fast, so you see a burst of SYNs from one IP across many destination ports."},
+ {t:"Defence in depth and incident response",
+  a:"Defence in depth stacks controls (firewall, MFA, patching, endpoint protection, backups, training) so one failure doesn't become a breach.",
+  b:"NIST SP 800-61 Rev. 2 described four incident response phases. Rev. 3 (April 2025) instead organises incident response around the CSF 2.0 functions: Govern, Identify, Protect, Detect, Respond, Recover.",
+  q:"What does NIST SP 800-61 Rev. 3 align incident response with?",
+  o:["The OWASP Top 10","The NIST CSF 2.0 functions","The OSI model"], k:1,
+  w:"Rev. 3 is a CSF 2.0 Community Profile, so incident response sits under the CSF functions."},
+ {t:"Full review",
+  a:"Explain without notes: why SMS MFA is weak, why an open port isn't a vulnerability, where encryption happens in an HTTPS request, why backups don't fix data theft, and why vulnerable VMs stay off bridged networks.",
+  b:"Then take the Gemini Notebook quiz across all 28 days. Score 80% or more before moving on to the intermediate stage.",
+  q:"Which statement is correct?",
+  o:["Backups prevent data theft","An open port proves a vulnerability","A passkey resists phishing better than an SMS code"], k:2,
+  w:"Passkeys are bound to the real site. The other two are the misconceptions this plan set out to fix."},
+ {t:"What comes next",
+  a:"You've covered security fundamentals, networking, operating systems, cryptography and hands-on scanning. Next is the intermediate stage: frameworks in depth, security tools and configuring controls.",
+  b:"Keep building: add a deliberately vulnerable VM (Metasploitable 2) and a SIEM (Wazuh) to your lab, write up each exercise on GitHub, and work toward Security+.",
+  q:"What's the strongest evidence of skill for an employer?",
+  o:["Watching more videos","Documented hands-on projects","Memorising port numbers"], k:1,
+  w:"Write-ups of real lab work show what you can do, not just what you've read."}
+];
+
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+let answers = store.get("cr-answers", {});
+
+const feed = document.getElementById("feed");
+const cards = [];
+function weekOf(i){ return WEEKS[Math.floor(i/7)]; }
+function el(tag, cls, html){ const e = document.createElement(tag); if(cls) e.className = cls; if(html !== undefined) e.innerHTML = html; return e; }
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// Intro card
+const intro = el("section","card");
+intro.style.setProperty("--c","var(--w1)");
+intro.dataset.label = "Start";
+intro.innerHTML = `
+  <div class="tag"><span>Stage 1</span>28 days · 4 cards a day</div>
+  <h1>Cyber Reels</h1>
+  <p>Swipe up through one topic at a time. Each day is two short cards and a quick check.</p>
+  <div class="weeks">${WEEKS.map(w=>`<div style="--wc:${w.c}"><b>Week ${w.n}</b>${w.name}</div>`).join("")}</div>
+  <div class="row"><button class="btn" id="resume">Start Day 1</button><button class="btn ghost" id="pick">Choose a day</button></div>
+  <div class="hint">Swipe up ↑ or press the down arrow</div>`;
+feed.appendChild(intro); cards.push({el:intro, day:-1});
+
+DAYS.forEach((d, i) => {
+  const wk = weekOf(i), dn = i + 1;
+  const make = (label, body) => {
+    const s = el("section","card");
+    s.style.setProperty("--c", wk.c);
+    s.dataset.day = dn;
+    s.innerHTML = body;
+    feed.appendChild(s);
+    cards.push({el:s, day:i, label});
+    return s;
+  };
+  make("Topic", `<div class="tag"><span>Day ${dn}</span>Week ${wk.n} · ${wk.name}</div><h1>${esc(d.t)}</h1><div class="hint">Swipe up to learn ↑</div>`).id = "day-" + dn;
+  make("Learn", `<div class="tag"><span>Learn</span>Day ${dn}</div><h2>${esc(d.t)}</h2><p>${esc(d.a)}</p>`);
+  make("Remember", `<div class="tag"><span>Remember</span>Day ${dn}</div><h2>Key point</h2><p>${esc(d.b)}</p>`);
+  const qc = make("Check", `<div class="tag"><span>Check</span>Day ${dn}</div><h2>${esc(d.q)}</h2>
+    <div class="opts" role="group" aria-label="Answers">${d.o.map((o,j)=>`<button class="opt" data-j="${j}">${esc(o)}</button>`).join("")}</div>
+    <div class="why" aria-live="polite"></div>`);
+  const btns = [...qc.querySelectorAll(".opt")], why = qc.querySelector(".why");
+  const reveal = (pick) => {
+    btns.forEach((b,j) => { b.disabled = true; if (j === d.k) b.classList.add("right"); else if (j === pick) b.classList.add("wrong"); });
+    why.innerHTML = `<strong>${pick === d.k ? "Correct." : "Not quite."}</strong> ${esc(d.w)}`;
+    why.classList.add("show");
+  };
+  btns.forEach(b => b.addEventListener("click", () => {
+    const pick = +b.dataset.j;
+    answers[dn] = pick;
+    store.set("cr-answers", answers);
+    reveal(pick);
+    renderDays();
+  }));
+  if (Number.isInteger(answers[dn])) reveal(answers[dn]);
+});
+
+// End card
+const end = el("section","card");
+end.style.setProperty("--c","var(--w4)");
+end.innerHTML = `<div class="tag"><span>Done</span>Stage 1 complete</div><h1>That's all 28 days</h1>
+  <p id="endScore"></p><p class="small">Missed some? Open Days and redo the red ones. Reset clears your answers on this device.</p>
+  <div class="row"><button class="btn" id="toTop">Back to start</button><button class="btn ghost" id="reset">Reset answers</button></div>`;
+feed.appendChild(end); cards.push({el:end, day:-2});
+
+// Header and progress
+const prog = document.getElementById("prog"), where = document.getElementById("where"), count = document.getElementById("count");
+let current = 0;
+function setHeader(idx){
+  current = idx;
+  const c = cards[idx];
+  prog.style.width = ((idx) / (cards.length - 1) * 100) + "%";
+  if (c.day >= 0){
+    const wk = weekOf(c.day);
+    document.documentElement.style.setProperty("--accent", wk.c);
+    where.innerHTML = `<b>Day ${c.day+1}</b> · ${c.label}`;
+    store.set("cr-pos", idx);
+    if (location.hash !== "#day-" + (c.day+1)) history.replaceState(null, "", "#day-" + (c.day+1));
+  } else {
+    document.documentElement.style.setProperty("--accent", c.day === -1 ? "var(--w1)" : "var(--w4)");
+    where.textContent = c.day === -1 ? "Cyber Reels" : "Finished";
+  }
+  updateScore();
+}
+function updateScore(){
+  const keys = Object.keys(answers).filter(n => Number.isInteger(answers[n]));
+  const done = keys.length, right = keys.filter(n => answers[n] === DAYS[n-1].k).length;
+  count.textContent = `${right}/${done} correct`;
+  document.getElementById("score").textContent = `${done} of 28 days checked · ${right} correct`;
+  const es = document.getElementById("endScore");
+  if (es) es.textContent = done ? `You got ${right} of ${done} checks right${done < 28 ? `, with ${28-done} still to do` : ""}.` : "You haven't answered any checks yet.";
+}
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) setHeader(cards.findIndex(c => c.el === e.target)); }), {root:feed, threshold:0.6});
+cards.forEach(c => io.observe(c.el));
+
+function go(idx){ idx = Math.max(0, Math.min(cards.length-1, idx)); cards[idx].el.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); }
+function goDay(n){ go(cards.findIndex(c => c.day === n-1)); }
+
+// Day picker
+const sheet = document.getElementById("sheet"), dayList = document.getElementById("dayList");
+function renderDays(){
+  dayList.innerHTML = WEEKS.map((w,wi) => `<div class="wk" style="color:${w.c}">Week ${w.n} · ${w.name}</div><div class="days">${
+    DAYS.slice(wi*7, wi*7+7).map((d,j) => { const n = wi*7+j+1, a = answers[n], st = Number.isInteger(a) ? (a === d.k ? "ok" : "miss") : "";
+      return `<button class="day ${st}" style="--dc:${w.c}" data-n="${n}"><span class="n">${n}</span>${esc(d.t)}</button>`; }).join("")
+  }</div>`).join("");
+  dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { closeSheet(); goDay(+b.dataset.n); }));
+  updateScore();
+}
+function openSheet(){ renderDays(); sheet.classList.add("open"); document.getElementById("closeDays").focus(); }
+function closeSheet(){ sheet.classList.remove("open"); feed.focus({preventScroll:true}); }
+document.getElementById("openDays").onclick = openSheet;
+document.getElementById("pick").onclick = openSheet;
+document.getElementById("closeDays").onclick = closeSheet;
+sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
+document.getElementById("nextBtn").onclick = () => go(current + 1);
+document.getElementById("toTop").onclick = () => go(0);
+document.getElementById("reset").onclick = () => { answers = {}; store.set("cr-answers", {}); store.set("cr-pos", 0); location.hash = ""; location.reload(); };
+
+// Resume
+const saved = store.get("cr-pos", 0);
+const resumeBtn = document.getElementById("resume");
+if (saved > 0 && cards[saved] && cards[saved].day >= 0){ resumeBtn.textContent = `Continue Day ${cards[saved].day+1}`; resumeBtn.onclick = () => go(saved); }
+else resumeBtn.onclick = () => goDay(1);
+
+document.addEventListener("keydown", e => {
+  if (sheet.classList.contains("open")){ if (e.key === "Escape") closeSheet(); return; }
+  if (["ArrowDown","PageDown","j"," "].includes(e.key)){ e.preventDefault(); go(current+1); }
+  if (["ArrowUp","PageUp","k"].includes(e.key)){ e.preventDefault(); go(current-1); }
+});
+
+function fromHash(){ const m = location.hash.match(/^#day-(\d+)$/); if (m){ const n = +m[1]; if (n >= 1 && n <= 28) goDay(n); } }
+window.addEventListener("hashchange", fromHash);
+renderDays(); setHeader(0); if (location.hash) requestAnimationFrame(() => setTimeout(fromHash, 50));
+</script>
+</body>
+</html>
