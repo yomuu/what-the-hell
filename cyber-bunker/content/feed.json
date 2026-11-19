@@ -3049,6 +3049,1805 @@
     "k": 1,
     "w": "A new field holding the text after \"from\". The named group creates the field from whatever the pattern matches. Not the index: the search names that with `index=linux`. Not a built-in field: `rex` creates src_ip because Splunk didn't extract it."
    }
+  },
+  {
+   "id": "inc-optimizely",
+   "attack": [
+    "T1195.002 Compromise Software Supply Chain",
+    "T1056.003 Input Capture: Web Portal Capture (closest match for card skimming)"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "region": "AU",
+   "title": "Optimizely script hijack hits Australian sites",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Third-party script: code from another company that runs on your website.\nCard skimmer: hidden code that copies payment card details as people type them.\nContent delivery network (CDN): servers that deliver a company's files quickly to visitors.\nContent Security Policy (CSP): a website setting that limits where the page may load scripts from."
+    ],
+    [
+     "What happened",
+     "On 16 November 2026 (UTC), an attacker added malicious JavaScript to websites using Optimizely Web Experimentation. Optimizely is a tool for testing changes to websites. Researchers at Report URI found the code on sites of 178 organisations. Optimizely confirmed the attack."
+    ],
+    [
+     "How they got in",
+     "Optimizely says the attacker exploited a flaw in its Experimentation account signup flow. The code went into the Project JavaScript field, which runs on every page view. It was served from Optimizely's own content delivery network (CDN), which sites already allowed."
+    ],
+    [
+     "Impact",
+     "Researchers say the code swapped crypto wallet addresses and copied card numbers, expiry dates and card security codes (CVV). No count of stolen cards has been published. Optimizely says fewer than 5% of its customers were affected."
+    ],
+    [
+     "The Australian sites",
+     "Researchers' lists include Vodafone Australia and HSBC Australia. HSBC says the scripts weren't active on its websites. TPG Telecom, which owns Vodafone Australia, paused Optimizely as a precaution. It told iTnews it found no evidence Vodafone systems or customer data were compromised."
+    ],
+    [
+     "Lesson: every script is your code",
+     "A script you load from a supplier runs with the same power as your own code. Keep a list of every third-party script on your pages. Remove the ones you no longer use."
+    ],
+    [
+     "Lesson: a strict CSP",
+     "Report URI says 24 organisations blocked the payload with a strict Content Security Policy (CSP). It limits which sites a page can load scripts from. Allowing a supplier's whole CDN gives less protection."
+    ],
+    [
+     "Lesson: keep card fields off your page",
+     "Use your payment provider's hosted card fields where you can. In this attack, the skimmer couldn't read card fields hosted by a separate provider."
+    ]
+   ],
+   "maps": "A03 Software Supply Chain Failures · A08 Software or Data Integrity Failures · NIST Cybersecurity Framework (CSF) GV.SC supply chain risk",
+   "q": {
+    "d": 2,
+    "q": "A skimmer like this one runs on a shop's checkout page. Which card fields are out of its reach?",
+    "o": [
+     "Fields on pages served over HTTPS",
+     "Fields in the shop's own payment form",
+     "Fields hosted by a separate payment provider"
+    ],
+    "k": 2,
+    "w": "Fields hosted by a separate payment provider. The skimmer could only read fields in the site's own forms. Not the shop's own form: that's what it copied. Not HTTPS: it protects data in transit, not from scripts on the page."
+   },
+   "date": "2026-11",
+   "status": "breached",
+   "entry": "A flaw in Optimizely's signup flow let an attacker add code to customer projects.",
+   "impact": "Malicious code ran on websites of 178 organisations, including Australian brands.",
+   "lesson": "Treat third-party scripts as your own code. Limit them with a strict CSP.",
+   "source": "Optimizely status page and Report URI, 2026"
+  },
+  {
+   "id": "inc-agent-framework-pypi",
+   "attack": [
+    "T1195.002 Compromise Software Supply Chain",
+    "T1552.001 Unsecured Credentials: Credentials In Files",
+    "T1552.005 Unsecured Credentials: Cloud Instance Metadata API"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "title": "Microsoft agent-framework package poisoned on PyPI",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Python Package Index (PyPI): the main public site for sharing Python packages.\nCredential stealer: malware that hunts for passwords, keys and tokens, then sends them to an attacker.\n.pth file: a small file Python reads every time it starts. It can run code.\nContinuous integration and continuous delivery (CI/CD): automated systems that build, test and ship code."
+    ],
+    [
+     "What happened",
+     "On 17 November 2026 (UTC), two malicious versions of Microsoft's official agent-framework package appeared on the Python Package Index (PyPI). They were versions 1.26.1 and 1.26.2, published 33 minutes apart. PyPI has quarantined both. Version 1.26.0 is the last clean release."
+    ],
+    [
+     "How they got in",
+     "The bad releases came through Microsoft's real project, not a lookalike name. Microsoft hasn't said how the attacker got permission to publish. Researchers say the bad releases were packed outside Microsoft's normal release process."
+    ],
+    [
+     "Why it ran without being used",
+     "Each bad release added a .pth file. Python runs import lines in .pth files every time it starts. So the stealer ran even if your code never imported the package."
+    ],
+    [
+     "Impact",
+     "The malware hunted for cloud and developer secrets. These included Azure and GitHub credentials, plus continuous integration and continuous delivery (CI/CD) secrets. No count of affected users has been published."
+    ],
+    [
+     "Lesson: pin exact versions",
+     "Pin exact versions in your requirements file, such as agent-framework==1.26.0. A loose rule like >=1.26.0 would have pulled in a bad release automatically. Pinning with hashes, using a lockfile, is stronger still."
+    ],
+    [
+     "Lesson: removing it isn't enough",
+     "Uninstalling the package doesn't make stolen keys safe. Rotate every secret the machine or pipeline could reach. Then rebuild from a clean environment."
+    ]
+   ],
+   "maps": "A03 Software Supply Chain Failures · NIST Cybersecurity Framework (CSF) GV.SC supply chain risk · CSF PR.AA identity and access",
+   "q": {
+    "d": 2,
+    "q": "You installed agent-framework 1.26.1 on a build server yesterday. What's the most important next step?",
+    "o": [
+     "Upgrade to the next release",
+     "Uninstall the package and carry on",
+     "Rotate the secrets the server held"
+    ],
+    "k": 2,
+    "w": "Rotate the secrets the server held. The stealer ran at startup, so assume they were taken. Uninstalling stops it running again but doesn't undo the theft. Upgrading is the trap answer: it doesn't undo the theft, and 1.26.2 was also malicious."
+   },
+   "date": "2026-11",
+   "status": "verified",
+   "entry": "Two poisoned releases were published under Microsoft's real PyPI project.",
+   "impact": "A credential stealer ran on every Python start where they were installed.",
+   "lesson": "Pin exact versions. Rotate secrets after a bad install.",
+   "source": "OSV advisory PYSEC-2026-4388 and BleepingComputer, 2026"
+  },
+  {
+   "id": "inc-cold-relic",
+   "attack": [
+    "T1621 Multi-Factor Authentication Request Generation",
+    "T1098.005 Account Manipulation: Device Registration",
+    "T1656 Impersonation"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "title": "COLD RELIC: one cloud breach used to hit another",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Super Admin: the top admin role in Google Workspace, with control over every account.\nMulti-factor authentication (MFA) fatigue: sending many sign-in prompts until the person approves one to make them stop.\nPasskey: a phishing-resistant sign-in key stored on your device, used instead of a password.\nImpersonation: pretending to be someone the target already knows and trusts."
+    ],
+    [
+     "What happened",
+     "On 17 November 2026, Google described attacks by a Russian state-backed espionage group it calls COLD RELIC. The group broke into one US organisation's Google Workspace. It then used the stolen data to break into a second US organisation. Neither victim has been named."
+    ],
+    [
+     "How they got in",
+     "At the first organisation, the group had stolen the password for a Super Admin account. It then sent repeated multi-factor authentication (MFA) push prompts until one was approved. Push approvals are a weak form of MFA, because a tired person can tap yes."
+    ],
+    [
+     "How they stayed in",
+     "Once inside, the group added its own passkeys, backup codes and MFA devices to the account. These kept its access working after password and session resets. Passkeys weren't the weakness here. The attacker registered its own after taking over the account."
+    ],
+    [
+     "Impact",
+     "Using Super Admin rights, the group exported the staff directory and started a domain-wide Google Workspace export. It then posed as a real staff member of the first organisation to contact the second one on an encrypted messaging app."
+    ],
+    [
+     "Lesson: protect admin accounts first",
+     "Give Super Admin accounts phishing-resistant MFA, such as FIDO2 security keys or passkeys. Push prompts can be approved by mistake. Keep the number of Super Admins small."
+    ],
+    [
+     "Lesson: control new MFA devices",
+     "Google recommends checks before a new MFA device or passkey is added. Require approval from an existing admin, or confirm the person's identity another way."
+    ],
+    [
+     "Lesson: clean up after a takeover",
+     "Resetting the password isn't enough. Revoke sessions and app access (OAuth grants). Remove any passkeys, backup codes or MFA devices you don't recognise."
+    ],
+    [
+     "Lesson: check unexpected contact",
+     "A message from a known contact can still come from an attacker using stolen data. Check unusual requests through a separate channel you already trust."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · NIST Cybersecurity Framework (CSF) PR.AA identity and access · CSF DE.CM continuous monitoring",
+   "q": {
+    "d": 2,
+    "q": "After the takeover, the victim resets the Super Admin password. Why might the attacker still get in?",
+    "o": [
+     "The reset doesn't apply to admin roles",
+     "The attacker's own passkey is still enrolled",
+     "Google Workspace keeps the old password active"
+    ],
+    "k": 1,
+    "w": "The attacker's own passkey is still enrolled. Passkeys and backup codes work without the password, so remove unknown ones too. Not the admin role or the old password: the reset worked, but the attacker had another way in."
+   },
+   "date": "2026-11",
+   "status": "breached",
+   "entry": "Stolen Super Admin credentials, then repeated MFA push prompts until one was approved.",
+   "impact": "Staff directory and Workspace data exported, then used to target a second organisation.",
+   "lesson": "Use phishing-resistant MFA for admins. Remove unknown passkeys after a takeover.",
+   "source": "Google Threat Intelligence Group, 2026"
+  },
+  {
+   "id": "qf-java-version",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "Know your Java runtime",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Know your Java runtime",
+     "On 17 November 2026, the Cybersecurity and Infrastructure Security Agency (CISA) urged immediate patching of a Java flaw, CVE-2026-114938. Run `java -version` to see which Java runtime runs by default on a server. CISA warns that apps and container images can bundle their own Java, so check those too."
+    ]
+   ]
+  },
+  {
+   "id": "qf-container-secrets",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "Leaked keys get used in seconds",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Leaked keys get used in seconds",
+     "Stony Brook University researchers planted Amazon Web Services (AWS) keys in public container images. The fastest bot used a key 7.86 seconds after it went public. Scan images for secrets before you push them."
+    ]
+   ]
+  },
+  {
+   "id": "qf-pin-versions",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "Spot the mistake: a requirements file",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Spot the mistake: a requirements file",
+     "A requirements file says `agent-framework>=1.26.0`. The mistake is the loose version rule. For about an hour on 17 November (UTC), it would have installed malicious 1.26.1 or 1.26.2. Pin exact versions: `agent-framework==1.26.0`."
+    ]
+   ]
+  },
+  {
+   "id": "qf-valid-creds",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "Valid logins don't raise alarms",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Valid logins don't raise alarms",
+     "Uber says 149,346 people had data exposed through stolen credentials at a service provider, Fireworks AI. Uber says it wasn't alerted because the attacker used valid credentials. Watch for unusual use, not only failed logins."
+    ]
+   ]
+  },
+  {
+   "id": "qf-incident-not-breach",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "Spot the mistake: \"Coles was breached\"",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Spot the mistake: \"Coles was breached\"",
+     "On 16 November 2026, Coles reported a cyber incident to the Australian Securities Exchange (ASX). It says it found no evidence that customer, team member or supplier data was taken. \"Incident\" isn't the same as a confirmed breach."
+    ]
+   ]
+  },
+  {
+   "id": "inc-ivanti-ics-chain",
+   "attack": [
+    "T1190 Exploit Public-Facing Application",
+    "T1078 Valid Accounts",
+    "T1070 Indicator Removal"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "title": "Ivanti VPN zero-day chain",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Virtual private network (VPN) appliance: a device that lets staff connect to the internal network from outside.\nZero-day: a flaw attackers use before a fix exists.\nRoot access: full control of a device.\nWeb shell: a hidden page an attacker leaves on a server to keep control of it."
+    ],
+    [
+     "What happened",
+     "In early October 2026, Volexity caught an attacker it tracks as UTA0576 using zero-days against Ivanti Connect Secure, a virtual private network (VPN) appliance. Ivanti fixed the first flaw, CVE-2026-104935, on 13 October. It fixed two more, CVE-2026-111357 and CVE-2026-118527, on 29 October."
+    ],
+    [
+     "How they got in",
+     "A crafted web request got past the login without an account and led to code execution. The attacker chained two more flaws to get root access, which means full control. The victim's appliance was fully patched at the time, so these were true zero-days."
+    ],
+    [
+     "What the attacker did",
+     "The attacker used the appliance's own Active Directory (AD) service account to hunt for stored admin passwords and BitLocker recovery keys. BitLocker is Windows disk encryption, and its recovery keys unlock the disk."
+    ],
+    [
+     "How it stayed hidden",
+     "The attacker left no web shell. It re-ran the exploit chain for each command, in memory, and deleted matching log entries. Volexity found Ivanti's Integrity Checker Tool showed no changes."
+    ],
+    [
+     "Lesson: patch every round",
+     "Upgrade to the fixed build for your branch in Ivanti's advisory, such as 22.8R2.6 or 25.1.1.3. Systems patched on 13 October were still exposed to two more flaws."
+    ],
+    [
+     "Lesson: assume stored secrets are stolen",
+     "Volexity advises treating credentials stored on the appliance as stolen and resetting them. Give the VPN's service account only the access it needs."
+    ],
+    [
+     "Lesson: send logs off the box",
+     "Send appliance logs to a security information and event management (SIEM) system. Logs kept only on the appliance can be deleted by an attacker who controls it."
+    ]
+   ],
+   "maps": "A07 Authentication Failures · NIST Cybersecurity Framework (CSF) PR.PS platform security · CSF DE.CM continuous monitoring",
+   "q": {
+    "d": 2,
+    "q": "Why might Ivanti's Integrity Checker Tool show nothing on a hacked appliance?",
+    "o": [
+     "The attacker deleted the checker tool",
+     "The attacker's commands ran only in memory",
+     "The attacker encrypted the appliance's disk"
+    ],
+    "k": 1,
+    "w": "The attacker's commands ran only in memory. Volexity found the tool showed no changes, so memory and network forensics were needed. Not deleting the tool or encrypting the disk: the attacker stayed quiet instead."
+   },
+   "date": "2026-10",
+   "status": "breached",
+   "entry": "A chain of three zero-day flaws in Ivanti Connect Secure VPN appliances.",
+   "impact": "Root access to patched appliances, and a hunt for admin passwords and BitLocker keys.",
+   "lesson": "Patch every round of fixes. Send appliance logs to a SIEM.",
+   "source": "Volexity, SecurityWeek and BleepingComputer, 2026"
+  },
+  {
+   "id": "inc-fireworks-ai",
+   "attack": [
+    "T1078 Valid Accounts",
+    "T1199 Trusted Relationship"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "title": "Fireworks AI breaches: stolen credentials and a cloud provider",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Secret: a password, key or token that lets software log in to another service.\nModel weights: the learned numbers that make an AI model work.\nThird-party provider: an outside company whose service you rely on.\nRotation: replacing a secret with a new one so the old one stops working."
+    ],
+    [
+     "What happened",
+     "On 6 October 2026, AI model platform Fireworks AI found someone using its internal credentials without permission. In a 9 November update, it said an attacker had also reached its development machines on 24 October."
+    ],
+    [
+     "How they got in",
+     "The first incident used stolen Fireworks credentials. For the second, a third-party cloud provider that hosted Fireworks' research and development machines had its own incident on 23 October. The attacker used that access to reach Fireworks' machines. Fireworks hasn't named the provider."
+    ],
+    [
+     "Impact on Fireworks",
+     "In the 24 October activity, the attacker reached customer account and billing information. For some accounts, it also reached stored secrets, datasets and incomplete model weights. Payment card numbers weren't exposed, because Fireworks doesn't store them."
+    ],
+    [
+     "Impact on Uber",
+     "Uber named Fireworks AI as the provider in its own breach. Uber says data on 149,346 people, including driver's licence numbers, was stolen through Fireworks."
+    ],
+    [
+     "Where it stands",
+     "On 17 November, Fireworks said Palo Alto Networks Unit 42 had finished its investigation of the first incident. It said that incident is contained and fixed."
+    ],
+    [
+     "Lesson: your supplier's suppliers",
+     "Your supplier's suppliers are part of your attack surface too. Ask vendors who hosts their systems, and keep development machines away from customer secrets and data."
+    ],
+    [
+     "Lesson: rotate straight away",
+     "If a provider says stored secrets may be exposed, rotate every key you kept there straight away. Don't wait to hear whether your account was affected."
+    ]
+   ],
+   "maps": "NIST Cybersecurity Framework (CSF) GV.SC supply chain risk · CSF PR.DS data security · CSF PR.AA identity and access",
+   "q": {
+    "d": 1,
+    "q": "A provider says some customers' stored secrets were accessed. You kept an API key there. What's your first move?",
+    "o": [
+     "Rotate the key now",
+     "Delete the key from your own notes",
+     "Wait until they confirm your account was affected"
+    ],
+    "k": 0,
+    "w": "Rotate the key now. Once its storage is breached, assume the key is exposed, and rotation makes a stolen copy useless. Not waiting: an attacker can use it meanwhile. Not deleting your notes: the stolen copy still works."
+   },
+   "date": "2026-10",
+   "status": "breached",
+   "entry": "Stolen internal credentials, then access through a third-party cloud provider.",
+   "impact": "Customer account data and some secrets reached. Uber says 149,346 people's data was taken.",
+   "lesson": "Rotate secrets as soon as a provider is breached. Know your suppliers' suppliers.",
+   "source": "Fireworks AI security bulletins, The Record and TechCrunch, 2026"
+  },
+  {
+   "id": "inc-canvas-instructure",
+   "attack": [
+    "T1491.002 Defacement: External Defacement"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "region": "NZ",
+   "title": "Canvas (Instructure) breach hits NZ and AU universities",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Learning platform: an online system where students get course material and hand in work.\nDefacement: changing a website's pages to show the attacker's message.\nExtortion: demanding money not to release stolen data."
+    ],
+    [
+     "What happened",
+     "In late April and early May 2026, the ShinyHunters group breached Instructure, which makes the Canvas learning platform. Students at the University of Auckland, AUT and Victoria University of Wellington had data exposed. On 7 May the group changed Canvas login pages at about 330 institutions."
+    ],
+    [
+     "How they got in",
+     "Instructure said the attacker exploited an issue related to its Free-For-Teacher accounts. These let educators sign up without being verified by a school. Instructure hasn't published technical details, and it has shut the free programme down."
+    ],
+    [
+     "Impact",
+     "Instructure said the exposed data likely included names, email addresses, student ID numbers and messages. It said passwords, birthdates, government IDs and financial details weren't believed to be involved. Canvas went offline during assessments, and NZ universities gave students extensions."
+    ],
+    [
+     "The deal with the hackers",
+     "In mid-May, Instructure said it had reached an agreement with the hackers. The hackers sent \"shred logs\" claiming the data was destroyed. Instructure said there's never complete certainty when dealing with cyber criminals."
+    ],
+    [
+     "Lesson: your data at a supplier",
+     "The universities' own systems weren't breached, but their students' data still was, because it sat with a supplier. Ask what data your suppliers hold, and how they protect it."
+    ],
+    [
+     "Lesson: free sign-ups are attack surface",
+     "A free, unverified sign-up tier lets anyone in. If it shares systems with paying customers, it's part of your attack surface."
+    ]
+   ],
+   "maps": "NIST Cybersecurity Framework (CSF) GV.SC cybersecurity supply chain risk management · CSF RC.CO incident recovery communication",
+   "q": {
+    "d": 1,
+    "q": "The hackers sent \"shred logs\" claiming stolen data was destroyed. What's the safe takeaway?",
+    "o": [
+     "The data is now safe, so no action is needed",
+     "Treat the data as exposed anyway",
+     "It proves the universities' own servers were hacked"
+    ],
+    "k": 1,
+    "w": "Treat the data as exposed anyway. Instructure itself said there's never complete certainty, and you can't verify a criminal's promise. Not safe: logs from criminals prove nothing. Not the universities' servers: the breach was at Instructure."
+   },
+   "date": "2026-05",
+   "status": "breached",
+   "entry": "An issue with free, unverified Free-For-Teacher accounts.",
+   "impact": "Student data from many institutions, including three NZ universities, and defaced login pages.",
+   "lesson": "Know what data suppliers hold. Treat promises from criminals as worthless.",
+   "source": "Instructure statements, RNZ and TechCrunch, 2026"
+  },
+  {
+   "id": "inc-dprk-itworker-nz",
+   "attack": [
+    "T1078 Valid Accounts"
+   ],
+   "kind": "incident",
+   "tag": "2026",
+   "region": "NZ",
+   "title": "North Korean IT worker hired by an NZ business",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Remote contractor: someone hired to work from another location, often never met in person.\nIdentity proofing: checking a person's identity documents are real and belong to them.\nSanctions: legal limits on dealing with a country, such as paying its workers."
+    ],
+    [
+     "What happened",
+     "The National Cyber Security Centre (NCSC) NZ released its Cyber Threat Report 2026 on 24 September 2026. It described a large New Zealand business that hired a fake remote IT contractor. The contractor turned out to be a North Korean operative."
+    ],
+    [
+     "How they got in",
+     "They got in through hiring, not hacking. The worker used fake identity documents and a New Zealand address as a contact point. A New Zealand citizen was recruited to receive and operate the company's laptop."
+    ],
+    [
+     "Impact",
+     "The business grew suspicious and contacted NCSC and NZ Police. It ended the contract and refused to pay. The worker then claimed to hold commercially sensitive information and threatened to release it unless paid."
+    ],
+    [
+     "It's also a sanctions issue",
+     "NCSC says paying North Korean workers breaches United Nations (UN) sanctions, which apply under NZ law. So a business can break the law without knowing it."
+    ],
+    [
+     "Lesson: check identity in person",
+     "Identity checks are a security control. NCSC suggests interviewing candidates face to face and having new staff pick up IT equipment in person."
+    ]
+   ],
+   "maps": "NIST Cybersecurity Framework (CSF) GV.RR roles and responsibilities · CSF PR.AA identity and access",
+   "q": {
+    "d": 1,
+    "q": "Which NCSC NZ tip most directly stops someone else using a new hire's work laptop?",
+    "o": [
+     "Send the laptop by tracked courier",
+     "Require longer passwords on the laptop",
+     "Make new staff collect IT equipment in person"
+    ],
+    "k": 2,
+    "w": "Make new staff collect IT equipment in person. In this case a local helper received and ran the laptop. Not a courier: it delivers to whatever address you're given. Not longer passwords: they don't help if the wrong person holds the laptop."
+   },
+   "date": "2026-09",
+   "status": "breached",
+   "entry": "A fake remote contractor hired with false identity documents.",
+   "impact": "A North Korean operative worked inside the business, then tried extortion.",
+   "lesson": "Interview face to face. Hand over equipment in person.",
+   "source": "NCSC NZ Cyber Threat Report 2026, 1News and RNZ"
+  },
+  {
+   "id": "qf-outlook-445",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "Port 445 and the Outlook zero-day",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Port 445 and the Outlook zero-day",
+     "On 10 November 2026, Microsoft fixed an exploited Outlook flaw, CVE-2026-124194. It can leak NT LAN Manager (NTLM) password hashes. The fix is in the Office updates, not the Windows update. Blocking outbound TCP 445, used by Server Message Block (SMB), cuts off a common path for these leaks."
+    ]
+   ]
+  },
+  {
+   "id": "qf-ivanti-rounds",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "Spot the mistake: \"We patched Ivanti in October\"",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Spot the mistake: \"We patched Ivanti in October\"",
+     "\"We installed Ivanti's 13 October fix, so we're safe.\" The mistake is that two more chained flaws were fixed on 29 October. Builds 22.8R2.5 and 25.1.1.2 are still exposed. Check Ivanti's table for your branch."
+    ]
+   ]
+  },
+  {
+   "id": "qf-clean-scan",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "A clean scan isn't proof",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "A clean scan isn't proof",
+     "In the Ivanti attacks, commands ran in memory and log entries were deleted. Volexity found Ivanti's Integrity Checker Tool showed no changes. Investigators needed memory images and crash dumps."
+    ]
+   ]
+  },
+  {
+   "id": "qf-oaic-h1-2026",
+   "kind": "quick",
+   "tag": "Quick-fire",
+   "title": "AU breach reports, January to June 2026",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "AU breach reports, January to June 2026",
+     "The Office of the Australian Information Commissioner (OAIC) received 667 notifiable data breach notifications from January to June 2026. That's up from 662 in the previous six months."
+    ]
+   ]
+  },
+  {
+   "id": "car-it-to-sec",
+   "kind": "career",
+   "tag": "Career",
+   "title": "IT support skills that are already security skills",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Multi-factor authentication (MFA): proving who you are in two different ways, such as a password and an app prompt.\nIdentity verification: confirming a person is who they say they are before you act.\nIdentity and access management (IAM): controlling who has an account and what each account can reach.\nIncident documentation: a written record of what happened, when, and what was done."
+    ],
+    [
+     "How to use this deck",
+     "Each card names a security skill that IT support work often includes. Only use the lines that match work you've really done. Fill each blank with true details, and bring numbers you can explain in an interview."
+    ],
+    [
+     "Identity checks are a security control",
+     "If your job includes resetting passwords or MFA, checking the caller's identity first is a security control. Help desks are a social engineering target. MGM Resorts' 2023 breach began with a call to its IT help desk.\nCV line: Verified identity before ___ (password resets, MFA changes) using ___ (your process).\nInterview line: \"Before any ___, I confirmed identity by ___. That helps stop the help desk being the way in.\""
+    ],
+    [
+     "Account admin is IAM",
+     "If your job includes setting up new starters, changing access or removing leavers, that's identity and access management (IAM). The security goal is least privilege: only the access each job needs.\nCV line: Managed ___ (new starters, role changes, leavers) in ___ (system), removing leavers' access within ___.\nInterview line: \"When someone left, I ___ on their last day, so no old account stayed open.\""
+    ],
+    [
+     "Ticket notes are incident documentation",
+     "If your job includes writing ticket notes, you already practise incident documentation. Good security notes record the time, what you saw, what you did and who you told.\nCV line: Wrote ticket notes recording ___ (times, evidence, actions) for about ___ tickets a ___.\nInterview line: \"I wrote notes so ___ could pick up a ticket without asking me. In security, that's the incident timeline.\""
+    ],
+    [
+     "Reimaging is part of incident recovery",
+     "If your job includes wiping and rebuilding infected or broken computers, that's part of incident response. In a security incident, contain it first and keep evidence before wiping. Rebuilding from a clean image is recovery.\nCV line: Rebuilt ___ (devices) from a clean image after ___ (malware, faults), restoring users within ___.\nInterview line: \"If I suspected an attack, I'd isolate the device and escalate before wiping it.\""
+    ],
+    [
+     "Patching is vulnerability management",
+     "If your job includes installing updates or rolling out patches, that's vulnerability management. Security teams prioritise by severity and by whether a flaw is being exploited, using sources such as CISA's Known Exploited Vulnerabilities (KEV) list.\nCV line: Kept ___ (devices, apps) patched using ___ (tool), within ___ of release.\nInterview line: \"I'd patch internet-facing and actively exploited flaws first.\""
+    ],
+    [
+     "Reported phishing is triage",
+     "If your job includes checking suspicious emails users report, deciding what's real is triage, a core security operations centre (SOC) task. Check the sender, the links and whether anyone clicked.\nCV line: Checked ___ (number) suspicious emails a ___ and escalated ___ (what).\nInterview line: \"When a user reported a phish, I ___, then ___.\""
+    ],
+    [
+     "Backups and restores protect availability",
+     "If your job includes checking backups or restoring files, you protect availability, the A in the confidentiality, integrity and availability (CIA) triad. A backup only counts if a restore has been tested.\nCV line: Ran ___ (backup checks, test restores) for ___ (systems) every ___.\nInterview line: \"I don't trust a backup until I've restored from it.\""
+    ],
+    [
+     "Calm customer service is incident communication",
+     "If your job includes calming upset customers and explaining problems simply, that's incident communication. In an incident, people need clear, honest updates.\nCV line: Explained ___ (technical issues) to ___ (customers, staff) in plain language.\nInterview line: \"I'd tell people what we know, what we're doing and when the next update is.\""
+    ]
+   ],
+   "maps": "CSF PR.AA identity and access · CSF RS.MA incident management · CSF RC.RP recovery",
+   "qs": [
+    {
+     "d": 1,
+     "q": "A caller wants an urgent password reset. You ring back on the staff directory number. What control is that?",
+     "o": [
+      "Least privilege",
+      "Data loss prevention",
+      "Identity verification"
+     ],
+     "k": 2,
+     "w": "Identity verification. Calling back on a number you already trust confirms who you're talking to. Not least privilege: that limits access, not who gets it. Not data loss prevention: that stops data leaving."
+    },
+    {
+     "d": 1,
+     "q": "A staff member leaves today. Which identity and access management (IAM) step matters most?",
+     "o": [
+      "Disable their accounts and sign-ins today",
+      "Keep the account open for a month, just in case",
+      "Copy their access to whoever replaces them"
+     ],
+     "k": 0,
+     "w": "Disable their accounts and sign-ins today. Old accounts are a common way in. Not keeping it open: that leaves a working login nobody watches. Not copying access: give the new person only what their job needs."
+    }
+   ]
+  },
+  {
+   "id": "ph-headers",
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "Phish triage: reading email headers",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Display name: the friendly name shown next to an email address, which the sender can set to anything.\nEnvelope sender: the sender address given to the receiving server, where bounces go. It's shown as Return-Path, and can differ from the From address.\nReply-To: where your reply goes if you press Reply.\nAuthentication-Results: a header your mail server adds, showing the results of its sender checks."
+    ],
+    [
+     "From can say anything",
+     "The From line has a display name and an address. Anyone can type any display name, such as \"IT Service Desk\". Read the domain after the @ sign instead."
+    ],
+    [
+     "SPF checks the delivery address",
+     "Sender Policy Framework (SPF) checks that the sending server is allowed to send for the envelope sender's domain. That's the Return-Path domain, which can differ from the From address."
+    ],
+    [
+     "DKIM checks a signature",
+     "DomainKeys Identified Mail (DKIM) adds a digital signature. A pass means the message wasn't changed after signing, and it was signed by the domain shown as d=."
+    ],
+    [
+     "DMARC ties the checks to From",
+     "Domain-based Message Authentication, Reporting and Conformance (DMARC) passes only if SPF or DKIM passes for a matching domain. The domain must match the From domain, or be a subdomain of it under the usual relaxed setting. This match is called alignment. The domain owner's policy says what to do on a fail: none, quarantine or reject."
+    ],
+    [
+     "Pass doesn't mean safe",
+     "An attacker can register a look-alike domain and set up SPF, DKIM and DMARC for it. A pass proves which domain sent the email. It doesn't prove that domain is trustworthy."
+    ],
+    [
+     "Links can lie",
+     "Link text can show one address while the link goes to another. On a computer, hover over the link. On a phone, long-press it to see the real address. On an iPhone, tap Hide Preview so the page doesn't load."
+    ],
+    [
+     "Pick the action",
+     "Purge removes the email from every mailbox. Block stops the sender or domain. Reset means a new password and revoked sessions, if someone entered credentials. Report tells your security team, and helps catch the next campaign."
+    ]
+   ],
+   "maps": "CSF DE.AE adverse event analysis · CSF RS.AN incident analysis",
+   "qs": [
+    {
+     "d": 2,
+     "q": "An email's From address is ceo@ironbark.example, but SPF passed for bulkmailer.example. What decides whether DMARC passes?",
+     "o": [
+      "Whether the Reply-To matches the From address",
+      "Whether SPF or DKIM passed for a domain matching ironbark.example",
+      "Whether the display name matches the CEO's real name"
+     ],
+     "k": 1,
+     "w": "Whether SPF or DKIM passed for a domain matching ironbark.example. DMARC needs alignment with the From domain. Not the Reply-To or display name: DMARC doesn't check either."
+    },
+    {
+     "d": 1,
+     "q": "A reported email passes SPF, DKIM and DMARC. What does that prove?",
+     "o": [
+      "The email is safe to act on",
+      "The email came from the domain it shows",
+      "Your own IT team sent the email"
+     ],
+     "k": 1,
+     "w": "The email came from the domain it shows. Attackers can set up all three checks on a look-alike domain. Not safe: a pass says nothing about intent. Not your IT team: check whether the domain is really yours."
+    }
+   ]
+  },
+  {
+   "id": "ph-lookalike",
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "Phish triage: password expiry",
+   "added": "2026-11-19",
+   "evidence": "Email headers",
+   "cards": [
+    [
+     "The evidence",
+     "Two staff report this email. Ironbark's real domain is ironbark.example.",
+     "From: \"Ironbark IT Service Desk\"\n  <servicedesk@ironbark-it.example>\nTo: j.wong@ironbark.example\nSubject: Action required: password expires today\nAuthentication-Results: mx.ironbark.example;\n  spf=pass smtp.mailfrom=ironbark-it.example;\n  dkim=pass header.d=ironbark-it.example;\n  dmarc=pass header.from=ironbark-it.example\nLink text:    https://login.ironbark.example\nLink goes to: https://ironbark-it.example/login"
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 1,
+     "q": "Which domain really sent this email?",
+     "o": [
+      "ironbark.example",
+      "ironbark-it.example",
+      "mx.ironbark.example"
+     ],
+     "k": 1,
+     "w": "ironbark-it.example, a look-alike. Ironbark only appears in the display name and link text, and mx.ironbark.example is your own mail server."
+    },
+    {
+     "d": 2,
+     "q": "All three checks pass. What does that prove?",
+     "o": [
+      "It's genuine, so it's safe to act on",
+      "Ironbark's own IT team sent it out",
+      "It came from ironbark-it.example"
+     ],
+     "k": 2,
+     "w": "It came from ironbark-it.example. The attacker set up the checks on their own look-alike domain. A pass proves the domain, not that it's yours or safe."
+    },
+    {
+     "d": 1,
+     "q": "What gives the link away?",
+     "o": [
+      "The address starts with HTTPS",
+      "The link sits in the middle of the body",
+      "Its text and real address differ"
+     ],
+     "k": 2,
+     "w": "Its text and real address differ: it shows login.ironbark.example but goes to ironbark-it.example. Not HTTPS: phishing sites use it too. Not its place in the body: real emails have links there too."
+    },
+    {
+     "d": 2,
+     "q": "One user entered their password on the fake page. Best response?",
+     "o": [
+      "Warn all staff, then wait",
+      "Reset every staff password",
+      "Purge, block, reset and revoke"
+     ],
+     "k": 2,
+     "w": "Purge, block the domain, then reset that user and revoke sessions. Only one user entered a password, and the attacker can log in now."
+    }
+   ],
+   "after": [
+    [
+     "Check for persistence",
+     "After a password is stolen, check that user's account for new inbox forwarding rules and new MFA methods. Attackers add these to keep access after a reset."
+    ]
+   ]
+  },
+  {
+   "id": "ph-ceo-giftcards",
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "Phish triage: a request from the CEO",
+   "added": "2026-11-19",
+   "evidence": "Email headers",
+   "cards": [
+    [
+     "The evidence",
+     "The accounts team reports this business email compromise (BEC) attempt. CEO Sarah Chen's real address is sarah.chen@ironbark.example.",
+     "From: \"Sarah Chen\"\n  <sarah.chen.ironbark@freemail.example>\nReply-To: s.chen.office@freemail.example\nSubject: Quick favour, confidential\nAuthentication-Results:\n  spf=pass dkim=pass dmarc=pass\n  header.from=freemail.example\nBody: In meetings all day. Buy 5 x $200\n  gift cards and email me the codes.\n  Keep it between us."
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 1,
+     "q": "Who really sent this email?",
+     "o": [
+      "Ironbark's own mail server, mx.ironbark.example",
+      "Sarah Chen, from her Ironbark work account",
+      "Someone on a free email account"
+     ],
+     "k": 2,
+     "w": "Someone on a free email account: the domain is freemail.example. Only the display name says Sarah Chen. Your mail server only received the email."
+    },
+    {
+     "d": 1,
+     "q": "What's suspicious about the Reply-To?",
+     "o": [
+      "It matches the From address exactly",
+      "It's missing, so replies go nowhere",
+      "It sends replies to another address"
+     ],
+     "k": 2,
+     "w": "It sends replies to another address the scammer controls, s.chen.office@freemail.example. It's there, and it differs from the From address."
+    },
+    {
+     "d": 1,
+     "q": "What should the accounts team do?",
+     "o": [
+      "Reply and ask whether it's really her",
+      "Buy the cards but keep all the receipts",
+      "Call her directory number, then report it"
+     ],
+     "k": 2,
+     "w": "Call her directory number, then report it. Replying reaches the scammer. Money sent as gift card codes is rarely recovered."
+    }
+   ],
+   "after": [
+    [
+     "Why there's no link",
+     "BEC emails often have no link or attachment, so filters have little to catch. Urgency, secrecy and a payment request are the warning signs."
+    ]
+   ]
+  },
+  {
+   "id": "ph-payroll-spoof",
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "Phish triage: payroll bank details",
+   "added": "2026-11-19",
+   "evidence": "Email headers",
+   "cards": [
+    [
+     "The evidence",
+     "Payroll reports an email asking staff to update bank details. Sender Policy Framework (SPF) checks Return-Path. Domain-based Message Authentication, Reporting and Conformance (DMARC) ties the checks to From.",
+     "From: \"Ironbark Payroll\" <payroll@ironbark.example>\nReturn-Path: <bounce@bulkmailer.example>\nReply-To: payroll.update@freemail.example\nAuthentication-Results: mx.ironbark.example;\n  spf=pass smtp.mailfrom=bulkmailer.example;\n  dkim=none;\n  dmarc=fail action=none header.from=ironbark.example"
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 2,
+     "q": "SPF passed. Why did DMARC fail?",
+     "o": [
+      "DMARC also needs a signature check",
+      "SPF passed for a different domain",
+      "The Reply-To was a free account"
+     ],
+     "k": 1,
+     "w": "SPF passed for bulkmailer.example, which doesn't match From. An aligned SPF pass alone would have been enough. DMARC doesn't check Reply-To."
+    },
+    {
+     "d": 2,
+     "q": "DMARC failed, but the email still arrived. Why?",
+     "o": [
+      "The fail was a mistake by the mail server",
+      "SPF overrides DMARC when SPF passes",
+      "Ironbark's DMARC policy is set to none"
+     ],
+     "k": 2,
+     "w": "The policy is none, so receivers only monitor: that's what action=none shows. The fail was correct, and SPF can't override DMARC."
+    },
+    {
+     "d": 2,
+     "q": "What's the best response?",
+     "o": [
+      "Reply to the sender to confirm the change",
+      "Reset the payroll team's passwords today",
+      "Purge, block the senders, tighten DMARC"
+     ],
+     "k": 2,
+     "w": "Purge it, block the senders, and move DMARC to quarantine or reject. Replying reaches the scammer. No login was stolen, so password resets don't help."
+    }
+   ],
+   "after": [
+    [
+     "Close the gap",
+     "With a DMARC policy of quarantine or reject, receivers would have sent this email to junk or refused it. Move to it gradually: watch the DMARC reports first so your own real senders don't get blocked."
+    ]
+   ]
+  },
+  {
+   "id": "ph-genuine",
+   "kind": "triage",
+   "tag": "Triage",
+   "title": "Phish triage: a contract to sign",
+   "added": "2026-11-19",
+   "evidence": "Email headers",
+   "cards": [
+    [
+     "The evidence",
+     "m.lee reports this email. Ironbark uses SignFlow, and facilities sent a lease for signing today.",
+     "From: \"SignFlow\" <no-reply@signflow.example>\nTo: m.lee@ironbark.example\nSubject: Ironbark lease renewal: ready to sign\nAuthentication-Results: mx.ironbark.example;\n  spf=pass smtp.mailfrom=signflow.example;\n  dkim=pass header.d=signflow.example;\n  dmarc=pass header.from=signflow.example\nLink text:    Review and sign\nLink goes to: https://app.signflow.example/s/7f3"
+    ]
+   ],
+   "all": true,
+   "qs": [
+    {
+     "d": 1,
+     "q": "Is this email phishing?",
+     "o": [
+      "Yes, because it contains a link to sign",
+      "Yes, because it's from an outside company",
+      "Probably not: everything matches"
+     ],
+     "k": 2,
+     "w": "Probably not: the sender, link and context all match, and all three checks pass. Many genuine emails have links and come from outside companies."
+    },
+    {
+     "d": 1,
+     "q": "What should you do?",
+     "o": [
+      "Block signflow.example for everyone",
+      "Purge it from every mailbox right away",
+      "Tell m.lee it's genuine, with thanks"
+     ],
+     "k": 2,
+     "w": "Tell m.lee it's genuine and thank them. Blocking or purging would stop real business. Thanks keep people reporting."
+    }
+   ],
+   "after": [
+    [
+     "Not every report is phish",
+     "Part of triage is saying \"this one's fine\" quickly and clearly. Treating every report as an attack wastes time and frustrates the business."
+    ]
+   ]
+  },
+  {
+   "id": "nz-nzism-psr",
+   "kind": "law",
+   "tag": "NZ",
+   "region": "NZ",
+   "title": "NZISM and the PSR",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "NZISM: the New Zealand Information Security Manual, the government's manual for protecting information and systems.\nProtective Security Requirements (PSR): the government's wider security framework, covering people, information and physical security.\nControl: a specific safeguard, such as patching or logging."
+    ],
+    [
+     "What the NZISM is",
+     "The New Zealand Information Security Manual (NZISM) is the government's manual for information security. It's published by the Government Communications Security Bureau (GCSB) through the National Cyber Security Centre (NCSC). Version 3.9, from April 2025, is current."
+    ],
+    [
+     "MUST and SHOULD",
+     "NZISM controls use the words MUST and SHOULD. A MUST is required. A SHOULD is strongly recommended, and an agency that doesn't follow it needs to record why."
+    ],
+    [
+     "What the PSR is",
+     "The Protective Security Requirements (PSR) set out how the New Zealand government expects agencies to manage security. They cover four areas: security governance, information security, personnel security and physical security."
+    ],
+    [
+     "How they fit together",
+     "The NZISM sits under the information security part of the PSR. The PSR sets the overall expectations, and the NZISM gives the detailed technical controls."
+    ],
+    [
+     "Who must follow them",
+     "The PSR's requirements are mandatory for certain government agencies, and they assess themselves against them every year. For other organisations, the PSR and NZISM are best practice."
+    ],
+    [
+     "Why it matters for your job hunt",
+     "Government agencies and their IT suppliers are big employers of security staff in New Zealand. Knowing what the NZISM and PSR are is a quick way to stand out in those interviews."
+    ]
+   ],
+   "maps": "Security+ Security Program Management and Oversight · NIST Cybersecurity Framework (CSF) GV.PO policy",
+   "q": {
+    "d": 1,
+    "q": "An NZISM control says an agency SHOULD do something. What does that mean?",
+    "o": [
+     "Optional, and nothing needs recording",
+     "Required, with no exceptions allowed",
+     "Recommended; skipping needs a reason"
+    ],
+    "k": 2,
+    "w": "Recommended; skipping it needs a recorded reason. Not required with no exceptions: that's what MUST means. Not optional with no record: an agency has to justify not following a SHOULD."
+   }
+  },
+  {
+   "id": "nz-ncsc",
+   "kind": "law",
+   "tag": "NZ",
+   "region": "NZ",
+   "title": "NCSC NZ: who they are and how to report",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "National Cyber Security Centre (NCSC): New Zealand's lead government agency for cyber security, part of the GCSB.\nCERT NZ: the agency that used to take incident reports, now merged into the NCSC.\nIncident of potential national significance: an incident serious enough for the NCSC's specialist help."
+    ],
+    [
+     "One place to report",
+     "The integration of CERT NZ into the National Cyber Security Centre (NCSC) was completed on 23 July 2025. Individuals, businesses and critical infrastructure now report cyber incidents in one place."
+    ],
+    [
+     "How to report",
+     "Report online at ncsc.govt.nz, or call the NCSC on 0800 114 115. The old CERT NZ website has been retired. Own Your Online still gives advice for individuals and small businesses."
+    ],
+    [
+     "The 2024/25 numbers",
+     "The Cyber Threat Report 2025 covers 1 July 2024 to 30 June 2025. It received 5,995 reports. It handled 331 incidents of potential national significance, down from 343 the year before."
+    ],
+    [
+     "How bad it got in 2024/25",
+     "The NCSC rates incidents from C1, a national cyber emergency, down to C6. In 2024/25, the most severe incidents were rated C3. None reached C1."
+    ],
+    [
+     "The first C2s in years",
+     "In the first quarter of 2026, the NCSC recorded three C2, or highly significant, incidents. They were the first since 2021/22. The NCSC said basics such as MFA and protecting network edges could have helped."
+    ],
+    [
+     "The 2025/26 picture",
+     "The Cyber Threat Report 2026, released on 24 September 2026, covers 1 July 2025 to 30 June 2026. The NCSC handled 369 incidents of potential national significance, up from 331. Four were rated C2."
+    ]
+   ],
+   "maps": "CSF RS.CO incident response reporting and communication",
+   "q": {
+    "d": 1,
+    "q": "Since July 2025, where does a New Zealand business report a cyber incident?",
+    "o": [
+     "CERT NZ's own website",
+     "The Privacy Commissioner only",
+     "The NCSC, online or by phone"
+    ],
+    "k": 2,
+    "w": "The National Cyber Security Centre (NCSC), online or on 0800 114 115. Not CERT NZ: it merged into the NCSC and its website was retired. Not only the Privacy Commissioner: a notifiable privacy breach goes there too, but that's a separate duty."
+   }
+  },
+  {
+   "id": "nz-privacy-ipps",
+   "kind": "law",
+   "tag": "NZ",
+   "region": "NZ",
+   "title": "NZ privacy principles for security staff",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Information privacy principle (IPP): one of the rules in New Zealand's Privacy Act 2020 for handling personal information.\nPersonal information: information about an identifiable person.\nSerious harm: the test for whether a privacy breach must be reported."
+    ],
+    [
+     "The principles",
+     "The Privacy Act 2020 has 13 information privacy principles (IPPs). A 14th, IPP 3A, came into force on 1 May 2026. It covers telling people when you collect their information from someone else."
+    ],
+    [
+     "IPP 5: keep it secure",
+     "IPP 5 says an organisation must protect personal information with reasonable security safeguards. It must protect against loss, misuse and unauthorised access. This is the principle security teams work on every day."
+    ],
+    [
+     "IPP 9: don't keep it too long",
+     "IPP 9 says don't keep personal information longer than you need it. Data you no longer hold can't be stolen. The Latitude breach in 2023 exposed records that hadn't been needed for years."
+    ],
+    [
+     "IPP 11 and 12: sharing",
+     "IPP 11 limits when you can disclose personal information. IPP 12 limits sending it overseas. Usually, the receiver must protect it to a similar standard."
+    ],
+    [
+     "Notifiable privacy breaches",
+     "A privacy breach that has caused, or is likely to cause, serious harm must be reported. Tell the Privacy Commissioner and affected people as soon as practicable. Failing to notify the Commissioner is an offence, with a fine up to NZ$10,000."
+    ]
+   ],
+   "maps": "Security+ Security Program Management and Oversight · NIST Cybersecurity Framework (CSF) GV.OC legal requirements",
+   "q": {
+    "d": 2,
+    "q": "A company keeps closed customers' licence numbers \"just in case\". Which principle is it most likely breaking?",
+    "o": [
+     "IPP 5: security safeguards",
+     "IPP 9: retention",
+     "IPP 12: overseas disclosure"
+    ],
+    "k": 1,
+    "w": "IPP 9: retention. Information should only be kept as long as it's needed. Not IPP 5: the data may be well protected, but it shouldn't be there. Not IPP 12: nothing is being sent overseas."
+   }
+  },
+  {
+   "id": "inc-mercury-it",
+   "attack": [
+    "T1486 Data Encrypted for Impact"
+   ],
+   "kind": "incident",
+   "tag": "2022",
+   "region": "NZ",
+   "title": "Mercury IT ransomware",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Managed service provider (MSP): a company that runs IT systems for other organisations.\nRansomware: malware that locks files and demands payment.\nCoronial file: a record about a death investigated by a coroner."
+    ],
+    [
+     "What happened",
+     "In late November 2022, ransomware hit Mercury IT, a Wellington managed service provider (MSP). The attack spread to the data of several of its clients. The Privacy Commissioner was told on 30 November, and it became public on 6 December."
+    ],
+    [
+     "Who was affected",
+     "The Ministry of Justice said about 14,500 coronial files and about 4,000 post-mortem reports were affected. Te Whatu Ora (Health New Zealand) lost access to some health records. The health insurer Accuro was also affected."
+    ],
+    [
+     "The response",
+     "The High Court ordered that nobody may store, publish, share or access files stolen in the attack. In December 2022, the Privacy Commissioner opened a compliance investigation."
+    ],
+    [
+     "Lesson: your supplier holds your data",
+     "None of these agencies ran Mercury IT's systems, but their data sat there. Ask what data your suppliers hold, how they protect it, and how fast they'll tell you about a breach."
+    ],
+    [
+     "Lesson: one supplier, many victims",
+     "Attacking one supplier can reach many organisations at once. That makes managed service providers a favourite target, and a key part of supply chain risk."
+    ]
+   ],
+   "maps": "NIST Cybersecurity Framework (CSF) RS.MA incident management · Privacy Act 2020 IPP 5 security safeguards",
+   "q": {
+    "d": 1,
+    "q": "Why did one attack on Mercury IT affect several government agencies at once?",
+    "o": [
+     "The agencies shared one password",
+     "The agencies' data sat with the same provider",
+     "The attack spread through the government network"
+    ],
+    "k": 1,
+    "w": "The agencies' data sat with the same provider. Attacking one supplier reached all of them. Not a shared password or the government network: the attack was on Mercury IT's own systems."
+   },
+   "date": "2022-11",
+   "status": "breached",
+   "entry": "Ransomware at Mercury IT, a Wellington managed service provider. How it got in hasn't been made public.",
+   "impact": "About 14,500 coronial files and 4,000 post-mortem reports affected, plus health and insurance data.",
+   "lesson": "Know which suppliers hold your data, and check how they protect it.",
+   "source": "Ministry of Justice and the Privacy Commissioner, 2022"
+  },
+  {
+   "id": "inc-latitude-nz",
+   "attack": [
+    "T1078 Valid Accounts"
+   ],
+   "kind": "incident",
+   "tag": "2023",
+   "region": "NZ",
+   "title": "Latitude: the New Zealand side",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Data retention: how long an organisation keeps information.\nJoint investigation: two regulators investigating the same breach together.\nGem Visa and Genoapay: Latitude's consumer finance brands in New Zealand."
+    ],
+    [
+     "What happened",
+     "In March 2023, attackers stole about 14 million records from Latitude Financial, which runs Gem Visa and Genoapay in New Zealand. Latitude's systems were breached through a vendor's login. It was New Zealand's biggest data breach."
+    ],
+    [
+     "The New Zealand impact",
+     "The Privacy Commissioner said over one million past and present New Zealand driver licence numbers were exposed, as well as passport details. Many belonged to people who hadn't been customers for years."
+    ],
+    [
+     "Replacing licences",
+     "Waka Kotahi, the NZ Transport Agency, made it easier for affected people to replace their driver licence. A stolen licence number can be used in identity fraud."
+    ],
+    [
+     "A first for two regulators",
+     "On 9 May 2023, New Zealand's Privacy Commissioner and Australia's privacy regulator opened their first joint investigation. It covers how Latitude protected data, and why it kept data it no longer needed."
+    ],
+    [
+     "Lesson: retention is a security risk",
+     "The Deputy Privacy Commissioner called data retention \"the sleeping giant of data security\". Delete personal information you no longer need. Data you don't hold can't be stolen."
+    ]
+   ],
+   "maps": "NIST Cybersecurity Framework (CSF) GV.SC supply chain risk · Privacy Act 2020 IPP 5 security safeguards",
+   "q": {
+    "d": 1,
+    "q": "Which control would most have reduced how many people the Latitude breach hit?",
+    "o": [
+     "Shorter data retention",
+     "Longer customer passwords",
+     "Encrypting data in transit"
+    ],
+    "k": 0,
+    "w": "Shorter data retention. Many records belonged to people who hadn't been customers for years. Not longer passwords: customers' passwords weren't how attackers got in. Not encryption in transit: the data was taken from storage."
+   },
+   "date": "2023-03",
+   "status": "breached",
+   "entry": "Attackers used a vendor's login to reach Latitude's systems.",
+   "impact": "About 14 million records, including over one million NZ driver licence numbers.",
+   "lesson": "Delete data you no longer need. Retention is a security risk.",
+   "source": "Privacy Commissioner and Latitude Financial, 2023"
+  },
+  {
+   "id": "inc-nzx-ddos",
+   "attack": [
+    "T1498 Network Denial of Service"
+   ],
+   "kind": "incident",
+   "tag": "2020",
+   "region": "NZ",
+   "title": "NZX DDoS attacks",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Distributed denial of service (DDoS): flooding a service with traffic from many machines so it stops working.\nMarket announcement: a public notice a listed company must publish, such as its results.\nFailover: switching to a backup system when the main one fails."
+    ],
+    [
+     "What happened",
+     "In late August 2020, distributed denial of service (DDoS) attacks hit NZX, New Zealand's stock exchange. Trading was halted for about four days, with only short periods when it worked."
+    ],
+    [
+     "Why trading stopped",
+     "The attacks took down NZX's announcements platform. Companies couldn't publish market announcements, so fair trading wasn't possible, and NZX halted the market."
+    ],
+    [
+     "What the regulator found",
+     "In January 2021, the Financial Markets Authority (FMA) said the attack was foreseeable and should have been planned for. Government agencies had warned about such attacks in November 2019. It called NZX's crisis planning \"basic\"."
+    ],
+    [
+     "What NZX changed",
+     "NZX didn't accept all the findings. It promised fixes, including a cloud-based failover site for its announcements platform and DDoS protection from Akamai."
+    ],
+    [
+     "Lesson: plan for availability attacks",
+     "DDoS attacks don't steal data, but they can stop a business completely. Plan for them before they happen, with protection services and a tested backup."
+    ]
+   ],
+   "maps": "NIST Cybersecurity Framework (CSF) PR.IR technology resilience · CSF RC.RP recovery planning",
+   "q": {
+    "d": 1,
+    "q": "Which part of the CIA triad did the NZX attacks mainly hit?",
+    "o": [
+     "Integrity",
+     "Availability",
+     "Confidentiality"
+    ],
+    "k": 1,
+    "w": "Availability. Traffic floods stopped the exchange working for about four days. Not confidentiality: no data was reported stolen. Not integrity: data wasn't changed."
+   },
+   "date": "2020-08",
+   "status": "verified",
+   "entry": "Large DDoS traffic floods against NZX's network and announcements platform.",
+   "impact": "Trading halted for about four days.",
+   "lesson": "Plan for DDoS before it happens. Test failover.",
+   "source": "Financial Markets Authority review, 2021"
+  },
+  {
+   "id": "ms-signin-logs",
+   "kind": "msft",
+   "tag": "Microsoft",
+   "title": "Reading Entra sign-in logs",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Sign-in log: Microsoft Entra ID's record of each attempt to sign in.\nInteractive sign-in: one where a person types a password or approves a prompt.\nNon-interactive sign-in: one an app does for a user in the background, such as refreshing a token.\nError code: a number showing why a sign-in failed."
+    ],
+    [
+     "Four kinds of sign-in",
+     "Microsoft Entra ID logs four kinds of sign-in: interactive user, non-interactive user, service principal (an app's own identity) and managed identity. Check all four. An attacker with a stolen token can show up only as non-interactive sign-ins."
+    ],
+    [
+     "What each entry shows",
+     "Each sign-in shows the user, the app, the internet (IP) address, the location and the device. It also shows whether multi-factor authentication (MFA) was needed, which Conditional Access policies applied, and whether the attempt succeeded."
+    ],
+    [
+     "Error codes to know",
+     "50126 means a wrong username or password. 50053 means the account is locked, or the sign-in came from a known bad IP. 53003 means Conditional Access blocked it. 500121 means the MFA step failed."
+    ],
+    [
+     "How long logs last",
+     "Sign-in logs are kept for 7 days on Entra ID Free, and 30 days with Entra ID P1 or P2. To keep them longer, send them to a Log Analytics workspace or Microsoft Sentinel."
+    ],
+    [
+     "Spotting a password spray",
+     "A password spray shows as many 50126 failures across many accounts, often from one IP address or a few. Then look for any success from the same address."
+    ]
+   ],
+   "maps": "SC-200 respond to incidents · SC-900 Microsoft Entra · NIST Cybersecurity Framework (CSF) DE.CM continuous monitoring",
+   "qs": [
+    {
+     "d": 2,
+     "q": "An Entra sign-in shows error code 53003. What happened?",
+     "o": [
+      "The password was wrong",
+      "The MFA step failed",
+      "Conditional Access blocked it"
+     ],
+     "k": 2,
+     "w": "Conditional Access blocked it: 53003 means a policy stopped the sign-in. Not a wrong password: that's 50126. Not a failed MFA step: that's 500121."
+    },
+    {
+     "d": 2,
+     "q": "You have Entra ID P1 and send sign-in logs to Sentinel. A user asks about a sign-in from 45 days ago. Where do you look?",
+     "o": [
+      "The Entra sign-in logs page",
+      "The Windows Security event log",
+      "Sentinel or Log Analytics"
+     ],
+     "k": 2,
+     "w": "Sentinel or Log Analytics, if you send sign-in logs there. Entra keeps them for 30 days with P1, so 45 days needs a longer store. Not the Windows Security log: cloud sign-ins aren't recorded there."
+    }
+   ]
+  },
+  {
+   "id": "ms-intune-ca",
+   "kind": "msft",
+   "tag": "Microsoft",
+   "title": "Intune and Conditional Access",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Microsoft Intune: Microsoft's service for managing and securing devices.\nCompliance policy: the rules a device must meet, such as encryption or a minimum operating system version.\nConditional Access: Entra ID policies that decide whether a sign-in is allowed, and under what conditions."
+    ],
+    [
+     "Compliance policies",
+     "Microsoft Intune checks enrolled devices against compliance policies. A policy might require BitLocker disk encryption, a minimum Windows version, a screen lock and an up-to-date antivirus. Each device is then marked compliant or not compliant."
+    ],
+    [
+     "Linking it to Conditional Access",
+     "Conditional Access can use that result. A grant control called \"Require device to be marked as compliant\" lets only compliant devices reach the app. Everything else is blocked."
+    ],
+    [
+     "Why it matters",
+     "A stolen password alone isn't enough if Conditional Access also needs a compliant device. The attacker's own laptop isn't enrolled in Intune, so it can't be marked compliant."
+    ],
+    [
+     "Grace periods",
+     "Compliance policies can give a device time to fix a problem before it's marked not compliant. This stops people being locked out the moment an update is due."
+    ],
+    [
+     "Test before you enforce",
+     "Run a new Conditional Access policy in report-only mode first. It logs what would have happened without blocking anyone. Keep break-glass accounts excluded, so a mistake can't lock out every admin."
+    ]
+   ],
+   "maps": "SC-900 Microsoft Entra · SC-200 manage a security operations environment · NIST Cybersecurity Framework (CSF) PR.AA identity and access",
+   "qs": [
+    {
+     "d": 2,
+     "q": "An attacker has a user's password and MFA approval but uses their own laptop. Which control blocks the sign-in?",
+     "o": [
+      "A longer password policy",
+      "Require a compliant device",
+      "Self-service password reset"
+     ],
+     "k": 1,
+     "w": "Require a compliant device. The attacker's laptop isn't enrolled in Intune, so it can't be marked compliant. Not a longer password: they already have it. Not self-service reset: that helps users, not blocking."
+    }
+   ]
+  },
+  {
+   "id": "ms-defender-o365",
+   "kind": "msft",
+   "tag": "Microsoft",
+   "title": "Defender for Office 365",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Safe Links: checks a link when someone clicks it, not only when the email arrives.\nSafe Attachments: opens attachments in a separate safe environment to check them before delivery.\nQuarantine: a holding area for suspicious emails.\nMessage trace: a search that shows where an email went."
+    ],
+    [
+     "Safe Links",
+     "Safe Links checks links (URLs) at the moment someone clicks them, in email and Office apps. That matters because attackers often make a link harmful only after the email is delivered."
+    ],
+    [
+     "Safe Attachments",
+     "Safe Attachments opens attachments in a separate virtual environment to watch what they do. Malicious ones are blocked before they reach the user."
+    ],
+    [
+     "Quarantine",
+     "Suspicious emails can be held in quarantine. Quarantine policies decide whether users can release their own messages. By default, only admins can release emails quarantined as high-confidence phishing."
+    ],
+    [
+     "Zero-hour auto purge",
+     "Zero-hour auto purge (ZAP) removes emails after delivery when they're later found to be malicious. It's one reason a reported phish may already be gone."
+    ],
+    [
+     "Message trace",
+     "Message trace, in the Exchange admin centre, shows whether an email was delivered, filtered as spam or quarantined, and to whom. It covers the last 90 days, searched up to 10 days at a time. Use it to find everyone who got a phish."
+    ]
+   ],
+   "maps": "SC-900 Microsoft security solutions · SC-200 respond to incidents · NIST Cybersecurity Framework (CSF) PR.PS platform security",
+   "qs": [
+    {
+     "d": 2,
+     "q": "A link in an email was safe when it arrived but turned malicious an hour later. Which feature still protects a user who clicks it?",
+     "o": [
+      "Message trace",
+      "Safe Links",
+      "Safe Attachments"
+     ],
+     "k": 1,
+     "w": "Safe Links, because it checks the URL at the moment of the click. Not Safe Attachments: it checks files, not links. Not message trace: it shows where emails went but blocks nothing."
+    },
+    {
+     "d": 1,
+     "q": "You need to know which staff received a phishing email. Which tool shows that?",
+     "o": [
+      "Quarantine",
+      "Message trace",
+      "Safe Attachments"
+     ],
+     "k": 1,
+     "w": "Message trace shows each email's recipients and whether it was delivered. Not quarantine: it only holds emails that were caught. Not Safe Attachments: it scans files."
+    }
+   ]
+  },
+  {
+   "id": "ms-purview",
+   "kind": "msft",
+   "tag": "Microsoft",
+   "title": "Purview labels and DLP",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Microsoft Purview: Microsoft's tools for protecting and governing data.\nSensitivity label: a tag on a file or email, such as Confidential, that can also apply protection.\nData loss prevention (DLP): rules that spot sensitive information and stop it being shared in risky ways."
+    ],
+    [
+     "Sensitivity labels",
+     "A sensitivity label, such as Public or Confidential, marks how sensitive a file or email is. A label can also add encryption, a header or a watermark. The protection stays with the file wherever it goes."
+    ],
+    [
+     "Applying labels",
+     "People can apply labels themselves, or labels can be suggested or applied automatically when sensitive content is found. Automatic labelling needs higher-tier licences."
+    ],
+    [
+     "Data loss prevention",
+     "Data loss prevention (DLP) policies look for sensitive information types, such as credit card numbers. When they find them, they can show a warning tip, block sharing or alert an admin."
+    ],
+    [
+     "New Zealand patterns",
+     "Purview includes New Zealand sensitive information types. They include bank account numbers, driver licence numbers, Inland Revenue (IRD) numbers and Ministry of Health (NHI) numbers."
+    ],
+    [
+     "Start in test mode",
+     "Run a new DLP policy in simulation mode first and review the matches. Blocking too much stops real work, and people start finding workarounds."
+    ]
+   ],
+   "maps": "SC-900 Microsoft compliance solutions · Security+ Security Architecture · NIST Cybersecurity Framework (CSF) PR.DS data security",
+   "qs": [
+    {
+     "d": 1,
+     "q": "Staff keep emailing spreadsheets of customer IRD numbers to personal accounts. What helps most?",
+     "o": [
+      "A Safe Links policy for IRD numbers",
+      "A sensitivity label for IRD numbers",
+      "A DLP policy for IRD numbers"
+     ],
+     "k": 2,
+     "w": "A DLP policy for IRD numbers can spot them and block or warn on sharing. Not a label alone: it marks the file but doesn't stop sharing by itself. Not Safe Links: it checks links, not attachments."
+    },
+    {
+     "d": 2,
+     "q": "A label adds encryption to a file. A staff member emails it outside the company. What happens to the protection?",
+     "o": [
+      "The label is removed on sending",
+      "The file is blocked from sending",
+      "The protection stays with the file"
+     ],
+     "k": 2,
+     "w": "The protection stays with the file wherever it goes, so only permitted people can open it. Not removed: labels travel with the file. Not blocked: that would need a DLP policy."
+    },
+    {
+     "d": 1,
+     "q": "Why run a new DLP policy in simulation mode first?",
+     "o": [
+      "To make the policy run faster",
+      "To review matches before blocking",
+      "To stop it alerting admins"
+     ],
+     "k": 1,
+     "w": "To review matches before blocking, so real work isn't stopped by mistake. Not speed: simulation doesn't change performance. Not stopping admin alerts: simulation is about checking matches safely."
+    }
+   ]
+  },
+  {
+   "id": "kql-identitylogon",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Hunt: a password spray",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "Advanced hunting: writing KQL queries over Microsoft Defender XDR data.\nIdentityLogonEvents: a table of sign-ins seen by Defender for Identity and Defender for Cloud Apps.\ndcount(): counts distinct values, such as how many different accounts.\nPassword spray: a few common passwords tried against many accounts."
+    ],
+    [
+     "The query",
+     "This Kusto Query Language (KQL) query looks for one IP address failing to sign in to many accounts. That's the pattern of a password spray.",
+     "IdentityLogonEvents\n| where Timestamp > ago(1d)\n| where ActionType == \"LogonFailed\"\n| summarize Failures = count(),\n    Accounts = dcount(AccountUpn) by IPAddress\n| where Accounts > 10\n| sort by Failures desc"
+    ],
+    [
+     "Why dcount",
+     "count() gives total failures, which brute force against one account also produces. dcount(AccountUpn) counts different accounts, which is what separates a spray from one person mistyping."
+    ],
+    [
+     "What to do next",
+     "Take the top IP addresses and look for any LogonSuccess from them. A success after a spray means a guessed password worked."
+    ]
+   ],
+   "maps": "SC-200 perform threat hunting · ATT&CK T1110.003 Password Spraying",
+   "qs": [
+    {
+     "d": 2,
+     "q": "Why does the query count distinct accounts per IP address?",
+     "o": [
+      "To count total failures",
+      "To find the newest failures",
+      "To tell a spray from a typo"
+     ],
+     "k": 2,
+     "w": "To tell a spray from a typo. One IP failing on many different accounts is a spray. Not total failures: count() already does that. Not the newest: the query doesn't sort by time."
+    }
+   ]
+  },
+  {
+   "id": "kql-emailevents",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Hunt: who got the phish?",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "EmailEvents: an advanced hunting table of emails processed by Microsoft 365.\nDeliveryAction: what happened to the email, such as Delivered, Junked or Blocked.\nproject: a KQL step that keeps only the columns you list."
+    ],
+    [
+     "The query",
+     "A user reports a phish from ironbark-it.example. This Kusto Query Language (KQL) query finds everyone else who got email from that domain.",
+     "EmailEvents\n| where Timestamp > ago(7d)\n| where SenderFromDomain ==\n    \"ironbark-it.example\"\n| project Timestamp, RecipientEmailAddress,\n    Subject, DeliveryAction"
+    ],
+    [
+     "Reading the results",
+     "Rows with DeliveryAction \"Delivered\" reached inboxes when they arrived. LatestDeliveryAction shows whether zero-hour auto purge (ZAP) or an admin removed them later. Purge any copies still there."
+    ],
+    [
+     "What to do next",
+     "Purge the delivered copies, block the domain, then check whether any recipient clicked. The UrlClickEvents table records clicks on links checked by Safe Links."
+    ]
+   ],
+   "maps": "SC-200 perform threat hunting · SC-200 respond to incidents",
+   "qs": [
+    {
+     "d": 1,
+     "q": "Which column tells you whether each copy of the phish reached the inbox?",
+     "o": [
+      "Subject",
+      "DeliveryAction",
+      "RecipientEmailAddress"
+     ],
+     "k": 1,
+     "w": "DeliveryAction shows Delivered, Junked or Blocked. Not Subject: it shows what the email says, not what happened to it. Not RecipientEmailAddress: it says who, not what happened."
+    }
+   ]
+  },
+  {
+   "id": "kql-devicenetwork",
+   "kind": "kql",
+   "tag": "KQL",
+   "title": "Hunt: PowerShell on the web",
+   "added": "2026-11-19",
+   "cards": [
+    [
+     "Key terms",
+     "DeviceNetworkEvents: an advanced hunting table of network connections from devices with Defender for Endpoint.\nInitiatingProcessFileName: the program that made the connection.\nDownload cradle: a short command that downloads code and runs it straight away.\npwsh.exe: PowerShell 7. Windows PowerShell 5.1 is powershell.exe."
+    ],
+    [
+     "The query",
+     "This Kusto Query Language (KQL) query lists web connections made by PowerShell in the last day.",
+     "DeviceNetworkEvents\n| where Timestamp > ago(1d)\n| where InitiatingProcessFileName in~\n    (\"powershell.exe\", \"pwsh.exe\")\n| where RemotePort in (80, 443)\n| summarize Connections = count()\n    by DeviceName, RemoteUrl, RemoteIP"
+    ],
+    [
+     "Why in~",
+     "in~ checks a value against a list, without caring about upper or lower case. Process names can appear as PowerShell.exe or powershell.exe, so a case-sensitive match could miss some."
+    ],
+    [
+     "Reading the results",
+     "Admin scripts and updates reach known company and Microsoft addresses. A user's laptop reaching a rare domain, or a raw IP address with no RemoteUrl, is worth a closer look."
+    ]
+   ],
+   "maps": "SC-200 perform threat hunting · ATT&CK T1059.001 PowerShell · ATT&CK T1105 Ingress Tool Transfer",
+   "qs": [
+    {
+     "d": 2,
+     "q": "Why does the query use in~ instead of in?",
+     "o": [
+      "To match partial file names",
+      "To ignore upper and lower case",
+      "To require an exact-case match"
+     ],
+     "k": 1,
+     "w": "To ignore upper and lower case, so PowerShell.exe and powershell.exe both match. Not partial names: only the two listed names match. Not exact case: that's what in does without the tilde."
+    }
+   ]
+  },
+  {
+   "id": "int-t-authn",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "What's the difference between authentication and authorisation?",
+   "answer": "Authentication proves who you are, such as a password plus a multi-factor authentication (MFA) prompt. Authorisation decides what you can do once you're in, such as which folders you can open. Authentication happens first. Authorisation should be checked on every request.\nInterviewers listen for: a clear one-line definition of each, a real example, and that authorisation is checked every time. Broken Access Control is A01 in the OWASP Top 10:2025."
+  },
+  {
+   "id": "int-t-url",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "Walk me through what happens when you type a website address into a browser.",
+   "answer": "The browser asks the Domain Name System (DNS) for the site's IP address. It opens a TCP connection to port 443, or uses QUIC over UDP for HTTP/3. Transport Layer Security (TLS) checks the server's certificate and agrees encryption keys. Then the browser sends an HTTP request and shows the page it gets back.\nInterviewers listen for: DNS, the connection, the certificate check and the HTTP request, in that order. Bonus: where attacks fit, such as DNS spoofing or a fake certificate."
+  },
+  {
+   "id": "int-t-cia",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "What is the CIA triad? Give an example of an attack on each part.",
+   "answer": "Confidentiality means only the right people see data. A data leak breaks it. Integrity means data isn't changed without permission. Tampering with payment details breaks it. Availability means systems work when needed. A denial-of-service attack breaks it.\nInterviewers listen for: a definition and an attack for each. Bonus: ransomware with double extortion hits all three."
+  },
+  {
+   "id": "int-t-hash",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "What's the difference between encryption and hashing?",
+   "answer": "Encryption is two-way: with the right key, you get the original data back. Hashing is one-way: it makes a fixed-length fingerprint you can't reverse. Use encryption for data you need to read later. Store passwords with slow, salted hashes such as bcrypt or Argon2.\nInterviewers listen for: reversible versus one-way, and that passwords are hashed, not encrypted. Bonus: a salt stops identical passwords having identical hashes."
+  },
+  {
+   "id": "int-t-risk",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "What's the difference between a vulnerability, a threat and a risk?",
+   "answer": "A vulnerability is a weakness, such as an unpatched VPN. A threat is something that could exploit it, such as a ransomware gang. Risk combines how likely that is with how bad the impact would be. You lower risk by fixing the weakness or reducing the impact.\nInterviewers listen for: three separate definitions with one example tying them together, and risk as likelihood and impact."
+  },
+  {
+   "id": "int-t-mfa",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "What is phishing-resistant MFA, and why does it matter?",
+   "answer": "Phishing-resistant MFA can't be handed over to a fake website. FIDO2 security keys and passkeys are bound to the real site's domain, so a look-alike site gets nothing it can use. Certificate-based smart cards count too. SMS and app codes can be typed into a fake page and replayed straight away.\nInterviewers listen for: why codes can be phished, the domain binding, and real examples. Bonus: Cloudflare's staff used FIDO2 keys and blocked the 2022 SMS phishing campaign that hit Twilio."
+  },
+  {
+   "id": "int-t-tcp",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "What's the difference between TCP and UDP? Name a security-relevant port for each.",
+   "answer": "TCP sets up a connection with a three-way handshake and makes sure data arrives in order. UDP just sends, with no handshake, so it's faster but easier to spoof. SSH uses TCP 22 and Remote Desktop uses TCP 3389. DNS mostly uses UDP 53, and uses TCP for large responses.\nInterviewers listen for: handshake versus none, reliability versus speed, and correct port numbers."
+  },
+  {
+   "id": "int-t-leastpriv",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "What does least privilege mean, and how would you apply it in Microsoft 365 or AWS?",
+   "answer": "Least privilege means giving each person and process only the access their job needs, for only as long as they need it. In Microsoft 365, use a narrow role such as Helpdesk Administrator instead of Global Administrator. Privileged Identity Management (PIM) can make admin roles time-limited. In AWS, allow specific actions on specific resources, not a wildcard that allows everything.\nInterviewers listen for: the definition, one concrete example, and regular access reviews."
+  },
+  {
+   "id": "int-t-eventids",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "Which Windows Event IDs would you check for a suspected brute-force attack?",
+   "answer": "Event ID 4625 is a failed logon. Many from one source in a short time suggests brute force. Event ID 4624 is a successful logon, which matters most if it comes right after the failures. Event ID 4740 means an account was locked out. The logon type shows how: 3 is network and 10 is Remote Desktop. With Network Level Authentication (NLA) on, failed Remote Desktop logons usually show as type 3.\nInterviewers listen for: 4625, a 4624 after the failures, and grouping by account and source IP. Bonus: a password spray is a few tries across many accounts."
+  },
+  {
+   "id": "int-t-shared",
+   "kind": "interview",
+   "tag": "Technical",
+   "title": "What is the shared responsibility model in the cloud?",
+   "answer": "The cloud provider secures the cloud itself: data centres, hardware and the core services. You secure what you put in it: your data, identities, access settings and configuration. How much is yours depends on the service. You manage much more with a virtual machine than with Microsoft 365.\nInterviewers listen for: the split, how it changes between service types, and that most cloud breaches come from the customer's side, such as public storage."
+  },
+  {
+   "id": "int-s-mouse",
+   "kind": "interview",
+   "tag": "Scenario",
+   "title": "A user says their mouse is moving by itself. What do you do, in order?",
+   "answer": "First, check whether someone in IT is remotely supporting them. If not, ask the user to stop using the computer but leave it on. Disconnect it from the network, or isolate it with your endpoint detection and response (EDR) tool. Escalate to security, noting the time and what the user saw. Then reset the user's passwords from a clean device.\nInterviewers listen for: ruling out legitimate remote support, isolating without powering off so memory evidence survives, escalating, and writing down times."
+  },
+  {
+   "id": "int-s-s3",
+   "kind": "interview",
+   "tag": "Scenario",
+   "title": "You find a public Amazon S3 bucket with customer data in it. What do you do first?",
+   "answer": "Confirm it's your organisation's bucket and what data is in it. Block public access straight away, ideally with S3 Block Public Access. Tell your manager or security team, and record what you did and when. Then check access logs or CloudTrail data events, if they were on, to see who read it.\nInterviewers listen for: contain first, keep the evidence, escalate, and check whether it's a notifiable privacy breach that's likely to cause serious harm."
+  },
+  {
+   "id": "int-s-phished",
+   "kind": "interview",
+   "tag": "Scenario",
+   "title": "A user clicked a phishing link and entered their password. Walk me through your response.",
+   "answer": "Reset the password and revoke all active sessions, so stolen session cookies stop working. Check sign-in logs for logins from new places since the click. Look for changes an attacker might have made, such as inbox forwarding rules or new MFA methods. Remove the email from every mailbox and block the sender. Thank the user for reporting it.\nInterviewers listen for: revoking sessions, not only resetting the password, checking for persistence, and finding other people who clicked."
+  },
+  {
+   "id": "int-s-travel",
+   "kind": "interview",
+   "tag": "Scenario",
+   "title": "An alert shows a sign-in from Auckland, then one from overseas 10 minutes later. What do you check?",
+   "answer": "First, check whether it's really two places. A VPN or a mobile network can make one person look overseas. Compare the device, browser and IP address for each sign-in, and whether MFA was passed. Contact the user through a channel you already trust. If it isn't them, revoke sessions, reset the password and check for new inbox rules or MFA methods.\nInterviewers listen for: considering a false positive, using evidence, verifying the user safely, then responding."
+  },
+  {
+   "id": "int-s-copyaccess",
+   "kind": "interview",
+   "tag": "Scenario",
+   "title": "A manager asks you to give a new starter the same access as another staff member. What do you do?",
+   "answer": "Avoid copying one person's access to another, because it carries over permissions the new starter may not need. Ask what the role needs, or use a group built for that role. Get approval from the right person and record it in the ticket. Set a review date for anything temporary.\nInterviewers listen for: least privilege, approval, documentation, and an awareness of access creep, where access builds up over time."
+  },
+  {
+   "id": "int-s-ransom",
+   "kind": "interview",
+   "tag": "Scenario",
+   "title": "Ransom notes appear on a file server. What are your first steps?",
+   "answer": "Isolate the affected systems from the network, but don't power them off, so evidence in memory survives. Escalate straight away and follow the incident response plan. Check that backups are offline and unaffected. Record what you see, such as the ransom note, file extensions and times. Leave any contact with the attackers to leadership and legal advisers. Report the incident to the National Cyber Security Centre (NCSC).\nInterviewers listen for: isolate without powering off, escalate, protect backups, keep evidence, and report."
+  },
+  {
+   "id": "int-s-cfo",
+   "kind": "interview",
+   "tag": "Scenario",
+   "title": "A caller says they're the CFO and needs an urgent MFA reset. What do you do?",
+   "answer": "Follow the identity check process, even for senior people. Urgent pressure is a classic social engineering sign. Call back on the number in the staff directory, not one the caller gives, or confirm through their manager. If you can't verify them, don't reset anything, and report the call to security.\nInterviewers listen for: verifying through a channel you already trust, holding firm under pressure, and reporting. Bonus: MGM Resorts' 2023 breach began with a call to its IT help desk."
+  },
+  {
+   "id": "int-s-encoded",
+   "kind": "interview",
+   "tag": "Scenario",
+   "title": "You see PowerShell running an encoded command on a workstation. How do you investigate?",
+   "answer": "Decode the -EncodedCommand value first: it's Base64 of UTF-16LE text. Check what launched PowerShell, such as Word or a scheduled task. Read the full script in Script Block Logging, Event ID 4104, if it's on. Look for network connections and files it created. If it's malicious, isolate the host and check other computers for the same command.\nInterviewers listen for: decoding, the parent process, Event ID 4104, containment, and scoping across other machines."
+  },
+  {
+   "id": "int-b-mistake",
+   "kind": "interview",
+   "tag": "Behavioural",
+   "title": "Tell me about a time you made a mistake at work.",
+   "star": true,
+   "answer": "There's no model answer: this has to be your own story.\nSituation: where you were and what was going on.\nTask: what you were responsible for.\nAction: what you did when you noticed the mistake, step by step. Say \"I\", not \"we\".\nResult: what you fixed, and what you now do differently.\nInterviewers listen for: honesty, owning it quickly, telling the right people, and a lasting change.\nCommon mistake: picking a fake mistake, such as \"I work too hard\". Pick a real, small one you fixed."
+  },
+  {
+   "id": "int-b-explain",
+   "kind": "interview",
+   "tag": "Behavioural",
+   "title": "Tell me about a time you explained something technical to a non-technical person.",
+   "star": true,
+   "answer": "There's no model answer: this has to be your own story.\nSituation: who the person was and what they needed to understand.\nTask: why it mattered that they understood.\nAction: how you explained it. Did you use an everyday comparison, avoid jargon or check they'd understood?\nResult: what they could do afterwards.\nInterviewers listen for: plain language, patience, and checking understanding. Security analysts explain risk to managers all the time.\nCommon mistake: describing the technology instead of how you adapted to the person."
+  },
+  {
+   "id": "int-b-customer",
+   "kind": "interview",
+   "tag": "Behavioural",
+   "title": "Tell me about a time you handled a difficult or upset customer.",
+   "star": true,
+   "answer": "There's no model answer: this has to be your own story.\nSituation: what the customer was upset about.\nTask: what you needed to sort out.\nAction: what you said and did, including how you stayed calm.\nResult: how it ended, and the customer's reaction if you know it.\nInterviewers listen for: calm under pressure, listening, and following process while still helping. This maps well to talking to stressed users during an incident.\nCommon mistake: blaming the customer. Keep the focus on what you did."
+  },
+  {
+   "id": "int-b-priority",
+   "kind": "interview",
+   "tag": "Behavioural",
+   "title": "Tell me about a time you had several urgent tasks at once. How did you prioritise?",
+   "star": true,
+   "answer": "There's no model answer: this has to be your own story.\nSituation: what was competing for your time.\nTask: what had to get done, and by when.\nAction: how you decided the order, such as by business impact or how many people were affected, and who you told.\nResult: what got done, and what you'd change.\nInterviewers listen for: a clear way of deciding, communicating delays, and asking for help when needed. Security teams triage alerts the same way.\nCommon mistake: saying you just worked harder, with no method."
+  },
+  {
+   "id": "int-b-learn",
+   "kind": "interview",
+   "tag": "Behavioural",
+   "title": "Tell me about a time you learned a new technical skill quickly.",
+   "star": true,
+   "answer": "There's no model answer: this has to be your own story.\nSituation: what you needed to learn, and why.\nTask: how quickly you needed it.\nAction: how you learned it, such as documentation, labs or asking a colleague.\nResult: what you could do afterwards, with something specific.\nInterviewers listen for: a learning method you can repeat, and initiative. Your lab work and certification study count.\nCommon mistake: listing courses without saying what you can now actually do."
+  },
+  {
+   "id": "int-b-spotted",
+   "kind": "interview",
+   "tag": "Behavioural",
+   "title": "Tell me about a time you spotted a problem before it became bigger.",
+   "star": true,
+   "answer": "There's no model answer: this has to be your own story.\nSituation: what you noticed, and where.\nTask: why it mattered.\nAction: what you checked, and who you told.\nResult: what was prevented, with a number if you have one.\nInterviewers listen for: attention to detail, curiosity, and escalating at the right time. That's the core of security monitoring.\nCommon mistake: skipping the evidence. Say what made you suspicious."
+  },
+  {
+   "id": "int-b-process",
+   "kind": "interview",
+   "tag": "Behavioural",
+   "title": "Tell me about a time you followed a process even though it was inconvenient.",
+   "star": true,
+   "answer": "There's no model answer: this has to be your own story.\nSituation: what the process was, such as checking someone's identity.\nTask: what pressure you were under to skip it.\nAction: what you did and said to keep to the process politely.\nResult: what happened, and why the process mattered.\nInterviewers listen for: integrity under pressure and good judgement. Many breaches start when someone skips a check to be helpful.\nCommon mistake: telling a story where you broke the rule and it worked out."
+  },
+  {
+   "id": "int-b-why",
+   "kind": "interview",
+   "tag": "Behavioural",
+   "title": "Why do you want to move from IT support into security?",
+   "star": true,
+   "answer": "There's no model answer: this has to be your own reason.\nUse past, present and future instead of STAR.\nPast: what in your IT support work got you interested. Use a real moment.\nPresent: what you're doing about it now, such as study, labs and certifications.\nFuture: what you want to do in this role, and why this employer.\nInterviewers listen for: genuine interest, proof you're already learning, and that your support experience is a strength.\nCommon mistake: only saying security pays more or sounds exciting."
+  },
+  {
+   "id": "int-a-week",
+   "kind": "interview",
+   "tag": "Ask them",
+   "title": "Ask them: \"What does a normal week look like for a junior on this team?\"",
+   "answer": "Why ask: it shows you're picturing yourself doing the job. It tells you what the job really involves.\nA good answer sounds like: a mix of alert triage, tickets, learning time and a named person you'd learn from.\nA warning sign: vague answers, or only night shifts and alert queues with no training."
+  },
+  {
+   "id": "int-a-training",
+   "kind": "interview",
+   "tag": "Ask them",
+   "title": "Ask them: \"How do you support training and certifications?\"",
+   "answer": "Why ask: it shows you plan to keep growing. It tells you whether they'll invest in you.\nA good answer sounds like: paid exams, study time, a training budget or a mentor.\nA warning sign: \"you'd do that in your own time\" with no support at all."
+  },
+  {
+   "id": "int-a-tools",
+   "kind": "interview",
+   "tag": "Ask them",
+   "title": "Ask them: \"Which tools are in your security stack, such as your SIEM and EDR?\"",
+   "answer": "Why ask: it shows technical interest. It tells you what to study before day one, such as Microsoft Sentinel, Splunk or Defender.\nA good answer sounds like: named tools, and how the team uses them.\nA warning sign: no central logging at all, which means a lot of manual work."
+  },
+  {
+   "id": "int-a-90days",
+   "kind": "interview",
+   "tag": "Ask them",
+   "title": "Ask them: \"What would success look like in my first 90 days?\"",
+   "answer": "Why ask: it shows you care about doing well, and it tells you how they'll judge you.\nA good answer sounds like: clear goals, such as handling a type of ticket alone or finishing onboarding training.\nA warning sign: no idea what success looks like for the role."
   }
  ],
  "extraQuestions": {

@@ -32,7 +32,9 @@
      "s": [
       2,
       6,
-      34
+      34,
+      36,
+      39
      ],
      "kinds": [
       "owasp",
@@ -58,7 +60,9 @@
      ],
      "decks": [
       "e8-hardening",
-      "e8-appcontrol"
+      "e8-appcontrol",
+      "ms-intune-ca",
+      "ms-purview"
      ]
     },
     {
@@ -75,12 +79,28 @@
       29,
       32,
       33,
-      34
+      34,
+      36,
+      37,
+      38,
+      40,
+      41,
+      42
      ],
      "p": [
       9,
       12,
-      24
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34
      ],
      "kinds": [
       "triage",
@@ -90,7 +110,8 @@
      "decks": [
       "qf-eventids",
       "e8-admin",
-      "e8-backups"
+      "e8-backups",
+      "car-it-to-sec"
      ]
     },
     {
@@ -100,10 +121,14 @@
       "law"
      ],
      "decks": [
-      "e8-maturity"
+      "e8-maturity",
+      "nz-nzism-psr",
+      "nz-privacy-ipps",
+      "nz-ncsc"
      ],
      "s": [
-      2
+      2,
+      41
      ]
     }
    ]
@@ -129,7 +154,9 @@
       26
      ],
      "decks": [
-      "cloud-shared"
+      "cloud-shared",
+      "car-it-to-sec",
+      "nz-privacy-ipps"
      ]
     },
     {
@@ -139,6 +166,10 @@
       29,
       30,
       31
+     ],
+     "decks": [
+      "ms-signin-logs",
+      "ms-intune-ca"
      ]
     },
     {
@@ -149,11 +180,17 @@
       14,
       32,
       33
+     ],
+     "decks": [
+      "ms-defender-o365"
      ]
     },
     {
      "name": "Describe the capabilities of Microsoft compliance solutions",
-     "weight": "20 to 25%"
+     "weight": "20 to 25%",
+     "decks": [
+      "ms-purview"
+     ]
     }
    ]
   },
@@ -173,9 +210,15 @@
      "weight": "40 to 45%",
      "s": [
       32,
-      33
+      33,
+      40
      ],
-     "partial": "Light coverage: configuring data connectors, analytics rules and Defender settings isn't taught yet."
+     "partial": "Light coverage: configuring data connectors, analytics rules and Defender settings isn't taught yet.",
+     "decks": [
+      "ms-intune-ca",
+      "ms-defender-o365",
+      "ms-purview"
+     ]
     },
     {
      "name": "Respond to security incidents",
@@ -183,27 +226,49 @@
      "s": [
       26,
       32,
-      33
+      33,
+      36,
+      37,
+      41,
+      42
      ],
      "kinds": [
       "triage"
      ],
      "decks": [
       "qf-eventids",
-      "kql-process"
+      "kql-process",
+      "ms-signin-logs",
+      "ms-defender-o365",
+      "kql-emailevents"
+     ],
+     "p": [
+      29,
+      30,
+      32,
+      34
      ]
     },
     {
      "name": "Perform threat hunting",
      "weight": "20 to 25%",
      "s": [
-      24
+      24,
+      39,
+      40
      ],
      "kinds": [
       "kql"
      ],
      "decks": [
       "kql-roles"
+     ],
+     "p": [
+      27,
+      28,
+      30,
+      31,
+      33
      ]
     }
    ]
@@ -224,6 +289,9 @@
      "decks": [
       "cloud-logging",
       "tri-cloudtrail"
+     ],
+     "s": [
+      38
      ]
     },
     {
@@ -236,9 +304,10 @@
       "inc-qubole"
      ],
      "s": [
-      26
-     ],
-     "partial": "Light coverage: case studies and one triage deck, not AWS response steps such as isolating instances and rotating keys."
+      26,
+      38,
+      42
+     ]
     },
     {
      "name": "Infrastructure Security",
@@ -261,6 +330,9 @@
      ],
      "decks": [
       "cloud-iam"
+     ],
+     "s": [
+      36
      ]
     },
     {

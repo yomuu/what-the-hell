@@ -24,6 +24,11 @@
    "n": 5,
    "name": "Microsoft and cloud identity",
    "c": "var(--w5)"
+  },
+  {
+   "n": 6,
+   "name": "Intermediate incident response",
+   "c": "var(--w6)"
   }
  ],
  "days": [
@@ -3900,6 +3905,781 @@
     "Least privilege in Azure: narrow roles at narrow scopes.",
     "Detect with Sentinel, respond with Defender.",
     "Patch by exposure and exploitation, not just score."
+   ]
+  },
+  {
+   "t": "Persistence: where attackers hide",
+   "sub": "How attackers keep access after a restart, a reset or a cleanup.",
+   "learn": [
+    [
+     "Key terms",
+     "Persistence: a way an attacker keeps access after a restart or a password reset.\nWMI event subscription: a hidden Windows rule that runs a command when something happens.\nOAuth consent: permission a user gives an app to reach their data, such as their mailbox."
+    ],
+    [
+     "Windows: the usual places",
+     "On Windows, attackers hide in services, scheduled tasks, Run keys and Startup folders. Terminal Lesson 30 shows how to check each one with PowerShell."
+    ],
+    [
+     "Windows: WMI subscriptions",
+     "A Windows Management Instrumentation (WMI) event subscription runs a command when something happens, such as startup. It has three parts: a filter, a consumer and a binding. Sysmon Event IDs 19, 20 and 21 log them.",
+     "Get-CimInstance -Namespace root/subscription `\n  -ClassName __EventFilter\nGet-CimInstance -Namespace root/subscription `\n  -ClassName __FilterToConsumerBinding"
+    ],
+    [
+     "Linux: cron and systemd",
+     "On Linux, check cron jobs and systemd services or timers. Look for anything new, or anything running from /tmp or a home folder.",
+     "crontab -l\nls /etc/cron.d /etc/systemd/system\nsystemctl list-timers --all"
+    ],
+    [
+     "Linux: SSH keys",
+     "An attacker can add their own public key to ~/.ssh/authorized_keys. Then they log in with no password, even after you change it. Check every user's file, including root's."
+    ],
+    [
+     "Cloud: new users and keys",
+     "In Amazon Web Services (AWS), attackers create new Identity and Access Management (IAM) users or extra access keys. CloudTrail logs these as CreateUser and CreateAccessKey. A new key on an old user is easy to miss."
+    ],
+    [
+     "Cloud: consents and forwarding",
+     "In Microsoft 365, attackers trick users into consenting to a malicious app, which keeps mailbox access after a password reset. They also add inbox rules that forward mail outside. Check both after any account takeover."
+    ]
+   ],
+   "real": [
+    "Cloud persistence that survived a reset",
+    "In Google's COLD RELIC case from November 2026, the attackers added their own passkeys, backup codes and MFA devices. These kept them in after password and session resets. Cleaning up meant removing every method they had added."
+   ],
+   "myth": [
+    "Resetting the password removes the attacker.",
+    "Persistence is built to survive a reset. App consents, inbox rules, extra keys and SSH keys all keep working after the password changes."
+   ],
+   "tryit": {
+    "h": "Plant and find persistence",
+    "where": "Kali VM terminal",
+    "p": "Add a harmless cron job, then find it the way a responder would. Remove it afterwards.",
+    "code": "(crontab -l 2>/dev/null; echo '*/5 * * * * echo lab >> /tmp/lab.txt') | crontab -\ncrontab -l\ncrontab -r    # removes all your cron jobs: lab VM only"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "You reset a user's password after a Microsoft 365 account takeover. Which attacker change still works afterwards?",
+     "o": [
+      "The attacker's failed sign-ins",
+      "A forwarding rule in the user's inbox",
+      "The phishing email in the user's inbox"
+     ],
+     "k": 1,
+     "w": "A forwarding rule in the user's inbox keeps sending mail out after a reset. Not failed sign-ins: they're evidence, not access. Not the phishing email: it's evidence, not persistence."
+    },
+    {
+     "d": 2,
+     "q": "An attacker added their public key to /root/.ssh/authorized_keys. What happens if you change root's password?",
+     "o": [
+      "They're locked out straight away",
+      "They need the new password to log in",
+      "They still log in with their own key"
+     ],
+     "k": 2,
+     "w": "They still log in with their own key, because key logins don't use the password. Remove the key. Not locked out or needing the password: SSH keys work on their own."
+    },
+    {
+     "d": 2,
+     "q": "Which three parts make up a WMI event subscription?",
+     "o": [
+      "Filter, consumer and binding",
+      "Service, task and Run key",
+      "Trigger, action and schedule"
+     ],
+     "k": 0,
+     "w": "Filter, consumer and binding. The filter says when, the consumer says what to run, and the binding links them. Not service, task and Run key: those are other persistence places. Not trigger, action and schedule: that's closer to a scheduled task."
+    },
+    {
+     "d": 2,
+     "q": "CloudTrail shows CreateAccessKey for an old IAM user nobody uses. What does that suggest?",
+     "o": [
+      "Routine key rotation",
+      "An attacker adding a way back in",
+      "AWS cleaning up unused users"
+     ],
+     "k": 1,
+     "w": "An attacker adding a way back in. A new key on an unused user is a classic persistence move. Not routine rotation: nobody uses this user. Not AWS cleanup: AWS doesn't create keys for you."
+    }
+   ],
+   "recap": [
+    "Persistence survives restarts and password resets.",
+    "Windows: services, tasks, Run keys and WMI subscriptions.",
+    "Linux: cron, systemd and SSH authorized_keys.",
+    "Cloud: new users and keys, app consents and inbox rules."
+   ]
+  },
+  {
+   "t": "Ransomware response",
+   "sub": "The first hours decide how bad it gets.",
+   "learn": [
+    [
+     "Key terms",
+     "Isolate: cut a computer off the network so it can't spread or be controlled.\nBackup integrity: whether a backup is complete, unchanged and free of malware.\nNotifiable privacy breach: a breach likely to cause serious harm, which must be reported."
+    ],
+    [
+     "Isolate, don't power off",
+     "Disconnect affected computers from the network, or isolate them with your endpoint detection and response (EDR) tool. Don't power them off. Memory can hold encryption keys and attacker tools that vanish at shutdown."
+    ],
+    [
+     "Preserve evidence",
+     "Before cleaning anything, keep evidence. Photograph ransom notes, export logs to a safe place and record times in UTC. Note who did what, and when."
+    ],
+    [
+     "Check backups before restoring",
+     "Attackers often wait inside a network for days before encrypting. Check that backups are complete and clean, and choose a restore point from before the attackers got in. Restore into an isolated network first."
+    ],
+    [
+     "Report it",
+     "Report the incident to the National Cyber Security Centre (NCSC) at ncsc.govt.nz or on 0800 114 115. They can help with the response and warn others."
+    ],
+    [
+     "Is it a privacy breach?",
+     "Most ransomware gangs steal data before encrypting it. If personal information was taken and serious harm is likely, notify the Privacy Commissioner and affected people as soon as practicable."
+    ],
+    [
+     "Should you pay?",
+     "The NCSC doesn't recommend paying a ransom. Paying doesn't guarantee your files come back or that stolen data is deleted. It also funds the next attack."
+    ],
+    [
+     "Map it to NIST",
+     "NIST SP 800-61 Rev. 3 maps incident response to the CSF 2.0 functions. Isolating is Respond: mitigation. Reporting is Respond: communication. Restoring is Recover."
+    ]
+   ],
+   "real": [
+    "Waikato District Health Board, 2021",
+    "In May 2021, ransomware took down IT at Waikato DHB's hospitals for weeks. Staff went back to paper, and patients were sent elsewhere. The DHB didn't pay, and the attackers leaked stolen data."
+   ],
+   "myth": [
+    "Restoring from backup means the attack is over.",
+    "If the attackers stole data, restoring doesn't undo the theft. And if the backup was taken after they got in, you may restore their access too."
+   ],
+   "tryit": {
+    "h": "Write a ransomware first-hour checklist",
+    "where": "Notes app or your GitHub repo",
+    "p": "Write a one-page checklist for the first hour of a ransomware attack. Cover isolating, who to call, what evidence to keep, checking backups, reporting to NCSC and the privacy breach decision. Keep it to one action per line."
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Ransom notes appear on a file server. What's the best first step?",
+     "o": [
+      "Power it off straight away",
+      "Isolate it from the network",
+      "Restore it from last night's backup"
+     ],
+     "k": 1,
+     "w": "Isolate it from the network, so it can't spread, but keep it running. Not powering off: you'd lose evidence in memory. Not restoring yet: you must first check the backup is clean and the attackers are out."
+    },
+    {
+     "d": 2,
+     "q": "Why check when the attackers first got in before restoring a backup?",
+     "o": [
+      "Older backups restore faster",
+      "Later ones may hold their access",
+      "Newer backups skip some files"
+     ],
+     "k": 1,
+     "w": "A backup taken after the attackers got in may hold their tools or accounts. Not speed: age doesn't change restore time. Not skipped files: backups don't drop files because they're newer."
+    },
+    {
+     "d": 2,
+     "q": "The gang says it stole customer data. What decides whether you must notify the Privacy Commissioner?",
+     "o": [
+      "Whether you pay the ransom",
+      "Whether serious harm is likely",
+      "Whether the data gets published"
+     ],
+     "k": 1,
+     "w": "Whether the breach is likely to cause serious harm. Not paying: it doesn't change the test. Not publishing: theft alone can be enough."
+    },
+    {
+     "d": 2,
+     "q": "Under NIST SP 800-61 Rev. 3, which CSF 2.0 function covers restoring systems from backup?",
+     "o": [
+      "Detect",
+      "Recover",
+      "Identify"
+     ],
+     "k": 1,
+     "w": "Recover covers restoring systems and services. Not Detect: that's spotting the attack. Not Identify: that's knowing your assets and risks before an incident."
+    }
+   ],
+   "recap": [
+    "Isolate, but don't power off.",
+    "Keep evidence and record times in UTC.",
+    "Check backups are clean and from before the attack.",
+    "Report to NCSC, and assess for a notifiable privacy breach."
+   ]
+  },
+  {
+   "t": "AWS incident response",
+   "sub": "Leaked keys and compromised servers.",
+   "learn": [
+    [
+     "Key terms",
+     "Access key: a long-term AWS credential for scripts and tools, made of a key ID and a secret.\nSecurity group: a virtual firewall around an EC2 server.\nEBS snapshot: a point-in-time copy of a server's disk.\nGuardDuty: AWS's threat detection service."
+    ],
+    [
+     "A leaked key: deactivate first",
+     "When an access key leaks, deactivate it straight away. Deactivating is reversible, so nothing breaks for good while you investigate.",
+     "aws iam update-access-key --user-name app-bot \\\n  --access-key-id AKIAEXAMPLE123 --status Inactive"
+    ],
+    [
+     "What did the key do?",
+     "Search CloudTrail for every call made with that key. Event history covers the last 90 days of management events in each Region.",
+     "aws cloudtrail lookup-events --lookup-attributes \\\n  AttributeKey=AccessKeyId,AttributeValue=AKIAEXAMPLE123"
+    ],
+    [
+     "Hunt for persistence",
+     "Look for anything the attacker created to get back in: CreateUser, CreateAccessKey, CreateRole, AttachUserPolicy and CreateLoginProfile. Remove what you didn't create, then rotate and delete the leaked key."
+    ],
+    [
+     "A compromised EC2 server",
+     "Isolate the instance by moving it to a security group with no inbound or outbound rules. Changing security groups may not cut connections that are already open, so also block it with a network access control list (NACL)."
+    ],
+    [
+     "Keep evidence",
+     "Take EBS snapshots of the server's disks before changing anything else. Capture memory if you can, then stop the instance. Tag it so nobody restarts it by mistake."
+    ],
+    [
+     "Use GuardDuty and IMDSv2",
+     "GuardDuty findings show what was detected, such as instance credentials used from outside AWS. Require IMDSv2, which blocks the simple stolen-request trick attackers use to read instance credentials."
+    ]
+   ],
+   "real": [
+    "Capital One, 2019",
+    "An attacker tricked a misconfigured firewall into fetching credentials from Capital One's instance metadata service. The credentials let her copy data on about 100 million US customers and 6 million in Canada. IMDSv2's session tokens are designed to block that trick."
+   ],
+   "myth": [
+    "Deleting a leaked key straight away is the best first move.",
+    "Deactivate first. Deleting is permanent, can break systems that still use the key, and makes the investigation harder. Delete once you've rotated and checked CloudTrail."
+   ],
+   "tryit": {
+    "h": "Practise the key response",
+    "where": "Your own AWS free-tier account (lab only)",
+    "p": "Create a test IAM user with an access key and no permissions. Then deactivate the key and find its events in CloudTrail. Delete the user afterwards.",
+    "code": "aws iam create-user --user-name lab-leak\naws iam create-access-key --user-name lab-leak\naws iam update-access-key --user-name lab-leak \\\n  --access-key-id <KEY_ID> --status Inactive\naws cloudtrail lookup-events --lookup-attributes \\\n  AttributeKey=Username,AttributeValue=lab-leak"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "An access key is found in a public GitHub repo. What's the best first step?",
+     "o": [
+      "Delete the key",
+      "Deactivate the key",
+      "Email the repo owner"
+     ],
+     "k": 1,
+     "w": "Deactivate the key: it stops the key working straight away and can be undone. Not deleting first: that's permanent and can break systems before you've rotated. Not emailing: the key works until you act."
+    },
+    {
+     "d": 2,
+     "q": "Where do you see what a leaked key did over the last few weeks?",
+     "o": [
+      "CloudTrail",
+      "VPC flow logs",
+      "S3 server access logs"
+     ],
+     "k": 0,
+     "w": "CloudTrail records API calls, and you can search them by access key ID. Not VPC flow logs: they record network traffic, not API calls. Not S3 access logs: they only cover one bucket's requests."
+    },
+    {
+     "d": 2,
+     "q": "You isolate an EC2 server with an empty security group. Why also add a network ACL block?",
+     "o": [
+      "Security groups only filter inbound traffic",
+      "Existing connections may keep working",
+      "Network ACLs encrypt the traffic"
+     ],
+     "k": 1,
+     "w": "Existing connections may keep working after a security group change, and a network ACL cuts them. Not inbound only: security groups filter both directions. Not encryption: network ACLs only allow or deny."
+    },
+    {
+     "d": 2,
+     "q": "Why take an EBS snapshot before cleaning a compromised server?",
+     "o": [
+      "To speed the server up",
+      "To keep evidence",
+      "To remove the malware"
+     ],
+     "k": 1,
+     "w": "To keep evidence of what happened, for investigation later. Not speed: snapshots don't change performance. Not removing malware: the snapshot copies it too."
+    }
+   ],
+   "recap": [
+    "Leaked key: deactivate, check CloudTrail, hunt persistence, rotate, delete.",
+    "Isolate EC2 with an empty security group and a network ACL.",
+    "Snapshot disks before changing anything.",
+    "Use GuardDuty findings and require IMDSv2."
+   ]
+  },
+  {
+   "t": "Threat intelligence",
+   "sub": "Knowing your attacker's habits, not just their IP address.",
+   "learn": [
+    [
+     "Key terms",
+     "Indicator of compromise (IOC): a clue left by an attack, such as a file hash, IP address or domain.\nTTP: tactics, techniques and procedures, meaning how an attacker works.\nThreat intelligence: information about attackers that helps you defend."
+    ],
+    [
+     "IOCs versus TTPs",
+     "Indicators of compromise (IOCs) are specific clues, such as a hash or an IP address. Tactics, techniques and procedures (TTPs) describe behaviour, such as spraying passwords. IOCs change easily, while TTPs change slowly."
+    ],
+    [
+     "The Pyramid of Pain",
+     "David Bianco's Pyramid of Pain, from 2013, ranks indicators by how much pain blocking them causes an attacker. From easiest to hardest: hash values, IP addresses, domain names, network and host artefacts, tools, then TTPs."
+    ],
+    [
+     "Why the top matters",
+     "Changing a file hash takes an attacker seconds. Changing how they work takes weeks. So detections built on TTPs keep working after IOCs go stale."
+    ],
+    [
+     "STIX",
+     "Structured Threat Information Expression (STIX) is a standard format for threat intelligence. It describes things like indicators, malware and attack patterns, and how they relate."
+    ],
+    [
+     "TAXII",
+     "Trusted Automated Exchange of Intelligence Information (TAXII) is the protocol for sharing STIX data between organisations and tools. STIX is the language, and TAXII is the delivery service."
+    ],
+    [
+     "MISP",
+     "MISP is a free, open-source platform for storing and sharing threat intelligence. Organisations use it to share IOCs with trusted partners and feed them into their security tools."
+    ],
+    [
+     "Map it to ATT&CK",
+     "Map what you learn to MITRE ATT&CK techniques, such as T1110.003 Password Spraying. Then check whether you can detect each technique, not just each IOC."
+    ]
+   ],
+   "real": [
+    "Threat reports name TTPs, not just IPs",
+    "Advisories from agencies such as CISA and the NCSC usually include a table of ATT&CK techniques alongside the IOCs. The IOCs help this week. The techniques help for years."
+   ],
+   "myth": [
+    "Blocking every IOC in a threat feed keeps you safe.",
+    "Attackers change hashes, IPs and domains constantly. IOC blocking helps briefly, but detecting their behaviour lasts much longer."
+   ],
+   "tryit": {
+    "h": "Map an advisory to ATT&CK",
+    "where": "Browser and notes app",
+    "p": "Pick a recent advisory from the NCSC or CISA. List its IOCs in one column and its ATT&CK techniques in another. For each technique, write which log would show it."
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Which indicator is hardest for an attacker to change, according to the Pyramid of Pain?",
+     "o": [
+      "File hashes",
+      "IP addresses",
+      "TTPs"
+     ],
+     "k": 2,
+     "w": "TTPs, at the top of the pyramid, because changing how you work is hard. Not hashes: they're at the bottom and change with one byte. Not IP addresses: attackers swap them easily."
+    },
+    {
+     "d": 2,
+     "q": "What's the difference between STIX and TAXII?",
+     "o": [
+      "STIX is a format, TAXII shares it",
+      "STIX is a tool, TAXII is a list",
+      "STIX and TAXII are the same thing"
+     ],
+     "k": 0,
+     "w": "STIX is the format for describing threat intelligence, and TAXII is the protocol for sharing it. Not a tool and a list: neither is a product. Not the same: one describes, the other delivers."
+    },
+    {
+     "d": 1,
+     "q": "An advisory lists 200 IP addresses and the technique T1110.003. Which helps you longest?",
+     "o": [
+      "Blocking the 200 IPs",
+      "Detecting T1110.003 behaviour",
+      "Blocking the attackers' country"
+     ],
+     "k": 1,
+     "w": "Detecting T1110.003, password spraying, keeps working when the IPs change. Not the IPs: they'll be replaced within days. Not country blocks: attackers route through other countries."
+    },
+    {
+     "d": 2,
+     "q": "What is MISP used for?",
+     "o": [
+      "Scanning networks for open ports",
+      "Storing and sharing threat intelligence",
+      "Encrypting email between companies"
+     ],
+     "k": 1,
+     "w": "Storing and sharing threat intelligence with trusted partners. Not scanning: that's a tool like Nmap. Not email encryption: that's a different area entirely."
+    }
+   ],
+   "recap": [
+    "IOCs are specific clues. TTPs are behaviour.",
+    "The Pyramid of Pain: TTPs hurt attackers most to change.",
+    "STIX is the format, TAXII shares it, MISP stores it.",
+    "Map intelligence to ATT&CK and check you can detect it."
+   ]
+  },
+  {
+   "t": "Detection engineering with Sigma",
+   "sub": "Write a detection once, use it in any SIEM.",
+   "learn": [
+    [
+     "Key terms",
+     "Detection rule: logic that raises an alert when certain events happen.\nSigma: an open format for writing detection rules in YAML that converts to many SIEMs.\nFalse positive: an alert for something that turned out to be harmless."
+    ],
+    [
+     "What Sigma is",
+     "Sigma is an open format for writing detection rules in YAML. One Sigma rule can be converted to queries for Splunk, Microsoft Sentinel and other SIEMs, so you don't rewrite it for each tool."
+    ],
+    [
+     "The parts of a rule",
+     "A rule has a title and a status. logsource says which logs it reads. detection holds named selections and a condition joining them. falsepositives and level help the analyst who gets the alert."
+    ],
+    [
+     "A rule from the 4104 lesson",
+     "This rule flags PowerShell script blocks that both download a string and run it with IEX. It needs script block logging turned on.",
+     "title: PowerShell download cradle\nstatus: experimental\nlogsource:\n  product: windows\n  category: ps_script\ndetection:\n  selection:\n    ScriptBlockText|contains|all:\n      - 'DownloadString'\n      - 'IEX'\n  condition: selection\nfalsepositives:\n  - Admin scripts that download code\nlevel: high"
+    ],
+    [
+     "Converting it",
+     "sigma-cli converts rules for a target, such as Splunk or Kusto. A hand-written Splunk search for the same logic looks like this.",
+     "index=wineventlog EventCode=4104\n  ScriptBlockText=\"*DownloadString*\"\n  ScriptBlockText=\"*IEX*\""
+    ],
+    [
+     "Tuning false positives",
+     "Test a new rule against a few weeks of real logs before turning it on. Exclude known-good sources narrowly, such as one signed admin script, not a whole user or folder. Write each exclusion in the rule."
+    ],
+    [
+     "Detections need testing too",
+     "Run the behaviour in a lab to check the rule fires. A rule that has never fired may simply be broken."
+    ]
+   ],
+   "real": [
+    "Sigma is shared openly",
+    "The SigmaHQ project on GitHub holds thousands of community detection rules. Many security teams start from these, then tune them for their own environment."
+   ],
+   "myth": [
+    "A rule with no alerts means you're safe.",
+    "It may mean the rule is broken, or the logs it needs aren't being collected. Test that every rule can fire."
+   ],
+   "tryit": {
+    "h": "Fire your own rule",
+    "where": "Windows VM with script block logging on (snapshot first; lab only)",
+    "p": "Run a harmless command containing both strings, such as the one below, which downloads nothing. Then find its 4104 event, and check your rule's logic would match it.",
+    "code": "$s = 'IEX and DownloadString test only'\nWrite-Output $s\nGet-WinEvent -FilterHashtable @{\n  LogName='Microsoft-Windows-PowerShell/Operational'; Id=4104} -MaxEvents 3 |\n  Select-Object TimeCreated, Message"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Which part of a Sigma rule says which logs it reads?",
+     "o": [
+      "level",
+      "logsource",
+      "condition"
+     ],
+     "k": 1,
+     "w": "logsource names the product, category or service the rule reads. Not level: that's how serious an alert is. Not condition: that joins the selections."
+    },
+    {
+     "d": 2,
+     "q": "Why write a detection in Sigma instead of straight in Splunk?",
+     "o": [
+      "Sigma rules run faster",
+      "One rule converts to many SIEMs",
+      "Sigma replaces log collection"
+     ],
+     "k": 1,
+     "w": "One rule converts to many SIEMs, so you can share and reuse it. Not speed: the converted query does the work. Not replacing log collection: every rule needs the right logs collected."
+    },
+    {
+     "d": 2,
+     "q": "A new rule fires 300 times a day on one signed admin script. What's the best fix?",
+     "o": [
+      "Turn the rule off",
+      "Exclude that one script",
+      "Exclude all admin users"
+     ],
+     "k": 1,
+     "w": "Exclude that one script, narrowly, and note it in the rule. Not turning it off: you'd lose the detection. Not all admin users: attackers often use admin accounts."
+    },
+    {
+     "d": 2,
+     "q": "Your new rule has never fired in three months. What should you do?",
+     "o": [
+      "Test it in a lab",
+      "Assume you're safe",
+      "Delete it as unneeded"
+     ],
+     "k": 0,
+     "w": "Test it in a lab to prove it can fire. Not assuming safety: the rule or its logs may be broken. Not deleting: an untested rule might still catch something real."
+    }
+   ],
+   "recap": [
+    "Sigma rules are YAML that converts to many SIEMs.",
+    "A rule has logsource, detection, condition, false positives and level.",
+    "Tune false positives narrowly, and write exclusions down.",
+    "Test every rule fires."
+   ]
+  },
+  {
+   "t": "Writing an incident report",
+   "sub": "Clear, honest and readable by a manager.",
+   "learn": [
+    [
+     "Key terms",
+     "Executive summary: a short opening that tells a busy reader what happened and what it means.\nRoot cause: the underlying reason an incident could happen.\nChain of custody: a record of who handled each piece of evidence, and when."
+    ],
+    [
+     "The executive summary",
+     "Start with a few plain sentences: what happened, when, what was affected, and whether it's over. A manager should understand it without reading further."
+    ],
+    [
+     "The timeline, in UTC",
+     "List each event with its time in UTC, from the first attacker action to recovery. Say where each fact came from, such as sign-in logs or CloudTrail."
+    ],
+    [
+     "Scope and impact",
+     "Say which systems, accounts and data were affected, and how many people. Separate what you confirmed from what you suspect."
+    ],
+    [
+     "Root cause",
+     "Name what let the attack work, such as a missing patch or no MFA. Blame processes and controls, not people."
+    ],
+    [
+     "Actions and lessons",
+     "List what you did to contain and recover. Then list lessons learned, each with an owner and a due date, so they actually happen."
+    ],
+    [
+     "Plain language",
+     "Write for the reader. Explain terms, keep sentences short and avoid blame. A report nobody can read won't change anything."
+    ],
+    [
+     "Evidence handling",
+     "Keep original evidence unchanged and work on copies. Hash each file when you collect it. Record every handover in a chain of custody log: who, what, when and why."
+    ]
+   ],
+   "real": [
+    "Reports change what happens next",
+    "The FMA's 2021 review of the NZX attacks named basic crisis planning as a problem. Clear findings like that give leaders a specific thing to fix."
+   ],
+   "myth": [
+    "An incident report should name who made the mistake.",
+    "Good reports focus on the processes and controls that failed. Blaming people makes others hide mistakes next time."
+   ],
+   "tryit": {
+    "h": "Turn a ticket into a report",
+    "where": "Notes app or your GitHub repo",
+    "p": "Pick a past help desk problem, or the Day 42 scenario. Write a one-page report with an executive summary, a UTC timeline, scope and impact, root cause, actions taken and lessons learned."
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What should the executive summary do?",
+     "o": [
+      "Show every log line",
+      "Tell a busy reader what happened",
+      "Name the person who clicked"
+     ],
+     "k": 1,
+     "w": "Tell a busy reader what happened, what was affected and whether it's over. Not every log line: that belongs in the timeline or appendix. Not naming people: reports focus on processes, not blame."
+    },
+    {
+     "d": 1,
+     "q": "Why write the timeline in UTC?",
+     "o": [
+      "UTC is easier to read",
+      "Times from different systems line up",
+      "Reports must legally use UTC"
+     ],
+     "k": 1,
+     "w": "Times from different systems and time zones line up. Not easier to read: local time is easier for most people. Not a legal rule: it's good practice, not a law."
+    },
+    {
+     "d": 2,
+     "q": "What does a chain of custody log record?",
+     "o": [
+      "Who handled evidence, when and why",
+      "Which attacker tools were used",
+      "How long the incident lasted"
+     ],
+     "k": 0,
+     "w": "Who handled each piece of evidence, when and why. It shows the evidence wasn't changed along the way. Not attacker tools or duration: those go in the report itself."
+    },
+    {
+     "d": 2,
+     "q": "Which is the best root cause statement?",
+     "o": [
+      "A staff member clicked a link",
+      "The attacker was very skilled",
+      "The VPN had no MFA"
+     ],
+     "k": 2,
+     "w": "The VPN had no MFA, so a stolen password was enough. It names a control that can be fixed. Not blaming one person: anyone can click a link. Not attacker skill: it's not something you can fix."
+    }
+   ],
+   "recap": [
+    "Lead with a plain executive summary.",
+    "Use a UTC timeline with sources.",
+    "Separate confirmed facts from suspicions, and blame controls, not people.",
+    "Hash evidence and keep a chain of custody log."
+   ]
+  },
+  {
+   "t": "Mock incident and B6 checkpoint",
+   "sub": "One attack, five pieces of evidence, one report.",
+   "learn": [
+    [
+     "Key terms",
+     "Adversary-in-the-middle (AiTM) phishing: a fake login page that passes your sign-in to the real site and steals the session token.\nSession token: what keeps you signed in after MFA, so whoever holds it doesn't need MFA again.\nInbox rule: an automatic action on incoming mail, such as forwarding or moving it."
+    ],
+    [
+     "How today works",
+     "Today's quiz walks through one incident at Ironbark Freight, a made-up company. Questions 1 to 5 each show one piece of evidence, in order. Questions 6 to 10 are the Level B6 checkpoint. The pass mark is 80%."
+    ],
+    [
+     "The scenario",
+     "On Tuesday at 22:41 UTC, j.wong in finance clicked a link in an email about a password expiry. Two days later, a supplier asks why Ironbark's bank details changed. You're asked to find out what happened."
+    ],
+    [
+     "After the quiz",
+     "When you've finished the quiz, write a short incident report on the Challenge card. Then compare it with the rubric and the model answer."
+    ]
+   ],
+   "real": [
+    "AiTM phishing at scale",
+    "In July 2022, Microsoft reported an adversary-in-the-middle phishing campaign that had targeted more than 10,000 organisations since September 2021. The attackers stole session cookies to skip MFA, then used the mailboxes for payment fraud."
+   ],
+   "myth": [
+    "MFA means a phished account can't be used.",
+    "Adversary-in-the-middle phishing steals the session token after MFA succeeds. Phishing-resistant MFA, such as FIDO2 keys or passkeys, stops it, because the fake site can't use them."
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Evidence 1: the reported email. Which domain really sent it?",
+     "code": "From: \"Ironbark IT\" <it@ironbark-login.example>\nSubject: Your password expires tonight\nAuthentication-Results:\n  spf=pass dkim=pass dmarc=pass\n  header.from=ironbark-login.example\nLink goes to: https://ironbark-login.example/m365",
+     "o": [
+      "ironbark.example",
+      "ironbark-login.example",
+      "mx.ironbark.example"
+     ],
+     "k": 1,
+     "w": "ironbark-login.example, a look-alike the attacker owns. The checks pass because they own that domain. Not ironbark.example: Ironbark only appears in the display name. Not mx.ironbark.example: that's your own mail server."
+    },
+    {
+     "d": 2,
+     "q": "Evidence 2: j.wong's Entra sign-ins. What most likely happened at 22:47?",
+     "code": "22:43 UTC  192.0.2.10  Auckland\n  MFA completed\n22:47 UTC  203.0.113.77  Overseas\n  MFA requirement satisfied\n  by claim in the token",
+     "o": [
+      "j.wong travelled overseas",
+      "A stolen session token",
+      "The MFA app made a mistake"
+     ],
+     "k": 1,
+     "w": "The attacker replayed a stolen session token. Entra shows \"MFA requirement satisfied by claim in the token\", so no new MFA prompt was needed. Not travel: four minutes isn't enough. Not an MFA app mistake: the token came from the phishing page."
+    },
+    {
+     "d": 2,
+     "q": "Evidence 3: a KQL search of CloudAppEvents finds this new rule. What is it for?",
+     "code": "New-InboxRule by j.wong\n(from CloudAppEvents)\n  SubjectContainsWords:\n    invoice, payment\n  ForwardTo:\n    jw.archive@freemail.example\n  MoveToFolder: RSS Subscriptions\n  MarkAsRead: True",
+     "o": [
+      "Tidying j.wong's inbox",
+      "Hiding and leaking payment mail",
+      "Backing up invoices for the auditors"
+     ],
+     "k": 1,
+     "w": "Hiding payment emails and copying them out. It forwards matching mail to an outside address, then hides it in a folder nobody checks. Not tidying or backups: neither needs an external free email address."
+    },
+    {
+     "d": 2,
+     "q": "Evidence 4: you search j.wong's synced OneDrive notes for AWS key IDs. What must you do next?",
+     "code": "PS> Select-String -Pattern 'AKIA' `\n  -Path $env:OneDrive\\Notes\\*.txt\n\nC:\\Users\\jwong\\OneDrive\\Notes\\\n  aws-notes.txt:3:\n  key AKIAEXAMPLEFIN0001",
+     "o": [
+      "Delete the notes file",
+      "Deactivate that AWS key",
+      "Ask j.wong to remember it"
+     ],
+     "k": 1,
+     "w": "Deactivate that AWS key straight away. The attacker had j.wong's session, so assume they read the file. Not deleting the file: the key would still work, and you'd lose evidence. Not asking j.wong: the key needs action now."
+    },
+    {
+     "d": 2,
+     "q": "Evidence 5: CloudTrail for that key, all from 198.51.100.40. Which event sets up a way back in?",
+     "code": "Thu 02:10:05 GetCallerIdentity\nThu 02:10:41 ListBuckets\nThu 02:12:19 CreateUser\n  backup-admin\nThu 02:12:33 CreateAccessKey\n  backup-admin",
+     "o": [
+      "ListBuckets",
+      "GetCallerIdentity",
+      "CreateAccessKey"
+     ],
+     "k": 2,
+     "w": "CreateAccessKey for backup-admin gives the attacker a new key that survives deactivating the old one. Not GetCallerIdentity: that checks whose key it is. Not ListBuckets: that's looking around."
+    },
+    {
+     "d": 2,
+     "q": "Checkpoint: after a Microsoft 365 account takeover, which step removes the most persistence?",
+     "o": [
+      "Reset the password only",
+      "Delete the phishing email",
+      "Revoke sessions, remove rules"
+     ],
+     "k": 2,
+     "w": "Revoke sessions and remove the attacker's inbox rules, app consents and MFA methods. Not a password reset alone: the rules and consents keep working. Not deleting the email: it's evidence, not persistence."
+    },
+    {
+     "d": 1,
+     "q": "Checkpoint: ransom notes appear on a laptop. What do you do first?",
+     "o": [
+      "Power it off",
+      "Restore last night's backup",
+      "Isolate it, but leave it running"
+     ],
+     "k": 2,
+     "w": "Isolate it, but leave it running, so it can't spread and memory evidence survives. Not powering off: you'd lose that evidence. Not restoring yet: first check the backup is clean and the attacker is out."
+    },
+    {
+     "d": 2,
+     "q": "Checkpoint: which detection keeps working longest?",
+     "o": [
+      "Blocking 203.0.113.77",
+      "Blocking the phishing domain",
+      "Alerting on external forwarding"
+     ],
+     "k": 2,
+     "w": "Alerting on new forwarding rules to outside addresses, because it targets behaviour, high on the Pyramid of Pain. Not the IP or domain: attackers replace those within days."
+    },
+    {
+     "d": 2,
+     "q": "Checkpoint: in a Sigma rule, what does the condition do?",
+     "o": [
+      "Sets the alert's severity",
+      "Names the logs the rule reads",
+      "Joins the selections into a match"
+     ],
+     "k": 2,
+     "w": "It joins the selections into a match, such as \"selection and not filter\". Not severity: that's level. Not the logs: that's logsource."
+    },
+    {
+     "d": 1,
+     "q": "Checkpoint: which belongs in the report's root cause?",
+     "o": [
+      "j.wong clicked the link",
+      "The attackers were skilled",
+      "Phishable MFA and a stored key"
+     ],
+     "k": 2,
+     "w": "Phishable MFA, plus an AWS key kept in a notes file. Both are controls you can fix. Not blaming j.wong: anyone can click a link. Not attacker skill: you can't fix that."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Write a short incident report on paper or in your notes app. Use the five pieces of evidence. Then show the answer and compare.\nRubric: a 3-sentence summary a manager understands, and a UTC timeline with sources. Keep confirmed facts apart from suspicions. Name controls as the root cause. Contain both Microsoft 365 and AWS. Give every lesson an owner.",
+    "hint": "Start with the summary: what happened, what was affected, and whether it's over.",
+    "solution": "Summary: A phishing email stole j.wong's Microsoft 365 session on Tuesday. The attacker hid payment emails and used an AWS key from j.wong's notes to create a new user. Both accounts are now contained.\nTimeline (UTC): Tue 22:41 click (mail logs). Tue 22:47 sign-in from 203.0.113.77 (Entra). New inbox rule (CloudAppEvents). Thu 02:10 to 02:12 AWS key used, backup-admin created (CloudTrail).\nScope: One mailbox, payment emails forwarded out, one AWS key and one new IAM user. Supplier bank details may have been changed by email: confirm with finance.\nRoot cause: MFA that can be phished, and a long-term AWS key stored in a notes file.\nActions: Revoked sessions, reset the password, removed the rule and checked app consents and MFA methods; deactivated both keys and deleted backup-admin; checked CloudTrail for other changes.\nLessons: Phishing-resistant MFA for finance (IT, this quarter); alert on external forwarding rules (security, this month); no long-term keys in files (cloud team).",
+    "title": "Write the report"
+   },
+   "recap": [
+    "AiTM phishing steals the session after MFA.",
+    "Check inbox rules and app consents after any takeover.",
+    "Hunt for secrets the attacker could have read, then deactivate them.",
+    "Report in plain language, in UTC, blaming controls, not people."
    ]
   }
  ]

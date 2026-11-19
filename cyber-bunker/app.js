@@ -25,13 +25,13 @@ const asObj = v => (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
    Answering DAILY_GOAL questions in a day, in any tab, keeps the streak going. */
 const DAILY_GOAL = 5;
 const INTERVALS = [1, 3, 7, 16, 35];
-const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--amber)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", kql:"var(--k-kql)", spl:"var(--amber)", quick:"var(--k-quick)"};
+const DECK_COLOUR = {owasp:"var(--t-feed)", incident:"var(--amber)", review:"var(--w3)", e8:"var(--k-e8)", cloud:"var(--k-cloud)", law:"var(--k-law)", triage:"var(--k-triage)", interview:"var(--k-int)", career:"var(--k-int)", msft:"var(--k-msft)", kql:"var(--k-kql)", spl:"var(--amber)", quick:"var(--k-quick)"};
 // Each deck gets a list of checks: its main one plus any extras. Interview decks have none.
 FEED_DECKS.forEach(d => { if (d.kind !== "interview") d.qs = (d.qs || (d.q ? [d.q] : [])).concat(FEED_EXTRA_Q[d.id] || []); });
 // Decks added by the weekly content run carry added:"YYYY-MM-DD" and count as new for seven days.
 const isNew = d => !!d.added && dayNum() - dayNum(new Date(d.added + "T00:00:00")) < 7;
 const checkKey = (d, n) => n ? `f:${d.id}#${n}` : `f:${d.id}`;
-function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag + (d.region ? " · " + d.region : ""), quick:"Quick-fire", e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview", kql:"KQL", spl:"Splunk SPL"}[d.kind] || d.tag; }
+function deckBadge(d){ return {owasp:"OWASP " + d.tag, incident:"Incident " + d.tag + (d.region ? " · " + d.region : ""), quick:"Quick-fire", e8:"Essential Eight", cloud:"Cloud", law:"Law " + d.tag, triage:"Triage", interview:"Interview · " + d.tag, career:"From IT support", msft:"Microsoft security", kql:"KQL", spl:"Splunk SPL"}[d.kind] || d.tag; }
 function deckName(d){ return d.kind === "owasp" ? d.tag + " " + d.title : d.kind === "incident" ? d.title + " " + d.tag : d.kind === "interview" ? "Interview practice" : d.title; }
 function dayNum(d){ d = d || new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); }
 // One-time move of saved Python answers from the old 14-lesson track to the 24-lesson Terminal track.
@@ -124,10 +124,12 @@ function el(tag, cls, html){ const e = document.createElement(tag); if(cls) e.cl
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 // A "Key terms" card lists one "Term: definition" per line, with each term picked out.
 function termsOrPara(h, p){
-  if (h !== "Key terms" || !p.includes("\n")) return `<p>${fmt(p)}</p>`;
+  if (!p.includes("\n")) return `<p>${fmt(p)}</p>`;
+  if (h !== "Key terms") return p.split("\n").filter(Boolean).map(l => { const m = /^(CV line|Interview line|Example|Answer|Why|Summary|Timeline \(UTC\)|Scope|Root cause|Actions|Lessons|Rubric):\s*(.*)$/.exec(l);
+    return m ? `<p class="fill"><span class="fl">${m[1]}<span class="sr">: </span></span>${fmt(m[2])}</p>` : `<p>${fmt(l)}</p>`; }).join("");
   return `<ul class="terms">${p.split("\n").filter(Boolean).map(t => { const i = t.indexOf(": "); return `<li>${i > 0 ? `<b>${fmt(t.slice(0, i))}</b>: ${fmt(t.slice(i + 2))}` : fmt(t)}</li>`; }).join("")}</ul>`;
 }
-function fmt(s){ return esc(s).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"); }
+function fmt(s){ return esc(s).replace(/_{3,}/g, '<span class="blank" role="img" aria-label="blank"></span>').replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"); }
 function codeHtml(src){ return src.split("\n").map(l => `<span style="--i:${l.match(/^ */)[0].length}"${/^\s*#/.test(l) ? ' class="c"' : ""}>${esc(l)}</span>`).join(""); }
 function codeBlock(src, where, copy){
   return `<div class="code">${copy || where ? `<div class="ch"><span class="where">${esc(where || "")}</span>${copy ? `<button class="cp" type="button">Copy</button>` : ""}</div>` : ""}<pre><code>${codeHtml(src)}</code></pre></div>`;
@@ -304,12 +306,15 @@ function capReviews(){
   return due.slice(0, REVIEW_CAP);
 }
 // The next lesson: where you're up to (Continue), or the one after it once that's finished.
+// Level B6 (Day 36 on) unlocks once the Day 35 quiz is finished.
+const B6_FROM = 36;
+const b6Open = () => DAYS.length < B6_FROM || trackStats("study", B6_FROM - 1).fin;
 function nextLesson(){
   const finished = (tab, n) => { const st = trackStats(tab, n); return st.done >= st.total || (tab === "py" && !!pyDone[n]); };
   const at = /^(?:day-|d|g)(\d+)/.exec(store.get("cr2-pos", ""));
-  if (at){ const n = +at[1]; if (!finished("study", n)) return {tab:"study", n}; if (n < DAYS.length && !finished("study", n + 1)) return {tab:"study", n:n + 1}; }
+  if (at && (+at[1] < B6_FROM || b6Open())){ const n = +at[1]; if (!finished("study", n)) return {tab:"study", n}; if (n < DAYS.length && !finished("study", n + 1)) return {tab:"study", n:n + 1}; }
   const s = DAYS.findIndex((d, i) => !finished("study", i + 1));
-  if (s >= 0) return {tab:"study", n:s + 1};
+  if (s >= 0 && (s + 1 < B6_FROM || b6Open())) return {tab:"study", n:s + 1};
   const p = PY_LESSONS.findIndex((d, i) => !finished("py", i + 1));
   return p >= 0 ? {tab:"py", n:p + 1} : null;
 }
@@ -338,7 +343,7 @@ function planStatus(){
   if (p.lesson){
     const st = trackStats(p.lesson.tab, p.lesson.n);
     lessonDone = st.done >= st.total || (p.lesson.tab === "py" && !!pyDone[p.lesson.n]);
-    lessonName = p.lesson.tab === "study" ? `Day ${p.lesson.n}: ${DAYS[p.lesson.n - 1].t}` : `Lesson ${p.lesson.n}: ${PY_LESSONS[p.lesson.n - 1].t}`;
+    lessonName = p.lesson.tab === "study" ? `Day ${p.lesson.n}: ${DAYS[p.lesson.n - 1].t}` : `Lesson ${p.lesson.n}: ${PY_LESSONS[p.lesson.n - 1].t}${PY_LESSONS[p.lesson.n - 1].lang === "ps" ? " (PowerShell: read and quiz)" : ""}`;
   }
   const radioPending = p.radio === undefined;
   const radioDone = !radioPending && (!p.radio || !!p.radioDone || !!(window.BRIEFS || {})[p.radio.link]);
@@ -604,7 +609,7 @@ function quizHtml(q, tagHtml, withRetry, seed, recall){
   return `${tagHtml}
     ${q.d ? `<div class="lvl" hidden>${LEVEL[q.d]}</div>` : ""}
     <h2 class="q">${fmt(q.q)}</h2>
-    ${q.code ? codeBlock(q.code, "", false) : ""}
+    ${q.code ? codeBlock(q.code, q.codeLabel || "", false) : ""}
     ${recall ? `<div class="recall">
       <p class="small">${typed ? "Type the answer from memory, or think it through first." : "Think of the answer before you look at the options."}</p>
       ${typed ? `<input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done"${typed.every(a => /^[0-9.]+$/.test(a)) ? ' inputmode="decimal"' : ""} aria-label="Your answer"><div class="row"><button class="btn checkTyped" type="button">${recall === "exam" ? "Lock in answer" : "Check answer"}</button><button class="btn ghost showOpts" type="button">Show options</button></div>` : `<button class="btn ghost showOpts" type="button">Show options</button>`}
@@ -655,6 +660,7 @@ function makeTrack(tab, items, cfg){
 
     make("Topic", `<div class="tag"><span>${cfg.word} ${dn}</span>${esc(g.label)}</div><h1>${fmt(d.t)}</h1>
       ${d.sub ? `<p>${fmt(d.sub)}</p>` : ""}
+      ${tab === "study" && dn === B6_FROM ? `<p class="warn b6lock" hidden>Level B6 unlocks when you finish the Day ${B6_FROM - 1} quiz. You can read ahead, but it won't join your Today plan until then.</p><button class="btn ghost b6go" type="button" hidden>Go to Day ${B6_FROM - 1}</button>` : ""}
       <div class="hint">${T.cardCount(d)} cards · ${d.quiz.length} questions · swipe up ↑</div>`);
 
     // Guess first: one question (the day's hardest) before reading. Not scored. It has its own id (g5 / pg5),
@@ -681,13 +687,13 @@ function makeTrack(tab, items, cfg){
 
     d.learn.forEach(([h, p, code], j) => {
       const s = make("Learn " + (j+1) + "/" + d.learn.length,
-        `${tag("Learn", (j+1) + " of " + d.learn.length).replace("</div>", `<span class="guessMark" data-g="${tab}:${dn}"></span></div>`)}<h2>${fmt(h)}</h2>${termsOrPara(h, p)}${code ? codeBlock(code, cfg.codeLabel || "", true) : ""}`);
-      if (code) wireCopy(s, code);
-      if (code && tab === "py" && canRun(code)){ s.__runCode = code; s.querySelector(".code").insertAdjacentHTML("afterend", RUN_HTML("Run it here")); }
+        `${tag("Learn", (j+1) + " of " + d.learn.length).replace("</div>", `<span class="guessMark" data-g="${tab}:${dn}"></span></div>`)}<h2>${fmt(h)}</h2>${termsOrPara(h, p)}${code ? codeBlock(code, d.lang === "ps" ? "PowerShell · Windows only" : cfg.codeLabel || "", !/^# Recognise only/.test(code)) : ""}`);
+      if (code && !/^# Recognise only/.test(code)) wireCopy(s, code);
+      if (code && tab === "py" && d.lang !== "ps" && canRun(code)){ s.__runCode = code; s.querySelector(".code").insertAdjacentHTML("afterend", RUN_HTML("Run it here")); }
     });
 
     if (d.play){
-      const s = make("Try it here", `${tag("Try it here")}<h2>Edit and run</h2><p>${fmt(d.play.p)}</p>${EDITOR_HTML(d.play.code, "Run")}`);
+      const s = make("Try it here", `${tag("Try it here", d.lang === "ps" ? "Python, runs here" : "")}<h2>${d.lang === "ps" ? "Decode it with Python" : "Edit and run"}</h2><p>${fmt(d.play.p)}</p>${EDITOR_HTML(d.play.code, "Run")}`);
       wireEditor(s, d.play.code);
     }
 
@@ -698,7 +704,7 @@ function makeTrack(tab, items, cfg){
 
     if (d.tryit){
       const t = d.tryit;
-      const s = make("Try it", `${tag("Try it")}<h2>${fmt(t.h)}</h2>${t.where && !t.code ? `<div class="where">${esc(t.where)}</div>` : ""}<p>${fmt(t.p)}</p>
+      const s = make("Try it", `${tag("Try it")}<h2>${fmt(t.h)}</h2>${t.where && !t.code ? `<div class="where">${esc(t.where)}</div>` : ""}${t.warn ? `<p class="warn">${fmt(t.warn)}</p>` : ""}<p>${fmt(t.p)}</p>
         ${t.code ? codeBlock(t.code, t.where, true) : ""}`);
       if (t.code) wireCopy(s, t.code);
     }
@@ -710,7 +716,7 @@ function makeTrack(tab, items, cfg){
     const allDone = () => d.quiz.every((q, qi) => Number.isInteger(answers[dn + "." + qi]));
     const attSeed = qi => { const q = d.quiz[qi], a = (exam[dn] || {}).att || 1; return seedOf(q.q + (q.code || "") + (a > 1 ? ":" + a : "")); };
     d.quiz.forEach((q, qi) => {
-      const s = make("Quiz " + (qi+1) + "/" + d.quiz.length, quizHtml(q, tag("Quiz", (qi+1) + " of " + d.quiz.length), true, attSeed(qi), typedAnswers(q) ? "exam" : false));
+      const s = make("Quiz " + (qi+1) + "/" + d.quiz.length, quizHtml(d.lang === "ps" && q.code ? Object.assign({}, q, {codeLabel:"PowerShell sample · Windows only"}) : q, tag("Quiz", (qi+1) + " of " + d.quiz.length), true, attSeed(qi), typedAnswers(q) ? "exam" : false));
       T.resetters[dn].push(buildQuiz(s, q, {obj:answers, key:dn + "." + qi, save}, (pick, sure) => {
         if (pick === null){ updateScore(tab, false); return; }
         const e = exam[dn] || (exam[dn] = {att:1});
@@ -733,11 +739,12 @@ function makeTrack(tab, items, cfg){
 
     if (d.challenge){
       const ch = d.challenge;
-      const s = make("Challenge", `${tag("Challenge")}<h2>Your turn</h2><p>${fmt(ch.p)}</p>
+      const fix = d.lang === "ps" && ch.think;
+      const s = make("Challenge", `${tag(fix ? "Fix the command" : "Challenge", fix ? "not run here" : "")}<h2>${fix ? "Fix the command" : fmt(ch.title || "Your turn")}</h2>${termsOrPara("Challenge", ch.p)}
         ${ch.think ? "" : EDITOR_HTML(ch.start, "Run and check", dn, ch.expect)}
         <div class="row reveals"><button class="btn ghost hintBtn" type="button" aria-expanded="false">Show hint</button><button class="btn ghost solBtn" type="button" aria-expanded="false">${ch.think ? "Show answer" : "Show solution"}</button></div>
         <div class="hintBox" hidden>${fmt(ch.hint)}</div>
-        <div class="solBox" hidden>${ch.think ? `<p>${fmt(ch.solution)}</p><button class="btn markDone" type="button">Mark lesson done</button>` : codeBlock(ch.solution, "Solution", false) + `<button class="btn ghost useSol" type="button">Use this solution</button>`}</div>
+        <div class="solBox" hidden>${ch.think ? `${termsOrPara("Answer", ch.solution)}${tab === "py" ? `<button class="btn markDone" type="button">Mark lesson done</button>` : ""}` : codeBlock(ch.solution, "Solution", false) + `<button class="btn ghost useSol" type="button">Use this solution</button>`}</div>
         <p class="small doneNote" aria-live="polite"></p>`);
       if (!ch.think) wireEditor(s, ch.start);
       const toggle = (btn, box) => btn.addEventListener("click", () => { const open = box.hidden; box.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
@@ -758,7 +765,7 @@ function makeTrack(tab, items, cfg){
       ${cfg.links && cfg.links[dn] ? `<button class="linkbtn" type="button">${esc(cfg.links[dn].text)} →</button>` : ""}`);
     T.recapScores[dn] = rc.querySelector(".dscore");
     const lb = rc.querySelector(".linkbtn");
-    if (lb) lb.addEventListener("click", () => navigateTo(cfg.links[dn].tab, cfg.links[dn].n));
+    if (lb) lb.addEventListener("click", () => cfg.links[dn].deck ? openRelated("deck:" + cfg.links[dn].deck) : navigateTo(cfg.links[dn].tab, cfg.links[dn].n));
     rc.querySelector(".nx").addEventListener("click", () => last ? go(tab, Math.max(T.cards.findIndex(c => c.group <= -2), 0) || T.cards.length-1) : goGroup(tab, dn));
     twoTap(rc.querySelector(".redo"), "Tap again to retake", () => {
       // Only the first attempt each day counts towards reviews, so a same-day retake is practice.
@@ -856,12 +863,12 @@ const storySheet = document.getElementById("storySheet");
 let editing = -1, storyOpener = null, deleteArmed = false, storySnap = "", discardArmed = false;
 const storyFields = () => ["stTitle", "stS", "stA", "stR"].map(id => document.getElementById(id).value).join("\u0001") + [...document.querySelectorAll("#stLinks input:checked")].map(x => x.value).join(",");
 const storyDirty = () => storySheet.classList.contains("open") && storyFields() !== storySnap;
-function openStory(i, e){
+function openStory(i, e, link){
   editing = i; deleteArmed = false; storyOpener = (e && e.currentTarget) || document.activeElement;
-  const st = i >= 0 ? stories[i] : {title:"", s:"", a:"", r:"", links:[]};
+  const st = i >= 0 ? stories[i] : {title:"", s:"", a:"", r:"", links:link ? [link] : []};
   document.getElementById("stTitle").value = st.title || "";
   document.getElementById("stS").value = st.s || ""; document.getElementById("stA").value = st.a || ""; document.getElementById("stR").value = st.r || "";
-  document.getElementById("stLinks").innerHTML = FEED_DECKS.filter(d => d.kind === "interview").map(d =>
+  document.getElementById("stLinks").innerHTML = FEED_DECKS.filter(d => d.kind === "interview" && d.star).map(d =>
     `<li><label><input type="checkbox" value="${d.id}"${(st.links || []).includes(d.id) ? " checked" : ""}>${esc(d.title)}</label></li>`).join("");
   document.getElementById("stDelete").hidden = i < 0; document.getElementById("stDelete").textContent = "Delete";
   document.getElementById("stMsg").textContent = "";
@@ -876,7 +883,9 @@ function openStory(i, e){
 function hideStory(){
   storySheet.classList.remove("open");
   Object.entries(TABS).forEach(([k, T]) => T.el.inert = k !== active); rail.inert = false; tabsBar.inert = false; document.getElementById("updateBar").inert = false;
+  document.querySelectorAll(".card").forEach(c => { if (c.__yours) c.__yours(); });
   if (storyOpener && storyOpener.isConnected) storyOpener.focus({preventScroll:true});
+  else { const y = document.querySelector(".card .yours.show"); if (y){ y.tabIndex = -1; y.focus({preventScroll:true}); } }
   renderStories();
 }
 function closeStory(force){
@@ -894,6 +903,9 @@ document.getElementById("stSave").addEventListener("click", () => {
   const st = {title:document.getElementById("stTitle").value.trim(), s:document.getElementById("stS").value.trim(),
     a:document.getElementById("stA").value.trim(), r:document.getElementById("stR").value.trim(),
     links:[...document.querySelectorAll("#stLinks input:checked")].map(x => x.value)};
+  // Links to questions not listed here (older ones) are kept.
+  const shown = new Set([...document.querySelectorAll("#stLinks input")].map(x => x.value));
+  if (editing >= 0) (stories[editing].links || []).forEach(l => { if (!shown.has(l)) st.links.push(l); });
   if (!st.title){ document.getElementById("stMsg").textContent = "Give the story a short title first."; document.getElementById("stTitle").focus(); return; }
   if (editing >= 0) stories[editing] = st; else stories.push(st);
   saveStories(); toast("Story saved"); closeStory(true);
@@ -910,9 +922,10 @@ addCard("study", {c:"var(--w4)", id:"finish", label:"Finished", group:-2, html:`
 /* ---------- Python tab ---------- */
 const P = TABS.py;
 addCard("py", {c:"var(--t-py)", id:"py-start", label:"Start", group:-1, html:`
-  <div class="tag"><span>Python</span>${PY_LESSONS.length} lessons · ${PY_LESSONS.reduce((s,d)=>s+d.quiz.length,0)} questions</div>
-  <h1>Python for security</h1>
-  <p>Short lessons that build up to real tools: log parsing, regex, hashing, an IAM policy check and a brute-force detector. Edit and run the code right here, then finish each lesson's challenge. Run the bigger tools in Kali.</p>
+  <div class="tag"><span>Python and PowerShell</span>${PY_LESSONS.length} lessons · ${PY_LESSONS.reduce((s,d)=>s+d.quiz.length,0)} questions</div>
+  <h1>Python and PowerShell for security</h1>
+  <p>Short lessons that build up to real tools: log parsing, regex, hashing, an IAM policy check and a brute-force detector. In the Python lessons, edit and run the code right here. Run the bigger tools in Kali.</p>
+  <p>The PowerShell lessons (25 to 34) are read-and-quiz here. Their commands only run in a Windows VM.</p>
   <div class="weeks">${PY_LEVELS.map(l=>`<div style="--wc:var(--t-py)"><b>${esc(l.name)}</b>Lessons ${l.from+1} to ${l.to}</div>`).join("")}</div>
   <div class="pyMeter" role="img"></div>
   <div class="stats streakLine"></div>
@@ -921,7 +934,10 @@ makeTrack("py", PY_LESSONS, {
   answersKey:"cr2-py-answers", word:"Lesson", realLabel:"On the job", lastRecap:"Terminal summary", codeLabel:"Python",
   links:{9:{tab:"study", n:18, text:"Background: Training Bunker Day 18"}, 12:{tab:"study", n:24, text:"Background: Training Bunker Day 24"},
          14:{tab:"study", n:19, text:"Background: Training Bunker Day 19"}, 23:{tab:"study", n:22, text:"Background: Training Bunker Day 22"},
-         18:{tab:"study", n:9, text:"Background: Training Bunker Day 9"}, 24:{tab:"study", n:25, text:"Try it in the Training Bunker Day 25 lab"}},
+         18:{tab:"study", n:9, text:"Background: Training Bunker Day 9"}, 24:{tab:"study", n:25, text:"Try it in the Training Bunker Day 25 lab"},
+         27:{tab:"study", n:24, text:"Background: Training Bunker Day 24, reading logs"},
+         28:{deck:"qf-eventids", text:"Quick-fire: Windows Event IDs in The Archive"},
+         33:{tab:"py", n:15, text:"Background: Terminal Lesson 15, Base64"}},
   id:(dn, n) => n === 0 ? "py-" + dn : "p" + dn + "-" + n,
   groupOf:i => { const l = PY_LEVELS.find(l => i >= l.from && i < l.to); return {c:"var(--t-py)", label:`Terminal · ${l.name}`}; }
 });
@@ -937,7 +953,8 @@ const FILTERS = {
   codex: d => d.kind === "owasp",
   incidents: d => d.kind === "incident",
   nzau: d => !!d.region || d.kind === "law",
-  quick: d => d.kind === "quick"
+  quick: d => d.kind === "quick",
+  interview: d => d.kind === "interview" || d.kind === "career"
 };
 const feedState = (() => {
   const s = asObj(store.get("cr2-feed", {}));
@@ -986,24 +1003,45 @@ function wireRedaction(card){
   });
 }
 function interviewHtml(d, tagHtml){
+  const ask = d.tag === "Ask them";
+  const intro = ask ? "Interviews usually end with \"Do you have any questions for us?\" Practise asking this one out loud, then read why it's worth asking."
+    : d.star ? "Tell your own story out loud in about 2 minutes. Then show the structure and check what you covered."
+    : "Answer out loud in about 30 seconds, as if you're in the interview. Then show the model answer and compare.";
   return `${tagHtml}<h2 class="q">${fmt(d.title)}</h2>
-    <p class="small">Answer out loud in about 30 seconds, as if you're in the interview. Then show the model answer and compare.</p>
-    <button class="btn reveal" type="button">Show model answer</button>
-    <div class="model">${fmt(d.answer)}</div>
+    <p class="small">${intro}</p>
+    <button class="btn reveal" type="button">${ask ? "Show why to ask" : d.star ? "Show how to answer" : "Show model answer"}</button>
+    <div class="model">${modelHtml(d.answer)}</div>
     <div class="yours"></div>
     <div class="rate" role="group" aria-label="How did you go?"><button type="button" data-r="nailed">Got it</button><button type="button" data-r="shaky">Partly</button><button type="button" data-r="missed">Missed it</button></div>
     <p class="small rated" aria-live="polite"></p>`;
+}
+// Model answers: plain lines become paragraphs; "Interviewers listen for:" style labels become their own blocks.
+function modelHtml(a){
+  return String(a).split("\n").filter(Boolean).map(l => { const m = /^(Interviewers listen for|Common mistake|Why ask|A good answer sounds like|A warning sign|Situation|Task|Action|Result|Past|Present|Future):\s*(.*)$/.exec(l);
+    return m ? `<p class="fill"><span class="fl">${m[1]}<span class="sr">: </span></span>${fmt(m[2])}</p>` : `<p>${fmt(l)}</p>`; }).join("");
 }
 function wireInterview(card, d, onRated){
   const model = card.querySelector(".model"), rate = card.querySelector(".rate"), rated = card.querySelector(".rated");
   card.querySelector(".reveal").addEventListener("click", e => {
     model.classList.add("show"); rate.classList.add("show"); e.currentTarget.hidden = true;
-    const mine = stories.filter(st => (st.links || []).includes(d.id));
-    const yours = card.querySelector(".yours");
-    if (mine.length){ yours.innerHTML = `<b>Your story</b>${mine.map(st => `<strong>${esc(st.title)}</strong>. ${fmt(st.r || st.a || "")}`).join("<br>")}`; yours.classList.add("show"); }
+    card.__yours();
     model.tabIndex = -1; model.focus({preventScroll:true});
     model.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
   });
+  // Your linked stories, refreshed whenever the story sheet closes.
+  card.__yours = () => {
+    if (!model.classList.contains("show")) return;
+    const mine = stories.filter(st => (st.links || []).includes(d.id));
+    const yours = card.querySelector(".yours");
+    yours.innerHTML = ""; yours.classList.remove("show");
+    if (mine.length){ yours.innerHTML = `<b>Your story</b>${mine.map(st => `<strong>${esc(st.title)}</strong>. ${fmt(st.r || st.a || "")}`).join("<br>")}`; yours.classList.add("show"); }
+    else if (d.star){
+      // Behavioural questions need your own story, never an invented one.
+      yours.innerHTML = `<b>Your story</b>You haven't linked a story to this question yet.<button class="btn ghost writeStory" type="button">Write a story for this question</button>`;
+      yours.classList.add("show");
+      yours.querySelector(".writeStory").addEventListener("click", ev => openStory(-1, ev, d.id));
+    }
+  };
   const key = "i:" + d.id;
   let before; // the schedule as it was before this card's first rating
   rate.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
@@ -1017,7 +1055,7 @@ function wireInterview(card, d, onRated){
   }));
 }
 // Your goal tilts the Feed: SOC leans towards triage, queries and incidents; Cloud towards cloud and app security.
-const TARGETS = {mixed:{}, soc:{triage:1.5, kql:1.5, spl:1.5, incident:0.75}, cloud:{cloud:2, owasp:0.75, e8:0.5, kql:0.5}};
+const TARGETS = {mixed:{}, soc:{triage:1.5, kql:1.5, spl:1.5, msft:1.5, incident:0.75}, cloud:{cloud:2, owasp:0.75, e8:0.5, kql:0.5}};
 let target = TARGETS[store.get("cr2-target", "mixed")] ? store.get("cr2-target", "mixed") : "mixed";
 // Share of a kind's answered checks that are still weak (box 1 or 2). Weak kinds come up more often.
 function weakShare(kind){
@@ -1035,7 +1073,8 @@ function pickDeck(){
   const weak = {}, boost = TARGETS[target];
   const weights = pool.map(d => {
     if (!(d.kind in weak)) weak[d.kind] = weakShare(d.kind);
-    return (1 + (boost[d.kind] || 0)) * (1 + weak[d.kind]) * (isNew(d) ? 3 : 1) / (1 + (feedState.seen[d.id] || 0));
+    const practice = d.kind === "interview" && feedState.filter !== "interview" ? 0.35 : 1;
+    return practice * (1 + (boost[d.kind] || 0)) * (1 + weak[d.kind]) * (isNew(d) ? 3 : 1) / (1 + (feedState.seen[d.id] || 0));
   });
   let r = Math.random() * weights.reduce((a, b) => a + b, 0);
   for (let i = 0; i < pool.length; i++){ r -= weights[i]; if (r <= 0) return pool[i]; }
@@ -1049,7 +1088,7 @@ function appendDeck(forced, at){
   const addCard = (tab, o) => window.addCard(tab, Object.assign(o, pos === undefined ? {} : {at:pos++}));
   if (d.kind === "interview"){
     const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:0, total:1, first:true},
-      html: interviewHtml(d, `<div class="tag"><span>Interview</span>Say it out loud</div>`)});
+      html: interviewHtml(d, `<div class="tag"><span>Interview · ${esc(d.tag || "")}</span>${d.tag === "Ask them" ? "A question for the employer" : "Say it out loud"}</div>`)});
     wireInterview(s, d);
   } else {
     // Which checks to show: triage decks show all; others show one, the most useful right now.
@@ -1066,7 +1105,7 @@ function appendDeck(forced, at){
     const card = ([h, p, code], i, last, chips) => {
       const evidence = d.kind === "triage" && i === 0;
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:i, total, first:i === 0},
-        html:`${tag(i)}<h2>${fmt(h)}</h2>${termsOrPara(h, p)}${code ? codeBlock(code, evidence ? "Log" : "", !evidence) : ""}${chips && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}${chips && d.attack ? `<div class="chip"><b>ATT&amp;CK</b>${d.attack.map(fmt).join("<br>")}</div>` : ""}`});
+        html:`${tag(i)}<h2>${fmt(h)}</h2>${termsOrPara(h, p)}${code ? codeBlock(code, evidence ? (d.evidence || "Log") : "", !evidence) : ""}${chips && d.maps ? `<div class="chip"><b>Maps to</b>${fmt(d.maps)}</div>` : ""}${chips && d.attack ? `<div class="chip"><b>ATT&amp;CK</b>${d.attack.map(fmt).join("<br>")}</div>` : ""}`});
       if (code && !evidence) wireCopy(s, code);
     };
     // Labels that would give an answer away go after the questions on decks that ask about them.
@@ -1074,7 +1113,8 @@ function appendDeck(forced, at){
     show.forEach((n, j) => {
       const q = d.qs[n], key = checkKey(d, n);
       const s = addCard("feed", {c, label:name, group:serial, extra:{deck:d.id, pos:rec + d.cards.length + j, total},
-        html: quizHtml(q, tag(rec + d.cards.length + j, show.length > 1 ? "Check " + (j+1) + " of " + show.length : "Check"), false, Math.random() * 4294967296 >>> 0)});
+        html: quizHtml(q, tag(rec + d.cards.length + j, show.length > 1 ? "Check " + (j+1) + " of " + show.length : "Check"), false, Math.random() * 4294967296 >>> 0)
+          + (d.kind === "triage" && d.cards[0] && d.cards[0][2] && !q.code ? `<details class="evid"><summary>Show the evidence again</summary>${codeBlock(d.cards[0][2], d.evidence || "Log", false)}</details>` : "")});
       buildQuiz(s, q, null, (pick, sure) => {
         if (pick === null) return;
         srsRecord(key, pick === q.k, sure);
@@ -1178,7 +1218,13 @@ wireTarget(F.el);
 for (let i = 0; i < 3; i++) appendNext();
 // Changing the filter keeps the deck you're reading and replaces everything after it.
 const chips = document.getElementById("chips");
-function showFilter(){ chips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.f === feedState.filter ? "true" : "false")); }
+function showFilter(){
+  chips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.f === feedState.filter ? "true" : "false"));
+  const on = chips.querySelector("[aria-pressed=\"true\"]"); if (on && !chips.hidden){ on.scrollIntoView({block:"nearest", inline:"nearest"}); setTimeout(chipEnd, 350); }
+}
+// The row scrolls sideways; the faded right edge shows there is more, and goes once you reach the end.
+const chipEnd = () => chips.classList.toggle("at-end", chips.scrollLeft + chips.clientWidth >= chips.scrollWidth - 30);
+chips.addEventListener("scroll", chipEnd, {passive:true}); window.addEventListener("resize", chipEnd); setTimeout(chipEnd, 0);
 chips.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
   if (b.dataset.f === feedState.filter) return;
   feedState.filter = b.dataset.f; saveFeed(); showFilter();
@@ -1283,7 +1329,7 @@ function render(){
       // The hash names the exact card, so a reload or a restored tab comes back to the same place.
       if (location.hash !== "#" + c.el.id) history.replaceState(history.state, "", "#" + c.el.id);
     } else {
-      where.textContent = c.group === -1 ? (active === "study" ? "Cyber Bunker" : "Python") : c.label;
+      where.textContent = c.group === -1 ? (active === "study" ? "Cyber Bunker" : "Terminal") : c.label;
       const h = c.group === -1 ? (active === "study" ? "#study" : "#python") : "#" + c.el.id;
       if (location.hash !== h) history.replaceState(history.state, "", h);
     }
@@ -1305,7 +1351,13 @@ function examSummary(tab, dn, d, s){
   return `<details class="debrief exam ${pass ? "pass" : "notyet"}"><summary><b>${pass ? "Passed" : "Not passed yet"}</b>&nbsp;· ${s.right} of ${s.total} right · Review answers</summary>` +
     `<p>You got ${pct}%. The pass mark is 80%.${(e.att || 1) > 1 && e.best !== undefined ? ` Best: ${e.best} of ${s.total}, attempt ${e.att}.` : ""}${e.practice === dayNum() ? " Practice attempt: a same-day retake doesn&#39;t change your review schedule." : ""}</p><ol>${items}</ol></details>`;
 }
+function refreshB6(){
+  const open = b6Open();
+  document.querySelectorAll(".b6lock, .b6go").forEach(e => e.hidden = open);
+}
+document.addEventListener("click", e => { if (e.target.closest && e.target.closest(".b6go")) goGroup("study", B6_FROM - 2); });
 function updateScore(tab, announce){
+  if (tab === "study") refreshB6();
   if (tab === "feed"){
     if (active === "feed"){
       refreshDaily();
@@ -1367,6 +1419,7 @@ function switchTab(tab, focusView){
   store.set("cr2-tab", tab);
   document.body.dataset.tab = tab;
   document.getElementById("chips").hidden = tab !== "feed";
+  if (tab === "feed" && typeof showFilter === "function") requestAnimationFrame(() => { showFilter(); chipEnd(); });
   const pickWrap = document.getElementById("pickWrap");
   pickWrap.hidden = tab === "feed";
   document.getElementById("pickLabel").textContent = tab === "py" ? "Lessons" : "Days";
@@ -1451,9 +1504,10 @@ function renderSheet(){
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
       const st = s.done === 0 ? "" : !s.fin ? "part" : s.right / s.total < PASS_MARK ? "miss" : "ok";
       const label = (s.done ? (s.fin ? s.right + " of " + s.total + " right" : s.done + " of " + s.total + " answered") + (s.fin && started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions") + (tab === "py" && pyDone[n] ? " · challenge done" : "") + (guessVerdict(tab, n) === "skim" ? " · skim" : guessVerdict(tab, n) === "study" ? " · study carefully" : "");
-      return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
+      const locked = tab === "study" && n >= B6_FROM && !b6Open();
+      return `<button class="day ${st}${locked ? " locked" : ""}" style="--dc:${g.c}" data-n="${n}"${locked ? ' data-locked="1" aria-disabled="true"' : ""}${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}${locked ? '<span class="lk" aria-hidden="true">🔒</span>' : ""}</span><span>${esc(d.t)}<small>${locked ? "Locked: finish the Day " + (B6_FROM - 1) + " quiz" : label}</small></span></button>`; }).join("")
   }</div>`).join("");
-  dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { T.detour = false; goGroup(tab, n - 1); }); }));
+  dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; if (b.dataset.locked){ toast(`Level B6 unlocks when you finish the Day ${B6_FROM - 1} quiz. Here it is.`, 5000); closeSheet(() => { T.detour = false; goGroup("study", B6_FROM - 2); }); return; } closeSheet(() => { T.detour = false; goGroup(tab, n - 1); }); }));
 }
 /* ---------- Bunker Radio: the news wire (content/wire.json, refreshed every 6 hours by a GitHub Action) ---------- */
 let wire = null, wireState = "loading", wireLoad = null;
@@ -1907,7 +1961,7 @@ const SKILLS = [
    know:"Understand the cloud shared responsibility model, identity-based access and cloud logging in AWS and Azure."},
   {name:"Vulnerability management", s:[2,5,11,22,34], decks:["owasp-a03","e8-patch-apps","e8-patch-os"], pf:["nmap"],
    know:"Understand vulnerability prioritisation with CVSS, EPSS and CISA KEV, and the Essential Eight patching timeframes."},
-  {name:"Scripting", p:Array.from({length:24}, (x, i) => i + 1), pf:["py-detector","py-s3"], need:["py-detector"],
+  {name:"Scripting", p:PY_LESSONS.map((x, i) => i + 1), pf:["py-detector","py-s3"], need:["py-detector"],
    did:"Wrote a Python tool that finds brute-force sources in SSH logs using regex, Counter and argparse.",
    know:"Write Python for security tasks such as log parsing, regex, hashing and port checks."},
   {name:"Frameworks and compliance", kinds:["e8","law","owasp"], pf:[],

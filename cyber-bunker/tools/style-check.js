@@ -40,7 +40,9 @@ function checkQ(name, q, where){
 items.forEach(([name, d, extra]) => {
   walk(name, d, "");
   (d.learn || []).forEach((c, i) => { if (c[0] !== "Key terms" && words(c[1]) > 60) problems.push(`${name} learn[${i}] "${c[0]}": ${words(c[1])} words (max 60)`); });
-  (d.cards || []).forEach((c, i) => { if (c[0] !== "Key terms" && words(c[1]) > 60) problems.push(`${name} card[${i}] "${c[0]}": ${words(c[1])} words (max 60)`); });
+  // Fill-in lines ("CV line:", "Interview line:") are templates, not reading, so only the explanation counts.
+  const body = t => String(t).split("\n").filter(l => !/^(CV line|Interview line|Example|Answer|Why):/.test(l)).join(" ");
+  (d.cards || []).forEach((c, i) => { if (c[0] !== "Key terms" && words(body(c[1])) > 60) problems.push(`${name} card[${i}] "${c[0]}": ${words(body(c[1]))} words (max 60)`); });
   (d.quiz || []).forEach((q, i) => checkQ(name, q, `quiz[${i}]`));
   if (d.q) checkQ(name, d.q, "q");
   (d.qs || []).forEach((q, i) => checkQ(name, q, `qs[${i}]`));

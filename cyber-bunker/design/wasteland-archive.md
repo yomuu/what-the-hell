@@ -20,6 +20,7 @@ The CSS lives at the end of the `<style>` block in `index.html`, under "WASTELAN
 | `--bone` | #d9d6cc | Body text | 12.67 |
 | `--secondary` | #b8b5ab | Secondary text, impact text | 8.98 |
 | `--ash` | #8a877d | Tertiary text, borders of tappable controls (3:1 needed) | 5.13 |
+| `--w6` | #c4a7ff | Level B6 week colour (intermediate incident response). Not red, so it never reads as a warning | about 10 |
 | `--alarm` | #ff6b6b | Small warning text ("Keeps slipping", storage warning, the ✗ mark). Breach red is too dark for small text | about 6 |
 
 Accent per tab: Training Bunker amber, The Archive cyan, Terminal phosphor green. Text on a filled amber, cyan or green button is bunker black.
@@ -32,7 +33,7 @@ Loaded from Google Fonts: IBM Plex Sans (400, 700), IBM Plex Mono (500, 700) and
 |---|---|
 | Company names and headings | IBM Plex Sans 700, uppercase, letter-spacing -0.01em |
 | Body | IBM Plex Sans 400, at least 16px |
-| Small labels, tags, buttons, chips, tab labels | IBM Plex Mono 500, uppercase, letter-spacing about 0.1em (filter chips use 0.02em so all five fit at 375px) |
+| Small labels, tags, buttons, chips, tab labels | IBM Plex Mono 500, uppercase, letter-spacing about 0.1em (filter chips use 0.02em; the six chips scroll sideways at 375px, with a faded right edge until the end) |
 | Stamps | IBM Plex Mono 700, 19px, uppercase. Bold 19px counts as large text, so breach red meets WCAG AA (3:1) |
 | Header bar, record bar, footer, counters, terminal panel labels, Python program output | VT323, short text only, never paragraphs. App messages inside the output box (download prompt, offline notices) use Plex Mono |
 | Code | IBM Plex Mono |

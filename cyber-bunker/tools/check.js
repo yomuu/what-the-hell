@@ -56,7 +56,7 @@ if (py) {
 }
 const ids = new Set();
 if (feed) {
-  const KINDS = ["owasp", "incident", "e8", "cloud", "law", "triage", "interview", "kql", "spl", "quick"];
+  const KINDS = ["owasp", "incident", "e8", "cloud", "law", "triage", "interview", "career", "msft", "kql", "spl", "quick"];
   (feed.decks || []).forEach((d, i) => {
     const where = `Feed deck ${d.id || "#" + (i + 1)}`;
     if (!d.id) problems.push(`${where}: id missing`);
