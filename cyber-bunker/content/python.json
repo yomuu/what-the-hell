@@ -407,7 +407,7 @@
    "learn": [
     [
      "Key terms",
-     "Loop: code that repeats a block, such as once for each host or log line.\nrange: a built-in function that produces a run of whole numbers.\nFiltering: keeping only the items that match a condition."
+     "Loop: code that repeats a block, such as once for each host or log line.\nrange: a built-in that produces a run of whole numbers.\nFiltering: keeping only the items that match a condition."
     ],
     [
      "for loops",
@@ -1355,7 +1355,7 @@
     ],
     [
      "Encode and decode",
-     "`base64.b64encode(b\"text\")` encodes bytes, and `b64decode` reverses it. Both work on bytes. So call `.encode()` on text before encoding, and `.decode()` on the result to get text back.",
+     "`base64.b64encode()` needs bytes, so call `.encode()` on text first. `b64decode()` accepts a Base64 string or bytes. Both return bytes, so call `.decode()` on the result to get text back.",
      "import base64\nenc = base64.b64encode(\"whoami\".encode())\nprint(enc)\nprint(base64.b64decode(enc).decode())"
     ],
     [
@@ -1579,7 +1579,7 @@
       "fails"
      ],
      "k": 0,
-     "w": "3. JSON numbers become Python integers, so you get the number 3. Not \"3\": print doesn't show quotes around text anyway. Not fails: that's the key, and indexing gives its value."
+     "w": "3. JSON whole numbers become Python integers, so you get the number 3. Not \"3\": print doesn't show quotes around text anyway. Not fails: that's the key, and indexing gives its value."
     },
     {
      "d": 1,
@@ -2089,7 +2089,7 @@
     ],
     [
      "Connect scans and SYN scans",
-     "When run as root, Nmap's default is a SYN scan. It sends only the first packet (SYN) and never finishes the handshake. Without root, Nmap does a connect scan too, like this script."
+     "Nmap's default scan depends on whether you run it as root, the admin account. As root, it does a SYN scan: it sends only the first packet (SYN) and never finishes the handshake. Without root, it does a connect scan, which completes the handshake like the port-check script."
     ],
     [
      "Always set a timeout",

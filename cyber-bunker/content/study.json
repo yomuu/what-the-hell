@@ -382,7 +382,7 @@
     ],
     [
      "Phishing-resistant",
-     "A FIDO2 security key is a small hardware key, and a passkey is a login stored on your device. Both are bound to the real website's domain (its web address). A look-alike site gets nothing it can use, even if you're fooled. They're the most common phishing-resistant options. Smart-card logins also count."
+     "FIDO2 security keys and passkeys are the most common phishing-resistant options. A FIDO2 key is a small hardware key, and a passkey is a login stored on your device. Both are bound to the real website's domain (its web address). A look-alike site gets nothing it can use, even if you're fooled. Smart-card logins are phishing-resistant too."
     ]
    ],
    "real": [
@@ -459,7 +459,7 @@
     "MFA means two or more different factor categories.",
     "SMS is MFA but weak: SIM swapping and phishing.",
     "App codes and push can be phished too.",
-    "FIDO2 keys, passkeys and smart cards are phishing-resistant."
+    "FIDO2 keys, passkeys and smart-card logins are phishing-resistant."
    ]
   },
   {
@@ -704,7 +704,7 @@
     ],
     [
      "MFA, weakest to strongest",
-     "Weakest first: SMS codes, then app codes and push with number matching, then FIDO2 keys and passkeys. SMS still counts as MFA. The last group, and smart-card logins, are phishing-resistant."
+     "Weakest first: SMS codes, then app codes and push with number matching, then FIDO2 keys and passkeys. SMS is weak, but it still counts as MFA. FIDO2 keys, passkeys and smart-card logins are phishing-resistant."
     ],
     [
      "Hygiene vs hardening",
@@ -1147,7 +1147,7 @@
     ],
     [
      "Open, closed, filtered",
-     "Nmap, a port scanner, reports three port states. Open means a service is listening. Closed means the host answered, but nothing is listening. Filtered means no useful answer came back, usually because a firewall dropped the probe."
+     "Nmap, a port scanner, reports three main port states. Open means a service is listening. Closed means the host answered, but nothing is listening. Filtered means no useful answer came back, usually because a firewall dropped the probe."
     ],
     [
      "Open isn't vulnerable",
@@ -1247,7 +1247,7 @@
     ],
     [
      "Record types",
-     "Each DNS record type holds one kind of answer. An A record maps a name to an IPv4 address, and AAAA maps it to IPv6. CNAME is an alias, MX names mail servers and NS names the authoritative servers. TXT holds text, such as the email policies that stop others sending mail as your domain (SPF and DMARC)."
+     "Each DNS record type holds one kind of answer. An A record maps a name to an IPv4 address, and AAAA maps it to IPv6. CNAME is an alias, MX names mail servers and NS names the authoritative servers. TXT holds text, such as the email policies that help receivers reject mail faking your domain (SPF and DMARC)."
     ],
     [
      "What DHCP does",
@@ -1367,7 +1367,7 @@
     ],
     [
      "Stopping downgrades: HSTS",
-     "An on-path attacker can try to keep you on plain HTTP, called SSL stripping. HTTP Strict Transport Security (HSTS) stops this. The site tells your browser to use HTTPS only, so it never falls back to HTTP."
+     "HTTP Strict Transport Security (HSTS) stops attackers keeping you on plain, unencrypted HTTP. Without it, an on-path attacker can try this trick, called SSL stripping. With HSTS, the site tells your browser to use HTTPS only. After the first secure visit, the browser won't fall back to HTTP."
     ],
     [
      "What the padlock means",
@@ -1503,11 +1503,11 @@
     ],
     [
      "Ports",
-     "22 Secure Shell (SSH), 53 Domain Name System (DNS), 80 HTTP, 443 HTTPS, 445 Server Message Block (SMB), 3389 Remote Desktop Protocol (RDP). Open means listening, not vulnerable. Filtered usually means a firewall dropped the probe."
+     "22 Secure Shell (SSH), 53 Domain Name System (DNS), 80 HTTP, 443 HTTPS, 445 Server Message Block (SMB), 3389 Remote Desktop Protocol (RDP). An open port means a service is listening, not that it's vulnerable. A filtered port usually means a firewall dropped the probe."
     ],
     [
      "DNS, DHCP and TLS",
-     "Poisoning, hijacking and rogue Dynamic Host Configuration Protocol (DHCP) servers are the classic attacks. DNS Security Extensions (DNSSEC) sign DNS answers. For Transport Layer Security (TLS), allow only 1.2 and 1.3. The padlock means encrypted, not trustworthy."
+     "The classic attacks are DNS cache poisoning, DNS hijacking and rogue Dynamic Host Configuration Protocol (DHCP) servers. DNS Security Extensions (DNSSEC) sign DNS answers. Allow only Transport Layer Security (TLS) 1.2 and 1.3. The padlock means the connection is encrypted, not that the site is trustworthy."
     ],
     [
      "Laptop to website, part 1",
@@ -2685,7 +2685,7 @@
       "Security Logging and Monitoring Failures"
      ],
      "k": 1,
-     "w": "Security Logging and Alerting Failures. The 2025 list renamed A09 to stress alerting. Not Security Logging and Monitoring Failures: that was the 2021 name. Not Insufficient Logging and Monitoring: that was the 2017 name."
+     "w": "Security Logging and Alerting Failures. The 2025 list renamed A09 to stress alerting. Not Security Logging and Monitoring Failures: that was the 2021 name. Not Insufficient Logging and Monitoring: that was the 2017 name, when it was A10."
     }
    ],
    "recap": [
@@ -2913,7 +2913,7 @@
    ],
    "real": [
     "Latitude Financial, 2023",
-    "In March 2023 attackers got a Latitude Financial employee's login through an attack on a major vendor. They took about 14 million Australian and New Zealand records. These included millions of driver licence numbers, some kept since 2005. Latitude refused to pay. One breach shows two risks: third-party access and long data retention."
+    "In March 2023 attackers got a Latitude Financial employee's login through an attack on a major vendor. They took about 14 million Australian and New Zealand records. These included about 7.9 million driver licence numbers. Some customer records dated back to 2005. Latitude refused to pay. One breach shows two risks: third-party access and long data retention."
    ],
    "myth": [
     "Once you've finished Levels B1 to B4, the basics are done.",
@@ -2927,7 +2927,7 @@
    "review": [
     [
      "Level B1",
-     "Confidentiality, integrity and availability (CIA): double extortion hits all three. Threats include insiders and accidents. Risk combines likelihood and impact. Authorisation is checked on every request, with least privilege. SMS (text message) codes count as MFA but are weak. FIDO2 keys, passkeys and smart cards are phishing-resistant."
+     "Confidentiality, integrity and availability (CIA): double extortion hits all three. Threats include insiders and accidents. Risk combines likelihood and impact. Authorisation is checked on every request, with least privilege. SMS (text message) codes count as MFA but are weak. FIDO2 keys, passkeys and smart-card logins are phishing-resistant."
     ],
     [
      "Level B2",
@@ -3390,7 +3390,7 @@
     ],
     [
      "Resources, not data",
-     "Owner, Contributor and Reader manage resources, not the data inside them. Reading blobs, the files kept in Azure Blob Storage, needs a data role. One example is Storage Blob Data Reader."
+     "Owner, Contributor and Reader are built to manage resources, not the data inside them. Reading blobs, the files kept in Azure Blob Storage, normally needs a data role, such as Storage Blob Data Reader. But Owner and Contributor can fetch the storage account keys, and the keys unlock all the data."
     ],
     [
      "Three-part assignments",
@@ -3408,8 +3408,8 @@
    "tryit": {
     "h": "See who can do what",
     "where": "Azure CLI, your own subscription",
-    "p": "List every role assignment for a user across all scopes. Then read what a built-in role allows. Look for Owner where Contributor or Reader would do.",
-    "code": "az login\naz role assignment list --assignee user@example.com --all --output table\naz role definition list --name Contributor --output json"
+    "p": "List a user's role assignments in your current subscription, including ones they get through groups. Add `--include-inherited` to see management-group assignments too. Then read what a built-in role allows. Look for Owner where Contributor or Reader would do.",
+    "code": "az login\naz role assignment list --assignee user@example.com --all --include-groups --output table\naz role definition list --name Contributor --output json"
    },
    "quiz": [
     {

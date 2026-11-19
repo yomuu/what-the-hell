@@ -522,7 +522,7 @@ function buildQuiz(card, q, persist, onChange, exam){
           // Exam mode never says right or wrong early. A typed option locks in; anything else is just "not an option".
           const j = q.o.findIndex(o => normAns(o) === normAns(input.value));
           if (j >= 0){ showOpts(); btns.find(b => +b.dataset.j === j).click(); }
-          else msg.textContent = "That isn't one of the options. Check it, or tap Show options.";
+          else msg.textContent = "That isn't one of the options. Check your spelling, or tap Show options.";
         }
         else if (answers.includes(normAns(input.value))){ showOpts(); setSure(true); btns.find(b => +b.dataset.j === q.k).click(); }
         else { forcedGuess = true; showOpts(); setSure(false); confBtns.forEach(x => x.disabled = true); msg.textContent = ""; why.innerHTML = "<strong>Not quite.</strong> Pick from the options. This one will count as a guess."; why.classList.add("show"); }
@@ -544,7 +544,7 @@ function buildQuiz(card, q, persist, onChange, exam){
     why.classList.remove("miss"); why.classList.add("locked");
     why.innerHTML = "<strong>Locked in.</strong> You'll see the answer and your score once you've answered every question.";
     why.classList.add("show");
-    if (fromUser) why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"});
+    if (fromUser){ document.body.classList.remove("typing"); why.focus({preventScroll:true}); why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"}); }
   };
   const reveal = (pick, fromUser) => {
     showOpts();
@@ -563,7 +563,7 @@ function buildQuiz(card, q, persist, onChange, exam){
     if (q.run && q.code) card.__runCode = q.code;
     why.classList.add("show");
     if (retry) retry.classList.add("show");
-    if (fromUser){ why.focus({preventScroll:true}); why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"}); }
+    if (fromUser){ document.body.classList.remove("typing"); why.focus({preventScroll:true}); why.scrollIntoView({block:"nearest", behavior: reduceMotion() ? "auto" : "smooth"}); }
   };
   const clear = () => {
     btns.forEach(b => { b.removeAttribute("aria-disabled"); b.classList.remove("right","wrong","picked"); b.querySelector(".mk").textContent = ""; b.querySelector(".st").textContent = ""; });
@@ -760,7 +760,7 @@ function makeTrack(tab, items, cfg){
     const lb = rc.querySelector(".linkbtn");
     if (lb) lb.addEventListener("click", () => navigateTo(cfg.links[dn].tab, cfg.links[dn].n));
     rc.querySelector(".nx").addEventListener("click", () => last ? go(tab, Math.max(T.cards.findIndex(c => c.group <= -2), 0) || T.cards.length-1) : goGroup(tab, dn));
-    rc.querySelector(".redo").addEventListener("click", () => {
+    twoTap(rc.querySelector(".redo"), "Tap again to retake", () => {
       // Only the first attempt each day counts towards reviews, so a same-day retake is practice.
       const e = exam[dn] || (exam[dn] = {att:1});
       if (trackStats(tab, dn).fin){ if (e.day === dayNum()) e.practice = dayNum(); e.att = (e.att || 1) + 1; }
@@ -790,7 +790,7 @@ function trackTotals(tab){
 /* ---------- Study tab ---------- */
 const S = TABS.study;
 const studyIntroCount = () => DAYS.reduce((s, d) => s + S.cardCount(d), 0);
-addCard("study", {c:"var(--w1)", id:"today", label:"Today", group:-1, html:`<div class="todayBox"></div>`});
+addCard("study", {c:"var(--w1)", id:"today", label:"Today", group:-1, html:`<div class="todayBox"></div><div class="row drillRow"><button class="btn ghost" type="button" data-drill>Off duty? Play Breach Drill</button></div>`});
 addCard("study", {c:"var(--w1)", id:"start", label:"Start", group:-1, html:`
   <div class="tag"><span>Stages 1 and 2</span><i id="studyCount" style="font-style:normal"></i></div>
   <h1>Cyber Bunker</h1>
@@ -1302,8 +1302,8 @@ function examSummary(tab, dn, d, s){
     return `<li class="${ok ? "ok" : "miss"}"><b><span class="dmk" aria-hidden="true">${ok ? "✓" : "✗"}</span> <span class="sr">${ok ? "Right: " : "Wrong: "}</span>${fmt(q.q)}</b>${q.d ? ` <span class="lvl">${LEVEL[q.d]}</span>` : ""}
       ${ok ? "" : `<span>Your answer: ${fmt(q.o[a])}</span>`}<span>Right answer: ${fmt(q.o[q.k])}</span><span>${fmt(q.w)}</span></li>`;
   }).join("");
-  return `<details class="debrief exam ${pass ? "pass" : "notyet"}"><summary><b>${pass ? "Passed" : "Not passed yet"}</b>&nbsp;· ${s.right}/${s.total} · Debrief</summary>` +
-    `<p>You got ${pct}%. The pass mark is 80%.${(e.att || 1) > 1 && e.best !== undefined ? ` Best: ${e.best} of ${s.total}, attempt ${e.att}.` : ""}${e.practice === dayNum() ? " Practice attempt: your reviews aren&#39;t changed." : ""}</p><ol>${items}</ol></details>`;
+  return `<details class="debrief exam ${pass ? "pass" : "notyet"}"><summary><b>${pass ? "Passed" : "Not passed yet"}</b>&nbsp;· ${s.right} of ${s.total} right · Review answers</summary>` +
+    `<p>You got ${pct}%. The pass mark is 80%.${(e.att || 1) > 1 && e.best !== undefined ? ` Best: ${e.best} of ${s.total}, attempt ${e.att}.` : ""}${e.practice === dayNum() ? " Practice attempt: a same-day retake doesn&#39;t change your review schedule." : ""}</p><ol>${items}</ol></details>`;
 }
 function updateScore(tab, announce){
   if (tab === "feed"){
@@ -1450,7 +1450,7 @@ function renderSheet(){
   dayList.innerHTML = groups.map(g => `<div class="wk" style="color:${g.c}">${esc(g.title)}</div><div class="days">${
     T.items.slice(g.from, g.to).map((d, j) => { const n = g.from + j + 1, s = trackStats(tab, n);
       const st = s.done === 0 ? "" : !s.fin ? "part" : s.right / s.total < PASS_MARK ? "miss" : "ok";
-      const label = (s.done ? (s.fin ? s.right + "/" + s.total + " right" : s.done + "/" + s.total + " answered") + (s.fin && started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions") + (tab === "py" && pyDone[n] ? " · challenge done" : "") + (guessVerdict(tab, n) === "skim" ? " · skim" : guessVerdict(tab, n) === "study" ? " · study carefully" : "");
+      const label = (s.done ? (s.fin ? s.right + " of " + s.total + " right" : s.done + " of " + s.total + " answered") + (s.fin && started.includes(n) ? " · " + mastery(n) + "% mastered" : "") : s.total + " questions") + (tab === "py" && pyDone[n] ? " · challenge done" : "") + (guessVerdict(tab, n) === "skim" ? " · skim" : guessVerdict(tab, n) === "study" ? " · study carefully" : "");
       return `<button class="day ${st}" style="--dc:${g.c}" data-n="${n}"${n === cur ? ' aria-current="true"' : ""}><span class="n">${n}</span><span>${esc(d.t)}<small>${label}</small></span></button>`; }).join("")
   }</div>`).join("");
   dayList.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => { const n = +b.dataset.n; closeSheet(() => { T.detour = false; goGroup(tab, n - 1); }); }));
@@ -1551,7 +1551,7 @@ function briefFormHtml(it){
         <select name="entry"><option value="">Choose one</option>${ENTRY.map(c => `<option${d.entry === c ? " selected" : ""}>${c}</option>`).join("")}</select></label>
       <fieldset><legend>4. Recommended steps: what would you put in place? Tick up to three.</legend>
         <p class="small">The first ${sug.length} are suggested from the headline. Change them if the article says otherwise.</p>
-        <ul class="checks">${steps.map(c => `<li><label><input type="checkbox" name="steps" value="${c}"${d.steps.includes(c) ? " checked" : ""}>${c}${sug.includes(c) ? ` <span class="sug">Suggested</span>` : ""}</label></li>`).join("")}</ul></fieldset>
+        <p class="small warn" id="stepsMsg" role="status"></p><ul class="checks">${steps.map(c => `<li><label><input type="checkbox" name="steps" value="${c}"${d.steps.includes(c) ? " checked" : ""}>${c}${sug.includes(c) ? ` <span class="sug">Suggested</span>` : ""}</label></li>`).join("")}</ul></fieldset>
       <fieldset><legend>5. Would breach reporting likely apply?</legend>
         <p class="small">Both laws need personal information and likely serious harm. Australia's scheme doesn't cover most small businesses.</p>
         <ul class="checks">${LAWS.map(([v, l]) => `<li><label><input type="radio" name="law" value="${v}"${d.law === v ? " checked" : ""}>${l}</label></li>`).join("")}</ul></fieldset>
@@ -1625,7 +1625,7 @@ function wireBriefForm(list, it){
   // Recommended steps: at most three, so the debrief stays focused.
   form.querySelectorAll("input[name=steps]").forEach(cb => cb.addEventListener("change", () => {
     const on = form.querySelectorAll("input[name=steps]:checked");
-    if (on.length > 3){ cb.checked = false; radioSay("Pick up to three steps. Untick one to swap."); }
+    if (on.length > 3){ cb.checked = false; const m = document.getElementById("stepsMsg"); if (m) m.textContent = "Pick up to three steps. Untick one to swap."; }
     sync();
   }));
   line.addEventListener("input", () => { err.hidden = true; err.textContent = ""; line.removeAttribute("aria-invalid"); });
@@ -1758,7 +1758,7 @@ window.addEventListener("popstate", e => {
   if (briefPopSilent){ briefPopSilent = false; return; }
   if (sheet.classList.contains("open") && radioView === "brief"){
     // Back with an unsaved brief: stay once and warn; a second Back discards it.
-    if (briefDraft && briefDraft.dirty && !briefWarned){ briefWarned = true; history.pushState({brief:1}, ""); radioSay("Unsaved debrief. Save, or go back again to discard it."); return; }
+    if (briefDraft && briefDraft.dirty && !briefWarned){ briefWarned = true; history.pushState({brief:1}, ""); radioSay("Unsaved debrief. Save, or go back again to discard it."); const rs = document.getElementById("radioStatus"); if (rs) rs.scrollIntoView({block:"nearest"}); return; }
     closeBriefView(briefLink); return;
   }
   if (sheet.classList.contains("open")){ ignoreHash = true; hideSheet(); setTimeout(() => { ignoreHash = false; }, 100); return; }

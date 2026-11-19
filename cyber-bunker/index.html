@@ -143,23 +143,29 @@ h2{font-size:clamp(26px,7.4vw,40px)}
 .recap li::before{content:"";position:absolute;left:2px;top:.45em;width:12px;height:7px;border-left:2px solid var(--c);border-bottom:2px solid var(--c);transform:rotate(-45deg)}
 .dscore{font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:.04em}
 .dscore b{color:var(--text);font-weight:500}
-.opt.picked{border-color:var(--c)}
-.opt.picked .mk{display:inline;color:var(--c)}
+.opt.picked{border-color:var(--amber);border-width:3px}
+.opt.picked .mk{display:inline;color:var(--amber)}
+#v-py .opt.picked .mk{color:var(--phosphor)}
+#v-py .why.locked.show{border-color:var(--dimgreen);background:var(--termbg);color:var(--phosphor)}
+#v-py .why.locked > strong:first-child{color:var(--phosphor)}
 #v-py .opt.picked{border-color:var(--phosphor);border-width:3px}
 .dscore .exam.pass summary b{color:var(--good)}
-.dscore .exam.notyet summary b{color:var(--bad)}
+.dscore .exam.notyet summary b{color:var(--alarm)}
 .debrief summary b{font-weight:500}
 .debrief > p{margin:4px 0 0;color:var(--muted)}
-.debrief{font-family:var(--body);text-transform:none;letter-spacing:normal;font-size:15px;color:var(--text)}
-.debrief summary{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:13px;min-height:44px;display:flex;align-items:center;cursor:pointer;color:var(--c)}
+.debrief{font-family:var(--body);text-transform:none;letter-spacing:normal;font-size:16px;color:var(--text)}
+.debrief summary{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:13px;min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--c);border:2px solid var(--control);padding:4px 10px;list-style:none}
+.debrief summary::-webkit-details-marker{display:none}
+.debrief summary::after{content:"▸";margin-left:auto;color:var(--bone)}
+.debrief[open] summary::after{content:"▾"}
 .debrief ol{margin:6px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:12px}
 .debrief li{line-height:1.45}
 .debrief li > span{display:block;color:var(--muted)}
 .debrief li b{font-weight:600}
 .debrief li b{color:var(--text)}
 .debrief li b span.dmk{display:inline;color:var(--good)}
-.debrief li.miss b span.dmk{color:var(--bad)}
-.debrief .lvl{display:inline;font-size:11px}
+.debrief li.miss b span.dmk{color:var(--alarm)}
+.debrief .lvl{display:inline;font-size:12px}
 
 .more{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 10px);z-index:4;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;pointer-events:none;opacity:0;transition:opacity .2s}
 .more.show{opacity:1}
@@ -328,6 +334,7 @@ h2{font-size:clamp(22px,6.3vw,34px)}
 :focus-visible{outline:3px solid var(--amber)!important;outline-offset:2px}
 .update button:focus-visible{outline-color:var(--bunker)!important;outline-offset:-5px}
 .chips button:focus-visible{outline-offset:-5px}
+.chips button[aria-pressed="true"]:focus-visible{outline-color:var(--bunker)!important}
 #v-py :focus-visible{outline-color:var(--phosphor)!important}
 
 /* Header bar: CRT amber */
@@ -490,16 +497,16 @@ body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
 .form.brief ::placeholder{color:var(--secondary)}
 .form.brief .warn{margin:-8px 0 0}
 /* Square checkboxes and radio buttons, to match "no rounded corners" */
-.form.brief input[type=checkbox],.form.brief input[type=radio]{appearance:none;-webkit-appearance:none;width:22px;height:22px;flex:none;margin:0;border:2px solid var(--ash);background:var(--bunker);display:grid;place-content:center;cursor:pointer}
-.form.brief input[type=checkbox]::before,.form.brief input[type=radio]::before{content:"";width:12px;height:12px;background:var(--amber);transform:scale(0)}
-.form.brief input:checked::before{transform:scale(1)}
-.form.brief input[type=checkbox]:checked,.form.brief input[type=radio]:checked{border-color:var(--amber)}
+.form.brief input[type=checkbox],.form.brief input[type=radio],.checks input[type=checkbox]{appearance:none;-webkit-appearance:none;width:22px;height:22px;flex:none;margin:0;border:2px solid var(--ash);background:var(--bunker);display:grid;place-content:center;cursor:pointer}
+.form.brief input[type=checkbox]::before,.form.brief input[type=radio]::before,.checks input[type=checkbox]::before{content:"";width:12px;height:12px;background:var(--amber);transform:scale(0)}
+.form.brief input:checked::before,.checks input:checked::before{transform:scale(1)}
+.form.brief input[type=checkbox]:checked,.form.brief input[type=radio]:checked,.checks input[type=checkbox]:checked{border-color:var(--amber)}
 .radioNav button{flex:1 1 0}
 .form.brief{gap:16px}
 .form.brief legend,.form.brief label{font-size:16px;color:var(--bone);line-height:1.4}
 .form.brief select{min-height:48px;width:100%;background:var(--rust);color:var(--bone);border:2px solid var(--ash);padding:0 10px;font-family:var(--body);font-size:16px}
 .form.brief input[type=text]{min-height:48px;border:2px solid var(--ash)}
-.form.brief fieldset{border:2px solid var(--metal);padding:8px 12px 10px}
+.form.brief fieldset{border:2px solid var(--metal);padding:8px 12px 10px;background:var(--rust)}
 .form.brief .checks label{min-height:44px}
 .brief-line{color:var(--phosphor)!important}
 .brief-dl{order:3}
@@ -573,7 +580,7 @@ body[data-tab="py"] .meta,body[data-tab="py"] .meta b{color:var(--phosphor)}
 @keyframes crt{0%{opacity:.55;filter:brightness(1.7)}35%{opacity:1;filter:brightness(1.1)}65%{opacity:.8}100%{opacity:1;filter:none}}
 @media (prefers-reduced-motion:reduce){.card.flick > .in{animation:none}.cursor{animation:none}}
 /* Tighter quiz and code cards so answered questions fit a 375px phone screen. */
-@media (max-width:400px){.card{padding-left:8px;padding-right:8px}.card>.in{padding:16px 12px 12px}}
+@media (max-width:400px){.card{padding-left:8px;padding-right:8px}.card>.in{padding:16px 12px 12px}.rec{margin:0 -12px}.rec > *:not(.hazard):not(.rec-hd){margin-left:12px;margin-right:12px}}
 .in:has(> .opts){gap:10px}
 .in:has(> .opts) .opts{gap:6px}
 .in:has(> .opts) .opt{padding:7px 10px}
@@ -586,6 +593,50 @@ body.has-update .card{padding-bottom:100px}
 .code pre{line-height:1.4}
 .in:has(> .code){gap:12px}
 .checks .sug{margin-left:auto;flex:none;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border:1px solid var(--amber);padding:1px 6px}
+/* Breach Drill */
+.drill .panel{max-height:94%}
+.dr-intro{margin:0 0 12px}
+.dr-pick{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.dr-side{display:flex;flex-direction:column;gap:6px;text-align:left;padding:14px;background:var(--rust);border:2px solid var(--control);color:var(--bone);cursor:pointer;font-family:var(--body);font-size:16px;line-height:1.4}
+.dr-side b{font-family:var(--crt);font-size:24px;font-weight:400;letter-spacing:.04em;text-transform:uppercase}
+.dr-side.red b{color:var(--alarm)}
+.dr-side.blue b{color:var(--cyan)}
+.dr-side small{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--secondary)}
+.dr-hud{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.dr-stage{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}
+.dr-meter{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--secondary)}
+.dr-bar{flex:1;height:10px;border:2px solid var(--metal);background:var(--bunker)}
+.dr-bar i{display:block;height:100%;background:var(--phosphor)}
+.dr-meter.hot .dr-bar i{background:var(--alarm)}
+.dr-msg,.dr-result{margin:0 0 10px;padding:10px 12px;border:2px solid var(--metal);background:var(--termbg);color:var(--phosphor);font-size:16px;line-height:1.45}
+.dr-msg.bad,.dr-result.bad{border-color:var(--breach);color:var(--bone)}
+.dr-msg.bad::before,.dr-result.bad b{color:var(--alarm)}
+.dr-moves,.dr-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.dr-move{display:flex;flex-direction:column;gap:4px;text-align:left;padding:10px 12px;min-height:48px;background:var(--rust);border:2px solid var(--control);color:var(--bone);cursor:pointer;font-family:var(--body);font-size:16px;line-height:1.35}
+.dr-move b{font-weight:600}
+.dr-move small{font-family:var(--mono);font-size:12px;letter-spacing:.04em;color:var(--secondary)}
+.dr-move.blocked{border-style:dashed;opacity:.75}
+.dr-move.recon{border-color:var(--cyan)}
+.dr-track{display:flex;gap:3px;list-style:none;margin:0;padding:0}
+.dr-track li{flex:1;font-family:var(--mono);font-size:10px;line-height:1.2;letter-spacing:.02em;text-transform:uppercase;padding:4px 3px;border:2px solid var(--metal);color:var(--secondary);text-align:center}
+.dr-track li.past{background:color-mix(in srgb,var(--breach) 30%,var(--bunker));color:var(--bone)}
+.dr-track li.now{border-color:var(--alarm);color:var(--alarm)}
+.dr-alert{border:2px solid var(--amber);padding:8px 10px;margin-bottom:8px;background:var(--bunker)}
+.dr-ah{font-family:var(--crt);font-size:22px;letter-spacing:.06em;color:var(--amber)}
+.dr-alert pre.code{margin:6px 0 0;white-space:pre-wrap;font-size:14px}
+.dr-q{margin:4px 0 8px;font-weight:600}
+.dr-end{padding:12px;border:2px solid var(--metal);margin-bottom:10px;font-size:16px;line-height:1.45}
+.dr-end.win{border-color:var(--phosphor)}
+.dr-end.win b{color:var(--phosphor)}
+.dr-end.lose{border-color:var(--breach)}
+.dr-end.lose b{color:var(--alarm)}
+.drill h4{font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin:14px 0 6px}
+.dr-list{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px;font-size:16px;line-height:1.45}
+.dr-list li > span{display:block;color:var(--secondary)}
+.dr-list li b span.dmk{color:var(--phosphor)}
+.dr-list li.miss b span.dmk{color:var(--alarm)}
+.dr-list .lvl{display:inline;font-size:12px}
+.drillRow{margin-top:12px}
 </style>
 </head>
 <body class="booting">
@@ -665,6 +716,8 @@ body.has-update .card{padding-bottom:100px}
 /* Loads the study, feed and Python content from content/*.json, then starts the app (app.js).
    It also runs the service worker (sw.js): offline caching and the "New content" banner. That lives
    here rather than in app.js so updates still arrive even if a content file ever fails to load. */
+// Breach Drill (game.js) closes on Back. This runs before app.js's own Back handling, so the cards don't move.
+window.addEventListener("popstate", function(e){ if (window.DRILL_POP && window.DRILL_POP()) e.stopImmediatePropagation(); });
 window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); window.installPrompt = e; window.dispatchEvent(new Event("installready")); });
 (function(){
   var files = ["study", "feed", "python", "version", "certs"];
@@ -694,6 +747,8 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
       window.CONTENT_VERSION = res[3]; window.CERTS = res[4] || null;
       var s = document.createElement("script"); s.src = "app.js";
       s.onerror = function(){ bootFail(new Error("app.js didn't load")); };
+      // The game loads after the app; if it fails, the app still works.
+      s.onload = function(){ var g = document.createElement("script"); g.src = "game.js"; document.body.appendChild(g); };
       document.body.appendChild(s);
     }).catch(function(err){
       failed = true;

@@ -10,7 +10,7 @@ const read = f => fs.readFileSync(path.join(root, f), "utf8");
 const problems = [];
 
 // Dashes, anywhere a reader could see them.
-for (const f of ["index.html", "app.js", "sw.js", "content/study.json", "content/feed.json", "content/python.json", "content/version.json"]) {
+for (const f of ["index.html", "app.js", "game.js", "sw.js", "content/study.json", "content/feed.json", "content/python.json", "content/version.json"]) {
   let text; try { text = read(f); } catch (e) { problems.push(`${f}: missing`); continue; }
   text.split("\n").forEach((line, i) => { if (/[\u2014\u2013]/.test(line)) problems.push(`${f} line ${i + 1}: em or en dash: ${line.trim().slice(0, 100)}`); });
 }
@@ -20,7 +20,7 @@ try {
   const html = read("index.html");
   [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].forEach((m, i) => { try { new Function(m[1]); } catch (e) { problems.push(`index.html inline script ${i + 1}: ${e.message}`); } });
 } catch (e) {}
-for (const f of ["app.js", "sw.js"]) { try { new Function(read(f)); } catch (e) { problems.push(`${f}: syntax error: ${e.message}`); } }
+for (const f of ["app.js", "game.js", "sw.js"]) { try { new Function(read(f)); } catch (e) { problems.push(`${f}: syntax error: ${e.message}`); } }
 
 // Content JSON.
 const json = f => { try { return JSON.parse(read(f)); } catch (e) { problems.push(`${f}: invalid JSON: ${e.message}`); return null; } };

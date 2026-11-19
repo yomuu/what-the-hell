@@ -10,7 +10,7 @@ Cyber Bunker is a mobile-first study app (an installable web app) that swipes li
 - `tools/check.js` checks the content and scripts. `tools/bump-version.js` raises the content version so installed phones get the update banner.
 
 ## Accuracy rules (these were already corrected; keep them)
-- SMS codes count as MFA but are weak (SIM swapping, phishing). Authenticator-app codes are also phishable. Only FIDO2 keys and passkeys are phishing-resistant.
+- SMS codes count as MFA but are weak (SIM swapping, phishing). Authenticator-app codes are also phishable. FIDO2 keys, passkeys and certificate-based smart-card logins are phishing-resistant (Kane decided 19 November 2026).
 - Ransomware can hit confidentiality too (double extortion), not only integrity and availability.
 - Offline backups restore encrypted data but do nothing about stolen data.
 - Threat x Vulnerability x Impact is a simplified teaching model, not an official formula.

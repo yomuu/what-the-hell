@@ -751,6 +751,26 @@
    "spelling": "SYN scan"
   },
   {
+   "term": "Connect scan",
+   "definition": "A port scan that completes the full TCP handshake, which Nmap uses when it isn't run as root.",
+   "spelling": "connect scan"
+  },
+  {
+   "term": "HTTP Strict Transport Security (HSTS)",
+   "definition": "A setting where a site tells your browser to use HTTPS only. After the first secure visit, the browser won't fall back to plain HTTP.",
+   "spelling": "HTTP Strict Transport Security (HSTS)"
+  },
+  {
+   "term": "SSL stripping",
+   "definition": "An on-path attack that keeps your browser on plain, unencrypted HTTP instead of HTTPS.",
+   "spelling": "SSL stripping"
+  },
+  {
+   "term": "Smart-card login",
+   "definition": "Logging in with a physical card that holds a cryptographic key; a phishing-resistant method.",
+   "spelling": "smart-card login"
+  },
+  {
    "term": "Intrusion detection system (IDS)",
    "definition": "A tool that watches network or system activity and alerts on signs of an attack.",
    "spelling": "intrusion detection system (IDS)"
@@ -1422,7 +1442,7 @@
   },
   {
    "term": "Eligible data breach",
-   "definition": "A breach of personal information likely to cause serious harm that you can't prevent.",
+   "definition": "A breach of personal information that's likely to cause serious harm, where you can't remove that risk with quick remedial action.",
    "spelling": "eligible data breach"
   },
   {
@@ -1607,7 +1627,7 @@
   },
   {
    "term": "range",
-   "definition": "A built-in function that produces a run of whole numbers.",
+   "definition": "A built-in that produces a run of whole numbers.",
    "spelling": "range (always lower case)"
   },
   {

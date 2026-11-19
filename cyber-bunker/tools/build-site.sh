@@ -4,7 +4,7 @@
 set -euo pipefail
 node tools/check.js
 rm -rf _site && mkdir -p _site/content
-cp index.html app.js sw.js manifest.webmanifest icon.svg icon-192.png icon-512.png icon-maskable-512.png .nojekyll _site/
+cp index.html app.js game.js sw.js manifest.webmanifest icon.svg icon-192.png icon-512.png icon-maskable-512.png .nojekyll _site/
 cp content/study.json content/feed.json content/python.json content/version.json content/certs.json _site/content/
 [ -f content/wire.json ] && cp content/wire.json _site/content/
 # Keep the page and service worker fresh so updates arrive; content files carry ?v= when the worker updates.

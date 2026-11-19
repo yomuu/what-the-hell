@@ -180,7 +180,7 @@
     ],
     [
      "Real example",
-     "In May 2023 the Cl0p gang exploited a SQL injection zero-day in MOVEit Transfer, a file-transfer product. A zero-day is a flaw attackers use before a fix exists. They stole data from thousands of organisations, affecting tens of millions of people. This happened before most victims knew the flaw existed."
+     "In May 2023 the Cl0p gang exploited a SQL injection zero-day in MOVEit Transfer, a file-transfer product. A zero-day is a flaw attackers use before a fix exists. They stole data from thousands of organisations, affecting nearly 100 million people. This happened before most victims knew the flaw existed."
     ],
     [
      "Prevent it: queries and input",
@@ -420,7 +420,7 @@
     ],
     [
      "What happened",
-     "In February 2024, the ALPHV/BlackCat ransomware gang hit Change Healthcare. The company processes a huge share of US medical claims. Its systems went offline. For weeks, claims and payments for pharmacies and providers were disrupted."
+     "In February 2024, the ALPHV/BlackCat ransomware gang attacked Change Healthcare, which processes a huge share of US medical claims. Its systems went offline, which disrupted claims and payments for pharmacies and providers for weeks."
     ],
     [
      "How they got in",
@@ -1201,7 +1201,7 @@
     ],
     [
      "Know its limits",
-     "The Essential Eight is a baseline designed for internet-connected Windows networks. It's not a complete security programme. In October 2026, ASD began replacing it with ASD Essentials. The current model still applies for now."
+     "The Essential Eight is a baseline designed for internet-connected Windows networks. It's not a complete security programme. In October 2026, ASD began replacing it with ASD Essentials. For now, the current Essential Eight still applies."
     ],
     [
      "It's in Australian job ads",
@@ -1940,7 +1940,7 @@
     ],
     [
      "Impact",
-     "Cathay Pacific says about 53,000 bookings were affected. It says it has no evidence that payment or financial data was accessed. Qantas says its own systems weren't affected. It doesn't yet know which of its customers, if any, had data accessed. Japan Airlines and Asiana were also affected. Japan Airlines reported about 92,000 affected customers."
+     "Cathay Pacific says about 53,000 bookings were affected, with no evidence that payment or financial data was accessed. Japan Airlines and its subsidiary reported about 92,000 affected customers, and ANA, Asiana and Korean Air were also hit. Qantas says its own systems weren't affected, but it doesn't yet know which of its customers, if any, had data accessed."
     ],
     [
      "Lesson: suppliers hold your data",
@@ -1970,9 +1970,9 @@
    "date": "2026-10",
    "status": "developing",
    "entry": "Amadeus cites a flaw. Cathay says a system account's login was used.",
-   "impact": "About 53,000 Cathay Pacific bookings. About 92,000 Japan Airlines customers. Qantas and Asiana also notified.",
+   "impact": "About 53,000 Cathay Pacific bookings and about 92,000 customers of Japan Airlines and its subsidiary. ANA, Asiana and Korean Air were also hit, and Qantas was notified.",
    "lesson": "Your customers' data is only as safe as your suppliers' systems.",
-   "source": "Cathay Pacific and Qantas statements, 2026"
+   "source": "Cathay Pacific, Qantas and Japan Airlines statements, 2026"
   },
   {
    "id": "inc-maersk-lfl",
@@ -2888,7 +2888,7 @@
    "cards": [
     [
      "The evidence",
-     "This is a file server's Security log at 2:14am, simplified. Nobody on the team was working. Logon type 10 means Remote Desktop. svc_backup is a service account, which software uses to log in instead of a person.",
+     "These are a file server's Security log events at 2:14am, simplified. Your security information and event management (SIEM) system collected them before the log was cleared. Nobody on the team was working. Logon type 10 means Remote Desktop. svc_backup is a service account, which software uses to log in instead of a person.",
      "4624  type 10  svc_backup\n4720  created user: helpdesk2\n4732  helpdesk2 added to\n      Administrators\n1102  audit log cleared"
     ]
    ],
@@ -3205,7 +3205,7 @@
      "Server antivirus and longer passwords"
     ],
     "k": 0,
-    "w": "MFA on the VPN and keeping admin logins off home PCs. The login came from a home PC and worked with no second factor. Not encryption or a firewall: the login itself was valid. Not antivirus or longer passwords: a stolen password works however long it is."
+    "w": "MFA on the VPN and keeping admin logins off home PCs. The login was stolen from a home PC and worked with no second factor. Not encryption or a firewall: the login itself was valid. Not antivirus or longer passwords: a stolen password works however long it is."
    }
   ],
   "inc-waikato": [
@@ -3270,7 +3270,7 @@
      "The project's source code was private"
     ],
     "k": 0,
-    "w": "It hid in test files and build scripts. Reviewers read the git source, but the payload was in the release tarballs, the packaged downloads, and test files. Not assembly: the payload simply wasn't in the source reviewers read. Not private code: xz is open source."
+    "w": "It hid in test files and build scripts. The payload was disguised as binary test data, and the script that unpacked it was only in the release tarballs, the packaged downloads. Not assembly: the payload was hidden, not written in an unusual language. Not private code: xz is open source."
    }
   ],
   "inc-crowdstrike": [
